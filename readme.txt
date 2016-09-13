@@ -1,0 +1,1 @@
+This project is in Beta. The documentation is not ready, but please check out the demo page: https://jsideris.github.io/DOThtml/
