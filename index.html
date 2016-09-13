@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+
+<html>
+
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="./prettify.css">
+
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dothtml.js"></script>
+<script type="text/javascript">
+
+/*DOT.happyemoticon = function(id, color){
+	DOT.svg(function(){
+		DOT
+		.circle().cx(34).cy(34).r(32).stroke("black").strokewidth("4").fill(color)
+		.circle().cx(22).cy(25).r(5).fill("black")
+		.circle().cx(46).cy(25).r(5).fill("black")
+		.path().strokelinecap("round").d("M 18 46 q 16 10 32 0").stroke("black").strokewidth(4).fill("none");
+	}).id(id).width(68).height(68);
+	
+	return DOT;
+}*/
+
+DOT.robotface = function(id, color){
+	DOT.div(function(){
+		DOT
+		.div().style('position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-color: black')
+		.div().style('position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-color: black')
+		.div().style('position: absolute; width: 48px; height: 5px; left: 8px; top: 48px; background-color: black')
+	}).id(id).style('position: relative; width: 64px; height: 64px; background-color: ' + color + '; display: inline-block');
+	
+	return DOT;
+}
+
+$(function(){
+	DOT.begin("body")
+	.div("&copy;2016 - Joshua Sideris").style("position: fixed; right: 10px; bottom: 10px; color: #444; line-height: 20px;")
+	.div(function(){
+		DOT.div(function(){
+			DOT.div("<").id("logoopenningangularbracket").wait(1000, function(){
+				DOT.$hide(500);
+			})
+			.div().id("logodotsmall").style("display:none; margin-top:80px;").wait(1500, function(){
+				
+				DOT.$show(300, function(){
+					DOT.wait(500, function(){
+						DOT.$animate({width: 256, height: 256, marginTop: 0}, 500, "swing", function(){
+							DOT.begin("#logodotsmall").h("DOT");
+						});
+					});
+				});
+			})
+			.div("html").id("logohtml")
+			.div(">").id("logoclosingangularbracket").wait(1000, function(){
+				DOT.$hide(500);
+			});
+		}).id("logo")
+		.br()
+		.br()
+		.div("A human-friendly way to build highly-dynamic web pages in pure JavaScript.").id("slogan").$css("opacity", "0.1").wait(3000, function(){
+			DOT.$animate({opacity: 1}, 500, "swing");
+		});
+	}).id("header")
+	
+	.br()
+	.div(function(){
+		DOT.h3(function(){DOT.i("Version 0.1 (beta release)")}).style("color: #999")
+		.h1("Features")
+		.h2("First: let DOThtml know where to render.")
+			.p(function(){
+				DOT.h("Use ").code("DOT.begin(\'body\')").h(" to render to the body (when the DOM is ready). Alternatively, you can use any other CSS selector to render markup elsewhere.").p("This (and all other DOThtml functions) return a chainable page builder.");
+			})
+		.h2("Chain functions together to generate HTML.")
+			.p("Each body element as well as attributes (392, combined) are wrapped as DOThtml functions that can be chained together.")
+			.p("For instance, instead of ")
+			.pre("&lt;div id=\"mydiv1\"&gt;Hello, World!&lt;/div&gt;\r\n&lt;div id=\"mydiv2\"&gt;Hello, Again!&lt;/div&gt;").class("prettyprint linenums")
+			.p("you can use ")
+			.pre(".div(\'Hello, World!\').id(\'mydiv1\')\r\n.div(\'Hello, Again!\').id(\'mydiv2\')").class("prettyprint linenums")
+		.h2("Introducing HTML control flow.")
+			.p("Ever desired an easy way to set up an HTML table with a loop, client side?")
+			.pre([	".table(function(){",
+					"	for(var i = 0; i < myArray.length; i++){",
+					"		DOT.tr(function(){",
+					"			.td(myArray[i])",
+					"		});",
+					"})"].join("\r\n")).class("prettyprint linenums")
+			.p("How about conditional rendering?")
+			.pre([".br();",
+			"if(user.isLoggedIn){",
+			"	DOT.p('Welcome, ' + user.name + '!')",
+			"}",
+			"else{",
+			"	DOT.a('Log In').href('./login/')",
+			"}",
+			"DOT.br()"].join("\r\n")).class("prettyprint linenums")
+		.h2("JQuery is a dependancy, but it's also so much more.")
+			.p("Leverage JQuery functions like <code>$.css</code>, <code>$.show</code>, <code>$.animate</code>, etc, as well as handlers like <code>$.click</code>, <code>$.hover</code>, <code>$.keypress</code>, <code>$.resize</code>, <code>$.scroll</code>, etc, to extend HTML in powerful ways while reducing code messiness, redundancy and file-size. There are currently 24 supported JQuery events, and 8 supported display helpers.")
+			.p("To use the JQuery wrappers, just call them through the usual DOT chain while adding $ to the front. All the parameters are the same as they would be for their jquery counterparts. For instance:")
+			.pre(["DOT.span('Click me!').$click(function(event){",
+			"	alert('You clicked it!');",
+			"})"].join("\r\n")).class("prettyprint linenums")
+		.h2("Want to render plain text or HTML?")
+			.p("You can pass HTML into any tag function.")
+			.pre("DOT.p('Hello, &lt;b&gt;Bold World!&lt;/b&gt;')").class("prettyprint linenums")
+			.p("Alternatively, you can use the <code>.h()</code> function to render HTML without any particular parent tag. There is also a <code>.t()</code> function that escapes all special HTML characters (kind of like <code>$.Text()</code>).")
+		.h2("Render HTML after a timeout.")
+			.p("A handly little helper function that waits for a timeout in milliseconds before rendering HTML: ")
+			.pre(["DOT.h('Hello,')",
+			".wait(1000, function(){",
+			"	DOT.h('Future World')",
+			"})"].join("\r\n")).class("prettyprint linenums")
+		.h2("Widgets made easy.")
+			.p("DOThtml is extensible. You can build reusable widgets.")
+			.pre(["DOT.robotface = function(id, color){",
+				"	DOT.div(function(){",
+				"		DOT",
+				"		.div().style('position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-color: black')",
+				"		.div().style('position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-color: black')",
+				"		.div().style('position: absolute; width: 48px; height: 5px; left: 8px; top: 48px; background-color: black')",
+				"	}).id(id).style('position: relative; width: 64px; height: 64px; background-color: ' + color + '; display: inline-block');",
+				"	return DOT;",
+				"}",
+				"",
+				"DOT.robotface('emoticon1', 'yellow')",
+				".robotface('emoticon1', 'blue')",
+				".robotface('emoticon1', 'green')",
+				".robotface('emoticon1', 'red');"].join("\r\n")).class("prettyprint linenums")
+			.br()
+			.robotface("emoticon1", "yellow")
+			.robotface("emoticon2", "blue")
+			.robotface("emoticon3", "green")
+			.robotface("emoticon4", "red")
+		.h1("Special Notes")
+		.h2("DOThtml is in beta.")
+			.p("There are tons of new features I have ligned up for this framework, including HTML validation, and less-verbose element nesting (removing the necessity of including a function(){} parameter), and SVG support. The downside is that the framework will be changing. Complete documentation will be released when he framework is out of beta.")
+		.h2("What about HTML attributes that have the same name as elements?")
+			.p("There are 5 of these: cite, form, label, span, summary. Currently, DOThtml assumes you want to add an attribute to the last element if a single string parameter is provided to the correspondingly-named functions. Otherwise, a new element is created.")
+	}).id("content")
+});
+
+
+</script>
+
+<body></body>
+
+<script type="text/javascript" src="run_prettify.js"></script>
+</html>

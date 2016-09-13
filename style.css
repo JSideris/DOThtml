@@ -1,0 +1,48 @@
+body {
+	margin: 0px;
+	font-family: "Arial Black", Gadget, sans-serif;
+}
+
+#header{
+	white-space: nowrap;
+	text-align: center;
+	padding: 50px;
+	
+	border-bottom: 10px solid red;
+	background-color: #58B;
+}
+
+#logo{
+	font-size: 128px;
+	white-space: nowrap;
+}
+
+#logo > div{
+	line-height: 256px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+#logodotsmall{
+	background-image: url("bigdot.png");
+	height: 16px;
+	width: 16px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	line-height: 16px;
+	display: inline-block;
+	color: white;
+	text-align: center;
+	font-family: Impact, Charcoal, sans-serif;
+}
+
+#slogan{
+	font-size: 36px;
+	color: #EEE;
+}
+
+#content{
+	padding-top: 20px;
+	padding-left: 200px;
+	padding-right: 200px;
+}
