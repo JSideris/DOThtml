@@ -94,7 +94,7 @@ $(function(){
 			"}",
 			"DOT.br()"].join("\r\n")).class("prettyprint linenums")
 		.h2("JQuery is a dependancy, but it's also so much more.")
-			.p("Leverage JQuery functions like <code>$.css</code>, <code>$.show</code>, <code>$.animate</code>, etc, as well as handlers like <code>$.click</code>, <code>$.hover</code>, <code>$.keypress</code>, <code>$.resize</code>, <code>$.scroll</code>, etc, to extend HTML in powerful ways while reducing code messiness, redundancy and file-size. There are currently 24 supported JQuery events, and 8 supported display helpers.")
+			.p("Leverage JQuery functions like <code>$.css()</code>, <code>$.show()</code>, <code>$.animate()</code>, etc, as well as handlers like <code>$.click()</code>, <code>$.hover()</code>, <code>$.keypress()</code>, <code>$.resize()</code>, <code>$.scroll()</code>, etc, to extend HTML in powerful ways while reducing code messiness, redundancy and file-size. There are currently 24 supported JQuery events, and 8 supported display helpers.")
 			.p("To use the JQuery wrappers, just call them through the usual DOT chain while adding $ to the front. All the parameters are the same as they would be for their jquery counterparts. For instance:")
 			.pre(["DOT.span('Click me!').$click(function(event){",
 			"	alert('You clicked it!');",
@@ -122,9 +122,9 @@ $(function(){
 				"}",
 				"",
 				"DOT.robotface('emoticon1', 'yellow')",
-				".robotface('emoticon1', 'blue')",
-				".robotface('emoticon1', 'green')",
-				".robotface('emoticon1', 'red');"].join("\r\n")).class("prettyprint linenums")
+				".robotface('emoticon2', 'blue')",
+				".robotface('emoticon3', 'green')",
+				".robotface('emoticon4', 'red');"].join("\r\n")).class("prettyprint linenums")
 			.br()
 			.robotface("emoticon1", "yellow")
 			.robotface("emoticon2", "blue")
@@ -132,9 +132,11 @@ $(function(){
 			.robotface("emoticon4", "red")
 		.h1("Special Notes")
 		.h2("DOThtml is in beta.")
-			.p("There are tons of new features I have ligned up for this framework, including HTML validation, and less-verbose element nesting (removing the necessity of including a function(){} parameter), and SVG support. The downside is that the framework will be changing. Complete documentation will be released when he framework is out of beta.")
+			.p("There are tons of new features I have ligned up for this framework, including HTML validation, and less-verbose element nesting (removing the necessity of including a <code>function(){}</code> parameter), and SVG support. The downside is that the framework will be changing. Complete documentation will be released when he framework is out of beta.")
 		.h2("What about HTML attributes that have the same name as elements?")
 			.p("There are 5 of these: cite, form, label, span, summary. Currently, DOThtml assumes you want to add an attribute to the last element if a single string parameter is provided to the correspondingly-named functions. Otherwise, a new element is created.")
+		.h1("Download / Learn More")
+			.a("Check out DOThtml's page on github to get early access.").href("https://github.com/JSideris/DOThtml").target("_blank")
 	}).id("content")
 });
 

@@ -1,6 +1,11 @@
 body {
 	margin: 0px;
-	font-family: "Arial Black", Gadget, sans-serif;
+	font-family: "Arial", Gadget, sans-serif;
+
+}
+
+p{
+	color: #333;
 }
 
 #header{
@@ -10,11 +15,13 @@ body {
 	
 	border-bottom: 10px solid red;
 	background-color: #58B;
+	font-family: "Arial Black", Gadget, sans-serif;
 }
 
 #logo{
 	font-size: 128px;
 	white-space: nowrap;
+	font-family: "Arial Black", Gadget, sans-serif;
 }
 
 #logo > div{
