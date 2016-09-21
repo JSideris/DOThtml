@@ -592,9 +592,9 @@ DOT.prototype.form = function(arg){
 		|| tagType == "select" 
 		|| tagType == "textarea" 
 		))
-			return this.attr("cite", arg);
+			return this.attr("form", arg);
 	else
-		return this.el("cite", arg);
+		return this.el("form", arg);
 }
 
 DOT.prototype.label = function(arg){
