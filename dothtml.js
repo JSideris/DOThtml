@@ -18,8 +18,8 @@ function DOT (){
 
 DOT.prototype.do = DOT.prototype.begin = function(newtarget){
 	/*if(typeof newtarget !== "undefined"){*/
-		this._es = [$(newtarget)];
-		this._ce = newtarget;
+		this._ce = $(newtarget);
+		this._es = [this._ce];
 	/*}
 	else{
 		this._es.push(this._ce);
