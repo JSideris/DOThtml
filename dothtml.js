@@ -1,9 +1,6 @@
 "use strict";
 /*
-	V0.2
-	This is an experimental project created by Joshua Sideris. 
-	It has not been released to public yet and you do not have permission to use or distribute it.
-	Instead, follow me on Twitter to be notified of an official release.
+	V0.3
 */
 
 
