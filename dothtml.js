@@ -1,6 +1,6 @@
 "use strict";
 /*
-	V0.3
+	V0.4
 */
 
 
@@ -629,38 +629,45 @@ DOT.prototype.span = function(arg){
 }
 
 //Jquery event wrappers
-DOT.prototype.$blur = function(handler){$(this._ce).blur(handler); return DOT;}
-DOT.prototype.$change = function(handler){$(this._ce).change(handler); return DOT;}
-DOT.prototype.$click = function(handler){$(this._ce).click(handler); return DOT;}
-DOT.prototype.$dblclick = function(handler){$(this._ce).dblclick(handler); return DOT;}
-DOT.prototype.$focus = function(handler){$(this._ce).focus(handler); return DOT;}
-DOT.prototype.$focusin = function(handler){$(this._ce).focusin(handler); return DOT;}
-DOT.prototype.$focusout = function(handler){$(this._ce).focusout(handler); return DOT;}
-DOT.prototype.$hover = function(inHandler, outHandler){$(this._ce).hover(inHandler, outHandler); return DOT;}
-DOT.prototype.$keydown = function(handler){$(this._ce).keydown(handler); return DOT;}
-DOT.prototype.$keypress = function(handler){$(this._ce).keypress(handler); return DOT;}
-DOT.prototype.$keyup = function(handler){$(this._ce).keyup(handler); return DOT;}
-DOT.prototype.$mousedown = function(handler){$(this._ce).mousedown(handler); return DOT;}
-DOT.prototype.$mouseenter = function(handler){$(this._ce).mouseenter(handler); return DOT;}
-DOT.prototype.$mouseleave = function(handler){$(this._ce).mouseleave(handler); return DOT;}
-DOT.prototype.$mousemove = function(handler){$(this._ce).mousemove(handler); return DOT;}
-DOT.prototype.$mouseout = function(handler){$(this._ce).mouseout(handler); return DOT;}
-DOT.prototype.$mouseover = function(handler){$(this._ce).mouseover(handler); return DOT;}
-DOT.prototype.$mouseup = function(handler){$(this._ce).mouseup(handler); return DOT;}
-DOT.prototype.$on = function(event, childSelector, data, handler, map){$(this._ce).on(event, childSelector, data, handler, map); return DOT;}
-DOT.prototype.$one = function(event, data, handler){$(this._ce).one(event, data, handler); return DOT;}
-DOT.prototype.$resize = function(handler){$(this._ce).resize(handler); return DOT;}
-DOT.prototype.$scroll = function(handler){$(this._ce).scroll(handler); return DOT;}
-DOT.prototype.$select = function(handler){$(this._ce).select(handler); return DOT;}
-DOT.prototype.$submit = function(handler){$(this._ce).submit(handler); return DOT;}
+DOT.prototype.$blur = function(handler){
+	var ce = this._ce;
+	this._ce.blur(function(){
+		handler(ce)
+	}); 
+	return DOT;
+}
 
-DOT.prototype.$animate = function(p1, p2, p3, p4){$(this._ce).animate(p1, p2, p3, p4); return DOT;}
-DOT.prototype.$css = function(p1, p2){$(this._ce).css(p1, p2); return DOT;}
-DOT.prototype.$empty = function(){$(this._ce).empty(); return DOT;}
-DOT.prototype.$fadeIn = function(p1, p2){$(this._ce).fadeIn(p1, p2); return DOT;}
-DOT.prototype.$fadeOut = function(p1, p2){$(this._ce).fadeIn(p1, p2); return DOT;}
-DOT.prototype.$fadeTo = function(p1, p2, p3, p4){$(this._ce).fadeTo(p1, p2, p3, p4); return DOT;}
-DOT.prototype.$hide = function(p1, p2, p3){$(this._ce).hide(p1, p2, p3); return DOT;}
-DOT.prototype.$show = function(p1, p2, p3){$(this._ce).show(p1, p2, p3); return DOT;}
+DOT.prototype.$change = function(handler){var ce = this._ce; ce.change(function(){handler(ce)}); return DOT;}
+DOT.prototype.$click = function(handler){var ce = this._ce; ce.click(function(){handler(ce)}); return DOT;}
+DOT.prototype.$dblclick = function(handler){var ce = this._ce; ce.dblclick(function(){handler(ce)}); return DOT;}
+DOT.prototype.$focus = function(handler){var ce = this._ce; ce.focus(function(){handler(ce)}); return DOT;}
+DOT.prototype.$focusin = function(handler){var ce = this._ce; ce.focusin(function(){handler(ce)}); return DOT;}
+DOT.prototype.$focusout = function(handler){var ce = this._ce; ce.focusout(function(){handler(ce)}); return DOT;}
+DOT.prototype.$hover = function(inHandler, outHandler){var ce = this._ce; ce.hover(inHandler, outHandler); return DOT;}
+DOT.prototype.$keydown = function(handler){var ce = this._ce; ce.keydown(function(){handler(ce)}); return DOT;}
+DOT.prototype.$keypress = function(handler){var ce = this._ce; ce.keypress(function(){handler(ce)}); return DOT;}
+DOT.prototype.$keyup = function(handler){var ce = this._ce; ce.keyup(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mousedown = function(handler){var ce = this._ce; ce.mousedown(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mouseenter = function(handler){var ce = this._ce; ce.mouseenter(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mouseleave = function(handler){var ce = this._ce; ce.mouseleave(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mousemove = function(handler){var ce = this._ce; ce.mousemove(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mouseout = function(handler){var ce = this._ce; ce.mouseout(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mouseover = function(handler){var ce = this._ce; ce.mouseover(function(){handler(ce)}); return DOT;}
+DOT.prototype.$mouseup = function(handler){var ce = this._ce; ce.mouseup(function(){handler(ce)}); return DOT;}
+DOT.prototype.$on = function(event, childSelector, data, handler, map){var ce = this._ce; ce.on(event, childSelector, data, function(){handler(ce)}, map); return DOT;}
+DOT.prototype.$one = function(event, data, handler){var ce = this._ce; ce.one(event, data, function(){handler(ce)}); return DOT;}
+DOT.prototype.$resize = function(handler){var ce = this._ce; ce.resize(function(){handler(ce)}); return DOT;}
+DOT.prototype.$scroll = function(handler){var ce = this._ce; ce.scroll(function(){handler(ce)}); return DOT;}
+DOT.prototype.$select = function(handler){var ce = this._ce; ce.select(function(){handler(ce)}); return DOT;}
+DOT.prototype.$submit = function(handler){var ce = this._ce; ce.submit(function(){handler(ce)}); return DOT;}
+
+DOT.prototype.$animate = function(p1, p2, p3, p4){this._ce.animate(p1, p2, p3, p4); return DOT;}
+DOT.prototype.$css = function(p1, p2){this._ce.css(p1, p2); return DOT;}
+DOT.prototype.$empty = function(){this._ce.empty(); return DOT;}
+DOT.prototype.$fadeIn = function(p1, p2){this._ce.fadeIn(p1, p2); return DOT;}
+DOT.prototype.$fadeOut = function(p1, p2){this._ce.fadeIn(p1, p2); return DOT;}
+DOT.prototype.$fadeTo = function(p1, p2, p3, p4){this._ce.fadeTo(p1, p2, p3, p4); return DOT;}
+DOT.prototype.$hide = function(p1, p2, p3){this._ce.hide(p1, p2, p3); return DOT;}
+DOT.prototype.$show = function(p1, p2, p3){this._ce.show(p1, p2, p3); return DOT;}
 
 DOT = new DOT();
