@@ -1,0 +1,29 @@
+.dot-tab-button-container{
+	white-space: nowrap;
+}
+
+.dot-tab-button-container>div{
+    display: inline-block;
+    vertical-align: top;
+	padding: 10px 15px 10px 15px;
+	cursor: pointer;
+	font-weight: bold;
+	border-bottom: 2px solid black;
+	background-color: rgba(200, 200, 200, 0.2);
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Chrome/Safari/Opera */
+	-khtml-user-select: none; /* Konqueror */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none;
+}
+
+.dot-tab-button-container>div.selected{
+	border: 2px solid black;
+	border-bottom: 0;
+	background-color: transparent;
+}
+
+.dot-tab-button-container>div:hover{
+	background-color: rgba(200, 200, 200, 0.5);
+}
