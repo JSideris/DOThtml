@@ -7,7 +7,7 @@
 
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>
-<script src="dothtml.js"></script>
+<script src="C:\Users\Sideris\Documents\GitHub\DOThtml\dothtml.js"></script>
 
 <body>
 	<div class="container">
@@ -154,7 +154,8 @@ $(function(){
 		
 		
 		setTimeout(function(){
-			if(!resultHtml) resultHtml = testResult._document ? testResult._document.innerHTML : "";
+			if(!testResult && !resultHtml) resultHtml = "Test did not return DOT.";
+			else if(!resultHtml) resultHtml = testResult._document ? testResult._document.innerHTML : "";
 			DOT.tr(
 				DOT.td(description)
 				.td(DOT.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}"))))
@@ -173,6 +174,7 @@ $(function(){
 	//Writing/Appending
 	
 	//Basic functionality
+	
 	addTest("Nothing", function(){ return DOT; }, "");
 	addTest("Write text", function(){ return DOT.h(1); }, "1");
 	addTest("Write 2 texts", function(){ return DOT.h(1).h(2); }, "12");
@@ -184,7 +186,7 @@ $(function(){
 	addTest("Boolean in a div", function(){ return DOT.div(true); }, "<div>true</div>");
 	addTest("JSON object in a div", function(){ return DOT.div({}); }, "<div></div>");
 	addTest("Function in a div", function(){ return DOT.div(function(){return DOT.h(1)}) }, "<div>1</div>");
-	addTest("HTML in a div", function(){ return DOT.div("<div></div>"); }, "<div>&lt;div&gt;&lt;/div&gt;</div>");
+	addTest("HTML in a div", function(){ return DOT.div("<div></div>"); }, "<div><div></div></div>");
 	addTest("Nested content", function(){ return DOT.div(DOT.div(1)); }, "<div><div>1</div></div>");
 	addTest("Side by side divs", function(){ return DOT.div().div(); }, "<div></div><div></div>");
 	addTest("Side by side w/ content", function(){ return DOT.div(1).div(2); }, "<div>1</div><div>2</div>");
@@ -203,21 +205,67 @@ $(function(){
 	addTest("Class", function(){ return DOT.div().class(1); }, "<div class=\"1\"></div>");
 	addTest("2nd class", function(){ return DOT.div().div().class(2).div(); }, "<div></div><div class=\"2\"></div><div></div>");
 	addTest("Failing class", function(){ return DOT.h(1).class(2); }, "1");
-	addTest("Wrong class", function(){ return DOT.div(DOT.class(1)); }, "<div></div>");
+	addTest("In class", function(){ return DOT.div(DOT.class(1)); }, "<div class=\"1\"></div>");
+	addTest("Wrong class", function(){ return DOT.div(DOT.h("2").class(1)); }, "<div>2</div>");
+	addTest("Wrong class 2", function(){ return DOT.h(DOT.class(1).h(2)); }, "2");
+	addTest("Classception", function(){ return DOT.div(DOT.div(DOT.class(1))); }, "<div><div class=\"1\"></div></div>");
+	addTest("Classception", function(){ return DOT.div(DOT.h(DOT.class(1).h(2))); }, "<div>2</div>");
+	addTest("Classception - parallel classy divs", function(){ return DOT.div([DOT.div(DOT.class(1)), DOT.div(DOT.class(2))]); }, "<div><div class=\"1\"></div><div class=\"2\"></div></div>");
+	addTest("One class at a time", function(){ return DOT.div(DOT.class(1)); }, "<div class=\"1\"></div>");
 	addTest("Skipped class", function(){ return DOT.div().h(1).class(2); }, "<div></div>1");
 	addTest("Missed class", function(){ return DOT.class(1); }, "");
+	addTest("Conflicting classes", function(){ return DOT.div(DOT).class(1).class(2); }, "<div class=\"2\"></div>");
 	addTest("Void element", function(){ return DOT.img(); }, "<img>");
 	addTest("Self-explaining attribute", function(){ return DOT.button().disabled(); }, "<button disabled=\"disabled\"></button>");
+	addTest("Passing DOT to h", function(){ return DOT.h(DOT.div()); }, "<div></div>");
+	addTest("Passing function to h", function(){ return DOT.h(function(){return "<div></div>"}); }, "<div></div>");
+	addTest("Two internal attributes", function(){ return DOT.div(DOT.class(1).style(2)); }, "<div class=\"1\" style=\"2\"></div>");
+	//Array evalutation.
+	addTest("Evaluate array", function(){ return DOT.div([1, 2, 3, 4]); }, "<div>1234</div>");
+	addTest("Evaluate array of functions.", function(){ return DOT.div([function(){return 1}, function(){return 2}]); }, "<div>12</div>");
+	addTest("Evaluate array of DOT", function(){ return DOT.div([DOT.div(1), DOT.div(2), DOT.div(3), DOT.div(4)]); }, "<div><div>1</div><div>2</div><div>3</div><div>4</div></div>");
+	addTest("Evaluate array of DOT into h", function(){ return DOT.h([DOT.div(1), DOT.div(2), DOT.div(3), DOT.div(4)]); }, "<div>1</div><div>2</div><div>3</div><div>4</div>");
 	//Ignore undefined (like functions that hane no return, etc).
 	addTest("Undefined div", function(){ return DOT.div(undefined) }, "<div></div>");
-	addTest("Undefined html", function(){ return DOT.h(undefined) }, "undefined"); //On the fence about this.
+	addTest("Undefined html", function(){ return DOT.h(undefined) }, ""); //On the fence about this.
 	addTest("Undefined text", function(){ return DOT.t(undefined) }, "undefined"); //If the user really wants to print out undefined.
 	//Special tags.
-	//...
+	addTest("citeE", function(){ return DOT.citeE(); }, "<cite></cite>");
+	//addTest("dataE", function(){ return DOT.dataE(); }, "<data></data>"); //Element not supported by most browsers.
+	addTest("formE", function(){ return DOT.formE(); }, "<form></form>");
+	addTest("labelE", function(){ return DOT.labelE(); }, "<label></label>");
+	addTest("spanE", function(){ return DOT.spanE(); }, "<span></span>");
+	addTest("summaryE", function(){ return DOT.summaryE(); }, "<summary></summary>");
+	addTest("citeA", function(){ return DOT.del().citeA(1); }, "<del cite=\"1\"></del>");
+	addTest("dataA", function(){ return DOT.object().dataA(1); }, "<object data=\"1\"></object>");
+	addTest("formA", function(){ return DOT.input().formA(1); }, "<input form=\"1\">");
+	addTest("labelA", function(){ return DOT.track().labelA(1); }, "<track label=\"1\">");
+	addTest("spanA", function(){ return DOT.col().spanA(1); }, "<col span=\"1\">");
+	addTest("summaryA", function(){ return DOT.table().summaryA(1); }, "<table summary=\"1\"></table>");
+	addTest("Smart cite - attribute", function(){ return DOT.del().cite(1); }, "<del cite=\"1\"></del>");
+	addTest("Smart form - attribute", function(){ return DOT.input().form(1); }, "<input form=\"1\">");
+	addTest("Smart label - attribute", function(){ return DOT.track().label(1); }, "<track label=\"1\">");
+	addTest("Smart span - attribute", function(){ return DOT.col().span(1); }, "<col span=\"1\">");
+	addTest("Smart summary - attribute", function(){ return DOT.table().summary(1); }, "<table summary=\"1\"></table>");
+	addTest("Smart cite - element", function(){ return DOT.div().cite(); }, "<div></div><cite></cite>");
+	addTest("Smart form - element", function(){ return DOT.div().form(); }, "<div></div><form></form>");
+	addTest("Smart label - element", function(){ return DOT.div().label(); }, "<div></div><label></label>");
+	addTest("Smart span - element", function(){ return DOT.div().span(); }, "<div></div><span></span>");
+	addTest("Smart summary - element", function(){ return DOT.div().summary(); }, "<div></div><summary></summary>");
+	addTest("Smart cite - append to blank", function(){ return DOT.citeE(); }, "<cite></cite>");
+	addTest("Smart form - append to blank", function(){ return DOT.formE(); }, "<form></form>");
+	addTest("Smart label - append to blank", function(){ return DOT.labelE(); }, "<label></label>");
+	addTest("Smart span - append to blank", function(){ return DOT.spanE(); }, "<span></span>");
+	addTest("Smart summary - append to blank", function(){ return DOT.summaryE(); }, "<summary></summary>");
+	addTest("Smart data - basic attribute", function(){ return DOT.object().data(1); }, "<object data=\"1\"></object>");
+	addTest("Smart data - custom attribute", function(){ return DOT.div().data("a", 1); }, "<div data-a=\"1\"></div>");
 	//If statements.
 	addTest("Conditional true", function(){ return DOT.h(1).if(true, DOT.h("true")).h(2); }, "1true2");
 	addTest("Conditional false", function(){ return DOT.h(1).if(false, DOT.h("false")).h(2); }, "12");
 	addTest("Conditional true true", function(){ return DOT.h(1).if(true, DOT.h(2)).if(true, DOT.h(3)).h(4); }, "1234");
+	addTest("Conditional class", function(){ return DOT.div(1).if(true, DOT.class(2)); }, "<div class=\"2\">1</div>");
+	addTest("Conditional deep class", function(){ return DOT.div(1).if(true, DOT.if(true, DOT.class(2))); }, "<div class=\"2\">1</div>");
+	addTest("Conditional deep class with more confusion", function(){ return DOT.div(1).if(true, DOT.if(true, DOT.class(2)).div(3)); }, "<div class=\"2\">1</div><div>3</div>");
 	//Logic.
 	addTest("If true else", function(){ return DOT.if(true, "if").else("else"); }, "if");
 	addTest("If false else", function(){ return DOT.if(false, "if").else("else"); }, "else");
@@ -252,27 +300,63 @@ $(function(){
 	}, "s0101f");
 	addTest("Each", function(){ return DOT.each([0, 1, 2], function(x){return x}); }, "012");
 	addTest("Nested each", function(){ return DOT.each([0, 1, 2], function(x){return DOT.h(x).each([3, 4, 5], function(y){return y})}); }, "034513452345");
+	//Widgets
+	DOT.createWidget("nesteddivs", function(){return DOT.div(DOT.div(1))});
+	addTest("Nested divs widget", function(){return DOT.nesteddivs()}, "<div><div>1</div></div>");
+	addTest("Nested divs widget, surroundend by divs", function(){return DOT.div(2).nesteddivs().div(3)}, "<div>2</div><div><div>1</div></div><div>3</div>");
+	addTest("Nested divs widget, surroundend by html", function(){return DOT.h(2).nesteddivs().h(3)}, "2<div><div>1</div></div>3");
+	//jQuery wrappers
+	addTest("jQuery, set CSS", function(){return DOT.div().$css("color", "black");}, "<div style=\"color: black;\"></div>");
+	addTest("jQuery, reset CSS", function(){return DOT.div().$css("color", "black").$css("color", "red");}, "<div style=\"color: red;\"></div>");
+	addTest("jQuery, set CSS on h", function(){return DOT.h(1).$css("color", "black");}, "1");
+	addTest("jQuery, set CSS inside h", function(){return DOT.h(DOT.$css("color", "black").h(1));}, "1");
+	addTest("jQuery, set CSS inside h 2", function(){return DOT.div(DOT.h(DOT.$css("color", "black").h(1)));}, "<div>1</div>");
+	addTest("jQuery, set CSS inside div", function(){return DOT.div(DOT.$css("color", "black"));}, "<div style=\"color: black;\"></div>");
+	addTest("jQuery, set CSS inside nested div", function(){return DOT.div(DOT.div(DOT.$css("color", "black")));}, "<div><div style=\"color: black;\"></div></div>");
+	addTest("jQuery, set CSS", function(){return DOT.div().$css("color", "black");}, "<div style=\"color: black;\"></div>");
 	//Scripted
 	addTest("Script, no return", function(){ return DOT.script(function(){1 + 1;}).div(1); }, "<div>1</div>");
 	addTest("Script, return DOT", function(){ return DOT.script(function(){return 2;}).div(1); }, "2<div>1</div>");
 	addTest("Script, return function", function(){ return DOT.script(function(){return function(){return 2};}).div(1); }, "2<div>1</div>");
+	//jQuery helpers
+	addTest("jQuery hide", function(){return DOT.div().$hide()}, "<div style=\"display: none;\"></div>");
+	addTest("jQuery hide slow", function(){return DOT.div().$hide(50)}, "<div style=\"display: none;\"></div>", 100);
+	addTest("jQuery hide slow, callcack returns DOT", function(){return DOT.div().$hide(50, function(){return DOT.div()})}, "<div style=\"display: none;\"></div><div></div>", 100);
+	addTest("jQuery hide slow, callcack returns DOT, internal", 
+		function(){
+			return DOT.div(DOT.$hide(50, function(){
+				return DOT.div();
+			}));
+		}, "<div style=\"display: none;\"><div></div></div>", 100);
+	addTest("jQuery hide slow, callcack is DOT", function(){return DOT.div().$hide(50, DOT.div())}, "<div style=\"display: none;\"></div><div></div>", 100);
+	addTest("jQuery hide slow, callcack is DOT, internal", function(){return DOT.div(DOT.$hide(50, DOT.div()));}, "<div style=\"display: none;\"><div></div></div>", 100);
+	addTest("jQuery hide slow, callcack is DOT, internal, after div", function(){return DOT.div(DOT.div().$hide(50, DOT.div()));}, "<div><div style=\"display: none;\"></div><div></div></div>", 100);
 	//Wait
-	addTest("Wait, timing early (80ms)", function(){ return DOT.div(1).wait(100, DOT.div(3)).div(2); }, "<div>1</div><timeout></timeout><div>2</div>", 80);
-	addTest("Wait, for nothing", function(){ return DOT.div(1).wait(100, function(){}).div(2); }, "<div>1</div><div>2</div>", 120);
-	addTest("Wait, for a string", function(){ return DOT.div(1).wait(100, "3").div(2); }, "<div>1</div>3<div>2</div>", 120);
-	addTest("Wait, for a div", function(){ return DOT.div(1).wait(100, DOT.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 120);
-	addTest("Wait, inside a div", function(){ return DOT.div(1).div(DOT.wait(100, DOT.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 120);
-	addTest("Wait, for class (not supported yet)", function(){ return DOT.div(1).wait(100, DOT.class(3)).div(2); }, "<div>1</div><div>2</div>", 120);
-	addTest("Wait, for a function", function(){ return DOT.div(1).wait(100, function(){return DOT.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 120);
-	addTest("Wait, append to nothing", function(){ return DOT.wait(100, DOT.div(3)); }, "<div>3</div>", 120);
-	addTest("Wait, append to nothing, concat 2", function(){ return DOT.wait(100, DOT.div(3)).h(2); }, "<div>3</div>2", 120);
-	addTest("Wait, append between text nodes", function(){ return DOT.h(1).wait(100, DOT.div(3)).h(2); }, "1<div>3</div>2", 120);
-	addTest("Wait, out of order", function(){ return DOT.wait(100, DOT.div(1)).wait(200, DOT.div(2)).wait(50, DOT.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 220);
-	addTest("Wait, iterate", function(){ return DOT.div(1).wait(100, DOT.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 120);
-	addTest("Waitception, early (220ms)", function(){ return DOT.wait(100, DOT.div(DOT.wait(300, DOT.div(1)))); }, "<div><timeout></timeout></div>", 220);
-	addTest("Waitception, late (220ms), times shouldn't stack", function(){ return DOT.wait(200, DOT.div(DOT.wait(200, DOT.div(1)))); }, "<div><div>1</div></div>", 220);
-	addTest("Waitception, late (320ms)", function(){ return DOT.wait(100, DOT.div(DOT.wait(200, DOT.div(1)))); }, "<div><div>1</div></div>", 320);
-	addTest("Waitception, late (320ms), short inner interval", function(){ return DOT.wait(200, DOT.div(DOT.wait(100, DOT.div(1)))); }, "<div><div>1</div></div>", 320);
+	addTest("Wait, timing early", function(){ return DOT.div(1).wait(120, DOT.div(3)).div(2); }, "<div>1</div><timeout></timeout><div>2</div>", 100);
+	addTest("Wait, for nothing", function(){ return DOT.div(1).wait(50, function(){}).div(2); }, "<div>1</div><div>2</div>", 100);
+	addTest("Wait, for a string", function(){ return DOT.div(1).wait(50, "3").div(2); }, "<div>1</div>3<div>2</div>", 100);
+	addTest("Wait, for a div", function(){ return DOT.div(1).wait(50, DOT.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 100);
+	addTest("Wait, inside a div", function(){ return DOT.div(1).div(DOT.wait(50, DOT.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 100);
+	addTest("Wait, for class", function(){ return DOT.div(1).wait(50, DOT.class(3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 100);
+	addTest("Wait, for class 2", function(){ return DOT.div(DOT.div(1).wait(50, DOT.class(3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 100);
+	addTest("Wait, for class, internal", function(){ return DOT.div(DOT.wait(50, DOT.class(3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 100);
+	addTest("Wait, for a function", function(){ return DOT.div(1).wait(50, function(){return DOT.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 100);
+	addTest("Wait, append to nothing", function(){ return DOT.wait(50, DOT.div(3)); }, "<div>3</div>", 100);
+	addTest("Wait, append to nothing, concat 2", function(){ return DOT.wait(50, DOT.div(3)).h(2); }, "<div>3</div>2", 100);
+	addTest("Wait, append between text nodes", function(){ return DOT.h(1).wait(50, DOT.div(3)).h(2); }, "1<div>3</div>2", 100);
+	addTest("Wait, out of order", function(){ return DOT.wait(20, DOT.div(1)).wait(50, DOT.div(2)).wait(30, DOT.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 100);
+	addTest("Wait, iterate", function(){ return DOT.div(1).wait(50, DOT.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 100);
+	addTest("Waitception, early", function(){ return DOT.wait(50, DOT.div(DOT.wait(120, DOT.div(1)))); }, "<div><timeout></timeout></div>", 100);
+	addTest("Waitception, late, times shouldn't stack", function(){ return DOT.wait(80, DOT.div(DOT.wait(80, DOT.div(1)))); }, "<div><div>1</div></div>", 100);
+	addTest("Waitception, late, times stack for functions 1/2", function(){ return DOT.wait(80, function(){return DOT.div(DOT.wait(80, DOT.div(1)))}); }, "<div><timeout></timeout></div>", 100);
+	addTest("Waitception, late, times stack for functions 2/2", function(){ return DOT.wait(10, function(){return DOT.div(DOT.wait(10, DOT.div(1)))}); }, "<div><div>1</div></div>", 100);
+	//addTest("Waitception, late, deep class", function(){ return DOT.div().wait(10, DOT.wait(10, DOT.class(1)))}, "<div class=\"1\"></div>", 100); //This one fails. Not sure if I should support it though.
+	addTest("Waitception, late", function(){ return DOT.wait(10, DOT.div(DOT.wait(20, DOT.div(1)))); }, "<div><div>1</div></div>", 100);
+	addTest("Waitception, late, short inner interval", function(){ return DOT.wait(20, DOT.div(DOT.wait(10, DOT.div(1)))); }, "<div><div>1</div></div>", 100);
+	addTest("Wait then $hide DOT", function(){return DOT.div().wait(50, DOT.$hide())}, "<div style=\"display: none;\"></div>", 100);
+	addTest("Wait then $hide function", function(){return DOT.div().wait(50, function(){return DOT.$hide()})}, "<div style=\"display: none;\"></div>", 100);
+	addTest("Wait then $hide DOT, internal", function(){return DOT.div(DOT.wait(50, DOT.$hide()))}, "<div style=\"display: none;\"></div>", 100);
+	/**/
 });
 </script>
 </html>
