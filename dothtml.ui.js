@@ -9,7 +9,7 @@ DOT.createWidget("tabs", function(tabsArray){
 		.div(DOT.each(tabsArray, function(c){return c.content.if(!first, DOT.style("display: none;")).script(function(){first = false;});})).class("dot-tab-content-container")
 	).class("dot-tabs")
 
-	if(window.location.hash)  = fragmentIdentifier;
+	//if(window.location.hash)  = fragmentIdentifier;
 });
 DOT.createWidget("tab", function(name, fragmentIdentifier, content){
 	if(!content) {content = fragmentIdentifier; fragmentIdentifier = undefined;}
