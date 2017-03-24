@@ -173,7 +173,7 @@ dot("body")
 	.div(
 	dot.tabs(
 		[
-			dot.tab("DOT html", 
+			dot.tab("DOT html", "main",
 				dot.div(
 					dot.div("Become the most productive programmer on the dynamic web.")
 					.br()
@@ -197,7 +197,7 @@ dot("body")
 						).class("showcase-site-list")
 				//.featurepreview("", "Lots of fun to use!")
 			), 
-			dot.tab("Getting Started", 
+			dot.tab("Getting Started", "start",
 				dot.h1("Getting Started")
 				.h2("Download")
 				.div(
@@ -320,7 +320,8 @@ return dot.ul(
         )
     ))
     .li("END")
-);
+) //Oh, and timed attributes can also be dropped.
+.wait(6000, dot.style("color: red;")); 
 },
 					dot.h("<code>&lt;x-dothtml-timeout&gt;</code> is a custom element. Most browsers will treat it as an empty <code>&lt;span&gt;</code>, as per the <a href=\"https://www.w3.org/TR/html5/infrastructure.html#extensibility-0\" target=\"_blank\">W3C spec</a>.")
 				)
@@ -333,13 +334,13 @@ return dot.el("div", "This could be any HTML or custom element!")
 					dot.h("This can be useful when defining custom elements and attributes, or when experimenting with elements and attributes supported in future versions of HTML that have not yet been implemented in DOThtml.")
 				)
 			), 
-			dot.tab("Plugins & Addons", 
+			dot.tab("Plugins & Addons", "plugins",
 				dot.h1("This documentation is not complete yet. Please check back later!")
 			), 
-			dot.tab("Browser Support", 
+			dot.tab("Browser Support", "support",
 				dot.h1("This documentation is not complete yet. Please check back later!")
 			), 
-			dot.tab("Donate", 
+			dot.tab("Donate", "donate",
 				dot.h1("This documentation is not complete yet. Please check back later!")
 			)
 		]

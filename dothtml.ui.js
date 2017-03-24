@@ -1,23 +1,40 @@
 //Tabs
-DOT.createWidget("tabs", function(tabsArray){
+dot.createWidget("tabs", function(tabsArray){
 	var first = true;
-	return DOT
+	var useFragment = false;
+	//Check if we should use the fragment.
+	//Requires that one of the items in tabsArray has the window's current fragmentIdentifier name.
+	if(window.location.hash){
+		for(var i = 0; i < tabsArray.length; i++){
+			if(window.location.hash === "#" + tabsArray[i].fragmentIdentifier){
+				useFragment = true;
+				break;
+			}
+		}
+	}
+	var widgetBodyDot = dot
 	.div(
-		DOT.div(DOT.each(tabsArray, function(c){return c.tab.if(first, DOT.class("selected")).script(function(){first = false;})})).class("dot-tab-button-container")
+		dot.div(dot.each(tabsArray, function(c){
+			return c.tab.if((first & !useFragment) || (useFragment && window.location.hash === "#" + c.fragmentIdentifier), dot.class("selected")).script(function(){first = false;})
+		})).class("dot-tab-button-container")
 		.script(function(){ first = true; })
 		//.br()
-		.div(DOT.each(tabsArray, function(c){return c.content.if(!first, DOT.style("display: none;")).script(function(){first = false;});})).class("dot-tab-content-container")
-	).class("dot-tabs")
+		.div(dot.each(tabsArray, function(c){return c.content.if(!((first & !useFragment) || (useFragment && window.location.hash ===  "#" + c.fragmentIdentifier)), dot.style("display: none;")).script(function(){first = false;});})).class("dot-tab-content-container")
+	).class("dot-tabs");
 
-	//if(window.location.hash)  = fragmentIdentifier;
+	if(window.location.hash){
+		
+	}
+	
+	return widgetBodyDot;
 });
-DOT.createWidget("tab", function(name, fragmentIdentifier, content){
+dot.createWidget("tab", function(name, fragmentIdentifier, content){
 	if(!content) {content = fragmentIdentifier; fragmentIdentifier = undefined;}
 	
-	var contentContainerDot = DOT.div(content).class("dot-tab-content");
+	var contentContainerDot = dot.div(content).class("dot-tab-content");
 	var contentContainerNode = contentContainerDot.getLast();
 	
-	var tabDot = DOT.div(name).onclick(function(e){
+	var tabDot = dot.div(name).onclick(function(e){
 		var div = e.target;
 		var parentNode = div.parentNode;
 		
@@ -46,18 +63,19 @@ DOT.createWidget("tab", function(name, fragmentIdentifier, content){
 	var tabNode = tabDot.getLast();
 	return {
 		tab: tabDot,
-		content: contentContainerDot
+		content: contentContainerDot,
+		fragmentIdentifier: fragmentIdentifier
 	};
 });
 
-/*DOT.createWidget("scrolledTo", function(){
+/*dot.createWidget("scrolledTo", function(){
 	if(this._document){
 		var le = this._document.lastChild;
 		jo[name](handler);
 		return this;
 	}
 	else{
-		var pD = (this._pendingCalls.length > 0 ? this : new _DOT(this._document));
+		var pD = (this._pendingCalls.length > 0 ? this : new _dot(this._document));
 		if(!pD._pendingCalls) pD._pendingCalls = [];
 		pD._pendingCalls.push({type: "jQuery event", name: name, params: arguments});
 		return pD;
