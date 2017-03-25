@@ -21,10 +21,6 @@ dot.createWidget("tabs", function(tabsArray){
 		//.br()
 		.div(dot.each(tabsArray, function(c){return c.content.if(!((first & !useFragment) || (useFragment && window.location.hash ===  "#" + c.fragmentIdentifier)), dot.style("display: none;")).script(function(){first = false;});})).class("dot-tab-content-container")
 	).class("dot-tabs");
-
-	if(window.location.hash){
-		
-	}
 	
 	return widgetBodyDot;
 });

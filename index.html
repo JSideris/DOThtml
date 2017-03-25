@@ -283,7 +283,8 @@ return dot.button("Rock Paper Scissors.").id("multi-line-event-example")
 })
 .br()
 .br()
-.span("Click the button.").id("rps-out").style("border: 4px solid black; padding: 2px;");
+.span("Click the button.").id("rps-out")
+.style("border: 4px solid black; padding: 2px;");
 },
 					dot.h("Note that the <code>callback</code> parameter can be replaced with any DOThtml element building or attribute building object or function. New attributes will be added to the preceeding element.")
 				)
@@ -332,6 +333,52 @@ return dot.el("div", "This could be any HTML or custom element!")
 .attr("style", "color: white; background-color:black; padding: 10px;");
 },
 					dot.h("This can be useful when defining custom elements and attributes, or when experimenting with elements and attributes supported in future versions of HTML that have not yet been implemented in DOThtml.")
+				)
+				.featuretutorial("Custom Widgets",
+					dot.h("You can register a custom widget with <code>dot.createWidget(name, callback)</code> where <code>name</code> is the name of the widget that will be accissible from any DOThtml page building objects, and <code>callback</code> is your own custom page building function. The return value of your page building function should return a valid page building object derrived by chaining <code>dot</code>, otherwise your widget won't be chainable in the way that other dot components are. Here are a few examples."),
+function(){
+return dot.script(function(){
+    //Using dot.script() allows us to run anonymous code in-line.
+    //Normally widgets can be declared at the top of your code,
+    //but the widget this website uses to print examples
+    //will only display dot code. See the source code for more info.
+    //There is virtually no difference between dot.script() and dot.h().
+
+    //Here we define three widgets.
+
+    //1. Widget that applies a custom style to the previous element.
+    dot.createWidget("applyStyles", function(){
+        //DOTcss is a pretty cool library too. No dependency on DOThtml.
+        //Check it out.
+        return dot.style(
+            dotcss.color(
+                Math.random() * 256, 
+                Math.random() * 256, 
+                Math.random() * 256));
+    });
+
+    //2. Widget that prints out each element in an array inside a custom
+    //container. This is an improvement over DOThtml's native
+    //array-joining functionality.
+    //This widget is available in the DOThtml-ui library.
+    dot.createWidget("wrappedList", function(array, wrapperBuilder){
+        return dot.each(array, function(element){
+            return wrapperBuilder(element);
+        });
+    });
+
+    //3. This widget uses the previous two widgets to
+    //generate a stylized ordered list from an array.
+    dot.createWidget("stylizedOrderedList", function(array, wrapperBuilder){
+        return dot.ol(
+            dot.wrappedList(array, function(element){
+                return dot.li(element).applyStyles();
+            })
+        );
+    })
+})//Now that they're registered we can use them immediately.
+.stylizedOrderedList(["Aye", "Bee", "Sea", "Di"]);
+}
 				)
 			), 
 			dot.tab("Plugins & Addons", "plugins",
