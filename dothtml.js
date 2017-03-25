@@ -1,9 +1,10 @@
-//Version 1.1.0
+//Version 1.2.0
 
 function _DOT(document){
 	this._document = document;
 	this._if = null;
 	this._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
+	this._anonAttrFuncs = []; //Only to be used by top-level dot object.
 }
 
 _DOT.prototype._warnings = true;
@@ -31,6 +32,11 @@ _DOT.prototype._getLastChildOrNull = function(){
 
 _DOT.prototype.getLast = function(){
 	return this._getLastChildOrNull();
+}
+
+_DOT.prototype.toString = function(){
+	if(this._document) return this._document.innerHTML;
+	else return "";
 }
 
 //before is passed in so that attributes or jquery wrappers can be associated with before's sibling, instead of inheritingParent, the default.
@@ -161,6 +167,10 @@ _DOT.prototype.t = function(content){
 };
 
 _DOT.prototype.attr = function(attr, value){
+	if(value && value.constructor && value.call && value.apply){
+		dot._anonAttrFuncs.push(value);
+		value = "dot._anonAttrFuncs[" + (dot._anonAttrFuncs.length - 1) + "](event);"
+	}
 	if(this._document) {
 		var cn = this._document.childNodes;
 		if(cn.length > 0 && cn[cn.length - 1].setAttribute) cn[cn.length - 1].setAttribute(attr, value || attr); //||attr is for self-explaining attributes
@@ -208,10 +218,10 @@ _DOT.prototype.iterate = function(iterations, callback, params){
 	return target;
 };
 
-_DOT.prototype.each = function(objects, callback){
+_DOT.prototype.each = function(array, callback){
 	var target = this;
-	for(var i = 0; i < objects.length; i++){
-		target = target._appendOrCreateDocument(callback(objects[i]));
+	for(var i = 0; i < array.length; i++){
+		target = target._appendOrCreateDocument(callback(array[i]));
 	}
 	return target;
 };
@@ -247,7 +257,7 @@ _DOT.prototype.script = function(callback){
 };
 
 _DOT.prototype.wait = function(timeout, callback){
-	var timeoutDot = this.el("timeout");
+	var timeoutDot = this.el("x-dothtml-timeout");
 	var timeoutNode = timeoutDot._document.lastChild;
 	var startTimer = function(){
 		setTimeout(function(){
@@ -259,6 +269,19 @@ _DOT.prototype.wait = function(timeout, callback){
 	startTimer();
 	return timeoutDot;
 };
+
+_DOT.prototype.empty = function(){
+	if(this._document){
+		/*while(this._document.length > 0){
+			this._document.removeChild(this._document[0]);
+		}*/
+		while (this._document.firstChild) {
+			this._document.removeChild(this._document.firstChild);
+		}
+
+	}
+	return this;
+}
 
 _DOT.prototype.createWidget = function(name, callback){
 	_DOT.prototype[name] = function(){
@@ -293,7 +316,7 @@ _DOT.prototype.createJQueryWrapper = function(name){
 				arg = function(){return dot;}
 			}
 			if(arg && arg.constructor && arg.call && arg.apply){
-				timeoutDot = this.el("timeout");
+				timeoutDot = this.el("x-dothtml-timeout");
 				timeoutNode = timeoutDot._document.lastChild;
 				(function(arg, args, timeoutNode, timeoutDot){
 					args[i] = function(){
@@ -528,6 +551,7 @@ _DOT.prototype.createJQueryEventHandler = function(name){
 		"manifest",
 		"marginheight",
 		"marginwidth",
+		"max",
 		"maxlength",
 		"media",
 		"metadata",
@@ -743,14 +767,15 @@ _DOT.prototype.check$ = function(){
 	if(!jQuery) throw "Can't use jQuery wrappers without jQuery."
 };
 
+/*
+Not used anymore as of 1.2.
 _DOT.prototype.$append = function(target){
 	this.check$();
 	if(!target) {if (this._warnings) console.warn("Can't render to " + target); return this;}
 	var jT = jQuery(target);
 	if(jT.length == 0 && this._warnings) console.warn("No targets found for \"" + target + "\".");
-	//jT.append(this._document.html());
 	if(this._document) jT.append(this._document.childNodes);
-	this._document = null;//this._getNewDocument();
+	this._document = null;
 	return this;
 };
 
@@ -758,48 +783,25 @@ _DOT.prototype.$write = function(target){
 	this.check$();
 	jQuery(target).empty();
 	this.$append(target);
-};
+};*/
 
-_DOT.prototype.$blur = function(handler){
-	this.check$();
-	var ce = jQuery(this._getLastChildOrNull());
-	jQuery(this._getLastChildOrNull()).blur(function(){
-		handler(ce)
-	}); 
-	return this;
-};
+//var dot;
+//var DOT = dot = new _DOT(null); //DOT is kept for legacy reasons. dot is now prefered.
 
-/*_DOT.prototype.$change = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).change(function(e){handler(e)}); return this;};
-_DOT.prototype.$click = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).click(function(e){handler(e)}); return this;};
-_DOT.prototype.$dblclick = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).dblclick(function(e){handler(e)}); return this;};
-_DOT.prototype.$focus = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).focus(function(e){handler(e)}); return this;};
-_DOT.prototype.$focusin = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).focusin(function(e){handler(e)}); return this;};
-_DOT.prototype.$focusout = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).focusout(function(e){handler(e)}); return this;};
-_DOT.prototype.$hover = function(inHandler, outHandler){this.check$(); jQuery(this._getLastChildOrNull()).hover(inHandler, outHandler); return this;};
-_DOT.prototype.$keydown = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).keydown(function(e){handler(e)}); return this;};
-_DOT.prototype.$keypress = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).keypress(function(e){handler(e)}); return this;};
-_DOT.prototype.$keyup = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).keyup(function(e){handler(e)}); return this;};
-_DOT.prototype.$mousedown = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mousedown(function(e){handler(e)}); return this;};
-_DOT.prototype.$mouseenter = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mouseenter(function(e){handler(e)}); return this;};
-_DOT.prototype.$mouseleave = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mouseleave(function(e){handler(e)}); return this;};
-_DOT.prototype.$mousemove = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mousemove(function(e){handler(e)}); return this;};
-_DOT.prototype.$mouseout = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mouseout(function(e){handler(e)}); return this;};
-_DOT.prototype.$mouseover = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mouseover(function(e){handler(e)}); return this;};
-_DOT.prototype.$mouseup = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).mouseup(function(e){handler(e)}); return this;};
-_DOT.prototype.$on = function(event, childSelector, data, handler, map){this.check$(); jQuery(this._getLastChildOrNull()).on(event, childSelector, data, function(e){handler(e)}, map); return this;};
-_DOT.prototype.$one = function(event, data, handler){jQuery(this._getLastChildOrNull()).one(event, data, function(e){handler(e)}); return this;};
-_DOT.prototype.$resize = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).resize(function(e){handler(e)}); return this;};
-_DOT.prototype.$scroll = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).scroll(function(e){handler(e)}); return this;};
-_DOT.prototype.$select = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).select(function(e){handler(e)}); return this;};
-_DOT.prototype.$submit = function(handler){this.check$(); jQuery(this._getLastChildOrNull()).submit(function(e){handler(e)}); return this;};
+var dot;
+var DOT = dot = function(targetSelector){ //DOT is kept for legacy reasons. dot is now prefered.
+	var targets = document.querySelectorAll(targetSelector);
+	var newDot = new _DOT();
+	if(targets.length > 0){
+		newDot._document = targets[0];
+	}
+	
+	return newDot;
+} 
 
-_DOT.prototype.$animate = function(p1, p2, p3, p4){this.check$(); jQuery(this._getLastChildOrNull()).animate(p1, p2, p3, p4); return this;};
-_DOT.prototype.$css = function(p1, p2){this.check$(); jQuery(this._getLastChildOrNull()).css(p1, p2); return this;};
-_DOT.prototype.$empty = function(){this.check$(); jQuery(this._getLastChildOrNull()).empty(); return this;};
-_DOT.prototype.$fadeIn = function(p1, p2){this.check$(); jQuery(this._getLastChildOrNull()).fadeIn(p1, p2); return this;};
-_DOT.prototype.$fadeOut = function(p1, p2){this.check$(); jQuery(this._getLastChildOrNull()).fadeIn(p1, p2); return this;};
-_DOT.prototype.$fadeTo = function(p1, p2, p3, p4){this.check$(); jQuery(this._getLastChildOrNull()).fadeTo(p1, p2, p3, p4); return this;};
-_DOT.prototype.$hide = function(p1, p2, p3){this.check$(); jQuery(this._getLastChildOrNull()).hide(p1, p2, p3); return this;};
-_DOT.prototype.$show = function(p1, p2, p3){this.check$(); jQuery(this._getLastChildOrNull()).show(p1, p2, p3); return this;};*/
-
-var DOT = new _DOT(null);
+//Fill in all the other fields.
+dot.__proto__ = Object.create(_DOT.prototype);
+dot._document = null;
+dot._if = null;
+dot._pendingCalls = [];
+dot._anonAttrFuncs = [];
