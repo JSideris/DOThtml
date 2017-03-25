@@ -177,7 +177,7 @@ dot("body")
 				dot.div(
 					dot.div("Become the most productive programmer on the dynamic web.")
 					.br()
-					.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases/download/v1.2.0/dothtml.js").target("_blank").class("download-dot-button")//.download()
+					.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases/download/v1.2.0/dothtml.js").target("_blank").class("btn btn-primary download-dot-button")//.download()
 				).id("download-dot-banner")
 				.hr()
 					.h1("DOThtml - The best open-source client-side page buider.")
@@ -202,11 +202,11 @@ dot("body")
 				.h2("Download")
 				.div(
 					dot
-					.div("Download version 1.2.0").style(dotcss.position("absolute").left(0).widthP(50)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml/releases/download/v1.2.0/dothtml.js"); })
-					.div("Or check it out on GitHub").style(dotcss.position("absolute").right(0).widthP(50))
+					.div("Download version 1.2.0").class("btn btn-primary").style(dotcss.position("absolute").left(0).widthP(40)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml/releases/download/v1.2.0/dothtml.js"); })
+					.div("Or check it out on GitHub").class("btn btn-info").style(dotcss.position("absolute").right(0).widthP(40)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml")})
 				).style(dotcss.position("relative").width("100%").height(32))
 				.h2("Learn")
-				.h("TODO: Insert tutorial video here.")
+				.h("Check back later for a video tutorial!.")
 				.h2("Basic Usage")
 				
 				.featuretutorial(
@@ -219,7 +219,8 @@ return dot("#example0output")
 .t("<b>world!</b>");
 },
 					dot.h("<code>dot(target)</code> can be used as a function if you intend to render the resultant HTML to a specific target. However, the name <code>dot</code> is more than just a function. It is also an instance of DOThtml's page building object, and has access to all of the page building functions. This is useful for building nested elements where you don't need to explicitly state a render target (as we'll do in the next example).").br().br()
-					.h("This tutorial is designed such that the page building object for each tutorial segment's code is a nested component of a tutorial widget, so the other tutorials will not use <code>dot</code> as a function as you normally would once at the top of your code.")
+					.h("This tutorial is designed such that the page building object for each tutorial segment's code is a nested component of a tutorial widget, so the other tutorials will not use <code>dot</code> as a function as you normally would once at the top of your code.").br().br()
+					.h("It's smart to put your DOThtml script under your body element so that the body is ready by the time the script executes. Also, DOThtml is designed to build UI. Most meta or header HTML tags that you wouldn't find inside a page's <code>&lt;body&gt;</code> are not supported.")
 				)
 				.featuretutorial(
 					"HTML Building",
@@ -394,17 +395,17 @@ return dot.div().style(dotcss.width(100).height(100).backgroundColor(0x000000))
     return dot.$animate({width: 200, height: 200})
 })
 }
-				)
+				).br().br().br().br().br()
 			), 
 			dot.tab("Plugins & Addons", "plugins",
 				dot.h1("This documentation is not complete yet. Please check back later!")
 			), 
-			dot.tab("Browser Support", "support",
+			/*dot.tab("Compatibility & Support", "support",
 				dot.h1("This documentation is not complete yet. Please check back later!")
 			), 
 			dot.tab("Donate", "donate",
 				dot.h1("This documentation is not complete yet. Please check back later!")
-			)
+			)*/
 		]
 	)
 ).class("container");
