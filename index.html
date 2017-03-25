@@ -3,7 +3,7 @@
 <html>
 
 <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="bottstrap.theme.min.css">
+<link rel="stylesheet" type="text/css" href="bootstrap-theme.min.css">
 <link rel="stylesheet" type="text/css" href="dothtml.ui.css">
 <link rel="stylesheet" type="text/css" href="./prettify.css">
 <link rel="stylesheet" type="text/css" href="style.css">
@@ -177,7 +177,7 @@ dot("body")
 				dot.div(
 					dot.div("Become the most productive programmer on the dynamic web.")
 					.br()
-					.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases").target("_blank").class("download-dot-button")//.download()
+					.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases/download/v1.2.0/dothtml.js").target("_blank").class("download-dot-button")//.download()
 				).id("download-dot-banner")
 				.hr()
 					.h1("DOThtml - The best open-source client-side page buider.")
@@ -202,8 +202,8 @@ dot("body")
 				.h2("Download")
 				.div(
 					dot
-					.div("Download version 1.1.0").style(dotcss.position("absolute").left(0).widthP(50))
-					.div("Or get it on GitHub").style(dotcss.position("absolute").right(0).widthP(50))
+					.div("Download version 1.2.0").style(dotcss.position("absolute").left(0).widthP(50)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml/releases/download/v1.2.0/dothtml.js"); })
+					.div("Or check it out on GitHub").style(dotcss.position("absolute").right(0).widthP(50))
 				).style(dotcss.position("relative").width("100%").height(32))
 				.h2("Learn")
 				.h("TODO: Insert tutorial video here.")
