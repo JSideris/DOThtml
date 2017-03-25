@@ -64,6 +64,12 @@ dot.createWidget("tab", function(name, fragmentIdentifier, content){
 	};
 });
 
+dot.createWidget("wrappedList", function(array, wrapperBuilder){
+	return dot.each(array, function(element){
+		return wrapperBuilder(element);
+	});
+});
+
 /*dot.createWidget("scrolledTo", function(){
 	if(this._document){
 		var le = this._document.lastChild;
