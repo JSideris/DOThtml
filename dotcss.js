@@ -272,7 +272,8 @@ function _makeDotCssFunction (prop, jsFriendlyProp, type){
 		var value = arguments[0];
 		switch(type){
 			case "url":
-				if(!("" + value).trim().startsWith("url")) value = "url(" + value + ")";
+				if(("" + value).trim().indexOf("url") != 0) 
+					value = "url(" + value + ")";
 				break;
 			case "color":
 				if(arguments.length == 3 && !isNaN(arguments[0]) && !isNaN(arguments[1]) && !isNaN(arguments[2]))
