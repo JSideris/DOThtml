@@ -87,8 +87,9 @@ dot.createWidget ("robotface", function(id, color){
 dot.createWidget("featurepreview", function(imageurl, title){
 	return dot.div(
 		dot.div().class("featurepreview-img")
-			.style(dotcss.whiteSpace("nowrap").backgroundImage(imageurl))
-		.div(title).class("featurepreview-title")).class("featurepreview")
+			.style(dotcss.backgroundImage(imageurl))
+		.div(title).class("featurepreview-title")
+	).class("featurepreview");
 });
 
 dot.createWidget("showcasesite", function(title, url, preview){
@@ -144,7 +145,7 @@ dot.createWidget("featuretutorial", function(title, description, innerDotFunctio
 });
 
 dot("body")
-.div("&copy;2016 - Joshua Sideris").style(dotcss.position("fixed").right(10).bottom(10).color(0x9638527).lineHeight(20))
+.div("&copy;2017 - Joshua Sideris").style(dotcss.position("fixed").right(10).bottom(10).color(0x9638527).lineHeight(20))
 .div(dot
 	.div(
 		dot.div("&lt;").id("logoopenningangularbracket").wait(1000, function(){
@@ -386,103 +387,62 @@ return dot.script(function(){
 					dot.h("DOThtml is not a JQuery addon and does not have a mandatory dependency on JQuery. However, if JQuery is available you will be able to use several JQuery event and transition wrappers.").br().br()
 					.h("Currently, the following JQuery functions are supported: <code>animate</code>, <code>css</code>, <code>empty</code>, <code>fadeIn</code>, <code>fadeOut</code>, <code>fadeTo</code>, <code>hide</code>, <code>show</code>.").br().br()
 					.h("In addition, DOThtml supports the following JQuery events: <code>blur</code>, <code>change</code>, <code>click</code>, <code>dblclick</code>, <code>focus</code>, <code>focusin</code>, <code>focusout</code>, <code>hover</code>, <code>keydown</code>, <code>keypress</code>, <code>keyup</code>, <code>mousedown</code>, <code>mouseenter</code>, <code>mouseleave</code>, <code>mousemove</code>, <code>mouseout</code>, <code>mouseover</code>, <code>mouseup</code>, <code>one</code>, <code>resize</code>, <code>scroll</code>, <code>select</code>, <code>submit</code>. ").br().br()
-					.h("JQuery wrappers behave like DOThtml attribuets. They get attached to the previous element. To use a wrapper, add a <code>$</code> character in front of the name, for instance: <code>dot.div().$animate(args)</code>. The usage and parameters of each wrapped function are exactly the same as specified in the JQuery documentation pages.").br().br()
+					.h("JQuery wrappers behave like DOThtml attribuets. They get attached to the previous element. To use a wrapper, add a <code>$</code> character in front of the name, for instance: <code>dot.div().$animate(args)</code>. The usage and parameters of each wrapped function are exactly the same as specified in the JQuery documentation pages, except that the return value of any callbacks will be interpreted as DOT syntax and rendered.").br().br()
 					.h("The goal for DOThtml is to ultimately not be dependent on any external libraries. So in the future all of these functions will ideally become native in DOThtml."),
 function(){
 return dot.div().style(dotcss.width(100).height(100).backgroundColor(0x000000))
 .wait(1000, function(){
     //Remember to use return in all DOT functions, or they won't work!
     return dot.$animate({width: 200, height: 200})
-})
+});
 }
 				).br().br().br().br().br()
 			), 
 			dot.tab("Plugins & Addons", "plugins",
 				dot.h1("This documentation is not complete yet. Please check back later!")
 			), 
-			/*dot.tab("Compatibility & Support", "support",
-				dot.h1("This documentation is not complete yet. Please check back later!")
+			dot.tab("Compatibility & Support", "support",
+				dot.h1("Browser Compatibility")
+				.h("Maximum forward-and-backward browser compatibility is a priority of DOThtml. Please refer to the following table for more information on browser compatibility testing. Browser testing is an ongoing chore but here are the results of the latest tests. Browsers with a checkmark have passed all test cases. Version numbers are in the following format: \"browser-version | latest-DOThtml-version-tested\"")
+				.div(
+					dot.each([
+						{name: "Chrome", versionData: [{b: "57", d: "1.2.1"}, {b: "56", d: "1.2.1"}]}, 
+						{name: "Edge", versionData: [{b: "38", d: "1.2.1"}]},
+						{name: "Internet Explorer", versionData: [{b: "11", d: "1.2.1"}]},
+						//{name: "Safari", versionData: [{b: "", d: "1.2.1"}]}, 
+						{name: "Firefox", versionData: [{b: "51", d: "1.2.1"}]}, 
+						{name: "Android Browser", versionData: [{b: "", d: "1.2.1"}]}, 
+						//{name: "Opera", versionData: [{b: "", d: "1.2.1"}]},
+						{name: "BlackBerry Browser", versionData: [{b: "OS 10.3", d: "1.2.1"}]},
+						//{name: "Sea Monkey", versionData: [{b: "", d: "1.2.1"}]},
+						//{name: "K-Meleon", versionData: [{b: "", d: "1.2.1"}]},
+						//{name: "OmniWeb", versionData: [{b: "", d: "1.2.1"}]},
+						//{name: "iCab", versionData: [{b: "", d: "1.2.1"}]},
+						//{name: "Konqueror", versionData: [{b: "", d: "1.2.1"}]},
+						//{name: "Epiphany", versionData: [{b: "", d: "1.2.1"}]},
+					], function(row){
+						return dot.div(
+							dot.div(row.name).style(dotcss.fontWeight("bold").display("inline-block").padding(8).borderRight("2px solid black").marginRight(4))
+							.each(row.versionData, function(versionDatum){
+								return dot.div(versionDatum.b + " | " + versionDatum.d).style(dotcss.fontStyle("italic").backgroundColor(0xAAFFAA).display("inline-block").padding(4).border("1px solid black"))
+							})
+						).style(dotcss.whiteSpace("nowrap"));
+					})
+				).style(dotcss.widthP(100)/*.height(1024)*/.overflowX("scroll").backgroundColor(200, 200, 200).padding(8))
+
+				.h("To test DOThtml on any JavaScript-enabled browser, simply visit the <a href=\"./unittests/tests.html\" target=\"_blank\">test case page</a>.")
+
+				.h1("What about SEO?")
+				.h("You might be wondering if using dynamic content will affect the way that search engines index your website. First, know that <a href=\"http://searchengineland.com/tested-googlebot-crawls-javascript-heres-learned-220157\" target=\"_blank\">testing has been done which validated the effectiveness of Googlebot on dynamically generated content</a>, revealing that Google actually waits for the entire page to render before reading the DOM.").br().br()
+				.h("You should also be aware that DOThtml is not the only dynamic page builder. The most popular library designed specifically for dynamic JavaScript-based page building (and the second most popular JavaScript library aside from JQuery itself) is JQuery-UI, which has been around for a decade and is used by almost 200 000 of the world's top 1 000 000 websites.").br().br()
+				.h("Having a dynamic website can actually increase your site's SEO score in a number of ways, for instance, by reducing your bounce rate, or by katering to accessibility and mobile-friendliness. Interactive, dynamic web applications are the future and are worth not overlooking.")
 			), 
 			dot.tab("Donate", "donate",
 				dot.h1("This documentation is not complete yet. Please check back later!")
-			)*/
+			)
 		]
 	)
 ).class("container");
-
-/*.div(dot.h3(dot.i("Version 1.1")).style("color: #999")
-	.h1("Features")
-	.h2("First: let DOThtml know where to render.")
-		.p(dot.h("Use ").code("dot.begin(\'body\')").h(" to render to the body (when the DOM is ready). Alternatively, you can use any other CSS selector to render markup elsewhere.").p("This (and all other DOThtml functions) return a chainable page builder."))
-	.h2("Chain functions together to generate HTML.")
-		.p("Each body element as well as attributes (392, combined) are wrapped as DOThtml functions that can be chained together.")
-		.p("For instance, instead of ")
-		.pre("&lt;div id=\"mydiv1\"&gt;Hello, World!&lt;/div&gt;\r\n&lt;div id=\"mydiv2\"&gt;Hello, Again!&lt;/div&gt;").class("prettyprint linenums")
-		.p("you can use ")
-		.pre(".div(\'Hello, World!\').id(\'mydiv1\')\r\n.div(\'Hello, Again!\').id(\'mydiv2\')").class("prettyprint linenums")
-	.h2("Introducing HTML control flow.")
-		.p("Ever desired an easy way to set up an HTML table with a loop, client side?")
-		.pre([	".table(function(){",
-				"	for(var i = 0; i < myArray.length; i++){",
-				"		dot.tr(function(){",
-				"			.td(myArray[i])",
-				"		});",
-				"})"].join("\r\n")).class("prettyprint linenums")
-		.p("How about conditional rendering?")
-		.pre([".br();",
-		"if(user.isLoggedIn){",
-		"	dot.p('Welcome, ' + user.name + '!')",
-		"}",
-		"else{",
-		"	dot.a('Log In').href('./login/')",
-		"}",
-		"dot.br()"].join("\r\n")).class("prettyprint linenums")
-	.h2("JQuery is a dependency, but it's also so much more.")
-		.p("Leverage JQuery functions like <code>$.css()</code>, <code>$.show()</code>, <code>$.animate()</code>, etc, as well as handlers like <code>$.click()</code>, <code>$.hover()</code>, <code>$.keypress()</code>, <code>$.resize()</code>, <code>$.scroll()</code>, etc, to extend HTML in powerful ways while reducing code messiness, redundancy and file-size. There are currently 24 supported JQuery events, and 8 supported display helpers.")
-		.p("To use the JQuery wrappers, just call them through the usual DOT chain while adding $ to the front. All the parameters are the same as they would be for their jquery counterparts. For instance:")
-		.pre(["dot.span('Click me!').$click(function(event){",
-		"	alert('You clicked it!');",
-		"})"].join("\r\n")).class("prettyprint linenums")
-	.h2("Want to render plain text or HTML?")
-		.p("You can pass HTML into any tag function.")
-		.pre("dot.p('Hello, &lt;b&gt;Bold World!&lt;/b&gt;')").class("prettyprint linenums")
-		.p("Alternatively, you can use the <code>.h()</code> function to render HTML without any particular parent tag. There is also a <code>.t()</code> function that escapes all special HTML characters (kind of like <code>$.Text()</code>).")
-	.h2("Render HTML after a timeout.")
-		.p("A handly little helper function that waits for a timeout in milliseconds before rendering HTML: ")
-		.pre(["dot.h('Hello,')",
-		".wait(1000, function(){",
-		"	dot.h('Future World')",
-		"})"].join("\r\n")).class("prettyprint linenums")
-	.h2("Widgets made easy.")
-		.p("DOThtml is extensible. You can build reusable widgets.")
-		.pre(["dot.robotface = function(id, color){",
-			"	dot.div(function(){",
-			"		DOT",
-			"		.div().style('position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-color: black')",
-			"		.div().style('position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-color: black')",
-			"		.div().style('position: absolute; width: 48px; height: 5px; left: 8px; top: 48px; background-color: black')",
-			"	}).id(id).style('position: relative; width: 64px; height: 64px; background-color: ' + color + '; display: inline-block');",
-			"	return DOT;",
-			"}",
-			"",
-			"dot.robotface('emoticon1', 'yellow')",
-			".robotface('emoticon2', 'blue')",
-			".robotface('emoticon3', 'green')",
-			".robotface('emoticon4', 'red');"].join("\r\n")).class("prettyprint linenums")
-		.br()
-		.robotface("emoticon1", "yellow")
-		.robotface("emoticon2", "blue")
-		.robotface("emoticon3", "green")
-		.robotface("emoticon4", "red")
-	.h1("Special Notes")
-	.h2("DOThtml is in beta.")
-		.p("There are tons of new features I have ligned up for this framework, including HTML validation, and less-verbose element nesting (removing the necessity of including a <code>function(){}</code> parameter), and SVG support. The downside is that the framework will be changing. Complete documentation will be released when he framework is out of beta.")
-	.h2("What about HTML attributes that have the same name as elements?")
-		.p("There are 5 of these: cite, form, label, span, summary. Currently, DOThtml assumes you want to add an attribute to the last element if a single string parameter is provided to the correspondingly-named functions. Otherwise, a new element is created.")
-	.h1("Download / Learn More")
-		.a("Check out DOThtml's page on github to get early access.").href("https://github.com/JSideris/DOThtml").target("_blank")
-).id("content");*/
-
 
 </script>
 

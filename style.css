@@ -9,9 +9,10 @@ p{
 }
 
 #header{
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 	text-align: center;
 	padding: 50px;
+	width: 100%;
 	
 	border-bottom: 10px solid red;
 	background-color: #58B;
@@ -20,7 +21,7 @@ p{
 
 #logo{
 	font-size: 128px;
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 	font-family: "Arial Black", Gadget, sans-serif;
 	color: black;
 }
@@ -88,7 +89,7 @@ p{
 }*/
 
 .featurepreview{
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 	font-size: 28px;
 }
 

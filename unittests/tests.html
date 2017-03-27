@@ -18,7 +18,7 @@
 			<thead>
 				<tr>
 					<th>Test Description</th>
-					<th>dot Markup</th>
+					<th>DOT Markup</th>
 					<th>Expected</th>
 					<th>Result</th>
 					<th>Pass/Fail</th>
@@ -27,7 +27,7 @@
 			<tbody id="tests">
 				<tr>
 					<td>Write to target</td>
-					<td>dot("#test1").h("PASS");</td>
+					<td>dot("#test1").empty().h("PASS");</td>
 					<td>N/A</td>
 					<td id="test1results">N/A</td>
 					<td id="test1" class="pending">PENDING</td>
@@ -51,7 +51,7 @@ $(function(){
 	//MANUAL TESTING FOR APPEND/WRITE
 	try {
 		totalTests++;
-		dot("#test1").h("PASS");
+		dot("#test1").empty().h("PASS");
 		if($("#test1").html() != "PASS") throw "Writing 'PASS' resulted in: " + $("#test1").html();
 		$("#test1").removeClass("pending");
 		$("#test1").addClass("pass");
@@ -249,42 +249,42 @@ $(function(){
 	addTest("Script, return function", function(){ return dot.script(function(){return function(){return 2};}).div(1); }, "2<div>1</div>");
 	//jQuery helpers
 	addTest("jQuery hide", function(){return dot.div().$hide()}, "<div style=\"display: none;\"></div>");
-	addTest("jQuery hide slow", function(){return dot.div().$hide(50)}, "<div style=\"display: none;\"></div>", 100);
-	addTest("jQuery hide slow, callcack returns dot", function(){return dot.div().$hide(50, function(){return dot.div()})}, "<div style=\"display: none;\"></div><div></div>", 100);
+	addTest("jQuery hide slow", function(){return dot.div().$hide(50)}, "<div style=\"display: none;\"></div>", 500);
+	addTest("jQuery hide slow, callcack returns dot", function(){return dot.div().$hide(50, function(){return dot.div()})}, "<div style=\"display: none;\"></div><div></div>", 500);
 	addTest("jQuery hide slow, callcack returns dot, internal", 
 		function(){
 			return dot.div(dot.$hide(50, function(){
 				return dot.div();
 			}));
-		}, "<div style=\"display: none;\"><div></div></div>", 100);
-	addTest("jQuery hide slow, callcack is dot", function(){return dot.div().$hide(50, dot.div())}, "<div style=\"display: none;\"></div><div></div>", 100);
-	addTest("jQuery hide slow, callcack is dot, internal", function(){return dot.div(dot.$hide(50, dot.div()));}, "<div style=\"display: none;\"><div></div></div>", 100);
-	addTest("jQuery hide slow, callcack is dot, internal, after div", function(){return dot.div(dot.div().$hide(50, dot.div()));}, "<div><div style=\"display: none;\"></div><div></div></div>", 100);
+		}, "<div style=\"display: none;\"><div></div></div>", 500);
+	addTest("jQuery hide slow, callcack is dot", function(){return dot.div().$hide(50, dot.div())}, "<div style=\"display: none;\"></div><div></div>", 500);
+	addTest("jQuery hide slow, callcack is dot, internal", function(){return dot.div(dot.$hide(50, dot.div()));}, "<div style=\"display: none;\"><div></div></div>", 500);
+	addTest("jQuery hide slow, callcack is dot, internal, after div", function(){return dot.div(dot.div().$hide(50, dot.div()));}, "<div><div style=\"display: none;\"></div><div></div></div>", 500);
 	//Wait
-	addTest("Wait, timing early", function(){ return dot.div(1).wait(120, dot.div(3)).div(2); }, "<div>1</div><x-dothtml-timeout></x-dothtml-timeout><div>2</div>", 100);
-	addTest("Wait, for nothing", function(){ return dot.div(1).wait(50, function(){}).div(2); }, "<div>1</div><div>2</div>", 100);
-	addTest("Wait, for a string", function(){ return dot.div(1).wait(50, "3").div(2); }, "<div>1</div>3<div>2</div>", 100);
-	addTest("Wait, for a div", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 100);
-	addTest("Wait, inside a div", function(){ return dot.div(1).div(dot.wait(50, dot.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 100);
-	addTest("Wait, for class", function(){ return dot.div(1).wait(50, dot.class(3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 100);
-	addTest("Wait, for class 2", function(){ return dot.div(dot.div(1).wait(50, dot.class(3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 100);
-	addTest("Wait, for class, internal", function(){ return dot.div(dot.wait(50, dot.class(3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 100);
-	addTest("Wait, for a function", function(){ return dot.div(1).wait(50, function(){return dot.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 100);
-	addTest("Wait, append to nothing", function(){ return dot.wait(50, dot.div(3)); }, "<div>3</div>", 100);
-	addTest("Wait, append to nothing, concat 2", function(){ return dot.wait(50, dot.div(3)).h(2); }, "<div>3</div>2", 100);
-	addTest("Wait, append between text nodes", function(){ return dot.h(1).wait(50, dot.div(3)).h(2); }, "1<div>3</div>2", 100);
-	addTest("Wait, out of order", function(){ return dot.wait(20, dot.div(1)).wait(50, dot.div(2)).wait(30, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 100);
-	addTest("Wait, iterate", function(){ return dot.div(1).wait(50, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 100);
-	addTest("Waitception, early", function(){ return dot.wait(50, dot.div(dot.wait(120, dot.div(1)))); }, "<div><x-dothtml-timeout></x-dothtml-timeout></div>", 100);
-	addTest("Waitception, late, times shouldn't stack", function(){ return dot.wait(80, dot.div(dot.wait(80, dot.div(1)))); }, "<div><div>1</div></div>", 100);
-	addTest("Waitception, late, times stack for functions 1/2", function(){ return dot.wait(80, function(){return dot.div(dot.wait(80, dot.div(1)))}); }, "<div><x-dothtml-timeout></x-dothtml-timeout></div>", 100);
-	addTest("Waitception, late, times stack for functions 2/2", function(){ return dot.wait(10, function(){return dot.div(dot.wait(10, dot.div(1)))}); }, "<div><div>1</div></div>", 100);
-	//addTest("Waitception, late, deep class", function(){ return dot.div().wait(10, dot.wait(10, dot.class(1)))}, "<div class=\"1\"></div>", 100); //This one fails. Not sure if I should support it though.
-	addTest("Waitception, late", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 100);
-	addTest("Waitception, late, short inner interval", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 100);
-	addTest("Wait then $hide dot", function(){return dot.div().wait(50, dot.$hide())}, "<div style=\"display: none;\"></div>", 100);
-	addTest("Wait then $hide function", function(){return dot.div().wait(50, function(){return dot.$hide()})}, "<div style=\"display: none;\"></div>", 100);
-	addTest("Wait then $hide dot, internal", function(){return dot.div(dot.wait(50, dot.$hide()))}, "<div style=\"display: none;\"></div>", 100);
+	addTest("Wait, timing early", function(){ return dot.div(1).wait(620, dot.div(3)).div(2); }, "<div>1</div><dothtml-timeout></dothtml-timeout><div>2</div>", 500);
+	addTest("Wait, for nothing", function(){ return dot.div(1).wait(50, function(){}).div(2); }, "<div>1</div><div>2</div>", 500);
+	addTest("Wait, for a string", function(){ return dot.div(1).wait(50, "3").div(2); }, "<div>1</div>3<div>2</div>", 500);
+	addTest("Wait, for a div", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 500);
+	addTest("Wait, inside a div", function(){ return dot.div(1).div(dot.wait(50, dot.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 500);
+	addTest("Wait, for class", function(){ return dot.div(1).wait(50, dot.class(3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 500);
+	addTest("Wait, for class 2", function(){ return dot.div(dot.div(1).wait(50, dot.class(3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 500);
+	addTest("Wait, for class, internal", function(){ return dot.div(dot.wait(50, dot.class(3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 500);
+	addTest("Wait, for a function", function(){ return dot.div(1).wait(50, function(){return dot.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 500);
+	addTest("Wait, append to nothing", function(){ return dot.wait(50, dot.div(3)); }, "<div>3</div>", 500);
+	addTest("Wait, append to nothing, concat 2", function(){ return dot.wait(50, dot.div(3)).h(2); }, "<div>3</div>2", 500);
+	addTest("Wait, append between text nodes", function(){ return dot.h(1).wait(50, dot.div(3)).h(2); }, "1<div>3</div>2", 500);
+	addTest("Wait, out of order", function(){ return dot.wait(20, dot.div(1)).wait(50, dot.div(2)).wait(30, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 500);
+	addTest("Wait, iterate", function(){ return dot.div(1).wait(50, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 500);
+	addTest("Waitception, early", function(){ return dot.wait(50, dot.div(dot.wait(620, dot.div(1)))); }, "<div><dothtml-timeout></dothtml-timeout></div>", 500);
+	addTest("Waitception, late, times shouldn't stack", function(){ return dot.wait(80, dot.div(dot.wait(80, dot.div(1)))); }, "<div><div>1</div></div>", 500);
+	addTest("Waitception, late, times stack for functions 1/2", function(){ return dot.wait(300, function(){return dot.div(dot.wait(300, dot.div(1)))}); }, "<div><dothtml-timeout></dothtml-timeout></div>", 500);
+	addTest("Waitception, late, times stack for functions 2/2", function(){ return dot.wait(10, function(){return dot.div(dot.wait(10, dot.div(1)))}); }, "<div><div>1</div></div>", 500);
+	//addTest("Waitception, late, deep class", function(){ return dot.div().wait(10, dot.wait(10, dot.class(1)))}, "<div class=\"1\"></div>", 500); //This one fails. Not sure if I should support it though.
+	addTest("Waitception, late", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 500);
+	addTest("Waitception, late, short inner interval", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 500);
+	addTest("Wait then $hide dot", function(){return dot.div().wait(50, dot.$hide())}, "<div style=\"display: none;\"></div>", 500);
+	addTest("Wait then $hide function", function(){return dot.div().wait(50, function(){return dot.$hide()})}, "<div style=\"display: none;\"></div>", 500);
+	addTest("Wait then $hide dot, internal", function(){return dot.div(dot.wait(50, dot.$hide()))}, "<div style=\"display: none;\"></div>", 500);
 	/**/
 });
 </script>

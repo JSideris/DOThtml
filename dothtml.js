@@ -1,4 +1,6 @@
-//Version 1.2.0
+//Version 1.2.1.2
+//Fixed spelling of warnings function.
+//Renamed timeout
 
 function _DOT(document){
 	this._document = document;
@@ -8,7 +10,7 @@ function _DOT(document){
 }
 
 _DOT.prototype._warnings = true;
-_DOT.prototype.supressWarnings = function(){
+_DOT.prototype.suppressWarnings = function(){
 	this.__proto__._warnings = false;
 };
 
@@ -257,12 +259,13 @@ _DOT.prototype.script = function(callback){
 };
 
 _DOT.prototype.wait = function(timeout, callback){
-	var timeoutDot = this.el("x-dothtml-timeout");
+	var timeoutDot = this.el("dothtml-timeout");
 	var timeoutNode = timeoutDot._document.lastChild;
 	var startTimer = function(){
 		setTimeout(function(){
 			timeoutDot._appendOrCreateDocument(callback, null, timeoutNode);
-			timeoutNode.remove();
+			timeoutNode.parentElement.removeChild(timeoutNode);
+			////timeoutNode.remove(); //Doesn't work in IE.
 		}, timeout);
 	}
 	
@@ -272,9 +275,6 @@ _DOT.prototype.wait = function(timeout, callback){
 
 _DOT.prototype.empty = function(){
 	if(this._document){
-		/*while(this._document.length > 0){
-			this._document.removeChild(this._document[0]);
-		}*/
 		while (this._document.firstChild) {
 			this._document.removeChild(this._document.firstChild);
 		}
@@ -316,12 +316,13 @@ _DOT.prototype.createJQueryWrapper = function(name){
 				arg = function(){return dot;}
 			}
 			if(arg && arg.constructor && arg.call && arg.apply){
-				timeoutDot = this.el("x-dothtml-timeout");
+				timeoutDot = this.el("dothtml-timeout");
 				timeoutNode = timeoutDot._document.lastChild;
 				(function(arg, args, timeoutNode, timeoutDot){
 					args[i] = function(){
 						var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
-						timeoutNode.remove();
+						timeoutNode.parentElement.removeChild(timeoutNode);
+						//timeoutNode.remove(); //Doesn't work in IE.
 					};
 				})(arg, arguments, timeoutNode, timeoutDot);
 				 break; //First function is assumed to be the callback.
@@ -332,6 +333,8 @@ _DOT.prototype.createJQueryWrapper = function(name){
 		if(this._document){
 			
 			jo[name].apply(jo, arguments);
+			//var jqargs = arguments;
+			//setTimeout(function(){jo[name].apply(jo, jqargs);}, 0);
 			return retDOT;
 		}
 		else{
