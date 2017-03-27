@@ -86,15 +86,7 @@ $(function(){
 		setTimeout(function(){
 			if(!testResult && !resultHtml) resultHtml = "Test did not return dot.";
 			else if(!resultHtml) resultHtml = testResult._document ? testResult._document.innerHTML : "";
-			dot("#tests").tr(
-				dot.td(description)
-				.td(dot.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}"))))
-				.td(dot.t(expected))
-				.td(dot.t(resultHtml))
-				.td(resultHtml == expected ? "PASS" : "FAIL").class(resultHtml == expected ? "pass" : "fail")
-			);
-			
-			totalTests++;
+
 			var testPassed = false;
 			if(expected instanceof Array){
 				for(var i = 0; i < expected.length; i++){
@@ -108,6 +100,15 @@ $(function(){
 				if(resultHtml == expected) testPassed = true;
 			}
 
+			dot("#tests").tr(
+				dot.td(description)
+				.td(dot.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}"))))
+				.td(dot.t(expected))
+				.td(dot.t(resultHtml))
+				.td(testPassed ? "PASS" : "FAIL").class(testPassed ? "pass" : "fail")
+			);
+			
+			totalTests++;
 			if(testPassed) testsPassed++;
 			else testsFailed++;
 			
