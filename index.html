@@ -174,7 +174,7 @@ dot("body")
 	.div(
 	dot.tabs(
 		[
-			dot.tab("DOT html", "main",
+			dot.tab("DOThtml", "main",
 				dot.div(
 					dot.div("Become the most productive programmer on the dynamic web.")
 					.br()
@@ -182,12 +182,12 @@ dot("body")
 				).id("download-dot-banner")
 				.hr()
 					.h1("DOThtml - The best open-source client-side page buider.")
-						.featurepreview("images/smallerpages.png", "Reduces page sizes and load times.")
-						.featurepreview("images/helloworld.png", "Prototype faster with succinct, minimalist markup.")
-						.featurepreview("images/lotsoffeatures.png", "Supports conditional, iterative, or delayed elements.")
-						.featurepreview("images/fasterservers.png", "100% client-side. Reduces server-side load and dependencies.")
-						.featurepreview("images/buildonjs.png", "Built in JavaScript. Works on virtually all browsers.")
-						.featurepreview("images/extensible.png", "Built for extensibility.")
+						.featurepreview("images/Reduce_Badge_Draft6.png", "Reduces page sizes and load times.")
+						.featurepreview("images/Markup_Badge_Draft4.png", "Prototype faster with succinct, minimalist markup.")
+						.featurepreview("images/Elements_Badge_Draft2.png", "Supports conditional, iterative, or delayed elements.")
+						.featurepreview("images/JS_Badge_Draft7.png", "Built in JavaScript. Works on virtually all browsers.")
+						.featurepreview("images/Client_Server_Badge_Draft3.png", "100% client-side. Reduces server-side load and dependencies.")
+						.featurepreview("images/Extensibility_Badge_Draft4.png", "Built for extensibility.")
 				.hr()
 					.h1("Check out a few sites built with DOThtml.")
 						.div(
@@ -207,20 +207,20 @@ dot("body")
 					.div("Or check it out on GitHub").class("btn btn-info").style(dotcss.position("absolute").right(0).widthP(40)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml")})
 				).style(dotcss.position("relative").width("100%").height(32))
 				.h2("Learn")
-				.h("Check back later for a video tutorial!.")
+				.h("Check back later for a video tutorial!")
 				.h2("Basic Usage")
 				
 				.featuretutorial(
 					"Building & Rendering Markup", 
-					dot.h("Use the <code>dot(target)</code> to render DOT syntax to HTML. <code>target</code> is the CSS selector for the target element(s) to which the rendered markup will be appended. Support for querying multiple targets will be added in a future version of DOThtml. <code>dot(target)</code> returns a chainable <i>page building object</i> containing many <i>page building functions</i> that wrap each HTML tag, attribute, and more!").br().br()
-					.h("There are also special chainable building functions for printing out pure HTML markup (<code>h(markup)</code>), or HTML-escaped text nodes (<code>t(text)</code>). We'll start off with an obligatory hello world example."), 
+					dot.h("Use the <code>dot(target)</code> to render DOT syntax to HTML. <code>target</code> is the CSS selector for the target element(s) to which the rendered markup will be appended. Support for querying multiple targets will be added in a future version of DOThtml. <code>dot(target)</code> returns a chainable <i>page-building object</i>, which contains many <i>page-building functions</i> that wrap each HTML tag, attribute, and more!").br().br()
+					.h("There are also special chainable building functions for printing out pure HTML markup (<code>h(markup)</code>) or HTML-escaped text nodes (<code>t(text)</code>). We'll start off with an obligatory <i>hello world</i> example."), 
 function(){
 return dot("#example0output")
 .h("<b>Hello,</b>")
 .t("<b>world!</b>");
 },
-					dot.h("<code>dot(target)</code> can be used as a function if you intend to render the resultant HTML to a specific target. However, the name <code>dot</code> is more than just a function. It is also an instance of DOThtml's page building object, and has access to all of the page building functions. This is useful for building nested elements where you don't need to explicitly state a render target (as we'll do in the next example).").br().br()
-					.h("This tutorial is designed such that the page building object for each tutorial segment's code is a nested component of a tutorial widget, so the other tutorials will not use <code>dot</code> as a function as you normally would once at the top of your code.").br().br()
+					dot.h("<code>dot(target)</code> can be used as a function if you intend to render the resultant HTML to a specific target. However, the name <code>dot</code> is more than just a function; it is an instance of DOThtml's page-building object and has access to all of the page-building functions. This is useful for building nested elements in which you don't need to explicitly state a render target (as we'll do in the next example).").br().br()
+					.h("This tutorial is designed in a way that the page-building object for each tutorial segment's code is a nested component of a tutorial widget. So, the other tutorials will not use <code>dot</code> as a function as you normally would once at the top of your code.").br().br()
 					.h("It's smart to put your DOThtml script under your body element so that the body is ready by the time the script executes. Also, DOThtml is designed to build UI. Most meta or header HTML tags that you wouldn't find inside a page's <code>&lt;body&gt;</code> are not supported.")
 				)
 				.featuretutorial(
