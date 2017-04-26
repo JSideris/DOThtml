@@ -398,9 +398,9 @@ return dot.div().style(dotcss.width(100).height(100).backgroundColor(0x000000))
 }
 				).br().br().br().br().br()
 			), 
-			dot.tab("Plugins & Addons", "plugins",
+			/*dot.tab("Plugins & Addons", "plugins",
 				dot.h1("This documentation is not complete yet. Please check back later!")
-			), 
+			),*/ 
 			dot.tab("Compatibility & Support", "support",
 				dot.h1("Browser Compatibility")
 				.h("Maximum forward-and-backward browser compatibility is a priority of DOThtml. Please refer to the following table for more information on browser compatibility testing. Browser testing is an ongoing chore but here are the results of the latest tests. Browsers with a checkmark have passed all test cases. Version numbers are in the following format: \"browser-version | latest-DOThtml-version-tested\"")
@@ -436,10 +436,10 @@ return dot.div().style(dotcss.width(100).height(100).backgroundColor(0x000000))
 				.h("You might be wondering if using dynamic content will affect the way that search engines index your website. First, know that <a href=\"http://searchengineland.com/tested-googlebot-crawls-javascript-heres-learned-220157\" target=\"_blank\">testing has been done which validated the effectiveness of Googlebot on dynamically generated content</a>, revealing that Google actually waits for the entire page to render before reading the DOM.").br().br()
 				.h("You should also be aware that DOThtml is not the only dynamic page builder. The most popular library designed specifically for dynamic JavaScript-based page building (and the second most popular JavaScript library aside from JQuery itself) is JQuery-UI, which has been around for a decade and is used by almost 200 000 of the world's top 1 000 000 websites.").br().br()
 				.h("Having a dynamic website can actually increase your site's SEO score in a number of ways, for instance, by reducing your bounce rate, or by katering to accessibility and mobile-friendliness. Interactive, dynamic web applications are the future and are worth not overlooking.")
-			), 
+			)/*, 
 			dot.tab("Donate", "donate",
 				dot.h1("This documentation is not complete yet. Please check back later!")
-			)
+			)*/
 		]
 	)
 ).class("container");
