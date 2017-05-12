@@ -1,11 +1,13 @@
-//Version 1.3.0
-
 function _DOT(document){
 	this._document = document;
 	this._if = null;
 	this._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
 	this._anonAttrFuncs = []; //Only to be used by top-level dot object.
+
+	this.lastNode = document ? document.lastChild : null;
 }
+
+_DOT.prototype.version = "1.3.1";
 
 _DOT.prototype._warnings = true;
 _DOT.prototype.suppressWarnings = function(){
@@ -30,6 +32,7 @@ _DOT.prototype._getLastChildOrNull = function(){
 	return null;
 };
 
+//I'm not sure if this is supported anymore.
 _DOT.prototype.getLast = function(){
 	return this._getLastChildOrNull();
 }
@@ -133,6 +136,7 @@ _DOT.prototype._appendOrCreateDocument = function(content, parentEl, beforeNode)
 			else parentEl.appendChild(eContent);
 		}
 	}
+	
 	return nd;
 	//return this;
 };
@@ -142,7 +146,6 @@ _DOT.prototype.el = function(tag, content){
 	var nDoc = this._document || this._getNewDocument();
 	nDoc.appendChild(ne);
 	this._appendOrCreateDocument(content, ne);
-	
 	return this._document === nDoc ? this : new _DOT(nDoc);
 };
 
@@ -283,9 +286,9 @@ _DOT.prototype.empty = function(){
 	return this;
 }
 
-_DOT.prototype.lastNode = function(){
+/*_DOT.prototype.lastNode = function(){
 	return this._document.lastChild;
-}
+}*/
 
 _DOT.prototype.createWidget = function(name, callback){
 	_DOT.prototype[name] = function(){
