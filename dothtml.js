@@ -1,6 +1,4 @@
-//Version 1.2.1.3
-//Fixed spelling of warnings function.
-//Renamed timeout
+//Version 1.3.0
 
 function _DOT(document){
 	this._document = document;
