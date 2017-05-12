@@ -1,4 +1,4 @@
-//Version 1.2.1.2
+//Version 1.2.1.3
 //Fixed spelling of warnings function.
 //Renamed timeout
 
@@ -15,7 +15,7 @@ _DOT.prototype.suppressWarnings = function(){
 };
 
 _DOT.prototype._getNewDocument = function(){
-	return document.createElement("DOCUMENT");
+	return document.createElement("DOTHTML-DOCUMENT");
 };
 
 _DOT.prototype._getAnInstance = function(){
@@ -255,7 +255,9 @@ _DOT.prototype.else = function(callback){
 };
 
 _DOT.prototype.script = function(callback){
-	return this._appendOrCreateDocument(callback);
+	//return this._appendOrCreateDocument(callback);
+	callback();
+	return this;
 };
 
 _DOT.prototype.wait = function(timeout, callback){
@@ -281,6 +283,10 @@ _DOT.prototype.empty = function(){
 
 	}
 	return this;
+}
+
+_DOT.prototype.lastNode = function(){
+	return this._document.lastChild;
 }
 
 _DOT.prototype.createWidget = function(name, callback){

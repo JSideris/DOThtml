@@ -336,15 +336,53 @@ return dot.el("div", "This could be any HTML or custom element!")
 },
 					dot.h("This can be useful when defining custom elements and attributes, or when experimenting with elements and attributes supported in future versions of HTML that have not yet been implemented in DOThtml.")
 				)
+				.featuretutorial("Running Scripts",
+					dot.h("This is required for the next two examples. Using <code>dot.script()</code> allows us to run anonymous code in-line. ")
+					.h("It accepts a function parameter, and will immediately run the function. Return values are ignored. ")
+					.h("<code>dot.h()</code> and <code>dot.t()</code> can also be used to run an anonymous function-runner, except they will render return values (if any) as markup. "),
+function(){
+return dot.div().id("script-example-div")
+.script(function(){
+    setTimeout(function(){
+        dot("#script-example-div").h("Why hello there!");
+    }, 100);
+});
+},
+					dot.h("Note that this example wouldn't work without the timeout because it doesn't get rendered to DOM until after everything is run and returned to the example widget. ")
+					.h("Thus, <code>script-example-div</code> doesn't exist until when the <code>dot.script()</code> is called. ")
+					.h("If the parent <code>dot</code> were used as a targeting function as in <code>dot(\"#example-X\")</code>, this wouldn't be a problem.")
+				)
+				.featuretutorial("Grabbing the Last DOM Node",
+					dot.h("Ocasionally you'll want to access the last node added. New in version 1.3, there is an easy way to do this. Use <code>dot.lastNode()</code>. ")
+					.h("This is useful for storing the node for later so that its nodely properties (such as scroll position, etc) can be accessed and manipulated even after the node has been written to the DOM. "),
+function(){
+return dot.h(function(){
+    //We'll use h here with a function so that we can do 
+    //some complex logic and render it to the DOM.
+    var myDivChain = dot.div("Will this work?");
+
+    //If you try to put the lastNode() call inside the onclick,
+    //it won't work because after myDivChain gets written to the DOM,
+    //its virtual document gets emptied. Grab the lastNode() 
+    //reference immediately.
+    var divNode = myDivChain.lastNode();
+
+    //We can just add a button afterwards like this.
+    return myDivChain
+    .br().button("Try it.").onclick(function(){
+        divNode.innerHTML = "Hopefully.";
+    })
+})
+},
+					dot.h("Pro tip: if you prefer JQuery as your node manager, just pass the result of <code>dot.lastNode()</code> right into <code>$()</code> (but this is a JQuery feature, strictly speaking, and has nothing to do with DOThtml).")
+				)
 				.featuretutorial("Custom Widgets",
 					dot.h("You can register a custom widget with <code>dot.createWidget(name, callback)</code> where <code>name</code> is the name of the widget that will be accissible from any DOThtml page building objects, and <code>callback</code> is your own custom page building function. The return value of your page building function should return a valid page building object derrived by chaining <code>dot</code>, otherwise your widget won't be chainable in the way that other dot components are. Here are a few examples."),
 function(){
 return dot.script(function(){
-    //Using dot.script() allows us to run anonymous code in-line.
     //Normally widgets can be declared at the top of your code,
     //but the widget this website uses to print examples
     //will only display dot code. See the page source for more info.
-    //There is virtually no difference between dot.script() and dot.h().
 
     //Here we define three widgets.
 
