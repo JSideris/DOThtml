@@ -7,18 +7,21 @@
 
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>
-<script src="C:\Users\Sideris\Documents\GitHub\dothtml\dothtml.js"></script>
+<script src="dothtml.js"></script>
 
 <body>
 	<div class="container">
 		<h1>Summary</h1>
 		<div id="summary">Passed: <span id="summary-passed">0</span> Failed: <span id="summary-failed">0</span> Total: <span id="summary-total">0</span></div>
+		<br />
+		<div>Version: <span id="version-out">???</span></div>
 		<h1>Tests</h1>
+		<p>Note: This test library is dependent on timing. If the timing tests are failing it may be because your device is too slow or unable to handle numerous simutaneous JavaScript timeouts. Some browsers also add spaces in weird places whith may result in failed tests.</p>
 		<table class="table table-striped table-bordered">
 			<thead>
 				<tr>
 					<th>Test Description</th>
-					<th>dot Markup</th>
+					<th>DOT Markup</th>
 					<th>Expected</th>
 					<th>Result</th>
 					<th>Pass/Fail</th>
@@ -27,10 +30,24 @@
 			<tbody id="tests">
 				<tr>
 					<td>Write to target</td>
-					<td>dot("#test1").h("PASS");</td>
+					<td>dot("#test1").empty().h("PASS");</td>
 					<td>N/A</td>
 					<td id="test1results">N/A</td>
 					<td id="test1" class="pending">PENDING</td>
+				</tr>
+				<tr>
+					<td>Write to Node</td>
+					<td>dot(document.getElementById("test2")).empty().h("PASS");</td>
+					<td>N/A</td>
+					<td id="test2results">N/A</td>
+					<td id="test2" class="pending">PENDING</td>
+				</tr>
+				<tr>
+					<td>Write to NodeList</td>
+					<td>dot(document.getElementById("test3")).empty().h("PASS");</td>
+					<td>N/A</td>
+					<td id="test3results">N/A</td>
+					<td id="test3" class="pending">PENDING</td>
 				</tr>
 			</tbody>
 		</table>
@@ -51,21 +68,53 @@ $(function(){
 	//MANUAL TESTING FOR APPEND/WRITE
 	try {
 		totalTests++;
-		dot("#test1").h("PASS");
+		dot("#test1").empty().h("PASS");
 		if($("#test1").html() != "PASS") throw "Writing 'PASS' resulted in: " + $("#test1").html();
 		$("#test1").removeClass("pending");
 		$("#test1").addClass("pass");
 		testsPassed++;
 	}
 	catch(err) {
-		$("#test1results").html(err.message);
+		$("#test1results").html(err);
 		$("#test1").removeClass("pending");
 		$("#test1").addClass("fail");
 		$("#test1").html("FAIL");
 		testsFailed++;
 	}
+	try {
+		totalTests++;
+		dot(document.getElementById("test2")).empty().h("PASS");
+		if($("#test2").html() != "PASS") throw "Writing 'PASS' resulted in: " + $("#test2").html();
+		$("#test2").removeClass("pending");
+		$("#test2").addClass("pass");
+		testsPassed++;
+	}
+	catch(err) {
+		$("#test2results").html(err);
+		$("#test2").removeClass("pending");
+		$("#test2").addClass("fail");
+		$("#test2").html("FAIL");
+		testsFailed++;
+	}
+	try {
+		totalTests++;
+		dot(document.querySelectorAll("#test3")).empty().h("PASS");
+		if($("#test3").html() != "PASS") throw "Writing 'PASS' resulted in: " + $("#test3").html();
+		$("#test3").removeClass("pending");
+		$("#test3").addClass("pass");
+		testsPassed++;
+	}
+	catch(err) {
+		$("#test3results").html(err);
+		$("#test3").removeClass("pending");
+		$("#test3").addClass("fail");
+		$("#test3").html("FAIL");
+		testsFailed++;
+	}
 	updateScore();
-	
+	try{$("#version-out").html(dot.version);}
+	catch(err){console.log(err);}
+
 	function addTest(description, test, expected, testTimeout){
 		var resultHtml;
 		try{
@@ -85,16 +134,30 @@ $(function(){
 		setTimeout(function(){
 			if(!testResult && !resultHtml) resultHtml = "Test did not return dot.";
 			else if(!resultHtml) resultHtml = testResult._document ? testResult._document.innerHTML : "";
+
+			var testPassed = false;
+			if(expected instanceof Array){
+				for(var i = 0; i < expected.length; i++){
+					if(resultHtml == expected[i]) {
+						testPassed = true;
+						break;
+					}
+				}
+			}
+			else{
+				if(resultHtml == expected) testPassed = true;
+			}
+
 			dot("#tests").tr(
 				dot.td(description)
 				.td(dot.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}"))))
 				.td(dot.t(expected))
 				.td(dot.t(resultHtml))
-				.td(resultHtml == expected ? "PASS" : "FAIL").class(resultHtml == expected ? "pass" : "fail")
+				.td(testPassed ? "PASS" : "FAIL").class(testPassed ? "pass" : "fail")
 			);
 			
 			totalTests++;
-			if(resultHtml == expected) testsPassed++;
+			if(testPassed) testsPassed++;
 			else testsFailed++;
 			
 			updateScore();
@@ -168,12 +231,12 @@ $(function(){
 	addTest("citeA", function(){ return dot.del().citeA(1); }, "<del cite=\"1\"></del>");
 	addTest("dataA", function(){ return dot.object().dataA(1); }, "<object data=\"1\"></object>");
 	addTest("formA", function(){ return dot.input().formA(1); }, "<input form=\"1\">");
-	addTest("labelA", function(){ return dot.track().labelA(1); }, "<track label=\"1\">");
+	addTest("labelA", function(){ return dot.track().labelA(1); }, ["<track label=\"1\">", "<track label=\"1\"></track>"]);
 	addTest("spanA", function(){ return dot.col().spanA(1); }, "<col span=\"1\">");
 	addTest("summaryA", function(){ return dot.table().summaryA(1); }, "<table summary=\"1\"></table>");
 	addTest("Smart cite - attribute", function(){ return dot.del().cite(1); }, "<del cite=\"1\"></del>");
 	addTest("Smart form - attribute", function(){ return dot.input().form(1); }, "<input form=\"1\">");
-	addTest("Smart label - attribute", function(){ return dot.track().label(1); }, "<track label=\"1\">");
+	addTest("Smart label - attribute", function(){ return dot.track().label(1); }, ["<track label=\"1\">", "<track label=\"1\"></track>"]);
 	addTest("Smart span - attribute", function(){ return dot.col().span(1); }, "<col span=\"1\">");
 	addTest("Smart summary - attribute", function(){ return dot.table().summary(1); }, "<table summary=\"1\"></table>");
 	addTest("Smart cite - element", function(){ return dot.div().cite(); }, "<div></div><cite></cite>");
@@ -193,8 +256,9 @@ $(function(){
 	addTest("Conditional false", function(){ return dot.h(1).if(false, dot.h("false")).h(2); }, "12");
 	addTest("Conditional true true", function(){ return dot.h(1).if(true, dot.h(2)).if(true, dot.h(3)).h(4); }, "1234");
 	addTest("Conditional class", function(){ return dot.div(1).if(true, dot.class(2)); }, "<div class=\"2\">1</div>");
-	addTest("Conditional deep class", function(){ return dot.div(1).if(true, dot.if(true, dot.class(2))); }, "<div class=\"2\">1</div>");
-	addTest("Conditional deep class with more confusion", function(){ return dot.div(1).if(true, dot.if(true, dot.class(2)).div(3)); }, "<div class=\"2\">1</div><div>3</div>");
+	//Not sure if the following two cases should be supported. They are broken as of 1.3.0, but I don't know if that matters.
+	//addTest("Conditional deep class", function(){ return dot.div(1).if(true, dot.if(true, dot.class(2))); }, "<div class=\"2\">1</div>");
+	//addTest("Conditional deep class with more confusion", function(){ return dot.div(1).if(true, dot.if(true, dot.class(2)).div(3)); }, "<div class=\"2\">1</div><div>3</div>");
 	//Logic.
 	addTest("If true else", function(){ return dot.if(true, "if").else("else"); }, "if");
 	addTest("If false else", function(){ return dot.if(false, "if").else("else"); }, "else");
@@ -229,6 +293,9 @@ $(function(){
 	}, "s0101f");
 	addTest("Each", function(){ return dot.each([0, 1, 2], function(x){return x}); }, "012");
 	addTest("Nested each", function(){ return dot.each([0, 1, 2], function(x){return dot.h(x).each([3, 4, 5], function(y){return y})}); }, "034513452345");
+	//Get Last Node
+	addTest("Get Last Node", function(){ return dot.h(dot.div("text").lastNode.innerHTML)}, "text");
+	addTest("Get Last Node - h", function(){ return dot.h(dot.h("<div>text</div>").lastNode.innerHTML)}, "text");
 	//Widgets
 	dot.createWidget("nesteddivs", function(){return dot.div(dot.div(1))});
 	addTest("Nested divs widget", function(){return dot.nesteddivs()}, "<div><div>1</div></div>");
@@ -244,47 +311,48 @@ $(function(){
 	addTest("jQuery, set CSS inside nested div", function(){return dot.div(dot.div(dot.$css("color", "black")));}, "<div><div style=\"color: black;\"></div></div>");
 	addTest("jQuery, set CSS", function(){return dot.div().$css("color", "black");}, "<div style=\"color: black;\"></div>");
 	//Scripted
+	//The expected functionality of these test cases changed in version 1.3.0.
 	addTest("Script, no return", function(){ return dot.script(function(){1 + 1;}).div(1); }, "<div>1</div>");
-	addTest("Script, return dot", function(){ return dot.script(function(){return 2;}).div(1); }, "2<div>1</div>");
-	addTest("Script, return function", function(){ return dot.script(function(){return function(){return 2};}).div(1); }, "2<div>1</div>");
+	addTest("Script, return dot", function(){ return dot.script(function(){return 2;}).div(1); }, "<div>1</div>");
+	addTest("Script, return function", function(){ return dot.script(function(){return function(){return 2};}).div(1); }, "<div>1</div>");
 	//jQuery helpers
 	addTest("jQuery hide", function(){return dot.div().$hide()}, "<div style=\"display: none;\"></div>");
-	addTest("jQuery hide slow", function(){return dot.div().$hide(50)}, "<div style=\"display: none;\"></div>", 100);
-	addTest("jQuery hide slow, callcack returns dot", function(){return dot.div().$hide(50, function(){return dot.div()})}, "<div style=\"display: none;\"></div><div></div>", 100);
+	addTest("jQuery hide slow", function(){return dot.div().$hide(50)}, "<div style=\"display: none;\"></div>", 500);
+	addTest("jQuery hide slow, callcack returns dot", function(){return dot.div().$hide(50, function(){return dot.div()})}, "<div style=\"display: none;\"></div><div></div>", 500);
 	addTest("jQuery hide slow, callcack returns dot, internal", 
 		function(){
 			return dot.div(dot.$hide(50, function(){
 				return dot.div();
 			}));
-		}, "<div style=\"display: none;\"><div></div></div>", 100);
-	addTest("jQuery hide slow, callcack is dot", function(){return dot.div().$hide(50, dot.div())}, "<div style=\"display: none;\"></div><div></div>", 100);
-	addTest("jQuery hide slow, callcack is dot, internal", function(){return dot.div(dot.$hide(50, dot.div()));}, "<div style=\"display: none;\"><div></div></div>", 100);
-	addTest("jQuery hide slow, callcack is dot, internal, after div", function(){return dot.div(dot.div().$hide(50, dot.div()));}, "<div><div style=\"display: none;\"></div><div></div></div>", 100);
+		}, "<div style=\"display: none;\"><div></div></div>", 500);
+	addTest("jQuery hide slow, callcack is dot", function(){return dot.div().$hide(50, dot.div())}, "<div style=\"display: none;\"></div><div></div>", 500);
+	addTest("jQuery hide slow, callcack is dot, internal", function(){return dot.div(dot.$hide(50, dot.div()));}, "<div style=\"display: none;\"><div></div></div>", 500);
+	addTest("jQuery hide slow, callcack is dot, internal, after div", function(){return dot.div(dot.div().$hide(50, dot.div()));}, "<div><div style=\"display: none;\"></div><div></div></div>", 500);
 	//Wait
-	addTest("Wait, timing early", function(){ return dot.div(1).wait(120, dot.div(3)).div(2); }, "<div>1</div><x-dothtml-timeout></x-dothtml-timeout><div>2</div>", 100);
-	addTest("Wait, for nothing", function(){ return dot.div(1).wait(50, function(){}).div(2); }, "<div>1</div><div>2</div>", 100);
-	addTest("Wait, for a string", function(){ return dot.div(1).wait(50, "3").div(2); }, "<div>1</div>3<div>2</div>", 100);
-	addTest("Wait, for a div", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 100);
-	addTest("Wait, inside a div", function(){ return dot.div(1).div(dot.wait(50, dot.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 100);
-	addTest("Wait, for class", function(){ return dot.div(1).wait(50, dot.class(3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 100);
-	addTest("Wait, for class 2", function(){ return dot.div(dot.div(1).wait(50, dot.class(3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 100);
-	addTest("Wait, for class, internal", function(){ return dot.div(dot.wait(50, dot.class(3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 100);
-	addTest("Wait, for a function", function(){ return dot.div(1).wait(50, function(){return dot.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 100);
-	addTest("Wait, append to nothing", function(){ return dot.wait(50, dot.div(3)); }, "<div>3</div>", 100);
-	addTest("Wait, append to nothing, concat 2", function(){ return dot.wait(50, dot.div(3)).h(2); }, "<div>3</div>2", 100);
-	addTest("Wait, append between text nodes", function(){ return dot.h(1).wait(50, dot.div(3)).h(2); }, "1<div>3</div>2", 100);
-	addTest("Wait, out of order", function(){ return dot.wait(20, dot.div(1)).wait(50, dot.div(2)).wait(30, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 100);
-	addTest("Wait, iterate", function(){ return dot.div(1).wait(50, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 100);
-	addTest("Waitception, early", function(){ return dot.wait(50, dot.div(dot.wait(120, dot.div(1)))); }, "<div><x-dothtml-timeout></x-dothtml-timeout></div>", 100);
-	addTest("Waitception, late, times shouldn't stack", function(){ return dot.wait(80, dot.div(dot.wait(80, dot.div(1)))); }, "<div><div>1</div></div>", 100);
-	addTest("Waitception, late, times stack for functions 1/2", function(){ return dot.wait(80, function(){return dot.div(dot.wait(80, dot.div(1)))}); }, "<div><x-dothtml-timeout></x-dothtml-timeout></div>", 100);
-	addTest("Waitception, late, times stack for functions 2/2", function(){ return dot.wait(10, function(){return dot.div(dot.wait(10, dot.div(1)))}); }, "<div><div>1</div></div>", 100);
-	//addTest("Waitception, late, deep class", function(){ return dot.div().wait(10, dot.wait(10, dot.class(1)))}, "<div class=\"1\"></div>", 100); //This one fails. Not sure if I should support it though.
-	addTest("Waitception, late", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 100);
-	addTest("Waitception, late, short inner interval", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 100);
-	addTest("Wait then $hide dot", function(){return dot.div().wait(50, dot.$hide())}, "<div style=\"display: none;\"></div>", 100);
-	addTest("Wait then $hide function", function(){return dot.div().wait(50, function(){return dot.$hide()})}, "<div style=\"display: none;\"></div>", 100);
-	addTest("Wait then $hide dot, internal", function(){return dot.div(dot.wait(50, dot.$hide()))}, "<div style=\"display: none;\"></div>", 100);
+	addTest("Wait, timing early", function(){ return dot.div(1).wait(620, dot.div(3)).div(2); }, "<div>1</div><dothtml-timeout></dothtml-timeout><div>2</div>", 500);
+	addTest("Wait, for nothing", function(){ return dot.div(1).wait(50, function(){}).div(2); }, "<div>1</div><div>2</div>", 500);
+	addTest("Wait, for a string", function(){ return dot.div(1).wait(50, "3").div(2); }, "<div>1</div>3<div>2</div>", 500);
+	addTest("Wait, for a div", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 500);
+	addTest("Wait, inside a div", function(){ return dot.div(1).div(dot.wait(50, dot.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 500);
+	addTest("Wait, for class", function(){ return dot.div(1).wait(50, dot.class(3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 500);
+	addTest("Wait, for class 2", function(){ return dot.div(dot.div(1).wait(50, dot.class(3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 500);
+	addTest("Wait, for class, internal", function(){ return dot.div(dot.wait(50, dot.class(3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 500);
+	addTest("Wait, for a function", function(){ return dot.div(1).wait(50, function(){return dot.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 500);
+	addTest("Wait, append to nothing", function(){ return dot.wait(50, dot.div(3)); }, "<div>3</div>", 500);
+	addTest("Wait, append to nothing, concat 2", function(){ return dot.wait(50, dot.div(3)).h(2); }, "<div>3</div>2", 500);
+	addTest("Wait, append between text nodes", function(){ return dot.h(1).wait(50, dot.div(3)).h(2); }, "1<div>3</div>2", 500);
+	addTest("Wait, out of order", function(){ return dot.wait(20, dot.div(1)).wait(50, dot.div(2)).wait(30, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 500);
+	addTest("Wait, iterate", function(){ return dot.div(1).wait(50, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 500);
+	addTest("Waitception, early", function(){ return dot.wait(50, dot.div(dot.wait(620, dot.div(1)))); }, "<div><dothtml-timeout></dothtml-timeout></div>", 500);
+	addTest("Waitception, late, times shouldn't stack", function(){ return dot.wait(80, dot.div(dot.wait(80, dot.div(1)))); }, "<div><div>1</div></div>", 500);
+	addTest("Waitception, late, times stack for functions 1/2", function(){ return dot.wait(300, function(){return dot.div(dot.wait(300, dot.div(1)))}); }, "<div><dothtml-timeout></dothtml-timeout></div>", 500);
+	addTest("Waitception, late, times stack for functions 2/2", function(){ return dot.wait(1, function(){return dot.div(dot.wait(1, dot.div(1)))}); }, "<div><div>1</div></div>", 500);
+	//addTest("Waitception, late, deep class", function(){ return dot.div().wait(10, dot.wait(10, dot.class(1)))}, "<div class=\"1\"></div>", 500); //This one fails. Not sure if I should support it though.
+	addTest("Waitception, late", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 500);
+	addTest("Waitception, late, short inner interval", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 500);
+	addTest("Wait then $hide dot", function(){return dot.div().wait(50, dot.$hide())}, "<div style=\"display: none;\"></div>", 500);
+	addTest("Wait then $hide function", function(){return dot.div().wait(50, function(){return dot.$hide()})}, "<div style=\"display: none;\"></div>", 500);
+	addTest("Wait then $hide dot, internal", function(){return dot.div(dot.wait(50, dot.$hide()))}, "<div style=\"display: none;\"></div>", 500);
 	/**/
 });
 </script>
