@@ -779,7 +779,7 @@ _DOT.prototype.check$ = function(){
 
 var dot;
 var DOT = dot = function(targetSelector){ //DOT is kept for legacy reasons. dot is now prefered.
-	var targets = targetSelector instanceof NodeList ? targetSelector : ( targetSelector instanceof Node ? targetSelector : document.querySelectorAll(targetSelector));
+	var targets = targetSelector instanceof NodeList ? targetSelector : ( targetSelector instanceof Node ? [targetSelector] : document.querySelectorAll(targetSelector));
 	var newDot = new _DOT();
 	if(targets.length > 0){
 		newDot._document = targets[0];

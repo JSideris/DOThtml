@@ -16,7 +16,7 @@
 		<br />
 		<div>Version: <span id="version-out">???</span></div>
 		<h1>Tests</h1>
-		<p>Note: This test library is dependent on timing. If the timing tests are failing it may be because your device is too slow or unable to handle numerous simutaneous JavaScript timeouts.</p>
+		<p>Note: This test library is dependent on timing. If the timing tests are failing it may be because your device is too slow or unable to handle numerous simutaneous JavaScript timeouts. Some browsers also add spaces in weird places whith may result in failed tests.</p>
 		<table class="table table-striped table-bordered">
 			<thead>
 				<tr>
@@ -34,6 +34,20 @@
 					<td>N/A</td>
 					<td id="test1results">N/A</td>
 					<td id="test1" class="pending">PENDING</td>
+				</tr>
+				<tr>
+					<td>Write to Node</td>
+					<td>dot(document.getElementById("test2")).empty().h("PASS");</td>
+					<td>N/A</td>
+					<td id="test2results">N/A</td>
+					<td id="test2" class="pending">PENDING</td>
+				</tr>
+				<tr>
+					<td>Write to NodeList</td>
+					<td>dot(document.getElementById("test3")).empty().h("PASS");</td>
+					<td>N/A</td>
+					<td id="test3results">N/A</td>
+					<td id="test3" class="pending">PENDING</td>
 				</tr>
 			</tbody>
 		</table>
@@ -61,10 +75,40 @@ $(function(){
 		testsPassed++;
 	}
 	catch(err) {
-		$("#test1results").html(err.message);
+		$("#test1results").html(err);
 		$("#test1").removeClass("pending");
 		$("#test1").addClass("fail");
 		$("#test1").html("FAIL");
+		testsFailed++;
+	}
+	try {
+		totalTests++;
+		dot(document.getElementById("test2")).empty().h("PASS");
+		if($("#test2").html() != "PASS") throw "Writing 'PASS' resulted in: " + $("#test2").html();
+		$("#test2").removeClass("pending");
+		$("#test2").addClass("pass");
+		testsPassed++;
+	}
+	catch(err) {
+		$("#test2results").html(err);
+		$("#test2").removeClass("pending");
+		$("#test2").addClass("fail");
+		$("#test2").html("FAIL");
+		testsFailed++;
+	}
+	try {
+		totalTests++;
+		dot(document.querySelectorAll("#test3")).empty().h("PASS");
+		if($("#test3").html() != "PASS") throw "Writing 'PASS' resulted in: " + $("#test3").html();
+		$("#test3").removeClass("pending");
+		$("#test3").addClass("pass");
+		testsPassed++;
+	}
+	catch(err) {
+		$("#test3results").html(err);
+		$("#test3").removeClass("pending");
+		$("#test3").addClass("fail");
+		$("#test3").html("FAIL");
 		testsFailed++;
 	}
 	updateScore();
