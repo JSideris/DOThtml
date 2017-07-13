@@ -7,7 +7,7 @@ function _DOT(document){
 	this.lastNode = document ? document.lastChild : null;
 }
 
-_DOT.prototype.version = "1.3.1";
+_DOT.prototype.version = "1.3.2";
 
 _DOT.prototype._warnings = true;
 _DOT.prototype.suppressWarnings = function(){
@@ -777,30 +777,8 @@ _DOT.prototype.check$ = function(){
 	if(!jQuery) throw "Can't use jQuery wrappers without jQuery."
 };
 
-/*
-Not used anymore as of 1.2.
-_DOT.prototype.$append = function(target){
-	this.check$();
-	if(!target) {if (this._warnings) console.warn("Can't render to " + target); return this;}
-	var jT = jQuery(target);
-	if(jT.length == 0 && this._warnings) console.warn("No targets found for \"" + target + "\".");
-	if(this._document) jT.append(this._document.childNodes);
-	this._document = null;
-	return this;
-};
-
-_DOT.prototype.$write = function(target){
-	this.check$();
-	jQuery(target).empty();
-	this.$append(target);
-};*/
-
-//var dot;
-//var DOT = dot = new _DOT(null); //DOT is kept for legacy reasons. dot is now prefered.
-
 var dot;
 var DOT = dot = function(targetSelector){ //DOT is kept for legacy reasons. dot is now prefered.
-	var targets = document.querySelectorAll(targetSelector);
 	var newDot = new _DOT();
 	if(targets.length > 0){
 		newDot._document = targets[0];

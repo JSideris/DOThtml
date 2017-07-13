@@ -1,19 +1,21 @@
-//Version 1.2.0
-
 function _DOT(document){
 	this._document = document;
 	this._if = null;
 	this._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
 	this._anonAttrFuncs = []; //Only to be used by top-level dot object.
+
+	this.lastNode = document ? document.lastChild : null;
 }
 
+_DOT.prototype.version = "1.3.2";
+
 _DOT.prototype._warnings = true;
-_DOT.prototype.supressWarnings = function(){
+_DOT.prototype.suppressWarnings = function(){
 	this.__proto__._warnings = false;
 };
 
 _DOT.prototype._getNewDocument = function(){
-	return document.createElement("DOCUMENT");
+	return document.createElement("DOTHTML-DOCUMENT");
 };
 
 _DOT.prototype._getAnInstance = function(){
@@ -30,6 +32,7 @@ _DOT.prototype._getLastChildOrNull = function(){
 	return null;
 };
 
+//I'm not sure if this is supported anymore.
 _DOT.prototype.getLast = function(){
 	return this._getLastChildOrNull();
 }
@@ -133,6 +136,7 @@ _DOT.prototype._appendOrCreateDocument = function(content, parentEl, beforeNode)
 			else parentEl.appendChild(eContent);
 		}
 	}
+	
 	return nd;
 	//return this;
 };
@@ -142,7 +146,6 @@ _DOT.prototype.el = function(tag, content){
 	var nDoc = this._document || this._getNewDocument();
 	nDoc.appendChild(ne);
 	this._appendOrCreateDocument(content, ne);
-	
 	return this._document === nDoc ? this : new _DOT(nDoc);
 };
 
@@ -253,16 +256,19 @@ _DOT.prototype.else = function(callback){
 };
 
 _DOT.prototype.script = function(callback){
-	return this._appendOrCreateDocument(callback);
+	//return this._appendOrCreateDocument(callback);
+	callback();
+	return this;
 };
 
 _DOT.prototype.wait = function(timeout, callback){
-	var timeoutDot = this.el("x-dothtml-timeout");
+	var timeoutDot = this.el("dothtml-timeout");
 	var timeoutNode = timeoutDot._document.lastChild;
 	var startTimer = function(){
 		setTimeout(function(){
 			timeoutDot._appendOrCreateDocument(callback, null, timeoutNode);
-			timeoutNode.remove();
+			timeoutNode.parentElement.removeChild(timeoutNode);
+			////timeoutNode.remove(); //Doesn't work in IE.
 		}, timeout);
 	}
 	
@@ -272,9 +278,6 @@ _DOT.prototype.wait = function(timeout, callback){
 
 _DOT.prototype.empty = function(){
 	if(this._document){
-		/*while(this._document.length > 0){
-			this._document.removeChild(this._document[0]);
-		}*/
 		while (this._document.firstChild) {
 			this._document.removeChild(this._document.firstChild);
 		}
@@ -282,6 +285,10 @@ _DOT.prototype.empty = function(){
 	}
 	return this;
 }
+
+/*_DOT.prototype.lastNode = function(){
+	return this._document.lastChild;
+}*/
 
 _DOT.prototype.createWidget = function(name, callback){
 	_DOT.prototype[name] = function(){
@@ -316,12 +323,13 @@ _DOT.prototype.createJQueryWrapper = function(name){
 				arg = function(){return dot;}
 			}
 			if(arg && arg.constructor && arg.call && arg.apply){
-				timeoutDot = this.el("x-dothtml-timeout");
+				timeoutDot = this.el("dothtml-timeout");
 				timeoutNode = timeoutDot._document.lastChild;
 				(function(arg, args, timeoutNode, timeoutDot){
 					args[i] = function(){
 						var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
-						timeoutNode.remove();
+						timeoutNode.parentElement.removeChild(timeoutNode);
+						//timeoutNode.remove(); //Doesn't work in IE.
 					};
 				})(arg, arguments, timeoutNode, timeoutDot);
 				 break; //First function is assumed to be the callback.
@@ -332,6 +340,8 @@ _DOT.prototype.createJQueryWrapper = function(name){
 		if(this._document){
 			
 			jo[name].apply(jo, arguments);
+			//var jqargs = arguments;
+			//setTimeout(function(){jo[name].apply(jo, jqargs);}, 0);
 			return retDOT;
 		}
 		else{
@@ -767,30 +777,9 @@ _DOT.prototype.check$ = function(){
 	if(!jQuery) throw "Can't use jQuery wrappers without jQuery."
 };
 
-/*
-Not used anymore as of 1.2.
-_DOT.prototype.$append = function(target){
-	this.check$();
-	if(!target) {if (this._warnings) console.warn("Can't render to " + target); return this;}
-	var jT = jQuery(target);
-	if(jT.length == 0 && this._warnings) console.warn("No targets found for \"" + target + "\".");
-	if(this._document) jT.append(this._document.childNodes);
-	this._document = null;
-	return this;
-};
-
-_DOT.prototype.$write = function(target){
-	this.check$();
-	jQuery(target).empty();
-	this.$append(target);
-};*/
-
-//var dot;
-//var DOT = dot = new _DOT(null); //DOT is kept for legacy reasons. dot is now prefered.
-
 var dot;
 var DOT = dot = function(targetSelector){ //DOT is kept for legacy reasons. dot is now prefered.
-	var targets = document.querySelectorAll(targetSelector);
+	var targets = targetSelector instanceof NodeList ? targetSelector : ( targetSelector instanceof Node ? [targetSelector] : document.querySelectorAll(targetSelector));
 	var newDot = new _DOT();
 	if(targets.length > 0){
 		newDot._document = targets[0];
