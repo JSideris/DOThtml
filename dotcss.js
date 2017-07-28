@@ -1,41 +1,10 @@
 "use strict";
 
-//Version 0.5.0 Beta.
-
 //Latest Update.
 //Added animations for transformations.
 //Added animations for limited parameterized numeric "lists".
 
 //TODO: there may be an issue with memory leakage during animations.
-//TODO: shrink and grow are not working. 
-
-//Inverse of framerate in ms/frame.
-var _DOTCSS_FX_INTERVAL = 1000 / 60;
-
-//Note to the open source community regarding the next variable:
-//I don't particularly like having this as a public variable.
-//But without it, there's no way to access the last target from inside the animate/tostring/val functions. 
-//For instance, the syntax is dotcss(target).color.animate();
-//The animate function needs to know the target element.
-//dotcss(target) returns a _dotcssBuilder object with a target element assigned.
-//color is a function inside the prototype of _dotcssBuilder,
-//along with all the other css properties. Functions are objects,
-//and this color object is assigned animate, toString, and val fields,
-//each of which being a function. In these functions, the this keyword
-//refers to the color function, not to the _dotcssBuilder where the target resides.
-//Since color is in the prototype of _dotcssBuilder there isn't an easy way to
-//access target from within the animate function.
-//Maybe the open source community can find a better solution.
-//Having this as a public variable directly and immediately hinders the scalability of this project.
-var _dotcssLastBuilder = null;
-
-//var _dotcssFloatRegex = "[\\-+]?([0-9]+\\.?[0-9]*|([0-9]*\\.?[0-9]+))(e\\-?[0-9]+)?";
-var _dotcssFloatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
-
-var _dotcssBuilder = function(target){
-	this.currentCss = "";
-	this.target = target;
-}
 
 var dotcss = function(query){
 	//this.currentCss = "";
@@ -46,47 +15,206 @@ var dotcss = function(query){
 		if((query instanceof NodeList) || (query instanceof Array)) target = query;
 		if(query instanceof Node) target = [query]; //Doesn't need to be a NodeList. Just iterable.
 	}
-	_dotcssLastBuilder = new _dotcssBuilder(target);
-	return _dotcssLastBuilder;
+	dotcss._lastBuilder = new dotcss._Builder(target);
+	return dotcss._lastBuilder;
 }
 
-var _dotcssStyleProperty = function(){
+dotcss.version = "0.6.0"
+
+//Inverse of framerate in ms/frame.
+dotcss._fxInterval = 1000 / 60;
+
+dotcss._lastBuilder = null;
+
+dotcss._floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
+
+dotcss._Builder = function(target){
+	this.currentCss = "";
+	this.target = target;
+}
+
+dotcss._Builder.prototype.toString = dotcss.prototype.toString = function(){
+	return this.currentCss;
+}
+
+//Usage:
+//hide()
+//show(duration, complete)
+//show(options)
+//Options
+//	display: inline-block, block, etc.
+//	duration: duration in ms.
+//	complete: on-complete callback.
+//	showStyle: fade, shrink, or normal
+//	animationStyle: linear or exponential
+dotcss._Builder.prototype.hide = function(){
+	if(this.target){
+		var arg0 = arguments[0] || {};
+		var ops = {};
+		ops.duration = arg0.duration || (isNaN(arg0) ? 0 : arg0) || 0;
+		//ops.display = arg0.display || "none";
+		//ops.opacity = arg0.opacity || null;
+		//ops.width = arg0.width || null;
+		//ops.height = arg0.height || null;
+		ops.complete = arg0.complete || (typeof arguments[1] == "function" ? arguments[1] : function(){});
+		ops.hideStyle = arg0.hideStyle || "normal";
+		ops.animationStyle = arg0.animationStyle || "exponential";
+
+		if(ops.duration > 0){
+			var doneCnt = 0;
+			var m = 0;
+			var q = this.target.length;
+			for(var i = 0; i < this.target.length; i++){
+				//style = window.getComputedStyle(target[i]);
+				var w = this.target[i].style.width;
+				var h = this.target[i].style.height;
+				var o = this.target[i].style.opacity;
+				if(ops.hideStyle != "fade"){
+					m += 2;
+					(function(that, t, w, h){
+						dotcss(t).width.animate(0, ops.duration, ops.animationStyle, function(){
+							dotcss(t).display("none").width(w);
+							doneCnt++; if(doneCnt > m * q) ops.complete(that);
+						});
+						dotcss(t).height.animate(0, ops.duration, ops.animationStyle, function(){
+							dotcss(t).display("none").height(h);
+							doneCnt++; if(doneCnt > m * q) ops.complete(that);
+						});
+					})(this, this.target[i], w, h);	
+				}
+				if(ops.hideStyle != "shrink"){
+					(function(that, t, o){
+						return dotcss(t).opacity.animate(0, ops.duration, ops.animationStyle, function(){
+							dotcss(t).display("none").opacity(o);
+							doneCnt++; if(doneCnt > m * q) ops.complete(that);
+						});
+					})(this, this.target[i], o);
+				}
+			}
+		}
+		else{
+			dotcss(this.target).display("none");
+			ops.complete(this); //This sets the display to none.
+		}
+	}
+	return this;
+}
+
+//Usage:
+//show()
+//show(duration, complete)
+//show(options)
+//Options
+//	display: inline-block, block, etc.
+//	opacity: final opacity.
+//	width: final width.
+//	height: final height.
+//	duration: duration in ms.
+//	complete: on-complete callback.
+//	showStyle: fade, grow, or normal
+//	animationStyle: linear or exponential
+dotcss._Builder.prototype.show = function(){
+	if(this.target){
+		var arg0 = arguments[0] || {};
+		var ops = {};
+		ops.duration = arg0.duration || (isNaN(arg0) ? 0 : arg0) || 0;
+		ops.display = arg0.display || "block";
+		ops.opacity = arg0.opacity || 1;
+		ops.width = arg0.width || null;
+		ops.height = arg0.height || null;
+		ops.complete = arg0.complete || (typeof arguments[1] == "function" ? arguments[1] : function(){});
+		ops.showStyle = arg0.showStyle || "normal";
+		ops.animationStyle = arg0.animationStyle || "exponential";
+
+		if(ops.duration > 0){
+			var doneCnt = 0;
+			var q = this.target.length;
+			var m = 0;
+			for(var i = 0; i < this.target.length; i++){
+				//style = window.getComputedStyle(target[i]);
+				
+				if(ops.showStyle != "fade"){
+					m += 2
+					var w = ops.width || this.target[i].style.width;
+					var h = ops.height || this.target[i].style.height;
+					
+					dotcss(this.target[i]).width(0);
+					dotcss(this.target[i]).height(0);
+					// console.log(doneCnt + " " + q*m);
+					dotcss(this.target[i]).width.animate(w, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt == q * m) ops.complete();});
+					dotcss(this.target[i]).height.animate(h, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt == q * m) ops.complete();});
+				}
+
+				//var o = this.target[i].style.opacity; //Guess I should fade to 1?
+				dotcss(this.target[i]).opacity(0);
+				dotcss(this.target[i]).display(ops.display);
+
+				if(ops.showStyle != "grow"){
+					m++;
+					dotcss(this.target[i]).opacity.animate(ops.opacity, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt == q * m) ops.complete();});
+				}
+			}
+		}
+		else{
+			return dotcss(this.target).display(ops.display);
+		}
+	}
+	return this;
+}
+
+dotcss._Builder.prototype.fadeOut = function(duration, complete){
+	return this.hide({
+		duration: isNaN(duration) ? 400 : Number(duration), 
+		hideStyle: "fade",
+		complete: complete
+	});
+}
+
+dotcss._Builder.prototype.fadeIn = function(duration, complete){
+	return this.show({
+		duration: isNaN(duration) ? 400 : Number(duration), 
+		showStyle: "fade",
+		complete: complete
+	});
+}
+
+dotcss._StyleProperty = function(){
 	this.type = null;
 	this.jsFriendlyProp = null;
 }
 
 //toString override gets the value.
-_dotcssStyleProperty.prototype.toString = function(){
-	if(_dotcssLastBuilder.target){
+dotcss._StyleProperty.prototype.toString = function(){
+	if(dotcss._lastBuilder.target){
 		var ret = null;
-		if(_dotcssLastBuilder.target.length > 1){
+		if(dotcss._lastBuilder.target.length > 1){
 			ret = [];
-			for(var i = 0; i < _dotcssLastBuilder.target.length; i++){
-				ret.push(_dotcssLastBuilder.target[i].style[this.jsFriendlyProp]);
+			for(var i = 0; i < dotcss._lastBuilder.target.length; i++){
+				ret.push(dotcss._lastBuilder.target[i].style[this.jsFriendlyProp]);
 			}
 		}
-		else ret = _dotcssLastBuilder.target[0].style[this.jsFriendlyProp];
+		else ret = dotcss._lastBuilder.target[0].style[this.jsFriendlyProp];
 		return ret;
 	}
 	else return null;
 }
 
 //val is another special function that breaks the value into a special object.
-_dotcssStyleProperty.prototype.val = function(){
-	if(_dotcssLastBuilder.target){
+dotcss._StyleProperty.prototype.val = function(){
+	if(dotcss._lastBuilder.target){
 		var ret = null;
-		if(_dotcssLastBuilder.target.length > 1){
+		if(dotcss._lastBuilder.target.length > 1){
 			ret = null;
-			for(var i = 0; i < _dotcssLastBuilder.target.length; i++){
-				if(_dotcssLastBuilder.target[0].style[this.jsFriendlyProp]){
-					ret.push(_convertStyleIntoDotCssObject(_dotcssLastBuilder.target[i].style[this.jsFriendlyProp], this.type));
+			for(var i = 0; i < dotcss._lastBuilder.target.length; i++){
+				if(dotcss._lastBuilder.target[0].style[this.jsFriendlyProp]){
+					ret.push(dotcss._convertStyleIntoDotCssObject(dotcss._lastBuilder.target[i].style[this.jsFriendlyProp], this.type));
 				}
 				else ret.push(null);
 			}
 		}
 		else{
-			if(_dotcssLastBuilder.target[0].style[this.jsFriendlyProp]){
-				_convertStyleIntoDotCssObject(_dotcssLastBuilder.target[i].style[this.jsFriendlyProp], this.type)
+			if(dotcss._lastBuilder.target[0].style[this.jsFriendlyProp]){
+				dotcss._convertStyleIntoDotCssObject(dotcss._lastBuilder.target[i].style[this.jsFriendlyProp], this.type)
 			}
 			else ret = null;
 		}
@@ -97,16 +225,16 @@ _dotcssStyleProperty.prototype.val = function(){
 
 //Ability to animate just like jquery.
 //complete does not get called if the animation was cancelled.
-_dotcssStyleProperty.prototype.animate = function(value, duration, style, complete){
-	if(_dotcssLastBuilder && _dotcssLastBuilder.target){
+dotcss._StyleProperty.prototype.animate = function(value, duration, style, complete){
+	if(dotcss._lastBuilder && dotcss._lastBuilder.target){
 		if(!complete && style && style.call && style.apply){ //Fix params.
 			complete = style;
 			style = undefined;
 		}
-		for(var i = 0; i < _dotcssLastBuilder.target.length; i++){
-			var target = _dotcssLastBuilder.target[i];
-			var oldValue = _convertStyleIntoDotCssObject(window.getComputedStyle(target)[this.jsFriendlyProp], this.type);
-			var newValue = _convertStyleIntoDotCssObject(_dotcssInputToCssValue((value instanceof Array) ? value : [value], this.type), this.type);
+		for(var i = 0; i < dotcss._lastBuilder.target.length; i++){
+			var target = dotcss._lastBuilder.target[i];
+			var oldValue = dotcss._convertStyleIntoDotCssObject(window.getComputedStyle(target)[this.jsFriendlyProp], this.type);
+			var newValue = dotcss._convertStyleIntoDotCssObject(dotcss._inputToCssValue((value instanceof Array) ? value : [value], this.type), this.type);
 			/*switch(this.type){
 				case "color":
 			}*/
@@ -129,7 +257,7 @@ _dotcssStyleProperty.prototype.animate = function(value, duration, style, comple
 						//This also means we can do transitions without ever having to worry about units. Yay.
 						//Just got to figure out how.
 						console.warn("Couldn't animate " + jsFriendlyProp + ". Inconsistent units.");
-						return _dotcssLastBuilder;
+						return dotcss._lastBuilder;
 					}
 				}
 			}
@@ -139,25 +267,25 @@ _dotcssStyleProperty.prototype.animate = function(value, duration, style, comple
 			else if(oldValue.type == "complex" && newValue.type == "complex"){
 				if(oldValue.numbers.length != newValue.numbers.length){ //TODO: doesn't compare parts.
 					console.warn("Couldn't animate " + this.jsFriendlyProp + ". Value mismatch.");
-					return _dotcssLastBuilder;	
+					return dotcss._lastBuilder;	
 				}
 			}
 			else{
 				console.warn("Couldn't animate " + this.jsFriendlyProp + ". Not a recognizable length, color, or number.");
-				return _dotcssLastBuilder;
+				return dotcss._lastBuilder;
 			}
 
-			_dotcssAnimate(target, this.jsFriendlyProp, this.type, oldValue, newValue, duration || 400, style || "linear", _DOTCSS_FX_INTERVAL, complete);
+			dotcss._animate(target, this.jsFriendlyProp, this.type, oldValue, newValue, duration || 400, style || "linear", dotcss._fxInterval, complete);
 		}
 	}
-	return _dotcssLastBuilder;
+	return dotcss._lastBuilder;
 }
 
 //Have to add these back since we're going to replace the __proto__ of a function with this new prototype.
-_dotcssStyleProperty.prototype.apply = Function.apply;
-_dotcssStyleProperty.prototype.call = Function.call;
+dotcss._StyleProperty.prototype.apply = Function.apply;
+dotcss._StyleProperty.prototype.call = Function.call;
 
-var _dotcssAnimate = function(element, jsFriendlyProp, propType, currentValue, targetValue, duration, animationStyle, progress, callback){
+dotcss._animate = function(element, jsFriendlyProp, propType, currentValue, targetValue, duration, animationStyle, progress, callback){
 	//FIXME: the following line won't work. Need a way to cancel animations in progress. Or not.
 	//if(window.getComputedStyle(element)[jsFriendlyProp] != currentValue.value) return; //Animation can be cancelled any time by setting the value directly.
 	//Previously, this was set up so that animations would be cancelled if the style being animated was changed outside of this recursive function.
@@ -166,31 +294,31 @@ var _dotcssAnimate = function(element, jsFriendlyProp, propType, currentValue, t
 	if(duration > 0){
 		switch(propType){
 			case "color":
-				var r = Math.round(_dotcssNumberStep(currentValue.r, targetValue.r, duration, progress, animationStyle));
-				var g = Math.round(_dotcssNumberStep(currentValue.g, targetValue.g, duration, progress, animationStyle ));
-				var b = Math.round(_dotcssNumberStep(currentValue.b, targetValue.b, duration, progress, animationStyle ));
-				var a = dotcss.formatNumberValue(_dotcssNumberStep(currentValue.a, targetValue.a, duration, progress, animationStyle )); //TODO: make sure this doesn't need to be rounded or something.
+				var r = Math.round(dotcss._numberStep(currentValue.r, targetValue.r, duration, progress, animationStyle));
+				var g = Math.round(dotcss._numberStep(currentValue.g, targetValue.g, duration, progress, animationStyle ));
+				var b = Math.round(dotcss._numberStep(currentValue.b, targetValue.b, duration, progress, animationStyle ));
+				var a = dotcss.formatNumberValue(dotcss._numberStep(currentValue.a, targetValue.a, duration, progress, animationStyle )); //TODO: make sure this doesn't need to be rounded or something.
 				dotcss(element)[jsFriendlyProp](r, g, b, a);
 				break;
 			case "length":
-				dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(_dotcssNumberStep(currentValue.length, targetValue.length, duration, progress, animationStyle), currentValue.units) + currentValue.units);
+				dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(dotcss._numberStep(currentValue.length, targetValue.length, duration, progress, animationStyle), currentValue.units) + currentValue.units);
 				break;
 			case "transformation":
 				for(var i = 0; i < currentValue.m.length; i++){
-					currentValue.m[i] = dotcss.formatNumberValue(_dotcssNumberStep(currentValue.m[i], targetValue.m[i], duration, progress, animationStyle ));
+					currentValue.m[i] = dotcss.formatNumberValue(dotcss._numberStep(currentValue.m[i], targetValue.m[i], duration, progress, animationStyle ));
 				}
 				dotcss(element)[jsFriendlyProp](currentValue.m);
 				break;
 			default:
 				switch(currentValue.type){
 					case "number":
-						dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(_dotcssNumberStep(Number(currentValue.value), Number(targetValue.value), duration, progress, animationStyle)));
+						dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(dotcss._numberStep(Number(currentValue.value), Number(targetValue.value), duration, progress, animationStyle)));
 						break;
 					case "complex":
 						var newVal = "";
 						for(var i = 0; i < currentValue.numbers.length; i++){
 							newVal += currentValue.parts[i];
-							newVal += dotcss.formatNumberValue(_dotcssNumberStep(Number(currentValue.numbers[i]), Number(targetValue.numbers[i]), duration, progress, animationStyle))
+							newVal += dotcss.formatNumberValue(dotcss._numberStep(Number(currentValue.numbers[i]), Number(targetValue.numbers[i]), duration, progress, animationStyle))
 						}
 						newVal += currentValue.parts[currentValue.parts.length - 1];
 						
@@ -205,18 +333,18 @@ var _dotcssAnimate = function(element, jsFriendlyProp, propType, currentValue, t
 		//var reachedAnimFrame = false;
 		//TODO: there could be a memory leak here. Need to investigate.
 		var nextStep = function(timestamp){
-			var change = (now ? (window.performance.now() - now) : _DOTCSS_FX_INTERVAL);
-			//var change = _DOTCSS_FX_INTERVAL;
+			var change = (now ? (window.performance.now() - now) : dotcss._fxInterval);
+			//var change = dotcss._fxInterval;
 			//reachedAnimFrame = true;
 			//console.log(change);
 			//TODO: could possibly save some processing power here by using teh new set values (from above) instead of re-calculating the computed css.
-			_dotcssAnimate(element, jsFriendlyProp, propType, _convertStyleIntoDotCssObject(element.style[jsFriendlyProp], propType), targetValue, Math.max(0, duration - change), animationStyle, change, callback);
+			dotcss._animate(element, jsFriendlyProp, propType, dotcss._convertStyleIntoDotCssObject(element.style[jsFriendlyProp], propType), targetValue, Math.max(0, duration - change), animationStyle, change, callback);
 		}
 		if(window.requestAnimationFrame) {
 			window.requestAnimationFrame(nextStep);
 			//setTimeout(function(){if(!reachedAnimFrame) console.log("ERROR");}, 100);
 		}
-		else window.setTimeout(nextStep, _DOTCSS_FX_INTERVAL);
+		else window.setTimeout(nextStep, dotcss._fxInterval);
 	}
 	else{
 		dotcss(element)[jsFriendlyProp](targetValue.value);
@@ -226,11 +354,11 @@ var _dotcssAnimate = function(element, jsFriendlyProp, propType, currentValue, t
 
 //Function that takes in a bunch of parameters and steps the start value toward the target based on timeRemaining and style.
 //Returns the result.
-var _dotcssNumberStep = function(start, target, timeRemaining, progress, style){
+dotcss._numberStep = function(start, target, timeRemaining, progress, style){
 	switch(style){
 		case "geometric":
 		case "exponential":
-			var m = Math.exp(-(progress || _DOTCSS_FX_INTERVAL) / timeRemaining);
+			var m = Math.exp(-(progress || dotcss._fxInterval) / timeRemaining);
 			return  Number(target) + m * (start - target);
 		case "linear":
 		default:
@@ -239,7 +367,7 @@ var _dotcssNumberStep = function(start, target, timeRemaining, progress, style){
 	}
 }
 
-var _dotcssInputToCssValue = function(args, type){
+dotcss._inputToCssValue = function(args, type){
 	var value = args[0];
 	switch(type){
 		case "url":
@@ -335,7 +463,7 @@ dotcss.formatNumberValue = function(value, unit){
 	}
 }
 
-var _allDotCssProperties = [
+dotcss._allProperties = [
 	{prop:"color", type:"color"},
 	{prop:"opacity"},
 	{prop:"background"},
@@ -567,7 +695,7 @@ var _allDotCssProperties = [
 	{prop:"marquee-Style"}
 ];
 
-var _allDotCssLengthUnits = [
+dotcss._allLengthUnits = [
 	{unit:"Em"},
 	{unit:"Ex"},
 	{unit:"Ch"},
@@ -615,7 +743,7 @@ dotcss.lengthToPx = function(l){
 }
 
 //Returns a JSON object representation of value specific to the cssDataType passed in.
-function _convertStyleIntoDotCssObject(value, cssDataType){
+dotcss._convertStyleIntoDotCssObject = function(value, cssDataType){
 	if(!value) return null;
 	switch (cssDataType){
 		case "color":
@@ -817,7 +945,7 @@ function _convertStyleIntoDotCssObject(value, cssDataType){
 			}
 			else return value;
 		case "length":
-			return {value: value, type: cssDataType, length: Number(value.match(_dotcssFloatRegex)[0]), units: value.split(_dotcssFloatRegex)[1]};
+			return {value: value, type: cssDataType, length: Number(value.match(dotcss._floatRegex)[0]), units: value.split(dotcss._floatRegex)[1]};
 		case "transformation":
 			if(value.indexOf("(") == -1){
 				value = "matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)"
@@ -948,8 +1076,8 @@ function _convertStyleIntoDotCssObject(value, cssDataType){
 			ret.m = m;
 			return ret;
 		default: 
-			if(value.replace(_dotcssFloatRegex, "") == value) return {value: value, type: undefined}; //No numbers.
-			if(isNaN(value)) return {value: value, parts: (" " + value + " ").split(_dotcssFloatRegex), numbers: value.match(_dotcssFloatRegex), type: "complex"}; //Numbers
+			if(value.replace(dotcss._floatRegex, "") == value) return {value: value, type: undefined}; //No numbers.
+			if(isNaN(value)) return {value: value, parts: (" " + value + " ").split(dotcss._floatRegex), numbers: value.match(dotcss._floatRegex), type: "complex"}; //Numbers
 			else return {value: Number(value), type: "number"}; //Just a number.
 			
 			
@@ -958,19 +1086,19 @@ function _convertStyleIntoDotCssObject(value, cssDataType){
 
 //Adds a builder function directly to the dotcss object so that dotcss doesn't 
 //have to be used as a function when a target doesn't need to be specified.
-function _addDotCssFunctionToDotCssObject(funcName){
+dotcss._addPropFunctionToDotCssObject = function(funcName){
 	dotcss[funcName] = function(){
-		var n = new _dotcssBuilder();
+		var n = new dotcss._Builder();
 		return n[funcName].apply(n, arguments);
 	}
 }
 
 //Takes the property and generates all the dotcss and builder functions.
-function _makeDotCssFunction (prop, jsFriendlyProp, type){
+dotcss._makeFunction = function(prop, jsFriendlyProp, type){
 	//Create the new function.
-	_dotcssBuilder.prototype[jsFriendlyProp] = function(){
+	dotcss._Builder.prototype[jsFriendlyProp] = function(){
 		if(arguments.length == 0) return this;
-		var value = _dotcssInputToCssValue(arguments, type);
+		var value = dotcss._inputToCssValue(arguments, type);
 		
 		var newCss = prop + ":" + value + ";";
 		this.currentCss += newCss;
@@ -985,28 +1113,28 @@ function _makeDotCssFunction (prop, jsFriendlyProp, type){
 		return this;
 	}
 	//Add the new function to the dotcss object so that it can be accessed without doing dotcss().
-	_addDotCssFunctionToDotCssObject(jsFriendlyProp);
+	dotcss._addPropFunctionToDotCssObject(jsFriendlyProp);
 	
 	//Each unit of length will also have its own version of this function (assuming this is a length property).
 	if(type == "length"){
-		for(var u = 0; u < _allDotCssLengthUnits.length; u++){
-			var uu = _allDotCssLengthUnits[u];
+		for(var u = 0; u < dotcss._allLengthUnits.length; u++){
+			var uu = dotcss._allLengthUnits[u];
 			(function(uu){
-				_dotcssBuilder.prototype[jsFriendlyProp + (uu.jsName || uu.unit)] = function(){
+				dotcss._Builder.prototype[jsFriendlyProp + (uu.jsName || uu.unit)] = function(){
 					for(var i = 0; i < arguments.length; i++) arguments[i] = arguments[i] + uu.unit.toLowerCase();
-					return _dotcssBuilder.prototype[jsFriendlyProp].apply(this, arguments);
+					return dotcss._Builder.prototype[jsFriendlyProp].apply(this, arguments);
 				}
 			})(uu);
-			_addDotCssFunctionToDotCssObject(jsFriendlyProp + (uu.jsName || uu.unit));
+			dotcss._addPropFunctionToDotCssObject(jsFriendlyProp + (uu.jsName || uu.unit));
 		}
 	}
 	
-	_dotcssBuilder.prototype[jsFriendlyProp].__proto__ = Object.create(_dotcssStyleProperty.prototype);
-	_dotcssBuilder.prototype[jsFriendlyProp].type = type;
-	_dotcssBuilder.prototype[jsFriendlyProp].jsFriendlyProp = jsFriendlyProp;
+	dotcss._Builder.prototype[jsFriendlyProp].__proto__ = Object.create(dotcss._StyleProperty.prototype);
+	dotcss._Builder.prototype[jsFriendlyProp].type = type;
+	dotcss._Builder.prototype[jsFriendlyProp].jsFriendlyProp = jsFriendlyProp;
 }
 
-//TODO: TEST THESE. PROBLEMS EXIST.
+//Public functions.
 
 //Special handler for building urls.
 dotcss.url = function(url){
@@ -1023,157 +1151,7 @@ dotcss.rgba = function(r, g, b, a){
 	return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
 }
 
-_dotcssBuilder.prototype.toString = dotcss.prototype.toString = function(){
-	return this.currentCss;
-}
-
-//Usage:
-//hide()
-//show(duration, complete)
-//show(options)
-//Options
-//	display: inline-block, block, etc.
-//	duration: duration in ms.
-//	complete: on-complete callback.
-//	showStyle: fade, shrink, or normal
-//	animationStyle: linear or exponential
-_dotcssBuilder.prototype.hide = function(){
-	if(this.target){
-		var arg0 = arguments[0] || {};
-		var ops = {};
-		ops.duration = arg0.duration || (isNaN(arg0) ? 0 : arg0) || 0;
-		//ops.display = arg0.display || "none";
-		//ops.opacity = arg0.opacity || null;
-		//ops.width = arg0.width || null;
-		//ops.height = arg0.height || null;
-		ops.complete = arg0.complete || (typeof arguments[1] == "function" ? arguments[1] : function(){});
-		ops.hideStyle = arg0.hideStyle || "normal";
-		ops.animationStyle = arg0.animationStyle || "exponential";
-
-		if(ops.duration > 0){
-			var doneCnt = 0;
-			var m = 0;
-			var q = this.target.length;
-			for(var i = 0; i < this.target.length; i++){
-				//style = window.getComputedStyle(target[i]);
-				var w = this.target[i].style.width;
-				var h = this.target[i].style.height;
-				var o = this.target[i].style.opacity;
-				if(ops.hideStyle != "fade"){
-					m += 2;
-					(function(that, t, w, h){
-						dotcss(t).width.animate(0, ops.duration, ops.animationStyle, function(){
-							dotcss(t).display("none").width(w);
-							doneCnt++; if(doneCnt > m * q) ops.complete(that);
-						});
-						dotcss(t).height.animate(0, ops.duration, ops.animationStyle, function(){
-							dotcss(t).display("none").height(h);
-							doneCnt++; if(doneCnt > m * q) ops.complete(that);
-						});
-					})(this, this.target[i], w, h);	
-				}
-				if(ops.hideStyle != "shrink"){
-					(function(that, t, o){
-						return dotcss(t).opacity.animate(0, ops.duration, ops.animationStyle, function(){
-							dotcss(t).display("none").opacity(o);
-							doneCnt++; if(doneCnt > m * q) ops.complete(that);
-						});
-					})(this, this.target[i], o);
-				}
-			}
-		}
-		else{
-			dotcss(this.target).display("none");
-			ops.complete(this); //This sets the display to none.
-		}
-	}
-	return this;
-}
-
-//Usage:
-//show()
-//show(duration, complete)
-//show(options)
-//Options
-//	display: inline-block, block, etc.
-//	opacity: final opacity.
-//	width: final width.
-//	height: final height.
-//	duration: duration in ms.
-//	complete: on-complete callback.
-//	showStyle: fade, grow, or normal
-//	animationStyle: linear or exponential
-_dotcssBuilder.prototype.show = function(){
-	if(this.target){
-		var arg0 = arguments[0] || {};
-		var ops = {};
-		ops.duration = arg0.duration || (isNaN(arg0) ? 0 : arg0) || 0;
-		ops.display = arg0.display || "block";
-		ops.opacity = arg0.opacity || 1;
-		ops.width = arg0.width || null;
-		ops.height = arg0.height || null;
-		ops.complete = arg0.complete || (typeof arguments[1] == "function" ? arguments[1] : function(){});
-		ops.showStyle = arg0.showStyle || "normal";
-		ops.animationStyle = arg0.animationStyle || "exponential";
-
-		if(ops.duration > 0){
-			var doneCnt = 0;
-			var q = this.target.length;
-			var m = 0;
-			for(var i = 0; i < this.target.length; i++){
-				//style = window.getComputedStyle(target[i]);
-				
-				if(ops.showStyle != "fade"){
-					m += 2
-					var w = ops.width || this.target[i].style.width;
-					var h = ops.height || this.target[i].style.height;
-					
-					dotcss(this.target[i]).width(0);
-					dotcss(this.target[i]).height(0);
-					// console.log(doneCnt + " " + q*m);
-					dotcss(this.target[i]).width.animate(w, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt == q * m) ops.complete();});
-					dotcss(this.target[i]).height.animate(h, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt == q * m) ops.complete();});
-				}
-
-				//var o = this.target[i].style.opacity; //Guess I should fade to 1?
-				dotcss(this.target[i]).opacity(0);
-				dotcss(this.target[i]).display(ops.display);
-
-				if(ops.showStyle != "grow"){
-					m++;
-					dotcss(this.target[i]).opacity.animate(ops.opacity, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt == q * m) ops.complete();});
-				}
-			}
-		}
-		else{
-			return dotcss(this.target).display(ops.display);
-		}
-	}
-	return this;
-}
-
-_dotcssBuilder.prototype.fadeOut = function(duration, complete){
-	return this.hide({
-		duration: isNaN(duration) ? 400 : Number(duration), 
-		hideStyle: "fade",
-		complete: complete
-	});
-}
-
-_dotcssBuilder.prototype.fadeIn = function(duration, complete){
-	return this.show({
-		duration: isNaN(duration) ? 400 : Number(duration), 
-		showStyle: "fade",
-		complete: complete
-	});
-}
-
 //Build dotcss.
-for(var i = 0; i < _allDotCssProperties.length; i++){
-	var prop = _allDotCssProperties[i].prop.toLowerCase();
-	var jsFriendlyProp = _allDotCssProperties[i].prop.replace(new RegExp("-", "g"), "");
-	
-	_makeDotCssFunction(prop, jsFriendlyProp, _allDotCssProperties[i].type);
-}
+for(var i = 0; i < dotcss._allProperties.length; i++) dotcss._makeFunction(dotcss._allProperties[i].prop.toLowerCase(), dotcss._allProperties[i].prop.replace(new RegExp("-", "g"), ""), dotcss._allProperties[i].type);
 
 //dotcss = new dotcss();
