@@ -7,7 +7,7 @@ function _DOT(document){
 	this.lastNode = document ? document.lastChild : null;
 }
 
-_DOT.prototype.version = "1.3.3";
+_DOT.prototype.version = "1.3.4";
 
 _DOT.prototype._warnings = true;
 _DOT.prototype.suppressWarnings = function(){
@@ -176,7 +176,11 @@ _DOT.prototype.attr = function(attr, value){
 	}
 	if(this._document) {
 		var cn = this._document.childNodes;
-		if(cn.length > 0 && cn[cn.length - 1].setAttribute) cn[cn.length - 1].setAttribute(attr, value || attr); //||attr is for self-explaining attributes
+		if(cn.length > 0 && cn[cn.length - 1].setAttribute){
+			var eValue = cn[cn.length - 1].getAttribute(attr); //Appends the new value to any existing value.
+			if(!eValue) eValue = ""; else eValue += " ";
+			cn[cn.length - 1].setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
+		}
 	}
 	else{
 		var pD = this._getAnInstance();

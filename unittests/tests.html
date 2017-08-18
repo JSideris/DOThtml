@@ -206,9 +206,11 @@ $(function(){
 	addTest("One class at a time", function(){ return dot.div(dot.class(1)); }, "<div class=\"1\"></div>");
 	addTest("Skipped class", function(){ return dot.div().h(1).class(2); }, "<div></div>1");
 	addTest("Missed class", function(){ return dot.class(1); }, "");
-	addTest("Conflicting classes", function(){ return dot.div(dot).class(1).class(2); }, "<div class=\"2\"></div>");
+	//addTest("Conflicting classes", function(){ return dot.div(dot).class(1).class(2); }, "<div class=\"2\"></div>"); // DEPRECATED
+	addTest("Conflicting classes", function(){ return dot.div(dot).class(1).class(2); }, "<div class=\"1 2\"></div>");
 	addTest("Void element", function(){ return dot.img(); }, "<img>");
 	addTest("Self-explaining attribute", function(){ return dot.button().disabled(); }, "<button disabled=\"disabled\"></button>");
+	addTest("Not a self-explaining attribute.", function(){ return dot.input().value(""); }, "<input value=\"\">");
 	addTest("Passing dot to h", function(){ return dot.h(dot.div()); }, "<div></div>");
 	addTest("Passing function to h", function(){ return dot.h(function(){return "<div></div>"}); }, "<div></div>");
 	addTest("Two internal attributes", function(){ return dot.div(dot.class(1).style(2)); }, "<div class=\"1\" style=\"2\"></div>");
