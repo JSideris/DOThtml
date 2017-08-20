@@ -7,7 +7,7 @@ function _DOT(document){
 	this.lastNode = document ? document.lastChild : null;
 }
 
-_DOT.prototype.version = "1.3.4";
+_DOT.prototype.version = "1.3.5";
 
 _DOT.prototype._warnings = true;
 _DOT.prototype.suppressWarnings = function(){
@@ -590,6 +590,7 @@ _DOT.prototype.createJQueryEventHandler = function(name){
 		"onkeyup",
 		"onload",
 		"onmousedown",
+		"onmouseenter",
 		"onmousemove",
 		"onmouseout",
 		"onmouseover",
