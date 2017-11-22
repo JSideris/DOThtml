@@ -1,4 +1,9 @@
-function _DOT(document){
+/**
+ * Chagnes
+ * "on" attribute events that are passed functions will now attach the event through javascript instead of as an unsafe eval.
+ */
+
+function _DOT(document) {
 	this._document = document;
 	this._if = null;
 	this._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
@@ -7,7 +12,7 @@ function _DOT(document){
 	this.lastNode = document ? document.lastChild : null;
 }
 
-_DOT.prototype.version = "1.3.5";
+_DOT.prototype.version = "1.3.6";
 
 _DOT.prototype._warnings = true;
 _DOT.prototype.suppressWarnings = function(){
@@ -106,7 +111,15 @@ _DOT.prototype._appendOrCreateDocument = function(content, parentEl, beforeNode)
 		//3. Otherwise, save it as a pending call right here. // Don't think this ever happens.
 		var pendingCallTarget = (beforeNode ? (beforeNode.previousSibling || parentEl /*Since lastChild will be a timeout*/) : null /*1*/) || parentEl.lastChild /*2*/ || parentEl; 
 		if(pendingCallTarget && pendingCallTarget.tagName != "DOCUMENT"){
-			if(call.type == "attr") pendingCallTarget.setAttribute(call.name, call.params[0]);
+			if (call.type == "attr") {
+				if (!call.params[0] || !call.params[0].constructor || !call.params[0].call || !call.params[0].apply) {
+					pendingCallTarget.setAttribute(call.name, call.params[0]);
+				}
+				else {
+					if (pendingCallTarget.addEventListener) pendingCallTarget.addEventListener(call.name, call.params[0], call.arg3 || false);
+					else pendingCallTarget.attachEvent("on" + call.name, call.params[0]); //compatibility with old browsers.
+				}
+			}
 			else if(call.type == "jQuery wrapper"){
 				var jo = jQuery(pendingCallTarget);
 				jo[call.name].apply(jo, call.params);
@@ -169,23 +182,34 @@ _DOT.prototype.t = function(content){
 	return new _DOT(nDoc);
 };
 
-_DOT.prototype.attr = function(attr, value){
-	if(value && value.constructor && value.call && value.apply){
-		dot._anonAttrFuncs.push(value);
-		value = "dot._anonAttrFuncs[" + (dot._anonAttrFuncs.length - 1) + "](event);"
+_DOT.prototype.attr = function(attr, value, arg3){
+	if (value && value.constructor && value.call && value.apply) {
+		if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
+			dot._anonAttrFuncs.push(value);
+			value = "dot._anonAttrFuncs[" + (dot._anonAttrFuncs.length - 1) + "](event);"
+		}
+		else {
+			attr = attr.substring(2);
+		}
 	}
 	if(this._document) {
 		var cn = this._document.childNodes;
 		if(cn.length > 0 && cn[cn.length - 1].setAttribute){
-			var eValue = cn[cn.length - 1].getAttribute(attr); //Appends the new value to any existing value.
-			if(!eValue) eValue = ""; else eValue += " ";
-			cn[cn.length - 1].setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
+			if (!value || !value.constructor || !value.call || !value.apply) {
+				var eValue = cn[cn.length - 1].getAttribute(attr); //Appends the new value to any existing value.
+				if (!eValue) eValue = ""; else eValue += " ";
+				cn[cn.length - 1].setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
+			}
+			else {
+				if (cn[cn.length - 1].addEventListener) cn[cn.length - 1].addEventListener(attr, value, arg3 || false);
+				else cn[cn.length - 1].attachEvent("on" + attr, value); //compatibility with old browsers.
+			}
 		}
 	}
 	else{
 		var pD = this._getAnInstance();
 		//if(!pD._pendingCalls.length > 0) pD._pendingCalls = [];
-		pD._pendingCalls.push({type: "attr", name: attr, params: [value]});
+		pD._pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
 		return pD;
 	}
 	return this;
