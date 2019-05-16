@@ -7,3 +7,7 @@
 .pending{
 	background-color: #FF5;
 }
+
+.code{
+	font-family: Consolas, monaco, monospace;
+}

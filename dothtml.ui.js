@@ -1,5 +1,6 @@
 //Tabs
-dot.createWidget("tabs", function(tabsArray){
+dot.component("tabs", function(tabsArray){
+	console.log(tabsArray);
 	var first = true;
 	var useFragment = false;
 	//Check if we should use the fragment.
@@ -24,7 +25,7 @@ dot.createWidget("tabs", function(tabsArray){
 	
 	return widgetBodyDot;
 });
-dot.createWidget("tab", function(name, fragmentIdentifier, content){
+dot.component("tab", function(name, fragmentIdentifier, content){
 	if(!content) {content = fragmentIdentifier; fragmentIdentifier = undefined;}
 	
 	var contentContainerDot = dot.div(content).class("dot-tab-content");
@@ -64,15 +65,15 @@ dot.createWidget("tab", function(name, fragmentIdentifier, content){
 	};
 });
 
-dot.createWidget("wrappedlist", function(array, wrapperBuilder){
+dot.component("wrappedlist", function(array, wrapperBuilder){
 	return dot.each(array, function(element){
 		return wrapperBuilder(element);
 	});
 });
 
-dot.createWidget("center");
+dot.component("center");
 
-/*dot.createWidget("scrolledTo", function(){
+/*dot.component("scrolledTo", function(){
 	if(this._document){
 		var le = this._document.lastChild;
 		jo[name](handler);

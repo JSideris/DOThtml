@@ -75,7 +75,7 @@ function beautifyHtml(source) {
 
 //Define a bunch of widgets that will be used in examples.
 
-dot.createWidget ("robotface", function(id, color){
+dot.component ("robotface", function(id, color){
 	return dot.div(dot
 		.div().style(dotcss.position("absolute").width(10).height(10).left(10).top(10).backgroundColor(0))
 		.div().style(dotcss.position("absolute").width(10).height(10).left(10).top(10).backgroundColor(0))
@@ -84,7 +84,7 @@ dot.createWidget ("robotface", function(id, color){
 	).id(id).style(dotcss.position("relative").width(64).height(64).backgroundColor(color).display("InlineBlock"));
 });
 
-dot.createWidget("featurepreview", function(imageurl, title){
+dot.component("featurepreview", function(imageurl, title){
 	return dot.div(
 		dot.div().class("featurepreview-img")
 			.style(dotcss.backgroundImage(imageurl))
@@ -92,7 +92,7 @@ dot.createWidget("featurepreview", function(imageurl, title){
 	).class("featurepreview");
 });
 
-dot.createWidget("showcasesite", function(title, url, preview){
+dot.component("showcasesite", function(title, url, preview){
 	return dot
 		.div()
 		.title(title)
@@ -112,7 +112,7 @@ dot.createWidget("showcasesite", function(title, url, preview){
 });
 
 dot.globalExampleNumber = 0; //Note: storing global widget vars inside dot is possible, but isn't standardized by any means.
-dot.createWidget("featuretutorial", function(title, description, innerDotFunction, afterNotes){
+dot.component("featuretutorial", function(title, description, innerDotFunction, afterNotes){
 	var exampleNumb = dot.globalExampleNumber;
 	var innerDotFunctionStr = innerDotFunction.toString();
 	dot.globalExampleNumber++;
@@ -178,7 +178,9 @@ dot("body")
 				dot.div(
 					dot.div("Become the most productive programmer on the dynamic web.")
 					.br()
-					.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases/download/v1.3.6/dothtml.js").target("_blank").class("btn btn-primary download-dot-button")//.download()
+					.div("Now with 2-way binding!").style(dotcss.fontSize(24).fontStyle("italic"))
+					.br()
+					.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases/download/v2.0.0/dothtml.js").target("_blank").class("btn btn-primary download-dot-button")//.download()
 				).id("download-dot-banner")
 				.hr()
 					.h1("DOThtml - The best open-source client-side page buider.")
@@ -191,7 +193,7 @@ dot("body")
 				.hr()
 					.h1("Check out a few sites built with DOThtml.")
 						.div(
-							DOT
+							dot
 							.showcasesite("JSideris' Home Page", "http://jsideris.com", "./images/jsweb.png")
 							.showcasesite("KSP Advanced Mission Planner", "http://jsideris.github.io/AdvancedKspMissionCalculator/", "./images/kspadvancedmissionplanner.png")
 							.showcasesite("DOThtml Home", "http://jsideris.github.io/DOThtml/", "./images/dothtmlpreview.png")
@@ -203,7 +205,7 @@ dot("body")
 				.h2("Download")
 				.div(
 					dot
-					.div("Download version 1.3.1").class("btn btn-primary").style(dotcss.position("absolute").left(0).widthP(40)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml/releases/download/v1.3.6/dothtml.js"); })
+					.div("Download version 2.0.0").class("btn btn-primary").style(dotcss.position("absolute").left(0).widthP(40)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml/releases/download/v2.0.0/dothtml.js"); })
 					.div("Or check it out on GitHub").class("btn btn-info").style(dotcss.position("absolute").right(0).widthP(40)).onclick(function(){ window.open("https://github.com/JSideris/DOThtml")})
 				).style(dotcss.position("relative").width("100%").height(32))
 				.h2("Learn")
@@ -372,7 +374,7 @@ return dot.h(function(){
 					dot.h("Pro tip: if you prefer JQuery as your node manager, just pass <code>dot.lastNode</code> right into <code>$()</code> (but this is a JQuery feature, strictly speaking, and has nothing to do with DOThtml).")
 				)
 				.featuretutorial("Custom Widgets",
-					dot.h("You can register a custom widget with <code>dot.createWidget(name, callback)</code> where <code>name</code> is the name of the widget that will be accissible from any DOThtml page building objects, and <code>callback</code> is your own custom page building function. The return value of your page building function should return a valid page building object derrived by chaining <code>dot</code>, otherwise your widget won't be chainable in the way that other dot components are. Here are a few examples."),
+					dot.h("You can register a custom widget with <code>dot.component({name: ..., constructor: ..., builder: ..., ready: ...})</code> where <code>name</code> is the name of the widget that will be accissible from any DOThtml page building objects, <code>builder</code> is your own custom page building function that returns DOT syntax. <code>construcotr</code> and <code>ready</code> are optional functions that are called before and after the elements are added to the DOM. All functions are scoped to a special instance of the component, and the <code>this</code> keyword can be used to store local variables or bindings, or to access the most parent (or last-added) element in the component. Here are a few examples."),
 function(){
 return dot.script(function(){
     //Normally widgets can be declared at the top of your code,
@@ -382,7 +384,8 @@ return dot.script(function(){
     //Here we define three widgets.
 
     //1. Widget that applies a custom style to the previous element.
-    dot.createWidget("applyStyles", function(){
+	//Note the alternate (legacy) syntax of component(name, builder).
+    dot.component("applyStyles", function(){
         //DOTcss is a pretty cool library too. No dependency on DOThtml.
         //Check it out.
         return dot.style(
@@ -396,7 +399,7 @@ return dot.script(function(){
     //container. This is an improvement over DOThtml's native
     //array-joining functionality.
     //This widget is available in the DOThtml-ui library.
-    dot.createWidget("wrappedList", function(array, wrapperBuilder){
+    dot.component("wrappedList", function(array, wrapperBuilder){
         return dot.each(array, function(element){
             return wrapperBuilder(element);
         });
@@ -404,17 +407,27 @@ return dot.script(function(){
 
     //3. This widget uses the previous two widgets to
     //generate a stylized ordered list from an array.
-    dot.createWidget("stylizedOrderedList", function(array){
+    dot.component("stylizedOrderedList", function(array){
         return dot.ol(
             dot.wrappedList(array, function(element){
                 return dot.li(element).applyStyles();
             })
         );
-    })
-})//We can now use them immediately. Just 1 Line of code!
-.stylizedOrderedList(["Aye", "Bee", "Sea", "Di"]);
+    });
+
+    //3. This widget uses the previous two widgets to
+    //generate a stylized ordered list from an array.
+    dot.component("stylizedOrderedList", function(array){
+        return dot.ol(
+            dot.wrappedList(array, function(element){
+                    return dot.li(element).applyStyles();
+                })
+            );
+        });
+    })//We can now use them immediately. Just 1 Line of code!
+    .stylizedOrderedList(["Aye", "Bee", "Sea", "Di"]);
 },
-					dot.h("You can overwrite a previously-defined widget by calling createWidget again with the same widget name. Try to avoid overwritting built-in DOThtml functions or properties as this could render DOThtml unusable.")
+				dot.h("You can overwrite a previously-defined widget by calling component again with the same widget name. Avoid overwritting built-in DOThtml functions or properties as this could render DOThtml unusable.")
 				)
 				.featuretutorial("JQuery Wrappers",
 					dot.h("DOThtml is not a JQuery addon and does not have a mandatory dependency on JQuery. However, if JQuery is available you will be able to use several JQuery event and transition wrappers.").br().br()
@@ -436,33 +449,34 @@ return dot.div().style(dotcss.width(100).height(100).backgroundColor(0x000000))
 			),*/ 
 			dot.tab("Compatibility & Support", "support",
 				dot.h1("Browser Compatibility")
-				.h("Maximum forward-and-backward browser compatibility is a priority of DOThtml. Please refer to the following table for more information on browser compatibility testing. Browser testing is an ongoing chore but here are the results of the latest tests. Browsers with a checkmark have passed all test cases. Version numbers are in the following format: \"browser-version | latest-DOThtml-version-tested\"")
-				.div(
-					dot.each([
-						{name: "Chrome", versionData: [{b: "57", d: "1.2.1"}, {b: "56", d: "1.2.1"}]}, 
-						{name: "Edge", versionData: [{b: "38", d: "1.2.1"}]},
-						{name: "Internet Explorer", versionData: [{b: "11", d: "1.2.1"}]},
-						//{name: "Safari", versionData: [{b: "", d: "1.2.1"}]}, 
-						{name: "Firefox", versionData: [{b: "51", d: "1.2.1"}]}, 
-						{name: "Android Browser", versionData: [{b: "", d: "1.2.1"}]}, 
-						//{name: "Opera", versionData: [{b: "", d: "1.2.1"}]},
-						{name: "BlackBerry Browser", versionData: [{b: "OS 10.3", d: "1.2.1"}]},
-						//{name: "Sea Monkey", versionData: [{b: "", d: "1.2.1"}]},
-						//{name: "K-Meleon", versionData: [{b: "", d: "1.2.1"}]},
-						//{name: "OmniWeb", versionData: [{b: "", d: "1.2.1"}]},
-						//{name: "iCab", versionData: [{b: "", d: "1.2.1"}]},
-						//{name: "Konqueror", versionData: [{b: "", d: "1.2.1"}]},
-						//{name: "Epiphany", versionData: [{b: "", d: "1.2.1"}]},
-					], function(row){
-						return dot.div(
-							dot.div(row.name).style(dotcss.fontWeight("bold").display("inline-block").padding(8).borderRight("2px solid black").marginRight(4))
-							.each(row.versionData, function(versionDatum){
-								return dot.div(versionDatum.b + " | " + versionDatum.d).style(dotcss.fontStyle("italic").backgroundColor(0xAAFFAA).display("inline-block").padding(4).border("1px solid black"))
-							})
-						).style(dotcss.whiteSpace("nowrap"));
-					})
-				).style(dotcss.widthP(100)/*.height(1024)*/.overflowX("scroll").backgroundColor(200, 200, 200).padding(8))
-
+				//.h("Maximum forward-and-backward browser compatibility is a priority of DOThtml. Please refer to the following table for more information on browser compatibility testing. Browser testing is an ongoing chore but here are the results of the latest tests. Browsers with a checkmark have passed all test cases. Version numbers are in the following format: \"browser-version | latest-DOThtml-version-tested\"")
+				.h("Maximum forward-and-backward browser compatibility is a priority of DOThtml. DOThtml has been tested on a wide range of desktop and mobile browsers including IE 6+.")
+				// .div(
+				// 	dot.each([
+				// 		{name: "Chrome", versionData: [{b: "57", d: "1.2.1"}, {b: "56", d: "1.2.1"}]}, 
+				// 		{name: "Edge", versionData: [{b: "38", d: "1.2.1"}]},
+				// 		{name: "Internet Explorer", versionData: [{b: "11", d: "1.2.1"}]},
+				// 		//{name: "Safari", versionData: [{b: "", d: "1.2.1"}]}, 
+				// 		{name: "Firefox", versionData: [{b: "51", d: "1.2.1"}]}, 
+				// 		{name: "Android Browser", versionData: [{b: "", d: "1.2.1"}]}, 
+				// 		//{name: "Opera", versionData: [{b: "", d: "1.2.1"}]},
+				// 		{name: "BlackBerry Browser", versionData: [{b: "OS 10.3", d: "1.2.1"}]},
+				// 		//{name: "Sea Monkey", versionData: [{b: "", d: "1.2.1"}]},
+				// 		//{name: "K-Meleon", versionData: [{b: "", d: "1.2.1"}]},
+				// 		//{name: "OmniWeb", versionData: [{b: "", d: "1.2.1"}]},
+				// 		//{name: "iCab", versionData: [{b: "", d: "1.2.1"}]},
+				// 		//{name: "Konqueror", versionData: [{b: "", d: "1.2.1"}]},
+				// 		//{name: "Epiphany", versionData: [{b: "", d: "1.2.1"}]},
+				// 	], function(row){
+				// 		return dot.div(
+				// 			dot.div(row.name).style(dotcss.fontWeight("bold").display("inline-block").padding(8).borderRight("2px solid black").marginRight(4))
+				// 			.each(row.versionData, function(versionDatum){
+				// 				return dot.div(versionDatum.b + " | " + versionDatum.d).style(dotcss.fontStyle("italic").backgroundColor(0xAAFFAA).display("inline-block").padding(4).border("1px solid black"))
+				// 			})
+				// 		).style(dotcss.whiteSpace("nowrap"));
+				// 	})
+				// ).style(dotcss.widthP(100)/*.height(1024)*/.overflowX("scroll").backgroundColor(200, 200, 200).padding(8))
+				.br().br()
 				.h("To test DOThtml on any JavaScript-enabled browser, simply visit the <a href=\"./unittests/tests.html\" target=\"_blank\">test case page</a>.")
 
 				.h1("What about SEO?")
