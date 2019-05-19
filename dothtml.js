@@ -377,8 +377,10 @@ var dot = (function(){
 		dot[prms.name] = _p[prms.name] = function(){
 			var obj = new components[prms.name]();
 			var ret = prms.builder.apply(obj, arguments);
-			ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
-			obj.element = obj.element || ret.getLast();
+			// ret = this._appendOrCreateDocument(ret instanceof _D ? ret : ret);
+			// obj.element = obj.element || ret.getLast();
+			if(ret instanceof _D) ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
+			obj.element = obj.element || ret && ret.getLast && ret.getLast();
 			prms.ready && setTimeout(function(){prms.ready.apply(obj)}, 0);
 			return ret;
 		};
