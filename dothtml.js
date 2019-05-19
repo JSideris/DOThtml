@@ -1,5 +1,6 @@
 /**
  * Chagnes
+ * 2.0.0:
  * - Aliases / shorter names for common/internal objects to reduce file size.
  * - Encapsulated _DOT (now _D) constructor.
  * - Removed DOT alias for dot.
@@ -8,22 +9,34 @@
  * - Added an optional cunstructor to components.
  * - Added a setVal and getVal functions, similar to jQuery's val, only better.
  * - Added missing HTML tags.
+ * 2.0.1:
+ * - Fixed IE 8, 9, 10, 11 bugs (IE 8 supports everything except jQuery wrappers and data bindings).
  */
 var dot = (function(){
 
+	// Compatibility:
+	var Node = window.Node;
+	if(!Node){
+		Node = function(){};
+		Node.prototype.ELEMENT_NODE = 1;
+		Node.prototype.ATTRIBUTE_NODE = 2;
+		Node.prototype.TEXT_NODE = 3;
+	}
+
 	// DOT:
 	function _D(document) {
-		this._document = document;
-		this._if = null;
-		this._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
-		this._anonAttrFuncs = []; //Only to be used by top-level dot object.
+		var T = this;
+		T._document = document;
+		T._if = null;
+		T._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
+		T._anonAttrFuncs = []; //Only to be used by top-level dot object.
 
-		this.lastNode = document ? document.lastChild : null;
+		T.lastNode = document ? document.lastChild : null;
 	}
 
 	var _p = _D.prototype;
 
-	_p.version = "2.0.0";
+	_p.version = "2.0.1";
 
 	_p._warnings = true;
 	_p.suppressWarnings = function(){
@@ -107,11 +120,12 @@ var dot = (function(){
 	};
 
 	_p._appendOrCreateDocument = function(content, parentEl, beforeNode){
+		var T = this;
 		//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this._document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
-		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || this._document || this._getNewDocument();
+		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T._document || T._getNewDocument();
 		
-		var nd = this._document === parentEl ? this : new _D(parentEl);
-		nd._if = this._if;
+		var nd = T._document === parentEl ? T : new _D(parentEl);
+		nd._if = T._if;
 		var pendingCalls = []; //This will populate with pending calls.
 		var eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
 		for(var i = 0; i < pendingCalls.length; i++){
@@ -127,8 +141,7 @@ var dot = (function(){
 						pendingCallTarget.setAttribute(call.name, call.params[0]);
 					}
 					else {
-						if (pendingCallTarget.addEventListener) pendingCallTarget.addEventListener(call.name, call.params[0], call.arg3 || false);
-						else pendingCallTarget.attachEvent("on" + call.name, call.params[0]); //compatibility with old browsers.
+						attachEvent(pendingCallTarget, call.name, call.params[0], call.arg3);
 					}
 				}
 				else if(call.type == "jQuery wrapper"){
@@ -166,24 +179,26 @@ var dot = (function(){
 	};
 
 	_p.el = function(tag, content){
+		var T = this;
 		var ne = document.createElement(tag); 
-		var nDoc = this._document || this._getNewDocument();
+		var nDoc = this._document || T._getNewDocument();
 		nDoc.appendChild(ne);
-		this._appendOrCreateDocument(content, ne);
-		return this._document === nDoc ? this : new _D(nDoc);
+		T._appendOrCreateDocument(content, ne);
+		return T._document === nDoc ? T : new _D(nDoc);
 	};
 
 	_p.h = function(content){
-		var hDoc = this._getNewDocument();
+		var T = this;
+		var hDoc = T._getNewDocument();
 		var hDot = new _D(hDoc);
 		//if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") hDoc.innerHTML = content; //Raw data
 		hDot._appendOrCreateDocument(content)
 		
-		var nDoc = this._document || this._getNewDocument();
+		var nDoc = T._document || T._getNewDocument();
 		while(hDoc.childNodes.length > 0){
 			nDoc.appendChild(hDoc.childNodes[0]);
 		}
-		return this._document === nDoc ? this : new _D(nDoc); 
+		return T._document === nDoc ? T : new _D(nDoc); 
 	};
 
 	_p.t = function(content){
@@ -194,6 +209,7 @@ var dot = (function(){
 	};
 
 	_p.attr = function(attr, value, arg3){
+		var T = this;
 		if (isF(value)) {
 			if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
 				dot._anonAttrFuncs.push(value);
@@ -203,8 +219,8 @@ var dot = (function(){
 				attr = attr.substring(2);
 			}
 		}
-		if(this._document) {
-			var cn = this._document.childNodes;
+		if(T._document) {
+			var cn = T._document.childNodes;
 			var last = cn[cn.length - 1];
 			if(last && last.setAttribute){
 				if (!isF(value)) {
@@ -213,29 +229,29 @@ var dot = (function(){
 					last.setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
 				}
 				else {
-					if (last.addEventListener) last.addEventListener(attr, value, arg3 || false);
-					else last.attachEvent("on" + attr, value); //compatibility with old browsers.
+					attachEvent(last, attr, value, arg3);
 				}
 			}
 		}
 		else{
-			var pD = this._getAnInstance();
+			var pD = T._getAnInstance();
 			//if(!pD._pendingCalls.length > 0) pD._pendingCalls = [];
 			pD._pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
 			return pD;
 		}
-		return this;
+		return T;
 	};
 
 	_p._appendSetElement = function(targetId, appendMode){
-		if(!targetId) {if (this._warnings) console.warn("Can't render to " + targetId); return this;}
+		var T = this;
+		if(!targetId) {if (T._warnings) console.warn("Can't render to " + targetId); return T;}
 		var destination = document.getElementById(targetId);
-		if(!destination) {if (this._warnings) console.warn("Element with ID: " + targetId + " not found."); return this;}
-		if(this._document) {
+		if(!destination) {if (T._warnings) console.warn("Element with ID: " + targetId + " not found."); return T;}
+		if(T._document) {
 			if(!appendMode) destination.innerHTML = "";
-			while(this._document.childNodes.length > 0) destination.appendChild(this._document.childNodes[0]);
+			while(T._document.childNodes.length > 0) destination.appendChild(T._document.childNodes[0]);
 		}
-		return this;
+		return T;
 	};
 
 	_p.appendToId = function(targetId){
@@ -269,7 +285,7 @@ var dot = (function(){
 		return target;
 	};
 
-	_p.if = function(condition, callback){
+	_p.IF = _p["if"] = function(condition, callback){
 		if(condition) {
 			this._if = true;
 			return this._getAnInstance()._appendOrCreateDocument(callback);
@@ -280,14 +296,14 @@ var dot = (function(){
 		return this;
 	};
 
-	_p.elseif = function(condition, callback){
+	_p.ELSEIF = _p.elseif = function(condition, callback){
 		if(!this._if){
-			return this.if(condition, callback);
+			return this["if"](condition, callback);
 		}
 		return this;
 	};
 
-	_p.else = function(callback){
+	_p.ELSE = _p["else"] = function(callback){
 		if(!this._if){
 			this._if = null;
 			return this._getAnInstance()._appendOrCreateDocument(callback);
@@ -338,9 +354,7 @@ var dot = (function(){
 		var last = this.getLast();
 		var noListener = true;
 		var ret = this.setVal(binding.value);
-		last.addEventListener("change", function(e){
-			binding.value = this.getVal();
-		});
+		attachEvent(last, "change", function(e){binding.value = this.getVal();})
 		binding.subscribe(last);
 		var noListener = false;
 		return ret;
@@ -360,7 +374,7 @@ var dot = (function(){
 		if(arguments.length == 1) prms = params;
 		else prms = {name: arguments[0], builder: arguments[1]}
 		components[prms.name] = prms.constructor || function(){};
-		_p[prms.name] = function(){
+		dot[prms.name] = _p[prms.name] = function(){
 			var obj = new components[prms.name]();
 			var ret = prms.builder.apply(obj, arguments);
 			ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
@@ -374,6 +388,7 @@ var dot = (function(){
 
 	_p.createElement = function(tag){
 		_p[tag] = _p[tag + "E"] = function(c){return this.el(tag, c);}
+		//dot[tag] = dot[tag + "E"] = function(c){return this.el(tag, c);}
 	};
 
 	_p.createAttribute = function(attribute){
@@ -788,20 +803,22 @@ var dot = (function(){
 	//summary, span, label, form, cite
 
 	_p.cite = function(arg){
-		if(arg && this._document && this._document.lastChild){
-			var tagType = this._document.lastChild.tagName;
+		var T = this;
+		if(arg && T._document && T._document.lastChild){
+			var tagType = T._document.lastChild.tagName;
 			if(tagType == "BLOCKQUOTE" 
 				|| tagType == "DEL" 
 				|| tagType == "INS" 
 				|| tagType == "Q")
-				return this.attr("cite", arg);
+				return T.attr("cite", arg);
 		}
-		return this.el("cite", arg);
+		return T.el("cite", arg);
 	};
 			
 	_p.form = function(arg){
-		if(arg && this._document && this._document.lastChild){
-			var tagType = this._document.lastChild.tagName;
+		var T = this;
+		if(arg && T._document && T._document.lastChild){
+			var tagType = T._document.lastChild.tagName;
 			if(tagType == "BUTTON" 
 				|| tagType == "FIELDSET" 
 				|| tagType == "INPUT" 
@@ -813,39 +830,42 @@ var dot = (function(){
 				|| tagType == "PROGRESS"
 				|| tagType == "SELECT"
 				|| tagType == "TEXTAREA")
-				return this.attr("form", arg);
+				return T.attr("form", arg);
 		}
-		return this.el("form", arg);
+		return T.el("form", arg);
 	};
 
 	_p.label = function(arg){
-		if(arg && this._document && this._document.lastChild){
-			var tagType = this._document.lastChild.tagName;
+		var T = this;
+		if(arg && T._document && T._document.lastChild){
+			var tagType = T._document.lastChild.tagName;
 			if(tagType == "TRACK")
-				return this.attr("label", arg);
+			return T.attr("label", arg);
 		}
-		return this.el("label", arg);
+		return T.el("label", arg);
 	};
-
+	
 	_p.span = function(arg){
-		if(arg && this._document && this._document.lastChild){
-			var tagType = this._document.lastChild.tagName;
+		var T = this;
+		if(arg && T._document && T._document.lastChild){
+			var tagType = T._document.lastChild.tagName;
 			if(tagType == "COL" 
-				|| tagType == "COLGROUP")
-				return this.attr("span", arg);
+			|| tagType == "COLGROUP")
+			return T.attr("span", arg);
 		}
-		return this.el("span", arg);
+		return T.el("span", arg);
 	};
-
+	
 	_p.summary = function(arg){
-		if(arg && this._document && this._document.lastChild){
-			var tagType = this._document.lastChild.tagName;
+		var T = this;
+		if(arg && T._document && T._document.lastChild){
+			var tagType = T._document.lastChild.tagName;
 			if(tagType == "TABLE")
-				return this.attr("summary", arg);
+			return T.attr("summary", arg);
 		}
-		return this.el("summary", arg);
+		return T.el("summary", arg);
 	};
-
+	
 	/**
 	 * Sets the value of an input or texterea.
 	 * @param {string} value - The value to be set.
@@ -856,7 +876,7 @@ var dot = (function(){
 		if(last.parentNode && last.parentNode.tagName != "DOTHTML-DOCUMENT") last = last.parentNode;
 		
 		//if ( typeof value === "number" ) val += "";
-		if ( Array.isArray( value ) ) {
+		if ( Array.isArray && Array.isArray( value ) || !Array.isArray && value.join ) {
 			value = value.join("");
 		}
 		else if(value == null){
@@ -904,8 +924,16 @@ var dot = (function(){
 	};
 
 	/** @type {_D} */
-	var dot = dot = function(targetSelector){
-		var targets = targetSelector instanceof NodeList ? targetSelector : ( targetSelector instanceof Node ? [targetSelector] : document.querySelectorAll(targetSelector));
+	var dot = function(targetSelector){
+		//console.log(targetSelector);
+		var targets = targetSelector ? (
+			typeof targetSelector == "string" ? document.querySelectorAll(targetSelector) 
+			: (targetSelector instanceof Element ? [targetSelector] 
+				: ((targetSelector instanceof NodeList || targetSelector.length != undefined && targetSelector[0] && targetSelector[0] instanceof Element) ? targetSelector 
+					: []
+		)))
+		: [];
+		//console.log(targets);
 		var newDot = new _D();
 		if(targets.length > 0){
 			newDot._document = targets[0];
@@ -915,27 +943,36 @@ var dot = (function(){
 	} 
 
 	//Fill in all the other fields.
-	dot.__proto__ = Object.create(_p);
+	//if(Object.create) dot.prototype = Object.create(_p);
+	// dot.prototype.constructor = dot;
 	dot._document = null;
 	dot._if = null;
 	dot._pendingCalls = [];
 	dot._anonAttrFuncs = [];
 
+	// Make all the names available to the dot object.
+	for (var k in _p) {
+		if(dot[k] === undefined) dot[k] = _p[k];
+	}
+
 	// BINDINGS:
 	function _B(value){
-		this._value = value;
-		this.subscribers = [];
-		var self = this;
-		this.property = Object.defineProperty(this, "value", { 
-			//value: value,
-			enumerable: true,
-			//writable: true,
-			get: function(){return self._value;},
-			set: function(value){
-				self._value = value; 
-				self.updateSubscribers();
-			}
-		});
+		var T = this;
+		T.value = T._value = value;
+		T.subscribers = [];
+		try{
+			T.property = Object.defineProperty(T, "value", { 
+				//value: value,
+				enumerable: true,
+				//writable: true,
+				get: function(){return T._value;},
+				set: function(value){
+					T._value = value; 
+					T.updateSubscribers();
+				}
+			});
+		}
+		catch(e){T.property = new Object()}
 	}
 
 	var _Bp = _B.prototype;
@@ -968,6 +1005,11 @@ var dot = (function(){
 
 	function isF(value){
 		return value && value.constructor && value.call && value.apply;
+	}
+
+	function attachEvent(el, ev, val, a3){
+		if (el.addEventListener) el.addEventListener(ev, val, a3 || false);
+		else el.attachEvent("on" + ev, val); //compatibility with old browsers.
 	}
 
 
