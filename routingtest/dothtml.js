@@ -1,7 +1,7 @@
 /**
  * Chagnes
- * 3.0.0: 
- * - Added routing and router outlets.
+ * 2.1.0: 
+ * - Added a router outlet component.
  */
 var dot = (function(){
 
@@ -27,7 +27,7 @@ var dot = (function(){
 
 	var _p = _D.prototype;
 
-	_p.version = "3.0.0";
+	_p.version = "2.1.0";
 
 	_p._warnings = true;
 	_p.suppressWarnings = function(){
@@ -945,161 +945,45 @@ var dot = (function(){
 
 	// ROUTING:
 
-	//routerOutletStack = [];
-	var routerOutlet = null;
-	//routeQueue = [];
-	var routerEventSet = false;
+	routerOutletStack = [];
+	routeQueue = [];
+	routerEventSet = false;
 
 	_p.component({
 		name: "router",
-		// constructor: function(){
-		// 	this.navigate = function(){
-		// 		// Figure
-		// 	}
-		// },
+		//constructor: function(){},
 		/**
 		 * @param {Array.<{path: string, title: string, component: Object}>} routes - Array of routes.
 		 */
-		builder: function(routes, noHistory){
+		builder: function(routes, ignoreUrl){
 			var t = this;
-			t.noHistory = noHistory;
+			t.ignoreUrl = ignoreUrl;
 			for(var i = 0; i < routes.length; i++){
 				var r = routes[i];
-				r.segments = r.path.split("/");
+				r.segments = [];
 			}
 			t.routes = routes;
 			var o = dot.el("dothtml-router");
 			t.outlet = o.getLast();
-			routerOutlet = t;
-			//routerOutletStack.push(t);
+			routerOutletStack.push(t);
 			return o;
 		},
 		ready: function(){
-			// If there is a route left inside the route queue
-
-			!this.noHistory && !routerEventSet && (routerEventSet = true) ? window.onpopstate = function(e){
+			this.ignoreUrl && !routerEventSet && (routerEventSet = true) ? window.onpopstate = function(e){
 				if(e.state){
 					dot.navigate(e.state.path, true);
 					document.title = e.state.pageTitle;
 				}
 			} : 0;
-
-			// if(routeQueue.length > 0){
-				
-			// }
 		}
 	});
 
-	_p.navigate = function(path){
-
-		if(routerOutlet == null) return this; 
-		// Step 1: parse the path into a route queue:
-		path = path || "";
-		if(typeof path != "string") path = "";
-		var routeQueue = path.split("#")[0].split("/");
-		navParams = {
-			path: path,
-			params: {}
-		};
-
-		// Step 2: determine the last router that is correctly loaded.
-
-		// var deepestRouter = null;
-		var bestRoute = null;
-		// Loop through the router stack from start to finish to find the deepest router and the best route to take.
-		// for(var i = 0; i < routerOutletStack.length; i++){
-
-		// var candidate = routerOutletStack[i];
-		// Find the an available route that matches.
-		// bestRoute = null;
-		for(var j = 0; j < routerOutlet.routes.length; j++){
-			var nextRoute = routerOutlet.routes[j];
-			var rFound = true;
-			var prms = {};
-			if(nextRoute.path != "*" 
-			&& !((path == "" || path == "/") && (nextRoute.path == "" || nextRoute.path == "/"))){
-				for(var k = 0; k < nextRoute.segments.length; k++){
-					var sgt = nextRoute.segments[k];
-					var sl = sgt.length;
-					var ps = routeQueue[k];
-					if(sl > 2 && sgt.charAt(0) == "{" && sgt.charAt(sl - 1) == "}"){
-						prms[sgt.substring(1, sl - 1)] = ps;
-					}
-					else if(sgt != ps)
-					{
-						rFound = false;
-						break;
-					}
-				}
-			}
-			if(rFound){
-				bestRoute = nextRoute;
-				navParams.params = prms;
-				//routeQueue.splice(0, nextRoute.segments.length);
-				break;
-			}
-		}
-
-		var ro = routerOutlet.outlet;
-		dot(ro).empty();
-
-		//if(deepestRouter == null) return this;
-		if(routeQueue.length == 0) return this;
-		if(bestRoute == null) return this;
-
-
-		// Step 3: Unload the old route & get the most parent router.
-
-		//???.empty();
-		
-		// // Step 4: Tell the router to load the next rout.
-		// Step 4: Figure out what component will be loaded into this router.
-		
-		
-		// Step 5: Load the component into the router.
-
-		//var component = null;
-		//Find the component to insert into the router.
-		//for(var i = 0; i < router.segments.length; i++){
-		//var r = router.routes[i];
-		//if(routeQueue.length < r.segments.length) continue;
-		//component = r.component;
-		//for(var k = 0; k < r.segments.length; k++){
-		//	var s = r.segments[k];
-		//	if(s != routeQueue[k]){
-		//		component = null;
-		//		break;
-		//	}
-		//}
-		//}
-
-		if(typeof bestRoute.component == "string"){
-			_get(bestRoute.component, function(result){
-				var dotResult = eval(result);
-				dot(ro).h(dotResult);
-			});
-		}
-		else{
-			dot(ro).h(bestRoute.component.call(dot, navParams));
-		}
-		var title = bestRoute.title;
+	_p.navigate = function(path, noHistory){
+		routeQueue = path.split("#")[0].split("/");
+		dot(routerEl).empty().h(routes[path].component.apply(dot));
+		var title = routes[path].title;
 		document.title = title || document.title;
-		try{
-		if(window.history.pushState && !no.noHistory) window.history.pushState({"pageTitle":title, "path": path}, title, path);
-		}catch(e){}
-
-		return this;
-	}
-
-	function _get(url, success){
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				success(this.responseText);
-			}
-		};
-		xhttp.open("GET", url, true);
-		xhttp.send();
+		if(window.history.pushState && !noHistory) window.history.pushState({"pageTitle":title, "path": path}, title, path);
 	}
 
 	// Make all the names available to the dot object.

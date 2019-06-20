@@ -1,0 +1,30 @@
+<!doctype html>
+
+<html>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="bootstrap-theme.min.css" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+<script src="jquery.js"></script>
+<script src="bootstrap.min.js"></script>
+<script src="dothtml.js"></script>
+
+<body>
+
+	<script>
+		dot.component({name:"pageA", builder:function(){return dot.h1("WELCOME TO PAGE A!");}});
+		dot.component({name:"pageB", builder:function(){return dot.h1("WELCOME TO PAGE B!");}});
+		dot.component({name:"pageC", builder:function(){return dot.h1("WELCOME TO PAGE C!");}});
+
+		dot.route({path: "A", title: "Page A", component: dot.pageA})
+		.route({path: "B", title: "Page B", component: dot.pageB})
+		.route({path: "C", title: "Page C", component: dot.pageC});
+
+		dot("body")
+		.button("A").onclick(function(){dot.navigate("A")})
+		.button("B").onclick(function(){dot.navigate("B")})
+		.button("C").onclick(function(){dot.navigate("C")})
+		.router();
+	</script>
+</body>
+</html>
