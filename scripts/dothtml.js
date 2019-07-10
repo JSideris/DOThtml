@@ -992,7 +992,7 @@ var dot = (function(){
 		// Step 1: parse the path into a route queue:
 		path = path || "";
 		if(typeof path != "string") path = path + "";
-		var routeQueue = path.split("#")[0].split("/");
+		var routeQueue = path.split("#")[0].split("?")[0].split("/");
 		if(routeQueue[0] === "") routeQueue.shift();
 		var cancel = false;
 		navParams = {
