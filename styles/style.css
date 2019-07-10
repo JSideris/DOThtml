@@ -1,0 +1,154 @@
+body {
+	margin: 0px;
+	font-family: "Arial", Gadget, sans-serif;
+	color: #333;
+}
+
+a, button{
+	cursor: pointer;
+}
+
+p{
+	color: #333;
+}
+
+#header{
+	/*white-space: nowrap;*/
+	position: relative;
+	text-align: center;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	width: 100%;
+	overflow: hidden;
+	
+	border-bottom: 10px solid red;
+	background-color: #58B;
+	font-family: "Arial Black", Gadget, sans-serif;
+}
+
+#footer{
+	position: relative;
+	width: 100%;
+	height: 200px;
+	background-color: #333;
+	color: white;
+}
+
+#footer a{
+	text-decoration: underline;
+	color: white;
+}
+
+#logo{
+	font-size: 128px;
+	/*white-space: nowrap;*/
+	font-family: "Arial Black", Gadget, sans-serif;
+	color: black;
+}
+
+#logo > div{
+	line-height: 256px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+#logodotsmall{
+	background-image: url("../images/bigdot.png");
+	height: 16px;
+	width: 16px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	line-height: 16px;
+	display: inline-block;
+	color: white;
+	text-align: center;
+	font-family: Impact, Charcoal, sans-serif;
+}
+
+#slogan{
+	font-size: 36px;
+	color: #EEE;
+}
+
+#content{
+	padding-top: 0px;
+	padding-left: 200px;
+	padding-right: 200px;
+	padding-bottom: 200px;
+}
+
+#download-dot-banner{
+	font-size: 40px;
+	padding-top: 50px;
+	padding-bottom: 50px;
+	text-align: center;
+}
+
+.download-dot-button{
+	cursor: pointer;
+	padding: 15px;
+	width: 400px;
+	white-space: nowrap;
+	font-size: 30px;
+	
+	/*
+	border: 3px solid black;
+	background-color: lightgreen;
+	font-weight: bold;
+	text-decoration:  none;
+	margin: auto;
+	color: black;
+	border-radius: 20px;
+	*/
+}
+
+/*Switched to bootstrap.
+.download-dot-button:hover{
+	background-color: green;
+	color: #111;
+}*/
+
+.featurepreview{
+	/*white-space: nowrap;*/
+	font-size: 28px;
+}
+
+.featurepreview>div{
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.featurepreview-img{
+	width: 100px;
+	height: 100px;
+	background-size: 100px 100px;
+}
+
+.tab-button-container{
+	white-space: nowrap;
+	cursor: pointer;
+
+    display: inline-block;
+    vertical-align: top;
+	padding: 10px 15px 10px 15px;
+	cursor: pointer;
+	font-weight: bold;
+	border-bottom: 2px solid black;
+	background-color: rgba(200, 200, 200, 0.2);
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Chrome/Safari/Opera */
+	-khtml-user-select: none; /* Konqueror */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none;
+}
+
+.tab-button-container.selected{
+	border: 2px solid black;
+	border-bottom: 0;
+	background-color: transparent;
+}
+
+.tab-button-container:hover{
+	background-color: rgba(200, 200, 200, 0.5);
+}

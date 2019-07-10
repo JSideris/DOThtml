@@ -1,0 +1,15 @@
+
+dot.component ({
+	name: "dice", 
+	constructor: function(){
+		this.roll = ()=>{
+			dot(this.element).h(["&#x2680","&#x2681","&#x2682","&#x2683","&#x2684","&#x2685"][Math.round(Math.random() * 6)]);
+		}
+	},
+	builder: function(){
+		return this.span().style("font-size:22px");
+	},
+	ready: function(){
+		this.roll();
+	}
+});

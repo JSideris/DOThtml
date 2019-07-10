@@ -1,0 +1,53 @@
+#documentation-directory{
+	background-color: #DDE;
+	width: 300px;
+	user-select:  none;
+	vertical-align: top;
+}
+
+.documentation-doclink{
+	color: #337ab7;
+	padding-top: 1px;
+	padding-bottom: 4px;
+	font-size: 14px;
+}
+
+.documentation-doclink.active{
+	color: #F56;
+}
+
+#documentation-container{
+	vertical-align: top;
+}
+
+.documentation-category-button{
+	font-size: 18px;
+	margin-left: 10px;
+	text-decoration: none;
+	display: list-item;
+	list-style-type: none;
+}
+
+.documentation-category-button.open{
+	color: #222;
+}
+
+.documentation-category-button.closed{
+	color: #444;
+}
+
+.documentation-category-button.open::before{
+	content: "\25BC";
+}
+
+.documentation-category-button.closed::before{
+	content: "\25B6";
+}
+
+.documentation-category-button:hover{
+	text-decoration: none;
+}
+
+.documentation-doclink{
+	display: block;
+}

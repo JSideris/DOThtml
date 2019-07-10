@@ -1,0 +1,62 @@
+.md-out{
+	display: block;
+	color: #333;
+	padding-left: 20px;
+	padding-right: 20px;
+	font-size: 16px;
+}
+
+.md-out a{
+	color: #55F;
+	text-decoration: underline;
+}
+
+.md-out blockquote p{
+	font-style: italic;
+	color: #666;
+	margin: 0;
+}
+.md-out blockquote{
+	border-left: 5px solid rgba(0,0,0,.2);
+	padding-left: 1.5em;
+	padding-right: 1.5em;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	background-color: rgba(0,0,0,.1);
+}
+
+.md-out table{
+	border: 1px solid black;
+}
+
+.md-out tr:nth-child(even){
+	background-color: #DFD;
+}
+/* .md-out tr:nth-child(odd){
+	background-color: #DFD;
+} */
+
+.md-out th{
+	border-bottom: 1px solid black;
+}
+.md-out td{
+}
+.md-out th, td{
+	text-align: left;
+	vertical-align: top;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.md-out code{
+	background-color: #DDF;
+	border: 1px solid #AAC;
+	border-radius: 2px;
+}
+
+.hljs-negation{
+	display: inline;
+	padding: 0px;
+}
