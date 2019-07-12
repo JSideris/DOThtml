@@ -10,7 +10,6 @@ app.use(express.static(path.resolve(__dirname)));
 // handle every other route with index.html, which will contain
 // a script tag to your application's JavaScript file(s).
 app.get("*", function (request, response){
-	console.log("Serving ", request.path);
 	response.sendFile(path.resolve(__dirname, "index.html"));
 })
 
