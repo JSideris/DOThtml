@@ -23,6 +23,8 @@
 <script src="/scripts/showdown.js"></script>
 <script src="/scripts/highlight.pack.js"></script>
 <script src="/scripts/dothtml.js"></script>
+<script src="/scripts/logoapi.js"></script>
+<script src="/scripts/dothtmllogo.js"></script>
 <!-- <script src="/scripts/js-beautify.js"></script> -->
 
 <style>
@@ -195,7 +197,7 @@
 				return dot.iterate(20, function(x){
 					return dot.headergridsquare(x, y, row);
 				})
-			})).style(dotcss.position("absolute").top(0).left(0).right(0).bottom(0));
+			})).id("header-grid").style(dotcss.position("absolute").top(0).left(0).width(1600).height(400));
 		});
 		
 		dot.globalExampleNumber = 0; //Note: storing global widget vars inside dot is possible, but isn't standardized by any means.
@@ -232,33 +234,9 @@
 		});
 		
 		dot("body")
-		.div(dot
-			.headergrid()
-			.div(
-				dot.div(
-					dot.div("&lt;").id("logoopenningangularbracket").wait(1000, function(){
-						return dot.$hide(500);
-					})
-					.div(
-						dot.wait(1500, function(){
-							return dot.$show(300, function(){
-								return dot.wait(500, function(){
-									return dot.$animate({width: 256, height: 256, marginTop: 0}, 500, "swing", dot.h("DOT"));
-								});
-							});
-						})
-					).id("logodotsmall").style(dotcss.display("none").marginTop(80))
-					.div("html").id("logohtml")
-					.div("&gt;").id("logoclosingangularbracket").wait(1000, function(){
-						return dot.$hide(500);
-					})
-				).id("logo")
-				.br()
-				.br()
-				.div("A human-friendly way to build highly-dynamic web pages in pure JavaScript.").id("slogan").$css("opacity", "0.1").wait(3000, function(){
-					return dot.$animate({opacity: 1}, 500, "swing");
-				})
-			).style(dotcss.position("relative")).style("pointer-events:none;")
+		.div(
+			dot.headergrid()
+			.div().id("logo-container").style(dotcss.position("relative").height(400)).style("pointer-events:none;")
 		).id("header")
 		.div(
 			dot.navbutton("Home", "/")
@@ -279,6 +257,9 @@
 				var root = navParams.path.split("/")[1] || "home";
 				$(".tab-button-container.selected").removeClass("selected");
 				$("#tab-button-" + root).addClass("selected");
+			},
+			onComplete: function(){
+				windowResize();
 			}
 		}).class("container")
 		.div(
@@ -336,6 +317,40 @@
 		}
 		
 		requestAnimationFrame(animate);
+
+		var bigLogo = dothtmlLogo("#logo-container");
+		bigLogo.play(); 
+		
+		function windowResize(){
+			// Logo Stuff
+			var h = 400;
+			if(window.location.pathname != "/" && window.location.pathname != "") h = 60;
+			else if(window.innerWidth < 600) h = window.innerWidth * 2 / 3;
+			dotcss("#logo-container").height(h);
+			if(window.innerWidth > 2 * h+50) dotcss("#header-grid").width(window.innerWidth).height(window.innerWidth / 2);
+			else dotcss("#header-grid").width((h + 50) * 2).height(h + 50);
+			bigLogo.resize();
+
+			// Documentation menu.
+
+			if(window.innerWidth > 600){
+				dotcss("#documentation-container").width(window.innerWidth - 320).display("inline-block");
+				dotcss("#documentation-directory").show().width(300).display("inline-block");
+				dotcss(".show-pages-btn").hide();
+				dotcss(".close-pages-btn").hide();
+			}
+			else{
+				dotcss("#documentation-container").width(window.innerWidth).display("inline-block");
+				dotcss("#documentation-directory").widthP(100).display("inline-block").hide();
+				dotcss(".show-pages-btn").show();
+				dotcss(".close-pages-btn").show();
+
+			}
+		};
+
+		window.onresize = windowResize;
+
+		setTimeout(windowResize);
 		
 		//dot.navigate("/", true);
 		</script>

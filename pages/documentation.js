@@ -23,6 +23,7 @@ dot.component("doclink", function(title, folder, file){
 	routes.push({title: title, path: "documentation/" + file, component: dot.mdviewer});
 	return dot.a(title).id("doclink-" + file).class("documentation-doclink").onclick(function(e){
 		dot.navigate("/documentation/" + file);
+		if(window.innerWidth <= 600) hidePages();
 	});
 });
 
@@ -95,10 +96,23 @@ var routes = [];
 
 routes.push({title: "Overview", path: "documentation", component: dot.mdviewer});
 
+function hidePages(){
+	dotcss("#documentation-directory").hide();
+	dotcss("#documentation-container").show();
+}
+function showPages(){
+	dotcss("#documentation-container").hide();
+	dotcss("#documentation-directory").show();
+}
+
 exports = dot
-.table(dot.tr(
-	dot.td(
-		dot.doccategory("Quick Start", [
+.div(
+	dot.div(
+		dot
+		.button("[ Close ]").style(dotcss.fontSize(16).padding(10).widthP(100).backgroundColor("#222").color("#fff").border("none").marginBottom(10)).class("close-pages-btn").onclick(function(){
+			hidePages();
+		})
+		.doccategory("Quick Start", [
 			dot.doclink("Overview", "quickstart", "overview"),
 			dot.doclink("General Concepts", "quickstart", "concepts"),
 			dot.doclink("Setup", "quickstart", "setup")
@@ -130,9 +144,15 @@ exports = dot
 			dot.doclink("v1.2 - Initial Official Release", "versionhistory", "v1.2"),
 
 		])
-	).id("documentation-directory")
-	.td(
-		dot.router({
+		.button("[ Close ]").style(dotcss.fontSize(16).padding(10).widthP(100).backgroundColor("#222").color("#fff").border("none").marginTop(10)).class("close-pages-btn").onclick(function(){
+			hidePages();
+		})
+	).id("documentation-directory").style(dotcss.display("inline-block"))
+	.div(
+		dot.button("[ All Pages ]").style(dotcss.fontSize(20).padding(20).widthP(100).backgroundColor("#222").color("#fff").border("none")).class("show-pages-btn").onclick(function(){
+			showPages();
+		})
+		.router({
 			routes: routes,
 			onNavigateInit: function(navParams){
 				$(".documentation-doclink.active").removeClass("active");
@@ -142,5 +162,8 @@ exports = dot
 				$("#doclink-" + page).addClass("active");
 			}
 		}).class("md-out")
-	).id("documentation-container")
-))
+		.button("[ All Pages ]").style(dotcss.fontSize(20).padding(20).widthP(100).backgroundColor("#222").color("#fff").border("none")).class("show-pages-btn").onclick(function(){
+			showPages();
+		})
+	).id("documentation-container").style(dotcss.display("inline-block"))
+).style(dotcss.position("relative").widthP(100).whiteSpace("nowarp")).id("documentation-page")
