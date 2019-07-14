@@ -985,6 +985,7 @@ var dot = (function(){
 	var routerEventSet = false;
 	var allRouters = {};
 	var routerId = 1;
+	var mayRedirect = false;
 
 	var routerNavigate = function(path, noHistory, force){
 		var t = this;
@@ -992,8 +993,22 @@ var dot = (function(){
 		// Step 1: parse the path into a route queue:
 		path = path || "";
 		if(typeof path != "string") path = path + "";
-		var routeQueue = path.split("#")[0].split("?")[0].split("/");
-		if(routeQueue[0] === "") routeQueue.shift();
+		var hashPath = path;
+		if(path.indexOf("#") != -1) hashPath = path.split("#")[1];
+		
+		var hashParts = path.split("#");
+		var allQueues = [];
+		
+		// Route navigating.
+		var routeQueue = hashParts[0].split("?")[0].split("/");
+		routeQueue[0] === "" ? routeQueue.shift() : 0;
+		allQueues.push(routeQueue);
+
+		// Hash navigating.
+		var tryHashQueue = hashParts.length > 1 ? hashParts[1].split("/") : null;
+		tryHashQueue ? ((tryHashQueue[0] === "" ? tryHashQueue.shift() : 0)) : 0;
+		tryHashQueue ? ((routeQueue.length > 1 ? allQueues.push(tryHashQueue) : allQueues.unshift(tryHashQueue))) : 0;
+
 		var cancel = false;
 		navParams = {
 			cancel: function(){cancel = true;},
@@ -1014,63 +1029,68 @@ var dot = (function(){
 		// var candidate = routerOutletStack[i];
 		// Find the an available route that matches.
 		// bestRoute = null;
-		for(var r in t.params.routes){
-			var nextRoute = t.params.routes[r];
-			var rFound = true;
-			var prms = {};
-			//if(nextRoute.path != "*" 
-			//&& !((path == "" || path == "/") && (nextRoute.path == "" || nextRoute.path == "/"))){
-			// We want to iterate both this route's segments and the current route's segments one at a time.
-			var rs = 0;
-			var ps = 0;
-			var lastRn = null;
-			while(1){
-				var rSn = nextRoute.segments[rs] || null;
-				var pSn = routeQueue[ps] || null;
-				if(rSn === null && pSn === null) break;
-				if(rSn === null && pSn !== null || rSn !== null && pSn === null) {
-					rFound = false;
-					break;
-				}
-				if(rSn === null && lastRn == "*") rSn = "*";
+		for(var q in allQueues){
+			var Q = allQueues[q];
+			var rFound = false;
+			for(var r in t.params.routes){
+				rFound = true;
+				var nextRoute = t.params.routes[r];
+				var prms = {};
+				var rs = 0;
+				var ps = 0;
+				var lastRn = null;
+				while(1){
+					var rSn = nextRoute.segments[rs] || null;
+					var pSn = Q[ps] || null;
+					if(rSn === null && pSn === null) break;
+					if(rSn === null && pSn !== null || rSn !== null && pSn === null) {
+						rFound = false;
+						break;
+					}
+					if(rSn === null && lastRn == "*") rSn = "*";
 
-				if(rSn == pSn || rSn == "+" || rSn == "*"){ // It's the route, or it's a wildcard.
-					rs++;
+					if(rSn == pSn || rSn == "+" || rSn == "*"){ // It's the route, or it's a wildcard.
+						rs++;
+					}
+					else if(rSn.length > 2 && rSn.charAt(0) == "{" && rSn.charAt(rSn.length - 1) == "}"){ // It's a parameterized route.
+						rs++;
+						prms[rSn.substring(1, rSn.length - 1)] = pSn;
+					}
+					else if(lastRn != "*"){ // If the route doesn't match but the previous term was a super-wildcard, do nothing. Else, break.
+						rFound = false;
+						break;
+					}
+					ps++;
+					lastRn = rSn;
 				}
-				else if(rSn.length > 2 && rSn.charAt(0) == "{" && rSn.charAt(rSn.length - 1) == "}"){ // It's a parameterized route.
-					rs++;
-					prms[rSn.substring(1, rSn.length - 1)] = pSn;
-				}
-				else if(lastRn != "*"){ // If the route doesn't match but the previous term was a super-wildcard, do nothing. Else, break.
-					rFound = false;
+				if(rFound){
+					bestRoute = nextRoute;
+					navParams.params = prms;
 					break;
 				}
-				ps++;
-				lastRn = rSn;
 			}
-
-
-			// for(var k = 0; k < nextRoute.segments.length; k++){
-			// 	var sgt = nextRoute.segments[k];
-			// 	var sl = sgt.length;
-			// 	var ps = routeQueue[k];
-			// 	if(sl > 2 && sgt.charAt(0) == "{" && sgt.charAt(sl - 1) == "}"){
-			// 		prms[sgt.substring(1, sl - 1)] = ps;
-			// 	}
-			// 	else if(sgt != ps)
-			// 	{
-			// 		rFound = false;
-			// 		break;
-			// 	}
-			// }
-			//}
 			if(rFound){
-				bestRoute = nextRoute;
-				navParams.params = prms;
-				//routeQueue.splice(0, nextRoute.segments.length);
-				break;
+				if(Q == routeQueue) {
+					if(!history.pushState && mayRedirect) {
+						window.location.hash = path;
+						window.location.pathname = "/";
+						return;
+					}
+					break;
+				};
+				if(Q == tryHashQueue) {
+					path = hashPath;
+					navParams.path = path;
+					if(history.pushState) {
+						window.location.hash = "";
+						history.replaceState({"pageTitle":document.title, "path": path}, document.title, path);
+					}
+					break;
+				};
 			}
 		}
+
+		console.log("Navigating to: ", bestRoute);
 
 		navParams.isNew = !(!force && t.currentRoute == bestRoute && (!t.currentParams || t.currentParams == navParams.params || JSON.stringify(t.currentParams) === JSON.stringify(navParams.params)));
 		
@@ -1104,7 +1124,6 @@ var dot = (function(){
 					catch(e){
 						//e.fileName = bestRoute.component;
 						console.error(e);
-						
 					}
 				}
 				dot(ro).h(text);
@@ -1121,7 +1140,11 @@ var dot = (function(){
 		var title = bestRoute.title;
 		document.title = title || document.title;
 		try{
-			if(window.history.pushState && !t.params.noHistory && !noHistory) window.history.pushState({"pageTitle":title, "path": path}, title, path);
+			if(!t.params.noHistory && !noHistory){
+				//if(history.replaceState) history.replaceState({"pageTitle":title, "path": path}, title, path);
+				if(history.pushState) history.pushState({"pageTitle":title, "path": path}, title, path);
+				else window.location.hash = path;
+			}
 		}catch(e){}
 	}
 
@@ -1176,7 +1199,9 @@ var dot = (function(){
 				
 			// }
 			//console.log("NAVIGATING TO", window.location.pathname);
-			t.navigate(window.location.pathname, true);
+			mayRedirect = true;
+			t.navigate(window.location.pathname + (window.location.hash || ""), true);
+			mayRedirect = false;
 		}
 	});
 
