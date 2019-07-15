@@ -1,15 +1,27 @@
 # Events
 
-As mentioned in the overview page, DOThtml supports events, which are used similarly to attributes. 
+DOThtml supports DOM on-event handler attributes such as `<button onclick="/*JavaScript*/">`. Except instead of passing in a string like a regular attribute, you can pass in a named or anonymous function. For instance:
 
-Any on - attributes (such as `onclick`, `onmousemove`, `onfocus`, etc.) can be used to attach events. All event handlers will be attached with using JavaScript, and the attribute will not be added to the element.
+``` JavaScript
+dot.button.onclick(myClickHandler);
+```
+
+or:
+
+``` JavaScript
+dot.button.onclick(e => {
+	/*...*/
+});
+```
+
+Event handlers will be attached using JavaScript's `addEventListener` or `attachEvent` functions (depending on the browser).
+
+All on-event attributes (such as `onclick`, `onmousemove`, `onfocus`, `onchange`, etc.) are available in DOThtml. 
 
 You can pass an entire anonymous function in the following (an argument containing the event is passed into the function): 
 
-```
-dot.input().onchange(e=> {
-	/*…/*
-}
-```
+Passing a function as a parameter for other attributes (or unrecognized on-events) is also supported. However, this is not recommended. In these cases, DOThtml will give your function a name, and assign the attribute value to a single line of JavaScript that calls the named function: 
 
-> **_Note:_** Passing a function as a parameter for unrecognized events is also supported. However, this will result in JavaScript as the attribute value, which is not recommended. 
+``` HTML
+<button myweirdevent="dot.anonAttrFuncs[0](arguments[0]);">
+```.

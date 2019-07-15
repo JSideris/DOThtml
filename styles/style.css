@@ -134,6 +134,8 @@ p{
 	cursor: pointer;
 	font-weight: bold;
 	border-bottom: 2px solid black;
+	text-decoration: none;
+	color: black;
 	background-color: rgba(200, 200, 200, 0.2);
 	-webkit-touch-callout: none; /* iOS Safari */
 	-webkit-user-select: none; /* Chrome/Safari/Opera */

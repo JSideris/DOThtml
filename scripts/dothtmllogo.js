@@ -10,7 +10,7 @@ function dothtmlLogo(targetSelector){
 					emblem.lt = ret2.getLast();
 					ret2.div()
 						.style(dotcss.position("relative").display("inline-block").topP(60).lineHeightP(12.5).heightP(100).widthP(1.7).verticalAlign("middle")
-						.backgroundImage("./images/bigdot.png").backgroundSize("contain").backgroundRepeat("no-repeat").opacity(0)
+						.backgroundImage("/images/bigdot.png").backgroundSize("contain").backgroundRepeat("no-repeat").opacity(0)
 						.color("white").textAlign("center").fontFamily("Impact, Charcoal, sans-serif").fontWeight("normal"));
 					emblem.html = ret2.getLast();
 					ret2.div("html").style(dotcss.heightP(100).lineHeightP(200).display("inline-block").verticalAlign("middle"))
@@ -45,7 +45,8 @@ function dothtmlLogo(targetSelector){
 						dotcss(emblem.html).top.animate(0, 500, "ease");
 						dotcss(emblem.html).marginTop.animate(0, 500, "ease");
 							dot.wait(500, function(){
-								dot(emblem.html).span("DOT").$hide().$fadeIn()
+								var dotPart = dot(emblem.html).span("DOT").getLast();
+								dotcss(dotPart).hide().fadeIn();
 							})
 					})
 				})

@@ -49,3 +49,15 @@ Consider the following scenarios:
 |    *Scenario 2 - The `navigate` function is used for a path that does not resolve to a route.*    |    <ol><li>The router tries to resolve the pathname to a route, but cannot find one.</li><li>The router loads a default fall-through page (or nothing).</li></ol>    |
 |    *Scenario 3 - The `navigate` function is used to load a server resource that does not exist.*    |    <ol><li>The router tries to resolve the pathname to a route, finds one, and attempts to `get` the resource.</li><li>The request hits the server.</li><li>The server cannot find the requested resource, but the path is not a valid client-side route. The server responds with a 404 error.</li><li>The router handles the 404 error.</li></ol>    |
 |    *Scenario 4 - The user types in a URL that is not a resource on the server and is not identified as being a potential client-side route.*    |    <ol><li>The request hits the server.</li><li>The server cannot find the requested resource, and the path is not a valid client-side route. The server returns a 404 error.</li></ol>    | 
+
+## Relative URLs in Single-Page Applications (SPAs)
+
+When building a SPA using the DOThtml router component, special consideration should be given to relative URL paths that may not be necessary in regular multi-page apps. This is because when the browser's pathname is set to any subdirectory (whether or not that directory exists on the server), certain techniques for specifying relative URLs tend to concatenate the relative URL to the existing pathname. This is a hazard in SPAs because the paths being served may not exist as actual directories on the server, and the same files may need to be served from various path names.
+
+The following table illustrates what works, and what doesn't.
+
+| Example of a Path | How it's resolved by browsers. | Will it Work? |
+| --- | --- | --- |
+| **https://example.com/myfile.png** | Absolute path directly to file. Does not get concatenated to anything. | <b style="color:orange;">YES, BUT NOT RECOMMENDED</b> - Unless you are linking to an external resource, it's recommended that all paths be kept relative so that they will work in different environments. |
+| **/myfile.png** | Relative path will be appended to the host name (consisting of the domain, TLD, and sometimes the port). | <b style="color:green;">YES</b> - This is the recommended way to refer to all relative paths. |
+| **./myfile.png** or **myfile.png** | Concatenates the relative path to whatever comes before the last / character in the pathname. | <b style="color:red;">NO</b> - The resulting paths may not exist as resources on the server, or may end up resolving to the root file (index.html) by the server. |

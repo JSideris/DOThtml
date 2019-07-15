@@ -70,8 +70,6 @@ dot.component("wrappedlist", function(array, wrapperBuilder){
 	});
 });
 
-dot.component("center");
-
 /*dot.component("scrolledTo", function(){
 	if(this._document){
 		var le = this._document.lastChild;

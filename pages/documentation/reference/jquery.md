@@ -5,7 +5,7 @@ The following functions extend DOThtml by wrapping jQuery functions, if jQuery i
 Consider the following example:
 
 ```javascript
-	dot.div("Red text!").$css("color", "red"); 
+dot.div("Red text!").$css("color", "red"); 
 ```
 
 > **_Note:_** Extending DOThtml with jQuery is optional. jQuery must be available in the global namespace in order for these helper methods to be available. 

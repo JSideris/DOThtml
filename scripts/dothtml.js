@@ -8,6 +8,9 @@
  * - Removed option to suppress warnings/errors (use minified DOThtml instead).
  * - Removed constructor from components.
  * - Components will now accept a ready function as a third parameter.
+ * - Changed `acceptcharset` to `acceptCharset`.
+ * - Changed custom function attributes so that instead of passing in an events object that may not exist in the current context, they pass in arguments[0].
+ * - Added name conflicts for components.
  * TODO:
  * - Add test case for ensuring routers are removed from the allRouters object after calling empty().
  * - Fix data bindings.
@@ -19,6 +22,9 @@ var dot = (function(){
 		params = params || [];
 		throw {
 			"A": "Can't append \"" + params[0] + "\".",
+			"CC": "The name \"" + params[0] + "\" conflicts with an existing DOThtml function.",
+			"CN": "The component name provided is invalid.",
+			"CU": "Invalid usage: a component should at least have a name and a builder function.",
 			"F": "Element \"" + params[0] + "\" not found.",
 			"J": "Can't use jQuery wrappers without jQuery.",
 			"R": "Router must be passed a JSON object that contains an 'routes' array containing objects with a 'path', 'title', and 'component'.",
@@ -27,105 +33,126 @@ var dot = (function(){
 		
 	};
 
-		// TOOLS:
+	// Dot function.
 
-		function isF(value){
-			return value && value.constructor && value.call && value.apply;
+	/** @type {_D} */
+	var dot = function(targetSelector){
+		//console.log(targetSelector);
+		var targets = targetSelector ? (
+			typeof targetSelector == "string" ? document.querySelectorAll(targetSelector) 
+			: (targetSelector instanceof Element || targetSelector instanceof Node ? [targetSelector] 
+				: ((targetSelector instanceof NodeList || targetSelector.length != undefined && targetSelector[0] && (targetSelector[0] instanceof Element || targetSelector[0] instanceof Node)) ? targetSelector 
+					: []
+		)))
+		: [];
+		//console.log(targets);
+		var newDot = new _D();
+		if(targets.length > 0){
+			newDot._document = targets[0];
 		}
-	
-		function attachEvent(el, ev, val, a3){
-			if (el.addEventListener) el.addEventListener(ev, val, a3 || false);
-			else el.attachEvent("on" + ev, val); //compatibility with old browsers.
-		}
-	
-		function _get(url, success, fail){
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function() {
-				if(this.readyState == 4){
-					if (this.status == 200) {
-						success && success(this);
-					}
-					else{
-						fail && fail(this);
-					}
-				}
-			};
-			xhttp.open("GET", url, true);
-			xhttp.send();
-		}
-	
-		function createElement(tag){
-			_p[tag] = _p[tag + "E"] = function(c){return this.el(tag, c);}
-			//dot[tag] = dot[tag + "E"] = function(c){return this.el(tag, c);}
-		};
-	
-		function createAttribute(attribute){
-			_p[attribute] = _p[attribute + "A"] = function(value){return this.attr(attribute, value);}
-		};
-	
-		function createJQueryWrapper(name){
-			_p["$" + name] = function(){
-				this.check$();
-				var jo = jQuery(this._getLastChildOrNull()); // Get this first because a timeout tag is going to be added.
-				
-				var timeoutDot = null;
-				var timeoutNode = null;
-				
-				//Replace function args with a custom wrapper.
-				for(var i = 0; i < arguments.length; i++){
-					var arg = arguments[i];
-					if(arg instanceof _D){
-						var dot = arg;
-						arg = function(){return dot;}
-					}
-					if(isF(arg)){
-						timeoutDot = this.el("dothtml-timeout");
-						timeoutNode = timeoutDot._document.lastChild;
-						(function(arg, args, timeoutNode, timeoutDot){
-							args[i] = function(){
-								var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
-								timeoutNode.parentElement.removeChild(timeoutNode);
-								//timeoutNode.remove(); //Doesn't work in IE.
-							};
-						})(arg, arguments, timeoutNode, timeoutDot);
-						break; //First function is assumed to be the callback.
-					}
-				}
-				
-				var retDOT = timeoutDot || this;
-				if(this._document){
-					
-					jo[name].apply(jo, arguments);
-					//var jqargs = arguments;
-					//setTimeout(function(){jo[name].apply(jo, jqargs);}, 0);
-					return retDOT;
+		
+		return newDot;
+	} 
+
+	// TOOLS:
+
+	function isF(value){
+		return value && value.constructor && value.call && value.apply;
+	}
+
+	function attachEvent(el, ev, val, a3){
+		if (el.addEventListener) el.addEventListener(ev, val, a3 || false);
+		else el.attachEvent("on" + ev, val); //compatibility with old browsers.
+	}
+
+	function _get(url, success, fail){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if(this.readyState == 4){
+				if (this.status == 200) {
+					success && success(this);
 				}
 				else{
-					
-					var pD = (retDOT._pendingCalls.length > 0 ? retDOT : new _D(retDOT._document));
-					if(!pD._pendingCalls) pD._pendingCalls = [];
-					pD._pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
-					return pD;
+					fail && fail(this);
 				}
 			}
 		};
-	
-		function createJQueryEventHandler(name){
-			_p["$" + name] = function(handler){
-				this.check$();
-				if(this._document){
-					var jo = jQuery(this._getLastChildOrNull());
-					jo[name](handler);
-					return this;
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+
+	function createElement(tag){
+		_p[tag] = _p[tag + "E"] = function(c){return this.el(tag, c);}
+		//dot[tag] = dot[tag + "E"] = function(c){return this.el(tag, c);}
+	};
+
+	function createAttribute(attribute){
+		_p[attribute] = _p[attribute + "A"] = function(value){return this.attr(attribute, value);}
+	};
+
+	function createJQueryWrapper(name){
+		_p["$" + name] = function(){
+			this.check$();
+			var jo = jQuery(this._getLastChildOrNull()); // Get this first because a timeout tag is going to be added.
+			
+			var timeoutDot = null;
+			var timeoutNode = null;
+			
+			//Replace function args with a custom wrapper.
+			for(var i = 0; i < arguments.length; i++){
+				var arg = arguments[i];
+				if(arg instanceof _D){
+					var dot = arg;
+					arg = function(){return dot;}
 				}
-				else{
-					var pD = (this._pendingCalls.length > 0 ? this : new _D(this._document));
-					if(!pD._pendingCalls) pD._pendingCalls = [];
-					pD._pendingCalls.push({type: "jQuery event", name: name, params: arguments});
-					return pD;
+				if(isF(arg)){
+					timeoutDot = this.el("dothtml-timeout");
+					timeoutNode = timeoutDot._document.lastChild;
+					(function(arg, args, timeoutNode, timeoutDot){
+						args[i] = function(){
+							var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
+							timeoutNode.parentElement.removeChild(timeoutNode);
+							//timeoutNode.remove(); //Doesn't work in IE.
+						};
+					})(arg, arguments, timeoutNode, timeoutDot);
+					break; //First function is assumed to be the callback.
 				}
 			}
-		};
+			
+			var retDOT = timeoutDot || this;
+			if(this._document){
+				
+				jo[name].apply(jo, arguments);
+				//var jqargs = arguments;
+				//setTimeout(function(){jo[name].apply(jo, jqargs);}, 0);
+				return retDOT;
+			}
+			else{
+				
+				var pD = (retDOT._pendingCalls.length > 0 ? retDOT : new _D(retDOT._document));
+				if(!pD._pendingCalls) pD._pendingCalls = [];
+				pD._pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
+				return pD;
+			}
+		}
+	};
+
+	function createJQueryEventHandler(name){
+		_p["$" + name] = function(handler){
+			this.check$();
+			if(this._document){
+				var jo = jQuery(this._getLastChildOrNull());
+				jo[name](handler);
+				return this;
+			}
+			else{
+				var pD = (this._pendingCalls.length > 0 ? this : new _D(this._document));
+				if(!pD._pendingCalls) pD._pendingCalls = [];
+				pD._pendingCalls.push({type: "jQuery event", name: name, params: arguments});
+				return pD;
+			}
+		}
+	};
 
 	// Compatibility:
 	var Node = window.Node;
@@ -142,7 +169,7 @@ var dot = (function(){
 		T._document = document;
 		T._if = null;
 		T._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
-		T._anonAttrFuncs = []; //Only to be used by top-level dot object.
+		T.anonAttrFuncs = {}; //Only to be used by top-level dot object.
 
 		T.lastNode = document ? document.lastChild : null;
 	}
@@ -320,8 +347,8 @@ var dot = (function(){
 		var T = this;
 		if (isF(value)) {
 			if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
-				dot._anonAttrFuncs.push(value);
-				value = "dot._anonAttrFuncs[" + (dot._anonAttrFuncs.length - 1) + "](event);"
+				dot.anonAttrFuncs[_anonFuncCounter] = (value);
+				value = "dot.anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
 			}
 			else {
 				attr = attr.substring(2);
@@ -454,15 +481,42 @@ var dot = (function(){
 	 * Binds the value of an element to a data field.
 	 * @param {_B} binding
 	 */
-	_p.bindTo = function(binding){
+	_p.bindTo = function(object, name){
 		var last = this.getLast();
 		//var noListener = true;
-		var ret = this.setVal(binding.value);
-		attachEvent(last, "change", function(e){binding.value = this.getVal();})
-		binding.subscribe(last);
+		var _value = object[name];
+		var ret = this.setVal(_value);
+		attachEvent(last, "change", function(e){_value = object[name] = dot(last).getVal();})
+		//binding.subscribe(last);
+		
+		try{
+			Object.defineProperty(object, name, { 
+				//value: value,
+				enumerable: true,
+				//writable: true,
+				get: function(){return _value;},
+				set: function(value){
+					_value = value; 
+					dot(last).setVal(value);
+				}
+			});
+		}
+		catch(e){}
+
 		//var noListener = false;
 		return ret;
 	}
+	// _p.bindTo = function(binding){
+	// 	var last = this.getLast();
+	// 	//var noListener = true;
+	// 	var ret = this.setVal(binding.value);
+	// 	attachEvent(last, "change", function(e){binding.value = this.getVal();})
+	// 	binding.subscribe(last);
+	// 	//var noListener = false;
+	// 	return ret;
+	// }
+
+	var componentNames = {};
 
 	/**
 	 * @param {object} params - Params for the component builder.
@@ -470,22 +524,39 @@ var dot = (function(){
 	 * @param {Function} params.builder - A function returning DOThtml (required).
 	 * @param {Function} params.ready - A function called after the element has been added. One parameter will be provided containing the added element.
 	 */
-	_p.component = function(params){
+	dot.component = function(params){
 		var prms;
-		if(arguments.length == 1) prms = params;
-		else prms = {name: arguments[0], builder: arguments[1], ready: arguments[2]}
-		dot[prms.name] = _p[prms.name] = function(){
-			var obj = new function(){};
-			var ret = prms.builder.apply(obj, arguments);
-			ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
-			obj.element = obj.element || ret.getLast();
-			prms.ready && setTimeout(function(){prms.ready.apply(obj)}, 0);
-			return ret;
-		};
-
+		if(arguments.length == 1){
+			prms = params;
+			if(!prms["name"] || !prms["builder"]){
+				ERR("CU");
+				return;
+			}
+		}
+		else prms = {name: arguments[0], builder: arguments[1], ready: arguments[2]};
+		prms.name ? (
+			(!dot[prms.name] && !_p[prms.name]) ? (function(){
+				componentNames[prms.name] = 1;
+				dot[prms.name] = _p[prms.name] = function(){
+					var obj = new function(){};
+					var ret = prms.builder.apply(obj, arguments);
+					ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
+					obj.element = obj.element || ret.getLast();
+					prms.ready && setTimeout(function(){prms.ready.apply(obj)}, 0);
+					return ret;
+				}
+			}()) : ERR("CC", [prms.name])
+		) : ERR("CN");
 		//_p[prms.name].prototype
 	};
 
+	dot.removeComponent = function(name){
+		if(componentNames[name]){
+			delete componentNames[name];
+			delete dot[name];
+			delete _p[name];
+		}
+	}
 
 	var allTags = [
 		"a",
@@ -508,7 +579,7 @@ var dot = (function(){
 		"col",
 		"colgroup",
 		"content",
-		"data", //*
+		//"data", //*
 		"datalist",
 		"dd",
 		"del",
@@ -633,7 +704,7 @@ var dot = (function(){
 		"datetime",
 		"declare",
 		"default",
-		"data", //*
+		//"data", //*
 		"dir",
 		"dirname",
 		"disabled",
@@ -810,13 +881,13 @@ var dot = (function(){
 	for(var i = 0; i < allJQueryEventHandlers.length; i++) createJQueryEventHandler(allJQueryEventHandlers[i]);
 
 	//Hyphenated Attributes.
-	_p["acceptcharset"] = _p["accept-charset"] = function(value){return this.attr("accept-charset", value);};
+	_p["acceptCharset"] = _p["accept-charset"] = function(value){return this.attr("accept-charset", value);};
 
 	//SVG
 	//_p.svg = function(){ERR("S")};
 
 	//Data is a special attribute.
-	_p.data = function(suffix, value){
+	_p.dataA = function(suffix, value){
 		if(arguments.length < 2){
 			value = suffix;
 			suffix = undefined;
@@ -826,6 +897,17 @@ var dot = (function(){
 			return this.attr("data-" + suffix, value);
 		}
 	};
+
+	_p.dataE = function(content){
+		return dot.el("data", content);
+	}
+
+	_p.data = function(){
+		var T = this;
+		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] === "string") && T._document && T._document.lastChild && T._document.lastChild.tagName == "OBJECT"))
+			return dot.dataA.apply(T, arguments);
+		return dot.dataE.apply(T, arguments);
+	}
 
 	//Special handling for names that exist as both elements and attributes.
 	//summary, span, label, form, cite
@@ -951,34 +1033,14 @@ var dot = (function(){
 		if(!jQuery) ERR("J");
 	};
 
-	// Dot function.
-
-	/** @type {_D} */
-	var dot = function(targetSelector){
-		//console.log(targetSelector);
-		var targets = targetSelector ? (
-			typeof targetSelector == "string" ? document.querySelectorAll(targetSelector) 
-			: (targetSelector instanceof Element || targetSelector instanceof Node ? [targetSelector] 
-				: ((targetSelector instanceof NodeList || targetSelector.length != undefined && targetSelector[0] && (targetSelector[0] instanceof Element || targetSelector[0] instanceof Node)) ? targetSelector 
-					: []
-		)))
-		: [];
-		//console.log(targets);
-		var newDot = new _D();
-		if(targets.length > 0){
-			newDot._document = targets[0];
-		}
-		
-		return newDot;
-	} 
-
 	//Fill in all the other fields.
 	//if(Object.create) dot.prototype = Object.create(_p);
 	// dot.prototype.constructor = dot;
 	dot._document = null;
 	dot._if = null;
 	dot._pendingCalls = [];
-	dot._anonAttrFuncs = [];
+	dot.anonAttrFuncs = {};
+	var _anonFuncCounter = 0;
 
 	// ROUTING:
 
@@ -1090,8 +1152,6 @@ var dot = (function(){
 			}
 		}
 
-		console.log("Navigating to: ", bestRoute);
-
 		navParams.isNew = !(!force && t.currentRoute == bestRoute && (!t.currentParams || t.currentParams == navParams.params || JSON.stringify(t.currentParams) === JSON.stringify(navParams.params)));
 		
 		t.params.onNavigateInit && t.params.onNavigateInit(navParams);
@@ -1148,7 +1208,7 @@ var dot = (function(){
 		}catch(e){}
 	}
 
-	_p.component({
+	dot.component({
 		name: "router",
 		// constructor: function(){
 
@@ -1223,50 +1283,50 @@ var dot = (function(){
 	}
 
 	// BINDINGS:
-	function _B(value){
-		var T = this;
-		T.value = T._value = value;
-		T.subscribers = [];
-		try{
-			T.property = Object.defineProperty(T, "value", { 
-				//value: value,
-				enumerable: true,
-				//writable: true,
-				get: function(){return T._value;},
-				set: function(value){
-					T._value = value; 
-					T.updateSubscribers();
-				}
-			});
-		}
-		catch(e){T.property = new Object()}
-	}
+	// function _B(value){
+	// 	var T = this;
+	// 	T.value = T._value = value;
+	// 	T.subscribers = [];
+	// 	try{
+	// 		T.property = Object.defineProperty(T, "value", { 
+	// 			//value: value,
+	// 			enumerable: true,
+	// 			//writable: true,
+	// 			get: function(){return T._value;},
+	// 			set: function(value){
+	// 				T._value = value; 
+	// 				T.updateSubscribers();
+	// 			}
+	// 		});
+	// 	}
+	// 	catch(e){T.property = new Object()}
+	// }
 
-	var _Bp = _B.prototype;
+	// var _Bp = _B.prototype;
 
-	_Bp.subscribe = function(element){
-		this.subscribers.push(element);
-	}
+	// _Bp.subscribe = function(element){
+	// 	this.subscribers.push(element);
+	// }
 
-	_Bp.unsubscribe = function(element){
-		for(var i = 0; i < S.length; i++){
-			if(S[i] == element){
-				S.splice(i, 1); 
-				break;
-			}
-		}
-	}
+	// _Bp.unsubscribe = function(element){
+	// 	for(var i = 0; i < S.length; i++){
+	// 		if(S[i] == element){
+	// 			S.splice(i, 1); 
+	// 			break;
+	// 		}
+	// 	}
+	// }
 
-	_Bp.updateSubscribers = function(){
-		var S = this.subscribers;
-		for(var i = 0; i < S.length; i++){
-			dot(S[i]).setVal(this._value);
-		}
-	}
+	// _Bp.updateSubscribers = function(){
+	// 	var S = this.subscribers;
+	// 	for(var i = 0; i < S.length; i++){
+	// 		dot(S[i]).setVal(this._value);
+	// 	}
+	// }
 
-	_Bp.setFrom = function(element){
-		this.value = dot(element).getVal();
-	}
+	// _Bp.setFrom = function(element){
+	// 	this.value = dot(element).getVal();
+	// }
 
 	// Done - return the object.
 	return dot;

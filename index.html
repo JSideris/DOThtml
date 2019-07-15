@@ -127,8 +127,9 @@
 		
 		dot.component("navbutton", function(title, path){
 			return dot.a(title).class("tab-button-container")
-			.id("tab-button-" + (path.substring(1) || "home"))
+			.id("tab-button-" + (path.substring(1) || "home")).href(path)
 			.onclick(function(e){
+				e.preventDefault();
 				dot.navigate(path);
 				$(".tab-button-container").removeClass("selected");
 				$(e.target).addClass("selected");
@@ -262,12 +263,12 @@
 			onComplete: function(){
 				windowResize();
 			}
-		}).class("container")
+		}).class("container").id("main-router")
 		.div(
 			dot.table(
 				dot.tr(dot.td(dot.div("DOThtml").style(dotcss.fontSize(28).marginBottom(100)))).colspan(2)
 				.tr(
-					dot.td(dot.a("License").onclick(function(){dot.navigate("/license")}))
+					dot.td(dot.a("License").href("/license").onclick(function(e){e.preventDefault();dot.navigate("/license")}))
 					.td(dot.a("DOTcss").href("http://jsideris.com/DOTcss"))
 					.td("&copy;" + new Date().getFullYear() + " - Joshua Sideris")
 				)
@@ -336,13 +337,13 @@
 
 			if(window.innerWidth > 600){
 				dotcss("#documentation-container").width(window.innerWidth - 320).display("inline-block");
-				dotcss("#documentation-directory").show().width(300).display("inline-block");
+				dotcss("#documentation-directory").show().width(300).height(Math.max(window.innerHeight-200, 600)).display("inline-block");
 				dotcss(".show-pages-btn").hide();
 				dotcss(".close-pages-btn").hide();
 			}
 			else{
 				dotcss("#documentation-container").width(window.innerWidth).display("inline-block");
-				dotcss("#documentation-directory").widthP(100).display("inline-block").hide();
+				dotcss("#documentation-directory").widthP(100).height(Math.max(window.innerHeight-200, 600)).display("inline-block").hide();
 				dotcss(".show-pages-btn").show();
 				dotcss(".close-pages-btn").show();
 
@@ -350,8 +351,8 @@
 		};
 
 		window.onresize = windowResize;
-
-		setTimeout(windowResize);
+		windowResize();
+		//setTimeout(windowResize);
 		
 		//dot.navigate("/", true);
 		</script>

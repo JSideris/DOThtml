@@ -1,6 +1,6 @@
 # Data Binding
 
-Data binding (also known as two-way binding) is a when an object is bound to each input on the user interface and, when a modification on either side (i.e., the object or the input) occurs, both reflect the same value. 
+DOThtml supports 2-way data binding between any type of HTML input element is a when an object is bound to each input on the user interface and, when a modification on either side (i.e., the object or the input) occurs, both reflect the same value. 
 
 DOThtml has built-in two-way binding for all input types.
 

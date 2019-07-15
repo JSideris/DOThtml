@@ -1,3 +1,4 @@
+if(dot.doccategory) dot.removeComponent("doccategory");
 dot.component("doccategory", function(title, links){
 	this.hidden = false;
 	return dot.a(title).class("documentation-category-button open")
@@ -18,10 +19,12 @@ dot.component("doccategory", function(title, links){
 	).style(dotcss.marginLeft(30));
 });
 
+if(dot.doclink) dot.removeComponent("doclink");
 dot.component("doclink", function(title, folder, file){
 	pageCategoryMap[file] = folder;
 	routes.push({title: title, path: "documentation/" + file, component: dot.mdviewer});
-	return dot.a(title).id("doclink-" + file).class("documentation-doclink").onclick(function(e){
+	return dot.a(title).id("doclink-" + file).class("documentation-doclink").href("/documentation/" + file).onclick(function(e){
+		e.preventDefault();
 		dot.navigate("/documentation/" + file);
 		if(window.innerWidth <= 600) hidePages();
 	});
@@ -30,7 +33,7 @@ dot.component("doclink", function(title, folder, file){
 var converter = new showdown.Converter();
 var pageCategoryMap = {};
 
-dot.component({
+if(!dot.mdviewer) dot.component({
 	name:"mdviewer",
 	builder: function(route){
 		this.route = route;
@@ -118,10 +121,9 @@ exports = dot
 			dot.doclink("Setup", "quickstart", "setup")
 		])
 		.doccategory("Reference", [
-			dot.doclink("Tags and Attributes", "reference", "tagsandattributes"),
 			dot.doclink("Targeting", "reference", "targeting"),
+			dot.doclink("Tags and Attributes", "reference", "tagsandattributes"),
 			dot.doclink("Events", "reference", "events"),
-			dot.doclink("Custom Tags and Attributes", "reference", "custom"),
 			//dot.doclink("Special Tags", "reference", ""),
 			dot.doclink("Special Functions", "reference", "specialfunctions"),
 			dot.doclink("Components", "reference", "components"),
@@ -147,7 +149,7 @@ exports = dot
 		.button("[ Close ]").style(dotcss.fontSize(16).padding(10).widthP(100).backgroundColor("#222").color("#fff").border("none").marginTop(10)).class("close-pages-btn").onclick(function(){
 			hidePages();
 		})
-	).id("documentation-directory").style(dotcss.display("inline-block"))
+	).id("documentation-directory").style(dotcss.display("inline-block").height(Math.max(window.innerHeight-200, 600)))
 	.div(
 		dot.button("[ All Pages ]").style(dotcss.fontSize(20).padding(20).widthP(100).backgroundColor("#222").color("#fff").border("none")).class("show-pages-btn").onclick(function(){
 			showPages();
