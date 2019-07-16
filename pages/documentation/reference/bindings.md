@@ -1,33 +1,38 @@
 # Data Binding
 
-DOThtml supports 2-way data binding between any type of HTML input element is a when an object is bound to each input on the user interface and, when a modification on either side (i.e., the object or the input) occurs, both reflect the same value. 
+DOThtml supports 2-way data binding between interactive elements and model objects. This allows automatically setting the value of interactive elements just by assigning a value to the property that they are bound to, and likewise, ensuring the model always contains the value of the element it is bound to.
 
-DOThtml has built-in two-way binding for all input types.
+Data binding works with pretty much any element the user read and write data to/from.
 
-## Model-View-Controller (MVC)
+* Input elements (text, checkbox, radio, range, etc).
+* Select boxes.
+* Option elements within select boxes.
+* Text areas.
 
-The two-way binding uses the **MVC (Model-View-Controller)** architectural pattern and allows automatic pushes for both ways (from object to input and input to object).
+Use the `bindTo` function in the VDBO to bind the last element on the virtual document to a named value within your model. 
 
-### Model
+!!!API!!!
+bindTo - Establishes two-way binding between the last element on the virtual document and a model provided by the user.
+---
+- The VDBO.
+---
+model - An object containing a field to bind to.
+fieldName - The name of the field within the model.
+---
+The current VDBO (is chainable).
+---
+``` JavaScript
+var loginModel = {
+	username: "",
+	password: ""
+};
 
-The binding object is the model, which has a variable name and value assigned to it. It listens for instructions from the controller, but does not trigger an onchange event when its changed values are sent to the input fields that are bound to it.
-
-### View
-
-The view contains input fields to receive information from the user.
-
-Here are some examples of input fields:
-
-* Radio buttons
-* Checkboxes
-* Text fields
-* Sliders
-* Drop-down fields
-
-When the user changes the value of an input field that is bound to an object, an automatic onchange event occurs. This change event will update the model.
-
-### Controller
-
-The controller is what handles the functions, such as `dot.binding()`. This function contains the default value. `dot.binding()` is the representative of the model and, essentially, serves as the "middle man" between the object and the input fields.
-
-**_Note:_** The `dot.binding` function sends data to more than one input field as a means of preventing infinite loops.
+dot.div(
+	dot.span("Username: ")
+	.input().type("text").bindTo(loginModel, "username")
+	
+	.br().span("Password: ")
+	.input().type("password").bindTo(loginModel, "password")
+);
+```
+!!!/API!!!

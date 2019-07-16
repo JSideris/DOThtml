@@ -14,8 +14,17 @@ The SVG element and elements available in the SVG language are not supported by 
 
 Custom HTML tags with arbitrary names are supported by the HTML specification, and can be created in DOThtml using the `el` function. 
 
-`el` accepts two parameters. The first is the tag name, the second parameter is the content (optional), which could be a string or any dot syntax.
-
+!!!API!!!
+el - Adds a custom element to the virtual document.
+---
+- dot.
+- The VDBO.
+---
+name - The tag name to create.
+content - Optional | Inner contents for the element (typically DOThtml syntax or a string containing HTML).
+---
+The current VDBO, or a new one if one does not exist (is chainable).
+---
 ``` JavaScript
 dot.el("dothtml-container", "The quick brown fox jumps over the lazy dog.");
 ```
@@ -25,6 +34,7 @@ Will generate:
 ``` HTML
 <dothtml-container>The quick brown fox jumps over the lazy dog.</dothtml-container>
 ```
+!!!/API!!!
 
 > **_Note:_** It is recommended, by convention, to prepend custom tag names with your framework name followed by a hyphen, to avoid HTML namespace conflicts.
 
@@ -38,8 +48,16 @@ dot.el("span", "Example...");
 
 It's also possible to create custom or explicit attributes using the `attr` function. 
 
-`attr` accepts two parameters
-
+!!!API!!!
+attr - Adds a custom attribute to the last element in the virtual document.
+---
+- The VDBO.
+---
+name - The element name to add.
+content - A string value for the attribute.
+---
+The current VDBO (is chainable).
+---
 ``` JavaScript
 dot.div().attr("dothtml-data", "Secret Data!");
 ```
@@ -49,14 +67,45 @@ Will generate:
 ``` HTML
 <div dothtml-data="Secret Data!"></div>
 ```
+!!!/API!!!
 
 ## Scripts
 
-The `script` function is special in that it does not create an element on the DOM. It accepts a callback, which is immediately executed. The return value of the callback is ignored. The `script` function returns the VDBO so that it can be chained with other HTML. Any attributes added after calling `script` will be added to whatever element came before `script`, so don't try to dynamically load external scripts using the `src` attribute, or something. There are other great libraries out there for dynamically loading scripts, or you can implement this functionality yourself relatively easily.
+The `script` function is special in that it does not create an element on the DOM. It accepts a callback function, which is scheduled to be run after the DOThtml markup has been rendered to the DOM.
+
+!!!API!!!
+script - Executes a JavaScript callback after a 0ms delay.
+---
+- dot.
+- The VDBO.
+---
+callback(element) - A named or anonymous function to execute. Return value is ignored.
+.element - The DOM element containing the script.
+---
+The current VDBO, or dot, if a VDBO does not exist (is chainable).
+---
+``` JavaScript
+// Makes sure text wraps in the right place.
+dot("body").div(
+	dot.h1("Moby Dick by Herman Melville")
+		.id("book-title")
+		.style("font-size: 25px; line-height: 30px";)
+	.script(el => {
+		if(el.innerHeight >= 60){
+			dot("#book-title").empty()
+			.t("Moby Dick")
+			.br().t("by Herman Melville");
+		}
+	});
+)
+```
+!!!/API!!!
+
+Any attributes added after calling `script` will be added to whatever element came before `script`. `script` does not support dynamically importing JavaScript from an external `src`.
 
 ## Raw HTML
 
-Raw HTML can be added using any DOThtml element building function, by simply passing the HTML in as a string argument (instead of passing in DOT syntax). 
+Raw HTML can be added using any DOThtml element building function, by simply passing the HTML in as a string argument (instead of passing in DOThtml syntax). 
 
 For instance:
 
@@ -67,13 +116,23 @@ dot.div("<a href=\"https://dothtml.org\">Test link.</a>");
 Will generate:
 
 ``` HTML
-<div
-	><a href="https://dothtml.org">Test link.</a>
+<div>
+	<a href="https://dothtml.org">Test link.</a>
 </div>
 ```
 
 DOThtml also provides a special function for rendering HTML without creating a parent element (such as the `<div>` in the above example). Use the `h` function in DOThtml.
 
+!!!API!!!
+h - Generates HTML or renders DOThtml syntax without creating a parent element.
+---
+- dot.
+- The VDBO.
+---
+content - Inner contents for the element (typically DOThtml syntax, a string containing HTML).
+---
+The current VDBO, or a new one if one does not exist (is chainable).
+---
 ``` JavaScript
 dot.h("<b>BE BOLD &check;</b>");
 ```
@@ -83,8 +142,9 @@ Will generate:
 ``` HTML
 <b>BE BOLD &check;</b>
 ```
+!!!/API!!!
 
-This markup will be appended to the VDBO's virtual document, and the browser will render it as HTML. The argument passed into `h` does not actually have to create HTML elements; it could create text. But if the goal is to escape rendered HTML, consider using the `t` function (described next).
+The argument passed into `h` does not actually have to create HTML elements; it could create text. But if the goal is to escape rendered HTML, consider using the `t` function (described next).
 
 ## Text Nodes
 
@@ -92,11 +152,30 @@ This markup will be appended to the VDBO's virtual document, and the browser wil
 
 Text nodes can be created by passing a string into any DOThtml element-building function (including `h`). Since `h` does not create an actual element, a string passed into `h` will be rendered as a text node, so long as it is gay.
 
-If you'd like to escape HTML special characters, like angular brackets, ampersands, and so on, use the `t` function. `t` is used similarly to `h` in that it accepts a string, but `t` will always render a text node with any special HTML characters escaped. Here's a use case:
+If you'd like to escape HTML special characters, like angular brackets, ampersands, and so on, use the `t` function. `t` is used similarly to `h` in that it accepts a string, but `t` will always render a text node with any special HTML characters escaped.
 
+!!!API!!!
+t - Generates a text node, escaping out any special HTML characters.
+---
+- dot.
+- The VDBO.
+---
+content - A string to use as the content for the new text node.
+---
+The current VDBO, or a new one if one does not exist (is chainable).
+---
 ``` JavaScript
 dot.b("Bold Element: ").t("Text node after <b>.");
+
 ```
+
+Will generate:
+
+``` HTML
+<b>Bold Element: </b>Text node after &gt;b&lt;
+```
+
+!!!/API!!!
 
 ## Functions as Parameters to Elements
 

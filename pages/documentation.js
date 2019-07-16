@@ -30,6 +30,78 @@ dot.component("doclink", function(title, folder, file){
 	});
 });
 
+if(dot.apiSample) dot.removeComponent("apiSample");
+dot.component("apiSample", function(funcName, description, namespaces, params, returns, sampleCode){
+	var paramNames = [];
+	for(var i = 0; i < params.length; i++){
+		var pName = params[i].name;
+		if(pName.indexOf(".") != -1){
+			// pName = "&#x21AA;" + pName.split(".")[1];
+			// params[i].name = pName;
+			continue;
+		}
+		else if(pName.indexOf("(") != -1){
+			pName = pName.split("(")[0];
+		}
+		else if(pName.indexOf("[") != -1){
+			pName = pName.split("[")[0];
+		}
+		else if(pName.indexOf("{") != -1){
+			pName = pName.split("{")[0];
+		}
+		paramNames.push(pName);
+	}
+	var paramList = paramNames.join(", ");
+
+	var exampleArea = dot;
+	var exampleParts = sampleCode.split("```");
+	exampleArea = exampleArea.t(exampleParts[0]);
+	for(var i = 1; i < exampleParts.length; i++){
+		if(i % 2 == 1){
+			// Code area.
+			// Language on first line:
+			var firstLinebreak = exampleParts[i].indexOf("\n");
+			var language = exampleParts[i].substring(0, firstLinebreak).trim();
+			var code = exampleParts[i].substring(firstLinebreak).trim();
+			exampleArea = exampleArea.pre(dot.code(dot.t(code)).class(language + " language-" + language));
+		}
+		else{
+			// Text.
+			exampleArea = exampleArea.t(exampleParts[i]);
+		}
+	}
+
+	return dot.div(
+		dot.h1(funcName + "(" + paramList + ")")
+		.p(description)
+		.h(function(){
+			if(params.length > 0){
+				return dot.hr().h2("Parameters")
+				.table(dot.tbody(dot.each(params, function(p){
+					return dot.tr(dot.td(
+						dot.h(function(){
+							if(p.name.indexOf(".") == -1) return dot.pre(dot.code(p.name))
+							else if(p.name.indexOf("..") == -1) return dot.h("&nbsp;&nbsp;&nbsp;&nbsp;&#x21AA;&nbsp;").pre(dot.code(p.name.split(".")[1]))
+							else return dot.h("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x21AA;&nbsp;").pre(dot.code(p.name.split("..")[1]))
+						})
+					).class("prop-name")
+					.td(dot.i(p.description))).class(p.name.indexOf(".") == -1 ? "" : (p.name.indexOf("..") == -1 ? "argument-or-field" : "deep-argument-or-field"));
+				})))
+			}
+			else return dot;
+		})
+		.hr().h2("Returns")
+		.p(returns)
+		.hr().h2("Available in Namespaces ")
+		.ul(dot.each(namespaces, function(ns){
+			return dot.li(ns.replace("-", "").trim());
+		}))
+		.hr().h2("Example")
+		.h(exampleArea)
+		
+	).class("api-sample")
+});
+
 var converter = new showdown.Converter();
 var pageCategoryMap = {};
 
@@ -44,7 +116,38 @@ if(!dot.mdviewer) dot.component({
 		var self = this;
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				dot(self.element).h(converter.makeHtml(this.responseText));
+
+				var split1 = this.responseText.split("!!!API!!!");
+				var newStr = split1[0];
+				for(var i = 1; i < split1.length; i++){
+					var split2 = split1[i].split("!!!/API!!!");
+					var apiSplit = split2[0].split("---");
+					var splitName = apiSplit[0].split(" - ");
+					var name = splitName[0];
+					var description = splitName[1] || "";
+
+					var namespaces = apiSplit[1].trim().split("\n");
+
+					var params = [];
+					var splitParams = apiSplit[2].split("\n");
+					for(var j = 0; j < splitParams.length; j++){
+						var thisParam = splitParams[j].trim();
+						if(thisParam.trim().length == 0) continue;
+						else{
+							var paramDescription = thisParam.split(" - ");
+							params.push({name: paramDescription[0], description: paramDescription[1]});
+						}
+					}
+
+					var returns = apiSplit[3];
+
+					var sampleCode = apiSplit[4];
+
+					var apiHtml = dot.apiSample(name, description, namespaces, params, returns, sampleCode)._document.innerHTML;
+					newStr += apiHtml + split2[1];
+				}
+
+				dot(self.element).h(converter.makeHtml(newStr));
 				
 				// TURN LINKS INTO NAV BUTTONS.
 				var links = self.element.querySelectorAll("a");
@@ -52,9 +155,9 @@ if(!dot.mdviewer) dot.component({
 					var a = links[i];
 					var href = $(a).attr("href");
 					if(href.indexOf("/") == "/"){
-						a.removeAttribute("href");
 
-						var onclick = function(){
+						var onclick = function(e){
+							e.preventDefault();
 							dot.navigate(href);
 						}
 

@@ -11,6 +11,7 @@
  * - Changed `acceptcharset` to `acceptCharset`.
  * - Changed custom function attributes so that instead of passing in an events object that may not exist in the current context, they pass in arguments[0].
  * - Added name conflicts for components.
+ * - Added i value to each function.
  * TODO:
  * - Add test case for ensuring routers are removed from the allRouters object after calling empty().
  * - Fix data bindings.
@@ -407,7 +408,7 @@ var dot = (function(){
 	_p.each = function(array, callback){
 		var target = this;
 		for(var i = 0; i < array.length; i++){
-			target = target._appendOrCreateDocument(callback(array[i]));
+			target = target._appendOrCreateDocument(callback(array[i], i));
 		}
 		return target;
 	};
@@ -439,8 +440,8 @@ var dot = (function(){
 	};
 
 	_p.script = function(callback){
-		//return this._appendOrCreateDocument(callback);
-		callback();
+		var last = this.getLast();
+		setTimeout(function(){callback(last);}, 0);
 		return this;
 	};
 
@@ -1073,12 +1074,13 @@ var dot = (function(){
 
 		var cancel = false;
 		navParams = {
-			cancel: function(){cancel = true;},
+			cancel: function(){cancel = true; navParams.wasCancelled = true;},
 			element: t.element,
 			httpResponse: null,
 			isNew: true,
 			params: {},
 			path: path,
+			title: null
 		};
 
 		// Step 2: determine the last router that is correctly loaded.
@@ -1156,7 +1158,7 @@ var dot = (function(){
 		
 		t.params.onNavigateInit && t.params.onNavigateInit(navParams);
 
-		if(!navParams.isNew || cancel) return t;
+		if(!navParams.isNew || cancel) return navParams;
 		t.currentRoute = bestRoute;
 		t.currentParams = navParams.params;
 
@@ -1167,16 +1169,18 @@ var dot = (function(){
 
 
 		//if(deepestRouter == null) return this;
-		if(routeQueue.length == 0) return t;
-		if(bestRoute == null) return t;
+		if(routeQueue.length == 0) return navParams;
+		if(bestRoute == null) return navParams;
+
+		navParams.title = bestRoute.title;
 
 		if(typeof bestRoute.component == "string"){
 			_get(bestRoute.component, function(result){
 				var text = result.responseText;
 				navParams.httpResponse = result;
-				if(navId != t.navId) return;
+				if(navId != t.navId) return navParams;
 				t.params.onResponse && t.params.onResponse(navParams);
-				if(cancel) return;
+				if(cancel) returnnavParams;
 				if(bestRoute.component.split("?")[0].split("#")[0].toLowerCase().indexOf(".js") == bestRoute.component.length - 3){
 					try{
 						text = Function("var exports=null,module={},route=arguments[0];" + text + "\r\nreturn module.exports || exports;")(navParams);
@@ -1197,15 +1201,18 @@ var dot = (function(){
 			dot(ro).h(bestRoute.component.call(dot, navParams));
 			t.params.onComplete && t.params.onComplete(navParams);
 		}
-		var title = bestRoute.title;
-		document.title = title || document.title;
-		try{
-			if(!t.params.noHistory && !noHistory){
-				//if(history.replaceState) history.replaceState({"pageTitle":title, "path": path}, title, path);
-				if(history.pushState) history.pushState({"pageTitle":title, "path": path}, title, path);
-				else window.location.hash = path;
+
+		return navParams;
+	}
+
+	function setupPopupFunction(){
+		!routerEventSet && (routerEventSet = true) ? window.onpopstate = function(e){
+			//console.log("Navigating", e.state);
+			if(e.state){
+				dot.navigate(e.state.path, true);
+				document.title = e.state.pageTitle;
 			}
-		}catch(e){}
+		} : 0;
 	}
 
 	dot.component({
@@ -1217,7 +1224,6 @@ var dot = (function(){
 		 * @param {Object} params - Parameters.
 		 * @param {Array.<{path: string, title: string, component: Object}>} params.routes - Array of routes.
 		 * @param {boolean} params.autoNavigate - Router will automatically navigate when outlet is created.
-		 * @param {boolean} params.noHistory - Router will push items to the browser's history. Only use on parent-most router outlet.
 		 * @param {Function} params.onNavigateInit - Occurs before any request is sent, and before the router outlet is emptied.
 		 * @param {Function} params.onError - Occurs in the event of an HTTP error.
 		 * @param {Function} params.onResponse - Occurs after a successful HTTP response, but before rendering.
@@ -1225,18 +1231,19 @@ var dot = (function(){
 		 */
 		builder: function(params){
 			var t = this;
-			t.navigate = function(p, nh, f){routerNavigate.call(t, p, nh, f)};
+			t.navigate = function(p, nh, f){return routerNavigate.call(t, p, nh, f)};
 			t.navId = 0;
 			t.currentRoute = null;
 			t.currentParams = null;
 			
 			t.params = params;
-			if(!t.params.routes) ERR("R");
+			if(!params || !params.routes) {ERR("R"); return dot};
 			for(var i = 0; i < t.params.routes.length; i++){
 				var r = t.params.routes[i];
-				if(!r.path) ERR("R");
+				if(!r.path) {ERR("R"); return dot};
 				r.segments = r.path.split("/");
 			}
+			if(params.autoNavigate === undefined) params.autoNavigate = true;
 			var o = dot.el("dothtml-router");
 			t.outlet = o.getLast();
 			t.id = routerId++;
@@ -1247,35 +1254,55 @@ var dot = (function(){
 		ready: function(){
 			var t = this;
 			// If there is a route left inside the route queue
+			setupPopupFunction();
+			
+			if(t.params.autoNavigate){
+				mayRedirect = true;
+				var params = t.navigate(window.location.pathname + (window.location.hash || ""), true);
+				mayRedirect = false;
+			}
 
-			!t.params.noHistory && !routerEventSet && (routerEventSet = true) ? window.onpopstate = function(e){
-				if(e.state){
-					dot.navigate(e.state.path, true);
-					document.title = e.state.pageTitle;
-				}
-			} : 0;
-
-			// if(routeQueue.length > 0){
-				
-			// }
-			//console.log("NAVIGATING TO", window.location.pathname);
-			mayRedirect = true;
-			t.navigate(window.location.pathname + (window.location.hash || ""), true);
-			mayRedirect = false;
+			if(history.pushState) history.replaceState({"pageTitle":params.title || document.title, "path": params.path}, params || document.title, params.path);
+			else window.location.hash = params.path;
 		}
 	});
 
 	dot.navigate = function(path, noHistory, force){
 
+		setupPopupFunction();
+
 		var K = Object.keys(allRouters);
+		var lastNavParams = {};
+		var bestTitle = document.title;
 		for(var k = 0; k < K.length; k++){
 			var kk = K[k];
 			var r = allRouters[kk];
-			r && r.navigate(path, noHistory, force);
+			if(r) {
+				var currentNavParams = r.navigate(path, noHistory, force);
+				if(currentNavParams.isNew && !currentNavParams.wasCancelled){
+					lastNavParams = currentNavParams;
+					bestTitle = lastNavParams.title || bestTitle;
+				}
+			}
 		}
+
+		try{
+			if(lastNavParams && !noHistory){
+				//if(history.replaceState) history.replaceState({"pageTitle":title, "path": path}, title, path);
+				if(history.pushState) history.pushState({"pageTitle":bestTitle, "path": lastNavParams.path}, bestTitle, lastNavParams.path);
+				else window.location.hash = lastNavParams.path;
+			}
+		}catch(e){}
 
 		return this;
 	}
+
+	dot.component("navLink", function(content, href){
+		return dot.a(content).href(href).onclick(function(e){
+			e.preventDefault();
+			dot.navigate(href);
+		});
+	});
 
 	// Make all the names available to the dot object.
 	for (var k in _p) {

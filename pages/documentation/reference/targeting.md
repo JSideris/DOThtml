@@ -1,6 +1,26 @@
 # Targeting
 
-The `dot` object (when used as a function), accepts a single parameter, which specifies the target to which markup will be rendered. The following types of objects are supported.
+The `dot` object (when used as a function), accepts a single parameter, which specifies the target to which markup will be rendered. 
+
+!!!API!!!
+dot - Creates a VDBO who's virtual document is a specific target on the DOM.
+---
+- window.
+---
+target - The target element to use as the virtual document. Can be a CSS selector, the element, or any iterable list of elements.
+---
+A new VDBO who's virtual document is the target (is chainable).
+---
+``` JavaScript
+// Appends the document's body with a div with ID my-element:
+dot("body").div(":-)").id("my-target");
+
+// Deletes the inner content of an element with ID my-element:
+dot("#my-element").empty();
+```
+!!!/API!!!
+
+The following types of selector arguments are supported.
 
 |    Type    |    Description    |    Examples    |
 | --- | --- | --- |

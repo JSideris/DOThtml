@@ -60,3 +60,43 @@
 	display: inline;
 	padding: 0px;
 }
+
+.api-sample{
+	border: 4px solid gray;
+	margin: 5px;
+	padding: 10px;
+	background-color: #EEE;
+	display: inline-block;
+}
+
+.api-sample>h1{
+	font-size: 22px;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.api-sample>h2{
+	font-size: 16px;
+}
+
+.api-sample>table code, .api-table code{
+	padding: 0;
+}
+
+.api-sample>table pre, .api-table pre{
+	margin: 0;
+	display: inline-block;
+}
+
+.api-sample td, .api-table td{
+	background-color: #CFF;
+	vertical-align: top;
+}
+.api-sample td.prop-name, .api-table td.prop-name{
+	white-space: nowrap;
+}
+.api-sample tr.argument-or-field>td, .api-table tr.argument-or-field>td{
+	background-color: #CDC;
+}
+.api-sample tr.deep-argument-or-field>td, .api-table tr.deep-argument-or-field>td{
+	background-color: #9A9;
+}
