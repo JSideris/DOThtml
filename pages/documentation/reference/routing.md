@@ -92,12 +92,6 @@ The current VDBO, or dot, if a VDBO does not exist (is chainable).
 ``` JavaScript
 dot.navLink("Routing", "/documentation/routing")
 ```
-
-Will generate: 
-
-``` HTML
-
-```
 !!!/API!!!
 
 The definition for this component is relatively simple, but somewhat tedious.
