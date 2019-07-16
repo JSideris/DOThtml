@@ -12,9 +12,9 @@
  * - Changed custom function attributes so that instead of passing in an events object that may not exist in the current context, they pass in arguments[0].
  * - Added name conflicts for components.
  * - Added i value to each function.
- * TODO:
- * - Add test case for ensuring routers are removed from the allRouters object after calling empty().
- * - Fix data bindings.
+ * - Complete redo of bindings.
+ *     - Removed `dot.binding` object.
+ *     - `dot.bindTo` function now accepts an object and a property name.
  */
 var dot = (function(){
 
