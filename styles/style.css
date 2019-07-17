@@ -154,3 +154,15 @@ p{
 .tab-button-container:hover{
 	background-color: rgba(200, 200, 200, 0.5);
 }
+
+.download-dot-button{
+	border: 2px solid black;
+	border-top-color: #CCC;
+	border-left-color: #CCC;
+	border-radius: 5px;
+	background-color: #235;
+	color: #FFF;
+}
+.download-dot-button:hover{
+	background-color: #346;
+}

@@ -268,7 +268,11 @@
 			dot.table(
 				dot.tr(dot.td(dot.div("DOThtml").style(dotcss.fontSize(28).marginBottom(100)))).colspan(2)
 				.tr(
-					dot.td(dot.a("License").href("/license").onclick(function(e){e.preventDefault();dot.navigate("/license")}))
+					dot.td(
+						dot.navLink("License", "/license")
+						.span(" | ")
+						.a("Unit Tests").href("/unittests")
+					)
 					.td(dot.a("DOTcss").href("http://jsideris.com/DOTcss"))
 					.td("&copy;" + new Date().getFullYear() + " - Joshua Sideris")
 				)

@@ -24,7 +24,7 @@ function dothtmlLogo(targetSelector){
 				}).style(dotcss.position("relative").display("table-cell").verticalAlign("middle").heightP(100))
 			).style(dotcss.position("relative").display("table").widthP(100).marginTopP(3.75).marginBottomP(3.75).heightP(55).fontSize(emblem.innerNode.offsetHeight * 0.2689).whiteSpace("nowrap").fontFamily("\"Arial\", Gadget, sans-serif").color("black").fontWeight(900));
 			emblem.mainLogo = ret.getLast();
-			ret.div(dot.div("A human-friendly way to build highly-dynamic web pages<br />in pure JavaScript.").style(dotcss.display("table-cell").verticalAlign("middle")))
+			ret.div(dot.div("A human-friendly way to build powerful web apps<br />in pure JavaScript.").style(dotcss.display("table-cell").verticalAlign("middle")))
 				.style(dotcss.display("table").heightP(25).widthP(100).opacity(0.1).fontSize(emblem.innerNode.offsetHeight * 0.07563).color("#EEEEEE").fontFamily("\"Arial\", Gadget, sans-serif"));
 			emblem.slogan = ret.getLast();
 			return ret;

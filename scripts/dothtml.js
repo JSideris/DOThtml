@@ -12,9 +12,9 @@
  * - Changed custom function attributes so that instead of passing in an events object that may not exist in the current context, they pass in arguments[0].
  * - Added name conflicts for components.
  * - Added i value to each function.
- * TODO:
- * - Add test case for ensuring routers are removed from the allRouters object after calling empty().
- * - Fix data bindings.
+ * - Complete redo of bindings.
+ *     - Removed `dot.binding` object.
+ *     - `dot.bindTo` function now accepts an object and a property name.
  */
 var dot = (function(){
 
@@ -474,13 +474,10 @@ var dot = (function(){
 		return this;
 	}
 
-	_p.binding = function(val){
-		return new _B(val);
-	}
-
 	/**
 	 * Binds the value of an element to a data field.
-	 * @param {_B} binding
+	 * @param {object} object
+	 * @param {string} name
 	 */
 	_p.bindTo = function(object, name){
 		var last = this.getLast();
@@ -580,7 +577,7 @@ var dot = (function(){
 		"col",
 		"colgroup",
 		"content",
-		//"data", //*
+		"data", //*
 		"datalist",
 		"dd",
 		"del",
@@ -876,10 +873,11 @@ var dot = (function(){
 		"submit"
 	];
 	
-	for(var i = 0; i < allTags.length; i++) createElement(allTags[i]);
-	for(var i = 0; i < allAttributes.length; i++) createAttribute(allAttributes[i]);
-	for(var i = 0; i < allJQueryWrappers.length; i++) createJQueryWrapper(allJQueryWrappers[i]);
-	for(var i = 0; i < allJQueryEventHandlers.length; i++) createJQueryEventHandler(allJQueryEventHandlers[i]);
+	var i;
+	for(i in allTags) createElement(allTags[i]);
+	for(i in allAttributes) createAttribute(allAttributes[i]);
+	for(i in allJQueryWrappers) createJQueryWrapper(allJQueryWrappers[i]);
+	for(i in allJQueryEventHandlers) createJQueryEventHandler(allJQueryEventHandlers[i]);
 
 	//Hyphenated Attributes.
 	_p["acceptCharset"] = _p["accept-charset"] = function(value){return this.attr("accept-charset", value);};
@@ -888,7 +886,7 @@ var dot = (function(){
 	//_p.svg = function(){ERR("S")};
 
 	//Data is a special attribute.
-	_p.dataA = function(suffix, value){
+	_p.dataA = dot.dataA = function(suffix, value){
 		if(arguments.length < 2){
 			value = suffix;
 			suffix = undefined;
@@ -899,13 +897,9 @@ var dot = (function(){
 		}
 	};
 
-	_p.dataE = function(content){
-		return dot.el("data", content);
-	}
-
-	_p.data = function(){
+	_p.data = dot.data = function(){
 		var T = this;
-		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] === "string") && T._document && T._document.lastChild && T._document.lastChild.tagName == "OBJECT"))
+		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] !== "object") && T._document && T._document.lastChild && T._document.lastChild.tagName == "OBJECT"))
 			return dot.dataA.apply(T, arguments);
 		return dot.dataE.apply(T, arguments);
 	}
@@ -913,9 +907,10 @@ var dot = (function(){
 	//Special handling for names that exist as both elements and attributes.
 	//summary, span, label, form, cite
 
-	_p.cite = function(arg){
+	_p.cite = dot.cite = function(arg){
 		var T = this;
-		if(arg && (typeof arg === "string") && T._document && T._document.lastChild){
+		console.log("Here", arg);
+		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
 			var tagType = T._document.lastChild.tagName;
 			if(tagType == "BLOCKQUOTE" 
 				|| tagType == "DEL" 
@@ -926,9 +921,9 @@ var dot = (function(){
 		return T.el("cite", arg);
 	};
 			
-	_p.form = function(arg){
+	_p.form = dot.form = function(arg){
 		var T = this;
-		if(arg && (typeof arg === "string") && T._document && T._document.lastChild){
+		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
 			var tagType = T._document.lastChild.tagName;
 			if(tagType == "BUTTON" 
 				|| tagType == "FIELDSET" 
@@ -948,7 +943,7 @@ var dot = (function(){
 
 	_p.label = function(arg){
 		var T = this;
-		if(arg && (typeof arg === "string") && T._document && T._document.lastChild){
+		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
 			var tagType = T._document.lastChild.tagName;
 			if(tagType == "TRACK")
 			return T.attr("label", arg);
@@ -958,7 +953,7 @@ var dot = (function(){
 	
 	_p.span = function(arg){
 		var T = this;
-		if(arg && (typeof arg === "string") && T._document && T._document.lastChild){
+		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
 			var tagType = T._document.lastChild.tagName;
 			if(tagType == "COL" 
 			|| tagType == "COLGROUP")
@@ -969,7 +964,7 @@ var dot = (function(){
 	
 	_p.summary = function(arg){
 		var T = this;
-		if(arg && (typeof arg === "string") && T._document && T._document.lastChild){
+		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
 			var tagType = T._document.lastChild.tagName;
 			if(tagType == "TABLE")
 			return T.attr("summary", arg);

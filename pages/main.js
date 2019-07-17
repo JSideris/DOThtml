@@ -1,28 +1,34 @@
+if(dot.featurePreview) dot.removeComponent("featurePreview");
+dot.component({
+	name: "featurePreview",
+	builder: function(title, description, color){
+		return dot.div(
+			dot.h3(title).style(dotcss.fontSize(30).margin(0).backgroundColor(255,255,255,0.6).borderRadius(5))
+			.p(description).style(dotcss.fontSize(18).whiteSpace("normal").color("black"))
+		).style(dotcss.display("inline-block").whiteSpace("nowrap").border("4px solid #333").backgroundColor(color).color("black").padding(5).width(320));
+	}
+});
+
 exports = dot.div(
-	dot.div("Become the most productive programmer on the dynamic web.")
+	dot.div("DOThtml is a client-side framework for building single-page applications.")
+	//.br()
+	.div(
+		dot.t("It's is designed to be ").b("intuitive").t(", ").b("light-weight").t(", and ").b("extensible").t(".")
+		//.br().t("With a succinct syntax resembling HTML.")
+	).style(dotcss.fontSize(24).fontStyle("italic"))
 	.br()
-	.div("Now with 2-way binding and routing!").style(dotcss.fontSize(24).fontStyle("italic"))
+	.a("Download DOThtml &#x2b73;").href("https://github.com/JSideris/DOThtml/releases/latest").target("_blank").class("btn btn-primary download-dot-button")//.download()
 	.br()
-	.a("Download DOThtml").href("https://github.com/JSideris/DOThtml/releases/latest").target("_blank").class("btn btn-primary download-dot-button")//.download()
+	.br()
+	.hr()
+	.h2("This is what it can do.")
+	.featurePreview("Routing", "Build SPAs for any platform with routing that just works.", "#FCA")
+	.featurePreview("Data Binding", "Bind your model and your view and forget about it.", "#AAF")
+	.featurePreview("Components", "Expand DOThtml with custom components.", "#3BB")
+	.featurePreview("No more HTML", "Dynamic page-building makes it easy to build dynamic apps.", "#D6D")
+	.h2("And here's why you'll love it.")
+	.featurePreview("Succinct", "The most succinct HTML-building syntax out there that is still JavaScript.", "#8F8")
+	.featurePreview("Pure JavaScript", "Develop awesome apps faster by not having to wait for a compiler.", "#FF5")
+	.featurePreview("Tiny", "No more 100mb+ for \"Hello, world\". Client-side library is only a few kb!", "#D66")
 ).id("download-dot-banner")
 
-.hr()
-
-.h1("DOThtml - The best open-source client-side page buider.")
-.featurepreview("images/Reduce_Badge_Draft6.png", "Reduces page sizes and load times.")
-.featurepreview("images/Markup_Badge_Draft4.png", "Prototype faster with succinct, minimalist markup.")
-.featurepreview("images/JS_Badge_Draft7.png", "Pure JavaScript. No pre-processors. Faster development.")
-.featurepreview("images/Client_Server_Badge_Draft3.png", "Maximum compatibility. Fewer dependencies.")
-.featurepreview("images/Elements_Badge_Draft2.png", "Supports conditional, iterative, or delayed elements.")
-.featurepreview("images/Extensibility_Badge_Draft4.png", "Built for extensibility.")
-
-// .hr()
-
-// .h1("Check out a few sites built with DOThtml.")
-// .div(
-// 	dot
-// 	.showcasesite("JSideris' Home Page", "http://jsideris.com", "./images/jsweb.png")
-// 	.showcasesite("KSP Advanced Mission Planner", "http://jsideris.github.io/AdvancedKspMissionCalculator/", "./images/kspadvancedmissionplanner.png")
-// 	.showcasesite("DOThtml Home", "http://jsideris.github.io/DOThtml/", "./images/dothtmlpreview.png")
-// ).class("showcase-site-list")
-//.featurepreview("", "Lots of fun to use!")

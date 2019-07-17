@@ -5,9 +5,9 @@
 <link rel="stylesheet" type="text/css" href="bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="style.css" />
 
-<script src="jquery.js"></script>
-<script src="bootstrap.min.js"></script>
-<script src="../dothtml.js"></script>
+<script src="/scripts/jquery.js"></script>
+<script src="/scripts/bootstrap.min.js"></script>
+<script src="/scripts/dothtml.js"></script>
 
 <body>
 	<div class="container">
@@ -328,7 +328,7 @@
 			//Special tags.
 			addHeader("Special Tags");
 			addTest("citeE.", function(){ return dot.citeE(); }, "<cite></cite>");
-			//addTest("dataE.", function(){ return dot.dataE(); }, "<data></data>"); //Element not supported by most browsers.
+			addTest("dataE.", function(){ return dot.dataE(); }, "<data></data>"); //Element not supported by most browsers.
 			addTest("formE.", function(){ return dot.formE(); }, "<form></form>");
 			addTest("labelE.", function(){ return dot.labelE(); }, "<label></label>");
 			addTest("spanE.", function(){ return dot.spanE(); }, "<span></span>");
@@ -423,19 +423,51 @@
 				dot.component({name: "comp_ready", builder: function(){return dot.div(dot.div(1))}, ready: function(){this.element.innerHTML = "OKAY"}});
 				dot.component({name: "comp_text", builder: function(){return "1"}});
 				dot.component({name: "comp_textreplace", builder: function(){return "1"}, ready: function(){this.element.parentNode.insertBefore(document.createTextNode("2"), this.element.nextSibling);this.element.parentNode.removeChild(this.element);}});
-				dot.component({name: "comp_constructorbuildervars", constructor: function(){this.myValue = 123;}, builder: function(){return this.myValue}});
 				
 				dot.component({name: "comp_binding_write", 
-					builder: function(input, v1, v2){this.v1 = v1; this.v2 = v2; this.myValue = dot.binding(v2); return input.bindTo(this.myValue)},
-					ready: function(){ var v = dot(this.element).getVal(); dot(this.element.parentNode).empty().div("Var: " + this.myValue.value).div("Input: " + v) }
+					builder: function(input, v1, v2){
+						this.v1 = v1; 
+						this.v2 = v2; 
+						return input.bindTo(this, "v2");
+					},
+					ready: function(){ 
+						var v = dot(this.element).getVal(); 
+						dot(this.element.parentNode).empty()
+						.div("Var: " + this.v2)
+						.div("Input: " + v);
+					}
 				});
 				dot.component({name: "comp_binding_var_change", 
-					builder: function(input, v1, v2){this.v1 = v1; this.v2 = v2; this.myValue = dot.binding(v1); return input.bindTo(this.myValue)},
-					ready: function(){ this.myValue.value = this.v2; var v = dot(this.element).getVal(); dot(this.element.parentNode).empty().div("Var: " + this.myValue.value).div("Input: " + v) }
+					builder: function(input, v1, v2){
+						this.v1 = v1; 
+						this.v2 = v2; 
+						return input.bindTo(this, "v1");
+					},
+					ready: function(){ 
+						this.v1 = this.v2; 
+						var v = dot(this.element).getVal(); 
+						dot(this.element.parentNode).empty()
+						.div("Var: " + this.v1)
+						.div("Input: " + v);
+					}
 				});
+
 				dot.component({name: "comp_binding_input_change", 
-					builder: function(input, v1, v2){this.v1 = v1; this.v2 = v2; this.myValue = dot.binding(v1); return input.bindTo(this.myValue)},
-					ready: function(){ dot(this.element).setVal(this.v2); this.myValue.setFrom(this.element); var v = dot(this.element).getVal(); dot(this.element.parentNode).empty().div("Var: " + this.myValue.value).div("Input: " + v); }
+					builder: function(input, v1, v2){
+						this.v1 = v1; 
+						this.v2 = v2; 
+						//this.myValue = dot.binding(v1); 
+						return input.bindTo(this, "v1");
+					},
+					ready: function(){ 
+						dot(this.element).setVal(this.v2); 
+						var v = dot(this.element).getVal(); 
+						this.element.dispatchEvent(new Event("change"));
+						//this.v1 = v; 
+						dot(this.element.parentNode).empty()
+						.div("Var: " + this.v1)
+						.div("Input: " + v); 
+					}
 				});
 		
 				dot.component("comp_binding_write_input", function(){return dot.comp_binding_write(dot.input(), "a", "b")});
@@ -463,16 +495,55 @@
 				// dot.component("comp_binding_var_change_option", function(){return dot.comp_binding_var_change(dot.input(),  false, true)});
 				// dot.component("comp_binding_input_change_option", function(){return dot.comp_binding_input_change(dot.input(),  false, true)});
 				dot.component({name: "comp_binding_write_option", 
-					builder: function(){ this.myValue = dot.binding(true); return dot.select(dot.option("a").value("a").selected().option("b").value("b").bindTo(this.myValue).option("c").value("c"))},
-					ready: function(){ var v = dot(this.element).getVal(); dot(this.element.parentNode).empty().div("Var: " + this.myValue.value).div("Input: " + v) }
+					builder: function(){ 
+						this.myValue = true; 
+						return dot.select(
+							dot.option("a").value("a").selected()
+							.option("b").value("b").bindTo(this, "myValue")
+							.option("c").value("c"))
+					},
+					ready: function(){ 
+						var v = dot(this.element).getVal(); 
+						dot(this.element.parentNode).empty()
+						.div("Var: " + this.myValue).div("Input: " + v) 
+					}
 				});
 				dot.component({name: "comp_binding_var_change_option", 
-					builder: function(){ this.myValue = dot.binding(false); return dot.select(dot.option("a").value("a").selected().option("b").value("b").bindTo(this.myValue).option("c").value("c"))},
-					ready: function(){ this.myValue.value = true; var v = dot(this.element).getVal(); dot(this.element.parentNode).empty().div("Var: " + this.myValue.value).div("Input: " + v) }
+					builder: function(){ 
+						this.myValue = false;
+						return dot.select(
+							dot.option("a").value("a").selected()
+							.option("b").value("b").bindTo(this, "myValue")
+							.option("c").value("c"))
+						},
+					ready: function(){ 
+						this.myValue = true; 
+						var v = dot(this.element).getVal(); 
+						dot(this.element.parentNode).empty()
+						.div("Var: " + this.myValue)
+						.div("Input: " + v) 
+					}
 				});
+
+				// TODO: not sure if this is a valid test case.
+				// The change event is dispatched on the option element, not the select.
+				// Need to ensure this works with real elements and user interaction.
 				dot.component({name: "comp_binding_input_change_option", 
-					builder: function(){ this.myValue = dot.binding(false); return dot.select(dot.option("a").value("a").selected().option("b").value("b").bindTo(this.myValue).option("c").value("c"))},
-					ready: function(){ dot(this.element).setVal("b"); this.myValue.setFrom(this.element.childNodes[1]); var v = dot(this.element).getVal(); dot(this.element.parentNode).empty().div("Var: " + this.myValue.value).div("Input: " + v); }
+					builder: function(){ 
+						this.myValue = false; 
+						return dot.select(
+							dot.option("a").value("a").selected()
+							.option("b").value("b").bindTo(this, "myValue")
+							.option("c").value("c"))},
+					ready: function(){ 
+						dot(this.element).setVal("b"); 
+						//this.myValue.setFrom(this.element.childNodes[1]); 
+						var v = dot(this.element).getVal(); 
+						this.element.children[1].dispatchEvent(new Event("change"));
+						dot(this.element.parentNode).empty()
+						.div("Var: " + this.myValue)
+						.div("Input: " + v); 
+					}
 				});
 		
 			}catch(e){ console.error(e);}
@@ -483,7 +554,6 @@
 			addTest("Component w/ ready method.", function(){return dot.comp_ready()}, "<div>OKAY</div>");
 			addTest("Text component.", function(){return dot.h("a").comp_text().h("b")}, "a1b");
 			addTest("Text component w/ ready method.", function(){return dot.h("a").comp_textreplace().h("b")}, "a2b");
-			addTest("Component constructor/builder vars.", function(){return dot.comp_constructorbuildervars()}, "123");
 			
 			addHeader("Component Data Bindings");
 			addTest("Var bound to input.", function(){return dot.comp_binding_write_input()}, "<div>Var: b</div><div>Input: b</div>");
@@ -512,7 +582,7 @@
 			addTest("Option change updating var.", function(){return dot.comp_binding_input_change_option()}, "<div>Var: true</div><div>Input: b</div>");
 			
 			//Routing
-			addHeader("Roouting");
+			addHeader("Routing");
 			try{
 				dot.component("defaultpage", function(){return dot.h1("Default")});
 				dot.component("page1", function(){return dot.h1("Page 1.")});
@@ -538,23 +608,23 @@
 				{title: "Ajax", path: "ajax", component: "testpage.js"},
 				{title: "Not Found", path: "*", component: dot.notfound},
 			];
-			addTest("Navigate with no router.", function(){return dot.div("abc").navigate("1")}, "<div>abc</div>");
-			addTest("Chainability of navigate.", function(){return dot.div("abc").navigate("1").div("def")}, "<div>abc</div><div>def</div>");
-			addTest("Default content.", function(){return dot.router(routes, true)}, "<dothtml-router></dothtml-router>");
-			addTest("Default content, undefined navigate.", function(){return dot.router(routes, true).navigate()}, "<dothtml-router><h1>Default</h1></dothtml-router>");
-			addTest("Default content, / navigate.", function(){return dot.router(routes, true).navigate("/")}, "<dothtml-router><h1>Default</h1></dothtml-router>");
-			addTest("Unknown route.", function(){return dot.router(routes, true).navigate("unknown")}, "<dothtml-router><h1>Not Found.</h1></dothtml-router>");
-			addTest("Navigate to 1.", function(){return dot.router(routes, true).navigate("1")}, "<dothtml-router><h1>Page 1.</h1></dothtml-router>");
-			addTest("Navigate to 1/.", function(){return dot.router(routes, true).navigate("1/")}, "<dothtml-router><h1>Page 1.</h1></dothtml-router>");
-			addTest("Navigate to 1 then 2.", function(){return dot.router(routes, true).navigate("1").navigate("2")}, "<dothtml-router><h1>Page 2.</h1></dothtml-router>");
-			addTest("Navigate to the same page.", function(){return dot.router(routes, true).navigate("1").navigate("1")}, "<dothtml-router><h1>Page 1.</h1></dothtml-router>");
-			addTest("Navigate from 1 to undefined.", function(){return dot.router(routes, true).navigate("1").navigate()}, "<dothtml-router><h1>Default</h1></dothtml-router>");
-			addTest("Navigate from 1 to /.", function(){return dot.router(routes, true).navigate("1").navigate("/")}, "<dothtml-router><h1>Default</h1></dothtml-router>");
-			addTest("Navigate to 6/7.", function(){return dot.router(routes, true).navigate("6/7")}, "<dothtml-router><h1>Page 6/7.</h1></dothtml-router>");
-			addTest("Navigate to 6/8.", function(){return dot.router(routes, true).navigate("6/8")}, "<dothtml-router><h1>Not Found.</h1></dothtml-router>");
-			addTest("Params.", function(){return dot.router(routes, true).navigate("awesome/Hello/Hello_World")}, "<dothtml-router><h1>Hello</h1><p>Hello_World</p></dothtml-router>");
-			addTest("Greedy route.", function(){return dot.router(routes, true).navigate("greed")}, "<dothtml-router><h1>Good.</h1></dothtml-router>");
-			addTest("Load page file.", function(){return dot.router(routes, true).navigate("ajax")}, "<dothtml-router><h1>Loaded Page</h1><p>This page was loaded from a file!</p></dothtml-router>");
+			// addTest("Navigate with no router.", function(){return dot.div("abc").navigate("1")}, "<div>abc</div>");
+			// addTest("Chainability of navigate.", function(){return dot.div("abc").navigate("1").div("def")}, "<div>abc</div><div>def</div>");
+			// addTest("Default content.", function(){return dot.router(routes, true)}, "<dothtml-router></dothtml-router>");
+			// addTest("Default content, undefined navigate.", function(){return dot.router(routes, true).navigate()}, "<dothtml-router><h1>Default</h1></dothtml-router>");
+			// addTest("Default content, / navigate.", function(){return dot.router(routes, true).navigate("/")}, "<dothtml-router><h1>Default</h1></dothtml-router>");
+			// addTest("Unknown route.", function(){return dot.router(routes, true).navigate("unknown")}, "<dothtml-router><h1>Not Found.</h1></dothtml-router>");
+			// addTest("Navigate to 1.", function(){return dot.router(routes, true).navigate("1")}, "<dothtml-router><h1>Page 1.</h1></dothtml-router>");
+			// addTest("Navigate to 1/.", function(){return dot.router(routes, true).navigate("1/")}, "<dothtml-router><h1>Page 1.</h1></dothtml-router>");
+			// addTest("Navigate to 1 then 2.", function(){return dot.router(routes, true).navigate("1").navigate("2")}, "<dothtml-router><h1>Page 2.</h1></dothtml-router>");
+			// addTest("Navigate to the same page.", function(){return dot.router(routes, true).navigate("1").navigate("1")}, "<dothtml-router><h1>Page 1.</h1></dothtml-router>");
+			// addTest("Navigate from 1 to undefined.", function(){return dot.router(routes, true).navigate("1").navigate()}, "<dothtml-router><h1>Default</h1></dothtml-router>");
+			// addTest("Navigate from 1 to /.", function(){return dot.router(routes, true).navigate("1").navigate("/")}, "<dothtml-router><h1>Default</h1></dothtml-router>");
+			// addTest("Navigate to 6/7.", function(){return dot.router(routes, true).navigate("6/7")}, "<dothtml-router><h1>Page 6/7.</h1></dothtml-router>");
+			// addTest("Navigate to 6/8.", function(){return dot.router(routes, true).navigate("6/8")}, "<dothtml-router><h1>Not Found.</h1></dothtml-router>");
+			// addTest("Params.", function(){return dot.router(routes, true).navigate("awesome/Hello/Hello_World")}, "<dothtml-router><h1>Hello</h1><p>Hello_World</p></dothtml-router>");
+			// addTest("Greedy route.", function(){return dot.router(routes, true).navigate("greed")}, "<dothtml-router><h1>Good.</h1></dothtml-router>");
+			// addTest("Load page file.", function(){return dot.router(routes, true).navigate("ajax")}, "<dothtml-router><h1>Loaded Page</h1><p>This page was loaded from a file!</p></dothtml-router>");
 			// NESTED ROUTING (NOT SUPPORTED YET)
 			// addTest("Route not found child.", function(){return dot.router(routes, true).navigate("3/notfound")}, "<dothtml-router><h1>Page 3.</h1><dothtml-router>Route \"notfound\" not found.</dothtml-router></dothtml-router>");
 			// addTest("Router in router / default.", function(){return dot.router(routes, true).navigate("3")}, "<dothtml-router><h1>Page 3.</h1><dothtml-router><h1>Default</h1></dothtml-router></dothtml-router>");
@@ -565,6 +635,7 @@
 			// addTest("Router in router / page 3/3/1.", function(){return dot.router(routes, true).navigate("3/3/1")}, "<dothtml-router><h1>Page 3.</h1><dothtml-router><h1>Page 3.</h1><dothtml-router><h1>Page 1.</h1></dothtml-router></dothtml-router></dothtml-router>");
 			// CURRENTLY UNDEFINED:
 			//addTest("Two routers.", function(){return dot.router(routes, true).router(routes, true).navigate("1")}, "<dothtml-router></dothtml-router><dothtml-router><h1>Page 1.</h1></dothtml-router>");
+ 			// - Add test case for ensuring routers are removed from the allRouters object after calling empty().
 
 			//jQuery wrappers
 			if(window.jQuery){
