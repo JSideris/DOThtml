@@ -2,7 +2,7 @@
 
 ## HTML Builder
 
-At it's core, DOThtml is a chainable HTML builder with a namespace that contains all HTML tags and attributes.
+At its core, DOThtml is a chainable HTML builder with a namespace that contains all HTML tags and attributes.
 
 ``` JavaScript
 dot("#content")
