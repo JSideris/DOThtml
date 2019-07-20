@@ -13,7 +13,7 @@ exports = dot.div(
 	dot.div("DOThtml is a client-side framework for building single-page applications.")
 	//.br()
 	.div(
-		dot.t("It's is designed to be ").b("intuitive").t(", ").b("light-weight").t(", and ").b("extensible").t(".")
+		dot.t("It is designed to be ").b("intuitive").t(", ").b("light-weight").t(", and ").b("extensible").t(".")
 		//.br().t("With a succinct syntax resembling HTML.")
 	).style(dotcss.fontSize(24).fontStyle("italic"))
 	.br()
