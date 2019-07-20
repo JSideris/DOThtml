@@ -21,7 +21,7 @@ The above dot syntax will generate the following HTML inside of an element with 
 </ul>
 ```
 
-The object `dot` is only called as a fuction when you are chosing a target to write to. A lot is happening behind the scenes, so check out the [general concepts](/documentation/concepts) page for a more thorough understanding of the *dot builder object*.
+The object `dot` is only called as a function when you are choosing a target to write to. A lot is happening behind the scenes, so check out the [general concepts](/documentation/concepts) page for a more thorough understanding of the *dot builder object*.
 
 ## Events
 
