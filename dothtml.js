@@ -1,20 +1,10 @@
 /*! DOThtml v3.0.0 | (c) Joshua Sideris | dothtml.org/license */
 /**
  * Changes:
- * 3.0.0: 
- * - Added routing and router outlets.
- * - Added better error messages in the development version.
- * - Removed appendToId and writeToId functions.
- * - Removed option to suppress warnings/errors (use minified DOThtml instead).
- * - Removed constructor from components.
- * - Components will now accept a ready function as a third parameter.
- * - Changed `acceptcharset` to `acceptCharset`.
- * - Changed custom function attributes so that instead of passing in an events object that may not exist in the current context, they pass in arguments[0].
- * - Added name conflicts for components.
- * - Added i value to each function.
- * - Complete redo of bindings.
- *     - Removed `dot.binding` object.
- *     - `dot.bindTo` function now accepts an object and a property name.
+ * 3.1.0: 
+ * - Removed some debug code.
+ * - Created a new dot.defer() special function that waits for the parent to render before creating the child element.
+ * - Renamed dothtml-timeout to dothtml-defer.
  */
 var dot = (function(){
 
@@ -28,6 +18,7 @@ var dot = (function(){
 			"CU": "Invalid usage: a component should at least have a name and a builder function.",
 			"F": "Element \"" + params[0] + "\" not found.",
 			"J": "Can't use jQuery wrappers without jQuery.",
+			"PF": "Method " + params[0] + " expects a callback function.",
 			"R": "Router must be passed a JSON object that contains an 'routes' array containing objects with a 'path', 'title', and 'component'.",
 			"S": "SVG is not supported by DOThtml.",
 		}[code] || "Unknown error.";
@@ -107,7 +98,7 @@ var dot = (function(){
 					arg = function(){return dot;}
 				}
 				if(isF(arg)){
-					timeoutDot = this.el("dothtml-timeout");
+					timeoutDot = this.el(DEFEL);
 					timeoutNode = timeoutDot._document.lastChild;
 					(function(arg, args, timeoutNode, timeoutDot){
 						args[i] = function(){
@@ -164,6 +155,9 @@ var dot = (function(){
 		Node.prototype.TEXT_NODE = 3;
 	}
 
+	var DOCEL = "DOTHTML-DOCUMENT";
+	var DEFEL = "DOTHTML-DEFER";
+
 	// DOT:
 	function _D(document) {
 		var T = this;
@@ -174,13 +168,12 @@ var dot = (function(){
 
 		T.lastNode = document ? document.lastChild : null;
 	}
-
 	var _p = _D.prototype;
 
-	_p.version = "3.0.0";
+	_p.version = "3.1.0";
 
 	_p._getNewDocument = function(){
-		return document.createElement("DOTHTML-DOCUMENT");
+		return document.createElement(DOCEL);
 	};
 
 	_p._getAnInstance = function(){
@@ -208,7 +201,7 @@ var dot = (function(){
 	}
 
 	//before is passed in so that attributes or jquery wrappers can be associated with before's sibling, instead of inheritingParent, the default.
-	_p._evalContent = function(content, /*inheritingParent, before,*/ pendingCalls){
+	_p._evalContent = function(content, pendingCalls){
 		if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
 			var nDot = new _D(this._getNewDocument());
 			nDot._document.innerHTML = content;
@@ -223,32 +216,12 @@ var dot = (function(){
 		}
 		else if(isF(content)) //Function to evaluate
 		{
-			return this._evalContent(content(), /*inheritingParent, before,*/ pendingCalls);
+			return this._evalContent(content(), pendingCalls);
 		}
 		else if(content && content instanceof _D) { //DOT
 			for(var i = 0; i < content._pendingCalls.length; i++){
 				pendingCalls.push(content._pendingCalls[i]);
 			}
-			/*
-			var inheritTarget = (before ? before.previousSibling : null) || inheritingParent || this._document.lastChild;
-			if(inheritTarget && content._pendingCalls){ //Inherit jquery or attr actions from first child.
-				for(var i = 0; i < content._pendingCalls.length; i++){
-					var call = content._pendingCalls[i];
-					if(call.type == "attr") inheritTarget.setAttribute(call.name, call.params[0]);
-					else if(call.type == "jQuery wrapper"){
-						var jo = jQuery(inheritTarget);
-						jo[call.name].apply(jo, call.params);
-					}
-					else if(call.type == "jQuery event"){
-						var jo = jQuery(inheritTarget);
-						jo[call.name](handler);
-					}
-					else if(call.type == "wait"){
-						call.callback();
-					}
-				}
-			}
-			*/
 			if(content._document) return content._document.childNodes; //Return all the nodes in here.
 		} 
 		
@@ -446,18 +419,30 @@ var dot = (function(){
 	};
 
 	_p.wait = function(timeout, callback){
-		var timeoutDot = this.el("dothtml-timeout");
+		var timeoutDot = this.el(DEFEL);
 		var timeoutNode = timeoutDot._document.lastChild;
-		var startTimer = function(){
-			setTimeout(function(){
-				timeoutDot._appendOrCreateDocument(callback, null, timeoutNode);
-				timeoutNode.parentElement.removeChild(timeoutNode);
-				////timeoutNode.remove(); //Doesn't work in IE.
-			}, timeout);
-		}
+
+		setTimeout(function(){
+			timeoutDot._appendOrCreateDocument(callback, null, timeoutNode);
+			timeoutNode.parentElement.removeChild(timeoutNode);
+		}, timeout);
 		
-		startTimer();
 		return timeoutDot;
+		// Ideally something like this:
+		//return this.defer(function(d){d.h(callback)}, timeout);
+	};
+
+	_p.defer = function(callback, timeout){
+		if(!isF(callback)) ERR("PF", "defer");
+		var deferDot = this.el(DEFEL);
+		var deferNode = deferDot._document.lastChild;
+
+		setTimeout(function(){
+			callback(dot(deferNode.parentElement));
+			deferNode.parentElement.removeChild(deferNode);
+		}, timeout || 0);
+		
+		return deferDot;
 	};
 
 	_p.empty = function(){
@@ -524,13 +509,7 @@ var dot = (function(){
 	 */
 	dot.component = function(params){
 		var prms;
-		if(arguments.length == 1){
-			prms = params;
-			if(!prms["name"] || !prms["builder"]){
-				ERR("CU");
-				return;
-			}
-		}
+		if(arguments.length == 1) prms = params;
 		else prms = {name: arguments[0], builder: arguments[1], ready: arguments[2]};
 		prms.name ? (
 			(!dot[prms.name] && !_p[prms.name]) ? (function(){
@@ -909,7 +888,6 @@ var dot = (function(){
 
 	_p.cite = dot.cite = function(arg){
 		var T = this;
-		console.log("Here", arg);
 		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
 			var tagType = T._document.lastChild.tagName;
 			if(tagType == "BLOCKQUOTE" 
@@ -979,7 +957,7 @@ var dot = (function(){
 	_p.setVal = function(value){
 		var last = this.getLast() || this._document;
 		if(!last) return this;
-		if(last.parentNode && last.parentNode.tagName != "DOTHTML-DOCUMENT") last = last.parentNode;
+		if(last.parentNode && last.parentNode.tagName != DOCEL) last = last.parentNode;
 		
 		//if ( typeof value === "number" ) val += "";
 		if ( Array.isArray && Array.isArray( value ) || !Array.isArray && value.join ) {

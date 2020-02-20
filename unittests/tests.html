@@ -675,8 +675,12 @@
 			}
 			
 			//Wait
-			addHeader("Wait");
-			addTest("Wait, timing early.", function(){ return dot.div(1).wait(620, dot.div(3)).div(2); }, "<div>1</div><dothtml-timeout></dothtml-timeout><div>2</div>", 500);
+			addHeader("Async");
+			
+			addTest("Deferred.", function(){ return dot.div(dot.defer(function(v){v.h(1)}))}, "<div>1</div>");
+			addTest("Long deferred.", function(){ return dot.div(dot.defer(function(v){setTimeout(function(){v.h(1);},0)})); }, "<div>1</div>", 500);
+			
+			addTest("Wait, timing early.", function(){ return dot.div(1).wait(620, dot.div(3)).div(2); }, "<div>1</div><dothtml-defer></dothtml-defer><div>2</div>", 500);
 			addTest("Wait, for nothing.", function(){ return dot.div(1).wait(50, function(){}).div(2); }, "<div>1</div><div>2</div>", 500);
 			addTest("Wait, for a string.", function(){ return dot.div(1).wait(50, "3").div(2); }, "<div>1</div>3<div>2</div>", 500);
 			addTest("Wait, for a div.", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 500);
@@ -690,9 +694,9 @@
 			addTest("Wait, append between text nodes.", function(){ return dot.h(1).wait(50, dot.div(3)).h(2); }, "1<div>3</div>2", 500);
 			addTest("Wait, out of order.", function(){ return dot.wait(20, dot.div(1)).wait(50, dot.div(2)).wait(30, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 500);
 			addTest("Wait, iterate.", function(){ return dot.div(1).wait(50, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 500);
-			addTest("Waitception, early.", function(){ return dot.wait(50, dot.div(dot.wait(620, dot.div(1)))); }, "<div><dothtml-timeout></dothtml-timeout></div>", 500);
+			addTest("Waitception, early.", function(){ return dot.wait(50, dot.div(dot.wait(620, dot.div(1)))); }, "<div><dothtml-defer></dothtml-defer></div>", 500);
 			addTest("Waitception, late, times shouldn't stack.", function(){ return dot.wait(80, dot.div(dot.wait(80, dot.div(1)))); }, "<div><div>1</div></div>", 500);
-			addTest("Waitception, late, times stack for functions 1/2.", function(){ return dot.wait(300, function(){return dot.div(dot.wait(300, dot.div(1)))}); }, "<div><dothtml-timeout></dothtml-timeout></div>", 500);
+			addTest("Waitception, late, times stack for functions 1/2.", function(){ return dot.wait(300, function(){return dot.div(dot.wait(300, dot.div(1)))}); }, "<div><dothtml-defer></dothtml-defer></div>", 500);
 			addTest("Waitception, late, times stack for functions 2/2.", function(){ return dot.wait(1, function(){return dot.div(dot.wait(1, dot.div(1)))}); }, "<div><div>1</div></div>", 500);
 			//addTest("Waitception, late, deep class.", function(){ return dot.div().wait(10, dot.wait(10, dot["class"](1)))}, "<div class=\"1\"></div>", 500); //This one fails. Not sure if I should support it though.
 			addTest("Waitception, late.", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 500);
