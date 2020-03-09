@@ -12,7 +12,7 @@
 <body>
 	<div class="container">
 		<h1>Summary</h1>
-		<div id="summary">Passed: <span id="summary-passed">0</span> Failed: <span id="summary-failed">0</span> Total: <span id="summary-total">0</span></div>
+		<div id="summary">Passed: <span id="summary-passed">0</span> Failed: <a id="summary-failed" href="#firstfail">0</a> Total: <span id="summary-total">0</span></div>
 		<div id="defineproperty-not-supported" style="color: red;display:none;">- Two-way data binding tests will fail because this browser does not support getters/setters in Object.defineProperty. Only one-way binding will work. This is a work in progress.</div>
 		<div id="jquery-not-supported" style="color: red;display:none;">- Tests for jQuery convenience wrappers could not be run because this browser does not support jQuery.</div>
 		<br />
@@ -73,6 +73,11 @@
 		var totalTests = 0;
 		var testsPassed = 0;
 		var testsFailed = 0;
+		var firstFailSet = false;
+
+		window.location.hash = "";
+		//document.body.scrollTop = 0;
+		setTimeout(()=>{window.location.hash = "firstfail";},1000);
 
 		function formatHTML(html){
 			html = html.toLowerCase();
@@ -247,15 +252,25 @@
 						if(testExpected == processedResult) testPassed = true;
 					}
 		
-					dot(tr) .td(description)
+					totalTests++;
+					var testNumber = totalTests;
+
+					dot(tr) .td(dot.h(description)).id("test" + testNumber)
 							.td(dot.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}"))))["class"]("code")
 							.td(dot.t(expected))["class"]("code")
 							.td(dot.t(resultHtml))["class"]("code")
 							.td(testPassed ? "PASS" : "FAIL")["class"](testPassed ? "pass" : "fail");
 					
-					totalTests++;
 					if(testPassed) testsPassed++;
-					else testsFailed++;
+					else {
+						testsFailed++;
+						if(!firstFailSet) {
+							firstFailSet = true;
+							setTimeout(function(){
+								dot("#test" + testNumber).a().name("firstfail");
+							},0);
+						}
+					}
 					
 					updateScore();
 				}, testTimeout);
@@ -420,9 +435,9 @@
 		
 				dot.component("comp_legacy", function(){return dot.div(dot.div(1))});
 				dot.component({name: "comp_std", builder: function(){return dot.div(dot.div(1))}});
-				dot.component({name: "comp_ready", builder: function(){return dot.div(dot.div(1))}, ready: function(){this.element.innerHTML = "OKAY"}});
+				dot.component({name: "comp_ready", builder: function(){return dot.div(dot.div(1))}, ready: function(){this.$el.innerHTML = "OKAY"}});
 				dot.component({name: "comp_text", builder: function(){return "1"}});
-				dot.component({name: "comp_textreplace", builder: function(){return "1"}, ready: function(){this.element.parentNode.insertBefore(document.createTextNode("2"), this.element.nextSibling);this.element.parentNode.removeChild(this.element);}});
+				dot.component({name: "comp_textreplace", builder: function(){return "1"}, ready: function(){this.$el.parentNode.insertBefore(document.createTextNode("2"), this.$el.nextSibling);this.$el.parentNode.removeChild(this.$el);}});
 				
 				dot.component({name: "comp_binding_write", 
 					builder: function(input, v1, v2){
@@ -431,8 +446,8 @@
 						return input.bindTo(this, "v2");
 					},
 					ready: function(){ 
-						var v = dot(this.element).getVal(); 
-						dot(this.element.parentNode).empty()
+						var v = dot(this.$el).getVal(); 
+						dot(this.$el.parentNode).empty()
 						.div("Var: " + this.v2)
 						.div("Input: " + v);
 					}
@@ -445,8 +460,8 @@
 					},
 					ready: function(){ 
 						this.v1 = this.v2; 
-						var v = dot(this.element).getVal(); 
-						dot(this.element.parentNode).empty()
+						var v = dot(this.$el).getVal(); 
+						dot(this.$el.parentNode).empty()
 						.div("Var: " + this.v1)
 						.div("Input: " + v);
 					}
@@ -460,11 +475,11 @@
 						return input.bindTo(this, "v1");
 					},
 					ready: function(){ 
-						dot(this.element).setVal(this.v2); 
-						var v = dot(this.element).getVal(); 
-						this.element.dispatchEvent(new Event("change"));
+						dot(this.$el).setVal(this.v2); 
+						var v = dot(this.$el).getVal(); 
+						this.$el.dispatchEvent(new Event("change"));
 						//this.v1 = v; 
-						dot(this.element.parentNode).empty()
+						dot(this.$el.parentNode).empty()
 						.div("Var: " + this.v1)
 						.div("Input: " + v); 
 					}
@@ -503,8 +518,8 @@
 							.option("c").value("c"))
 					},
 					ready: function(){ 
-						var v = dot(this.element).getVal(); 
-						dot(this.element.parentNode).empty()
+						var v = dot(this.$el).getVal(); 
+						dot(this.$el.parentNode).empty()
 						.div("Var: " + this.myValue).div("Input: " + v) 
 					}
 				});
@@ -518,8 +533,8 @@
 						},
 					ready: function(){ 
 						this.myValue = true; 
-						var v = dot(this.element).getVal(); 
-						dot(this.element.parentNode).empty()
+						var v = dot(this.$el).getVal(); 
+						dot(this.$el.parentNode).empty()
 						.div("Var: " + this.myValue)
 						.div("Input: " + v) 
 					}
@@ -536,15 +551,25 @@
 							.option("b").value("b").bindTo(this, "myValue")
 							.option("c").value("c"))},
 					ready: function(){ 
-						dot(this.element).setVal("b"); 
-						//this.myValue.setFrom(this.element.childNodes[1]); 
-						var v = dot(this.element).getVal(); 
-						this.element.children[1].dispatchEvent(new Event("change"));
-						dot(this.element.parentNode).empty()
+						dot(this.$el).setVal("b"); 
+						//this.myValue.setFrom(this.$el.childNodes[1]); 
+						var v = dot(this.$el).getVal(); 
+						this.$el.children[1].dispatchEvent(new Event("change"));
+						dot(this.$el.parentNode).empty()
 						.div("Var: " + this.myValue)
 						.div("Input: " + v); 
 					}
 				});
+
+				// Testing $el
+				dot.component("comp_el_undefined_el", function(){});
+				dot.component("comp_el_zero_el", function(){return dot});
+				dot.component("comp_el_one_el", function(){return dot.div("abc")});
+				dot.component("comp_el_two_el", function(){return dot.div("abc").div("abc")});
+				dot.component("comp_el_deferred_el", function(){return dot.div("abc").wait(function(){}, 1000)});
+				dot.component("comp_el_text_zero_el", function(){return "abc"});
+				dot.component("comp_el_text_one_el", function(){return "<div>abc</div>"});
+				dot.component("comp_el_text_two_el", function(){return "<div>abc</div><div>123</div>"});
 		
 			}catch(e){ console.error(e);}
 			addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
@@ -554,6 +579,14 @@
 			addTest("Component w/ ready method.", function(){return dot.comp_ready()}, "<div>OKAY</div>");
 			addTest("Text component.", function(){return dot.h("a").comp_text().h("b")}, "a1b");
 			addTest("Text component w/ ready method.", function(){return dot.h("a").comp_textreplace().h("b")}, "a2b");
+			addTest("Undefined $el.", function(){try{return dot.comp_el_undefined_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_undefined_el' must return exactly one child node.</span>");
+			addTest("Zero $el.", function(){try{return dot.comp_el_zero_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_zero_el' must return exactly one child node.</span>");
+			addTest("One $el.", function(){return dot.comp_el_one_el()}, "<div>abc</div>");
+			addTest("Two $el.", function(){try{return dot.comp_el_two_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_two_el' must return exactly one child node.</span>");
+			addTest("Deferred $el.", function(){try{return dot.comp_el_deferred_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_deferred_el' must return exactly one child node.</span>");
+			addTest("One $el.", function(){return dot.comp_el_text_zero_el()}, "abc");
+			addTest("One $el.", function(){return dot.comp_el_text_one_el()}, "<div>abc</div>");
+			addTest("Undefined $el.", function(){try{return dot.comp_el_text_two_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_text_two_el' must return exactly one child node.</span>");
 			
 			addHeader("Component Data Bindings");
 			addTest("Var bound to input.", function(){return dot.comp_binding_write_input()}, "<div>Var: b</div><div>Input: b</div>");

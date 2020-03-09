@@ -16,6 +16,7 @@ var dot = (function(){
 			"CC": "The name \"" + params[0] + "\" conflicts with an existing DOThtml function.",
 			"CN": "The component name provided is invalid.",
 			"CU": "Invalid usage: a component should at least have a name and a builder function.",
+			"C#": "Component '" + params[0] + "' must return exactly one child node.",
 			"F": "Element \"" + params[0] + "\" not found.",
 			"J": "Can't use jQuery wrappers without jQuery.",
 			"PF": "Method " + params[0] + " expects a callback function.",
@@ -499,6 +500,21 @@ var dot = (function(){
 	// 	return ret;
 	// }
 
+	// COMPONENTS
+
+	function _C(){
+		this.$el = null;
+		this.$refs = {};
+	}
+
+	_C.$emit = function(){
+		// TODO.
+		throw "NOT IMPLEMENTED";
+	}
+
+	// TODO: ideally we'd like to remove this, and create scoped namespaces for all components.
+	// One option would be to have a global namespace where each item is only accessible by parent components who have registered to use it.
+	// Another option is to inject a custom reference to dot that inherits from the actual dot but also has sub-components in it.
 	var componentNames = {};
 
 	/**
@@ -515,11 +531,15 @@ var dot = (function(){
 			(!dot[prms.name] && !_p[prms.name]) ? (function(){
 				componentNames[prms.name] = 1;
 				dot[prms.name] = _p[prms.name] = function(){
-					var obj = new function(){};
+					var obj = new _C;
 					var ret = prms.builder.apply(obj, arguments);
-					ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
-					obj.element = obj.element || ret.getLast();
-					prms.ready && setTimeout(function(){prms.ready.apply(obj)}, 0);
+					ret = ret instanceof _D ? ret : dot.h(ret);
+					(!ret.getLast() || (ret.getLast().parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
+					ret = this._appendOrCreateDocument(ret);
+					obj.$el = obj.$el || ret.getLast();
+					prms.ready && setTimeout(function(){
+						prms.ready.apply(obj)
+					}, 0);
 					return ret;
 				}
 			}()) : ERR("CC", [prms.name])
