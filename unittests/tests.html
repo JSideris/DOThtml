@@ -75,9 +75,20 @@
 		var testsFailed = 0;
 		var firstFailSet = false;
 
-		window.location.hash = "";
+		//window.location.hash = "";
 		//document.body.scrollTop = 0;
-		setTimeout(()=>{window.location.hash = "firstfail";},1000);
+		window.scrollTo(0,0);
+		setTimeout(()=>{
+			var err = document.getElementById("firstfail");
+			if(err) {
+				var elemRect = err.getBoundingClientRect();
+				window.scroll({
+					top: elemRect.top,
+					left: 0,
+					behavior: "smooth"
+				});
+			}
+		},1000);
 
 		function formatHTML(html){
 			html = html.toLowerCase();
@@ -229,7 +240,7 @@
 				
 				setTimeout(function(){
 					if(!testResult && !resultHtml) resultHtml = "Test did not return dot.";
-					else if(!resultHtml) resultHtml = testResult._document ? testResult._document.innerHTML : "";
+					else if(!resultHtml) resultHtml = testResult.__document ? testResult.__document.innerHTML : "";
 
 					var processedResult = formatHTML(resultHtml);
 					var testExpected = "";
@@ -267,7 +278,7 @@
 						if(!firstFailSet) {
 							firstFailSet = true;
 							setTimeout(function(){
-								dot("#test" + testNumber).a().name("firstfail");
+								dot("#test" + testNumber).a().id("firstfail").name("firstfail");
 							},0);
 						}
 					}
@@ -424,8 +435,9 @@
 			
 			//Get Last Node
 			addHeader("Get Last Node");
-			addTest("Get Last Node.", function(){ return dot.h(dot.div("text").lastNode.innerHTML)}, "text");
-			addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").lastNode.innerHTML)}, "text");
+			//addTest("Get Last Node.", function(){ return dot.h(dot.div("text").__lastNode.innerHTML)}, "text"); // No longer supported.
+			//addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").__lastNode.innerHTML)}, "text"); // No longer supported.
+			addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").getLast().innerHTML)}, "text");
 			addTest("Using getLast() function.", function(){ return dot.h(dot.div("text").getLast().innerHTML)}, "text");
 			
 			//Components

@@ -1,12 +1,17 @@
-/*! DOThtml v3.0.0 | (c) Joshua Sideris | dothtml.org/license */
+/*! DOThtml v4.0.0 | (c) Joshua Sideris | dothtml.org/license */
 /**
  * Changes:
- * 3.1.0: 
- * - Removed some debug code.
- * - Created a new dot.defer() special function that waits for the parent to render before creating the child element.
- * - Renamed dothtml-timeout to dothtml-defer.
+ * 4.0.0: 
+ * - Double-underscore private vars.
+ * - Changed element to $el in components.
+ * - New rule that components must create exactly one parent element.
+ * - Deprecate dot.lastNode.
+ * - Deprecate component shortcut. Explicit params are now required.
  */
 var dot = (function(){
+
+	// Shortcuts:
+	var sT = setTimeout;
 
 	var ERR = function(code){throw "DOThtml usage error code " + code + ". Use an unminified version for more information."};
 	ERR = function(code, params){
@@ -41,7 +46,7 @@ var dot = (function(){
 		//console.log(targets);
 		var newDot = new _D();
 		if(targets.length > 0){
-			newDot._document = targets[0];
+			newDot.__document = targets[0];
 		}
 		
 		return newDot;
@@ -74,6 +79,12 @@ var dot = (function(){
 		xhttp.send();
 	}
 
+	// Polyfill for Object.keys(...).forEach.
+	function eachK(obj, cb){
+		var lst = Object.keys(obj);
+		for(var i = 0; i < lst.length; i++) cb(lst[i], obj[lst[i]]);
+	}
+
 	function createElement(tag){
 		_p[tag] = _p[tag + "E"] = function(c){return this.el(tag, c);}
 		//dot[tag] = dot[tag + "E"] = function(c){return this.el(tag, c);}
@@ -100,7 +111,7 @@ var dot = (function(){
 				}
 				if(isF(arg)){
 					timeoutDot = this.el(DEFEL);
-					timeoutNode = timeoutDot._document.lastChild;
+					timeoutNode = timeoutDot.__document.lastChild;
 					(function(arg, args, timeoutNode, timeoutDot){
 						args[i] = function(){
 							var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
@@ -113,18 +124,18 @@ var dot = (function(){
 			}
 			
 			var retDOT = timeoutDot || this;
-			if(this._document){
+			if(this.__document){
 				
 				jo[name].apply(jo, arguments);
 				//var jqargs = arguments;
-				//setTimeout(function(){jo[name].apply(jo, jqargs);}, 0);
+				//sT(function(){jo[name].apply(jo, jqargs);}, 0);
 				return retDOT;
 			}
 			else{
 				
-				var pD = (retDOT._pendingCalls.length > 0 ? retDOT : new _D(retDOT._document));
-				if(!pD._pendingCalls) pD._pendingCalls = [];
-				pD._pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
+				var pD = (retDOT.__pendingCalls.length > 0 ? retDOT : new _D(retDOT.__document));
+				if(!pD.__pendingCalls) pD.__pendingCalls = [];
+				pD.__pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
 				return pD;
 			}
 		}
@@ -133,15 +144,15 @@ var dot = (function(){
 	function createJQueryEventHandler(name){
 		_p["$" + name] = function(handler){
 			this.check$();
-			if(this._document){
+			if(this.__document){
 				var jo = jQuery(this._getLastChildOrNull());
 				jo[name](handler);
 				return this;
 			}
 			else{
-				var pD = (this._pendingCalls.length > 0 ? this : new _D(this._document));
-				if(!pD._pendingCalls) pD._pendingCalls = [];
-				pD._pendingCalls.push({type: "jQuery event", name: name, params: arguments});
+				var pD = (this.__pendingCalls.length > 0 ? this : new _D(this.__document));
+				if(!pD.__pendingCalls) pD.__pendingCalls = [];
+				pD.__pendingCalls.push({type: "jQuery event", name: name, params: arguments});
 				return pD;
 			}
 		}
@@ -162,32 +173,32 @@ var dot = (function(){
 	// DOT:
 	function _D(document) {
 		var T = this;
-		T._document = document;
-		T._if = null;
-		T._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
-		T.anonAttrFuncs = {}; //Only to be used by top-level dot object.
+		T.__document = document;
+		T.__if = null;
+		T.__pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
+		T.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
 
-		T.lastNode = document ? document.lastChild : null;
+		T.__lastNode = document ? document.lastChild : null;
 	}
 	var _p = _D.prototype;
 
-	_p.version = "3.1.0";
+	_p.version = "4.0.0.a2";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
 	};
 
 	_p._getAnInstance = function(){
-		if(this._document || this._pendingCalls.length > 0) return this;
+		if(this.__document || this.__pendingCalls.length > 0) return this;
 		else {
 			var d = new _D(null);
-			d._if = this._if;
+			d.__if = this.__if;
 			return d;
 		};
 	};
 
 	_p._getLastChildOrNull = function(){
-		if(this._document && this._document.lastChild) return this._document.lastChild;
+		if(this.__document && this.__document.lastChild) return this.__document.lastChild;
 		return null;
 	};
 
@@ -197,7 +208,7 @@ var dot = (function(){
 	}
 
 	_p.toString = function(){
-		if(this._document) return this._document.innerHTML;
+		if(this.__document) return this.__document.innerHTML;
 		else return "";
 	}
 
@@ -205,25 +216,25 @@ var dot = (function(){
 	_p._evalContent = function(content, pendingCalls){
 		if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
 			var nDot = new _D(this._getNewDocument());
-			nDot._document.innerHTML = content;
-			return nDot._document.childNodes;
+			nDot.__document.innerHTML = content;
+			return nDot.__document.childNodes;
 		}
 		else if(Object.prototype.toString.call( content ) === '[object Array]') { //Array
 			var nDot = new _D(this._getNewDocument());
 			for(var i = 0; i < content.length; i++){
 				nDot._appendOrCreateDocument(content[i]);
 			}
-			if(nDot._document) return nDot._document.childNodes;
+			if(nDot.__document) return nDot.__document.childNodes;
 		}
 		else if(isF(content)) //Function to evaluate
 		{
 			return this._evalContent(content(), pendingCalls);
 		}
 		else if(content && content instanceof _D) { //DOT
-			for(var i = 0; i < content._pendingCalls.length; i++){
-				pendingCalls.push(content._pendingCalls[i]);
+			for(var i = 0; i < content.__pendingCalls.length; i++){
+				pendingCalls.push(content.__pendingCalls[i]);
 			}
-			if(content._document) return content._document.childNodes; //Return all the nodes in here.
+			if(content.__document) return content.__document.childNodes; //Return all the nodes in here.
 		} 
 		
 		return null;
@@ -231,11 +242,11 @@ var dot = (function(){
 
 	_p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 		var T = this;
-		//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this._document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
-		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T._document || T._getNewDocument();
+		//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
+		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T.__document || T._getNewDocument();
 		
-		var nd = T._document === parentEl ? T : new _D(parentEl);
-		nd._if = T._if;
+		var nd = T.__document === parentEl ? T : new _D(parentEl);
+		nd.__if = T.__if;
 		var pendingCalls = []; //This will populate with pending calls.
 		var eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
 		for(var i = 0; i < pendingCalls.length; i++){
@@ -267,7 +278,7 @@ var dot = (function(){
 				}
 			}
 			else{
-				nd._pendingCalls.push(call); /*3*/
+				nd.__pendingCalls.push(call); /*3*/
 			}
 		}
 		if(eContent !== null){
@@ -291,10 +302,10 @@ var dot = (function(){
 	_p.el = function(tag, content){
 		var T = this;
 		var ne = document.createElement(tag); 
-		var nDoc = this._document || T._getNewDocument();
+		var nDoc = this.__document || T._getNewDocument();
 		nDoc.appendChild(ne);
 		T._appendOrCreateDocument(content, ne);
-		return T._document === nDoc ? T : new _D(nDoc);
+		return T.__document === nDoc ? T : new _D(nDoc);
 	};
 
 	_p.h = function(content){
@@ -304,16 +315,16 @@ var dot = (function(){
 		//if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") hDoc.innerHTML = content; //Raw data
 		hDot._appendOrCreateDocument(content)
 		
-		var nDoc = T._document || T._getNewDocument();
+		var nDoc = T.__document || T._getNewDocument();
 		while(hDoc.childNodes.length > 0){
 			nDoc.appendChild(hDoc.childNodes[0]);
 		}
-		return T._document === nDoc ? T : new _D(nDoc); 
+		return T.__document === nDoc ? T : new _D(nDoc); 
 	};
 
 	_p.t = function(content){
 		var textNode = document.createTextNode(content);
-		var nDoc = this._document || this._getNewDocument();
+		var nDoc = this.__document || this._getNewDocument();
 		nDoc.appendChild(textNode);
 		return new _D(nDoc);
 	};
@@ -322,15 +333,15 @@ var dot = (function(){
 		var T = this;
 		if (isF(value)) {
 			if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
-				dot.anonAttrFuncs[_anonFuncCounter] = (value);
-				value = "dot.anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
+				dot.__anonAttrFuncs[_anonFuncCounter] = (value);
+				value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
 			}
 			else {
 				attr = attr.substring(2);
 			}
 		}
-		if(T._document) {
-			var cn = T._document.childNodes;
+		if(T.__document) {
+			var cn = T.__document.childNodes;
 			var last = cn[cn.length - 1];
 			if(last && last.setAttribute){
 				if (!isF(value)) {
@@ -345,8 +356,8 @@ var dot = (function(){
 		}
 		else{
 			var pD = T._getAnInstance();
-			//if(!pD._pendingCalls.length > 0) pD._pendingCalls = [];
-			pD._pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
+			//if(!pD.__pendingCalls.length > 0) pD.__pendingCalls = [];
+			pD.__pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
 			return pD;
 		}
 		return T;
@@ -357,9 +368,9 @@ var dot = (function(){
 		if(!targetId) {ERR("A", [targetId]); return T;}
 		var destination = document.getElementById(targetId);
 		if(!destination) {ERR("F", [targetId]); return T;}
-		if(T._document) {
+		if(T.__document) {
 			if(!appendMode) destination.innerHTML = "";
-			while(T._document.childNodes.length > 0) destination.appendChild(T._document.childNodes[0]);
+			while(T.__document.childNodes.length > 0) destination.appendChild(T.__document.childNodes[0]);
 		}
 		return T;
 	};
@@ -368,11 +379,11 @@ var dot = (function(){
 		var target = this;
 		var content = callback;
 		var copycontent = null;
-		if(content instanceof _D)	copycontent = content._document.cloneNode(true);
+		if(content instanceof _D)	copycontent = content.__document.cloneNode(true);
 		
 		for(var i = 0; i < iterations; i++){
 			if(isF(callback)) content = callback(i, params);
-			if(copycontent) content._document = copycontent.cloneNode(true);
+			if(copycontent) content.__document = copycontent.cloneNode(true);
 			target = target._appendOrCreateDocument(content);
 		}
 		
@@ -389,25 +400,25 @@ var dot = (function(){
 
 	_p.IF = _p["if"] = function(condition, callback){
 		if(condition) {
-			this._if = true;
+			this.__if = true;
 			return this._getAnInstance()._appendOrCreateDocument(callback);
 		}
 		else{
-			this._if = false;
+			this.__if = false;
 		}
 		return this;
 	};
 
 	_p.ELSEIF = _p.elseif = function(condition, callback){
-		if(!this._if){
+		if(!this.__if){
 			return this["if"](condition, callback);
 		}
 		return this;
 	};
 
 	_p.ELSE = _p["else"] = function(callback){
-		if(!this._if){
-			this._if = null;
+		if(!this.__if){
+			this.__if = null;
 			return this._getAnInstance()._appendOrCreateDocument(callback);
 		}
 		return this;
@@ -415,15 +426,15 @@ var dot = (function(){
 
 	_p.script = function(callback){
 		var last = this.getLast();
-		setTimeout(function(){callback(last);}, 0);
+		sT(function(){callback(last);}, 0);
 		return this;
 	};
 
 	_p.wait = function(timeout, callback){
 		var timeoutDot = this.el(DEFEL);
-		var timeoutNode = timeoutDot._document.lastChild;
+		var timeoutNode = timeoutDot.__document.lastChild;
 
-		setTimeout(function(){
+		sT(function(){
 			timeoutDot._appendOrCreateDocument(callback, null, timeoutNode);
 			timeoutNode.parentElement.removeChild(timeoutNode);
 		}, timeout);
@@ -436,9 +447,9 @@ var dot = (function(){
 	_p.defer = function(callback, timeout){
 		if(!isF(callback)) ERR("PF", "defer");
 		var deferDot = this.el(DEFEL);
-		var deferNode = deferDot._document.lastChild;
+		var deferNode = deferDot.__document.lastChild;
 
-		setTimeout(function(){
+		sT(function(){
 			callback(dot(deferNode.parentElement));
 			deferNode.parentElement.removeChild(deferNode);
 		}, timeout || 0);
@@ -447,13 +458,13 @@ var dot = (function(){
 	};
 
 	_p.empty = function(){
-		if(this._document){
-			var innerRouters = this._document.querySelectorAll("dothtml-router");
+		if(this.__document){
+			var innerRouters = this.__document.querySelectorAll("dothtml-router");
 			for(var i = 0; i < innerRouters.length; i++){
 				delete allRouters[innerRouters[i].dothtmlRouterId];
 			}
-			while (this._document.firstChild) {
-				this._document.removeChild(this._document.firstChild);
+			while (this.__document.firstChild) {
+				this.__document.removeChild(this.__document.firstChild);
 			}
 
 		}
@@ -520,24 +531,36 @@ var dot = (function(){
 	/**
 	 * @param {object} params - Params for the component builder.
 	 * @param {string} params.name - Name of the component (required).
+	 * @param {Function} params.registered - An optional function that gets called once per component after registering in the dot namespace, with the component class passed in as a parameter.
+	 * @param {Function} params.created - An optional function that gets called before the component is created, scoped to the new component object.
 	 * @param {Function} params.builder - A function returning DOThtml (required).
-	 * @param {Function} params.ready - A function called after the element has been added. One parameter will be provided containing the added element.
+	 * @param {Function} params.ready - An optional function called after the element has been added. One parameter will be provided containing the added element.
+	 * @param {Function} params.deleting - An optional function called before the component is deleted.
+	 * @param {Function} params.deleted - An optional function called after the component is deleted.
 	 */
-	dot.component = function(params){
-		var prms;
-		if(arguments.length == 1) prms = params;
-		else prms = {name: arguments[0], builder: arguments[1], ready: arguments[2]};
+	dot.component = function(prms){
 		prms.name ? (
 			(!dot[prms.name] && !_p[prms.name]) ? (function(){
 				componentNames[prms.name] = 1;
+				var CC = function(){}
+				CC.prototype = Object.create(_C.prototype);
+				if(prms.methods){
+					eachK(prms.methods, function(k, v){
+						if(!isF(v)) ERR("PF", ["component->methods->..."]);
+						CC.prototype[k] = v;
+					});
+				}
+				prms.register && prms.register(CC);
+				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
 				dot[prms.name] = _p[prms.name] = function(){
-					var obj = new _C;
-					var ret = prms.builder.apply(obj, arguments);
+					var obj = new CC();
+					prms.created && prms.created.apply(obj, []);
+					var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
 					ret = ret instanceof _D ? ret : dot.h(ret);
 					(!ret.getLast() || (ret.getLast().parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
 					ret = this._appendOrCreateDocument(ret);
 					obj.$el = obj.$el || ret.getLast();
-					prms.ready && setTimeout(function(){
+					prms.ready && sT(function(){
 						prms.ready.apply(obj)
 					}, 0);
 					return ret;
@@ -898,7 +921,7 @@ var dot = (function(){
 
 	_p.data = dot.data = function(){
 		var T = this;
-		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] !== "object") && T._document && T._document.lastChild && T._document.lastChild.tagName == "OBJECT"))
+		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] !== "object") && T.__document && T.__document.lastChild && T.__document.lastChild.tagName == "OBJECT"))
 			return dot.dataA.apply(T, arguments);
 		return dot.dataE.apply(T, arguments);
 	}
@@ -908,8 +931,8 @@ var dot = (function(){
 
 	_p.cite = dot.cite = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "BLOCKQUOTE" 
 				|| tagType == "DEL" 
 				|| tagType == "INS" 
@@ -921,8 +944,8 @@ var dot = (function(){
 			
 	_p.form = dot.form = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "BUTTON" 
 				|| tagType == "FIELDSET" 
 				|| tagType == "INPUT" 
@@ -941,8 +964,8 @@ var dot = (function(){
 
 	_p.label = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "TRACK")
 			return T.attr("label", arg);
 		}
@@ -951,8 +974,8 @@ var dot = (function(){
 	
 	_p.span = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "COL" 
 			|| tagType == "COLGROUP")
 			return T.attr("span", arg);
@@ -962,8 +985,8 @@ var dot = (function(){
 	
 	_p.summary = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "TABLE")
 			return T.attr("summary", arg);
 		}
@@ -975,7 +998,7 @@ var dot = (function(){
 	 * @param {string} value - The value to be set.
 	 */
 	_p.setVal = function(value){
-		var last = this.getLast() || this._document;
+		var last = this.getLast() || this.__document;
 		if(!last) return this;
 		if(last.parentNode && last.parentNode.tagName != DOCEL) last = last.parentNode;
 		
@@ -1004,7 +1027,7 @@ var dot = (function(){
 	}
 
 	_p.getVal = function(){
-		var element = this.lastNode || this._document;
+		var element = this.__lastNode || this.__document;
 		if(!element || element.nodeType !== 1) return undefined;
 
 		if ( element.type == "checkbox" ) {
@@ -1030,173 +1053,19 @@ var dot = (function(){
 	//Fill in all the other fields.
 	//if(Object.create) dot.prototype = Object.create(_p);
 	// dot.prototype.constructor = dot;
-	dot._document = null;
-	dot._if = null;
-	dot._pendingCalls = [];
-	dot.anonAttrFuncs = {};
+	dot.__document = null;
+	dot.__if = null;
+	dot.__pendingCalls = [];
+	dot.__anonAttrFuncs = {};
 	var _anonFuncCounter = 0;
 
 	// ROUTING:
+	// TODO: recommend putting this in the router component completely.
 
 	var routerEventSet = false;
 	var allRouters = {};
 	var routerId = 1;
 	var mayRedirect = false;
-
-	var routerNavigate = function(path, noHistory, force){
-		var t = this;
-		//console.log("NAVIGATING", path);
-		// Step 1: parse the path into a route queue:
-		path = path || "";
-		if(typeof path != "string") path = path + "";
-		var hashPath = path;
-		if(path.indexOf("#") != -1) hashPath = path.split("#")[1];
-		
-		var hashParts = path.split("#");
-		var allQueues = [];
-		
-		// Route navigating.
-		var routeQueue = hashParts[0].split("?")[0].split("/");
-		routeQueue[0] === "" ? routeQueue.shift() : 0;
-		allQueues.push(routeQueue);
-
-		// Hash navigating.
-		var tryHashQueue = hashParts.length > 1 ? hashParts[1].split("/") : null;
-		tryHashQueue ? ((tryHashQueue[0] === "" ? tryHashQueue.shift() : 0)) : 0;
-		tryHashQueue ? ((routeQueue.length > 1 ? allQueues.push(tryHashQueue) : allQueues.unshift(tryHashQueue))) : 0;
-
-		var cancel = false;
-		navParams = {
-			cancel: function(){cancel = true; navParams.wasCancelled = true;},
-			element: t.element,
-			httpResponse: null,
-			isNew: true,
-			params: {},
-			path: path,
-			title: null
-		};
-
-		// Step 2: determine the last router that is correctly loaded.
-
-		// var deepestRouter = null;
-		var bestRoute = null;
-		// Loop through the router stack from start to finish to find the deepest router and the best route to take.
-		// for(var i = 0; i < routerOutletStack.length; i++){
-
-		// var candidate = routerOutletStack[i];
-		// Find the an available route that matches.
-		// bestRoute = null;
-		for(var q in allQueues){
-			var Q = allQueues[q];
-			var rFound = false;
-			for(var r in t.params.routes){
-				rFound = true;
-				var nextRoute = t.params.routes[r];
-				var prms = {};
-				var rs = 0;
-				var ps = 0;
-				var lastRn = null;
-				while(1){
-					var rSn = nextRoute.segments[rs] || null;
-					var pSn = Q[ps] || null;
-					if(rSn === null && pSn === null) break;
-					if(rSn === null && pSn !== null || rSn !== null && pSn === null) {
-						rFound = false;
-						break;
-					}
-					if(rSn === null && lastRn == "*") rSn = "*";
-
-					if(rSn == pSn || rSn == "+" || rSn == "*"){ // It's the route, or it's a wildcard.
-						rs++;
-					}
-					else if(rSn.length > 2 && rSn.charAt(0) == "{" && rSn.charAt(rSn.length - 1) == "}"){ // It's a parameterized route.
-						rs++;
-						prms[rSn.substring(1, rSn.length - 1)] = pSn;
-					}
-					else if(lastRn != "*"){ // If the route doesn't match but the previous term was a super-wildcard, do nothing. Else, break.
-						rFound = false;
-						break;
-					}
-					ps++;
-					lastRn = rSn;
-				}
-				if(rFound){
-					bestRoute = nextRoute;
-					navParams.params = prms;
-					break;
-				}
-			}
-			if(rFound){
-				if(Q == routeQueue) {
-					if(!history.pushState && mayRedirect) {
-						window.location.hash = path;
-						window.location.pathname = "/";
-						return;
-					}
-					break;
-				};
-				if(Q == tryHashQueue) {
-					path = hashPath;
-					navParams.path = path;
-					if(history.pushState) {
-						window.location.hash = "";
-						history.replaceState({"pageTitle":document.title, "path": path}, document.title, path);
-					}
-					break;
-				};
-			}
-		}
-
-		navParams.isNew = !(!force && t.currentRoute == bestRoute && (!t.currentParams || t.currentParams == navParams.params || JSON.stringify(t.currentParams) === JSON.stringify(navParams.params)));
-		
-		t.params.onNavigateInit && t.params.onNavigateInit(navParams);
-
-		if(!navParams.isNew || cancel) return navParams;
-		t.currentRoute = bestRoute;
-		t.currentParams = navParams.params;
-
-		
-		var ro = t.outlet;
-		dot(ro).empty();
-		var navId = ++t.navId;
-
-
-		//if(deepestRouter == null) return this;
-		if(routeQueue.length == 0) return navParams;
-		if(bestRoute == null) return navParams;
-
-		navParams.title = bestRoute.title;
-
-		if(typeof bestRoute.component == "string"){
-			_get(bestRoute.component, function(result){
-				var text = result.responseText;
-				navParams.httpResponse = result;
-				if(navId != t.navId) return navParams;
-				t.params.onResponse && t.params.onResponse(navParams);
-				if(cancel) returnnavParams;
-				if(bestRoute.component.split("?")[0].split("#")[0].toLowerCase().indexOf(".js") == bestRoute.component.length - 3){
-					try{
-						text = Function("var exports=null,module={},route=arguments[0];" + text + "\r\nreturn module.exports || exports;")(navParams);
-					}
-					catch(e){
-						//e.fileName = bestRoute.component;
-						console.error(e);
-					}
-				}
-				dot(ro).h(text);
-				t.params.onComplete && t.params.onComplete(navParams);
-			}, function(result){
-				navParams.httpResponse = result;
-				t.params.onError && t.params.onError(navParams);
-			});
-		}
-		else{
-			dot(ro).h(bestRoute.component.call(dot, navParams));
-			t.params.onComplete && t.params.onComplete(navParams);
-		}
-
-		return navParams;
-	}
 
 	function setupPopupFunction(){
 		!routerEventSet && (routerEventSet = true) ? window.onpopstate = function(e){
@@ -1224,7 +1093,7 @@ var dot = (function(){
 		 */
 		builder: function(params){
 			var t = this;
-			t.navigate = function(p, nh, f){return routerNavigate.call(t, p, nh, f)};
+			//t.navigate = function(p, nh, f){return routerNavigate.call(t, p, nh, f)};
 			t.navId = 0;
 			t.currentRoute = null;
 			t.currentParams = null;
@@ -1257,6 +1126,162 @@ var dot = (function(){
 
 			if(history.pushState) history.replaceState({"pageTitle":params.title || document.title, "path": params.path}, params || document.title, params.path);
 			else window.location.hash = params.path;
+		},
+		methods: {
+			navigate: function(path, noHistory, force){
+				var t = this;
+				//console.log("NAVIGATING", path);
+				// Step 1: parse the path into a route queue:
+				path = path || "";
+				if(typeof path != "string") path = path + "";
+				var hashPath = path;
+				if(path.indexOf("#") != -1) hashPath = path.split("#")[1];
+				
+				var hashParts = path.split("#");
+				var allQueues = [];
+				
+				// Route navigating.
+				var routeQueue = hashParts[0].split("?")[0].split("/");
+				routeQueue[0] === "" ? routeQueue.shift() : 0;
+				allQueues.push(routeQueue);
+		
+				// Hash navigating.
+				var tryHashQueue = hashParts.length > 1 ? hashParts[1].split("/") : null;
+				tryHashQueue ? ((tryHashQueue[0] === "" ? tryHashQueue.shift() : 0)) : 0;
+				tryHashQueue ? ((routeQueue.length > 1 ? allQueues.push(tryHashQueue) : allQueues.unshift(tryHashQueue))) : 0;
+		
+				var cancel = false;
+				navParams = {
+					cancel: function(){cancel = true; navParams.wasCancelled = true;},
+					element: t.element,
+					httpResponse: null,
+					isNew: true,
+					params: {},
+					path: path,
+					title: null
+				};
+		
+				// Step 2: determine the last router that is correctly loaded.
+		
+				// var deepestRouter = null;
+				var bestRoute = null;
+				// Loop through the router stack from start to finish to find the deepest router and the best route to take.
+				// for(var i = 0; i < routerOutletStack.length; i++){
+		
+				// var candidate = routerOutletStack[i];
+				// Find the an available route that matches.
+				// bestRoute = null;
+				for(var q in allQueues){
+					var Q = allQueues[q];
+					var rFound = false;
+					for(var r in t.params.routes){
+						rFound = true;
+						var nextRoute = t.params.routes[r];
+						var prms = {};
+						var rs = 0;
+						var ps = 0;
+						var lastRn = null;
+						while(1){
+							var rSn = nextRoute.segments[rs] || null;
+							var pSn = Q[ps] || null;
+							if(rSn === null && pSn === null) break;
+							if(rSn === null && pSn !== null || rSn !== null && pSn === null) {
+								rFound = false;
+								break;
+							}
+							if(rSn === null && lastRn == "*") rSn = "*";
+		
+							if(rSn == pSn || rSn == "+" || rSn == "*"){ // It's the route, or it's a wildcard.
+								rs++;
+							}
+							else if(rSn.length > 2 && rSn.charAt(0) == "{" && rSn.charAt(rSn.length - 1) == "}"){ // It's a parameterized route.
+								rs++;
+								prms[rSn.substring(1, rSn.length - 1)] = pSn;
+							}
+							else if(lastRn != "*"){ // If the route doesn't match but the previous term was a super-wildcard, do nothing. Else, break.
+								rFound = false;
+								break;
+							}
+							ps++;
+							lastRn = rSn;
+						}
+						if(rFound){
+							bestRoute = nextRoute;
+							navParams.params = prms;
+							break;
+						}
+					}
+					if(rFound){
+						if(Q == routeQueue) {
+							if(!history.pushState && mayRedirect) {
+								window.location.hash = path;
+								window.location.pathname = "/";
+								return;
+							}
+							break;
+						};
+						if(Q == tryHashQueue) {
+							path = hashPath;
+							navParams.path = path;
+							if(history.pushState) {
+								window.location.hash = "";
+								history.replaceState({"pageTitle":document.title, "path": path}, document.title, path);
+							}
+							break;
+						};
+					}
+				}
+		
+				navParams.isNew = !(!force && t.currentRoute == bestRoute && (!t.currentParams || t.currentParams == navParams.params || JSON.stringify(t.currentParams) === JSON.stringify(navParams.params)));
+				
+				t.params.onNavigateInit && t.params.onNavigateInit(navParams);
+		
+				if(!navParams.isNew || cancel) return navParams;
+				t.currentRoute = bestRoute;
+				t.currentParams = navParams.params;
+		
+				
+				var ro = t.outlet;
+				dot(ro).empty();
+				var navId = ++t.navId;
+		
+		
+				//if(deepestRouter == null) return this;
+				if(routeQueue.length == 0) return navParams;
+				if(bestRoute == null) return navParams;
+		
+				navParams.title = bestRoute.title;
+		
+				if(typeof bestRoute.component == "string"){
+					_get(bestRoute.component, function(result){
+						var text = result.responseText;
+						navParams.httpResponse = result;
+						if(navId != t.navId) return navParams;
+						t.params.onResponse && t.params.onResponse(navParams);
+						if(cancel) returnnavParams;
+						if(bestRoute.component.split("?")[0].split("#")[0].toLowerCase().indexOf(".js") == bestRoute.component.length - 3){
+							try{
+								text = Function("var exports=null,module={},route=arguments[0];" + text + "\r\nreturn module.exports || exports;")(navParams);
+							}
+							catch(e){
+								//e.fileName = bestRoute.component;
+								console.error(e);
+							}
+						}
+						dot(ro).h(text);
+						t.params.onComplete && t.params.onComplete(navParams);
+					}, function(result){
+						navParams.httpResponse = result;
+						t.params.onError && t.params.onError(navParams);
+					});
+				}
+				else{
+					dot(ro).h(bestRoute.component.call(dot, navParams));
+					t.params.onComplete && t.params.onComplete(navParams);
+				}
+		
+				return navParams;
+			}
 		}
 	});
 
