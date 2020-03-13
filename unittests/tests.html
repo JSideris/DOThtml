@@ -443,9 +443,9 @@
 			//Components
 			addHeader("Components");
 			try{
-				dot.component("component_select", function(){return dot.select(dot.option("a").value("a").option("b").value("b").option("c").value("c"));});
+				dot.component({name: "component_select", builder: function(){return dot.select(dot.option("a").value("a").option("b").value("b").option("c").value("c"));}});
 		
-				dot.component("comp_legacy", function(){return dot.div(dot.div(1))});
+				dot.component({name: "comp_legacy", builder: function(){return dot.div(dot.div(1))}});
 				dot.component({name: "comp_std", builder: function(){return dot.div(dot.div(1))}});
 				dot.component({name: "comp_ready", builder: function(){return dot.div(dot.div(1))}, ready: function(){this.$el.innerHTML = "OKAY"}});
 				dot.component({name: "comp_text", builder: function(){return "1"}});
@@ -497,30 +497,30 @@
 					}
 				});
 		
-				dot.component("comp_binding_write_input", function(){return dot.comp_binding_write(dot.input(), "a", "b")});
-				dot.component("comp_binding_var_change_input", function(){return dot.comp_binding_var_change(dot.input(), "a", "b")});
-				dot.component("comp_binding_input_change_input", function(){return dot.comp_binding_input_change(dot.input(), "a", "b")});
-				dot.component("comp_binding_write_textarea", function(){return dot.comp_binding_write(dot.textarea("x"), "a", "b")});
-				dot.component("comp_binding_var_change_textarea", function(){return dot.comp_binding_var_change(dot.textarea("x"), "a", "b")});
-				dot.component("comp_binding_input_change_textarea", function(){return dot.comp_binding_input_change(dot.textarea("x"), "a", "b")});
-				dot.component("comp_binding_write_checkbox_on", function(){return dot.comp_binding_write(dot.input().type("checkbox"), false, true)});
-				dot.component("comp_binding_var_change_checkbox_on", function(){return dot.comp_binding_var_change(dot.input().type("checkbox"), false, true)});
-				dot.component("comp_binding_input_change_checkbox_on", function(){return dot.comp_binding_input_change(dot.input().type("checkbox"), false, true)});
-				dot.component("comp_binding_write_checkbox_off", function(){return dot.comp_binding_write(dot.input().type("checkbox").checked(), true, false)});
-				dot.component("comp_binding_var_change_checkbox_off", function(){return dot.comp_binding_var_change(dot.input().type("checkbox").checked(), true, false)});
-				dot.component("comp_binding_input_change_checkbox_off", function(){return dot.comp_binding_input_change(dot.input().type("checkbox").checked(), true, false)});
-				dot.component("comp_binding_write_radio_on", function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest1"), false, true)});
-				dot.component("comp_binding_var_change_radio_on", function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest2"), false, true)});
-				dot.component("comp_binding_input_change_radio_on", function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest3"), false, true)});
-				dot.component("comp_binding_write_radio_off", function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest4"), true, false)});
-				dot.component("comp_binding_var_change_radio_off", function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest5"), true, false)});
-				dot.component("comp_binding_input_change_radio_off", function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest6"), true, false)});
-				dot.component("comp_binding_write_select", function(){return dot.comp_binding_write(dot.component_select(), "a", "b")});
-				dot.component("comp_binding_var_change_select", function(){return dot.comp_binding_var_change(dot.component_select(), "a", "b")});
-				dot.component("comp_binding_input_change_select", function(){return dot.comp_binding_input_change(dot.component_select(), "a", "b")});
-				// dot.component("comp_binding_write_option", function(){return dot.comp_binding_write(dot.input(),  false, true)});
-				// dot.component("comp_binding_var_change_option", function(){return dot.comp_binding_var_change(dot.input(),  false, true)});
-				// dot.component("comp_binding_input_change_option", function(){return dot.comp_binding_input_change(dot.input(),  false, true)});
+				dot.component({name:"comp_binding_write_input", function(){return dot.comp_binding_write(dot.input(), "a", "b")}});
+				dot.component({name:"comp_binding_var_change_input", function(){return dot.comp_binding_var_change(dot.input(), "a", "b")}});
+				dot.component({name:"comp_binding_input_change_input", function(){return dot.comp_binding_input_change(dot.input(), "a", "b")}});
+				dot.component({name:"comp_binding_write_textarea", function(){return dot.comp_binding_write(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_var_change_textarea", function(){return dot.comp_binding_var_change(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_input_change_textarea", function(){return dot.comp_binding_input_change(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_write_checkbox_on", function(){return dot.comp_binding_write(dot.input().type("checkbox"), false, true)}});
+				dot.component({name: "comp_binding_var_change_checkbox_on", function(){return dot.comp_binding_var_change(dot.input().type("checkbox"), false, true)}});
+				dot.component({name: "comp_binding_input_change_checkbox_on", function(){return dot.comp_binding_input_change(dot.input().type("checkbox"), false, true)}});
+				dot.component({name: "comp_binding_write_checkbox_off", function(){return dot.comp_binding_write(dot.input().type("checkbox").checked(), true, false)}});
+				dot.component({name: "comp_binding_var_change_checkbox_off", function(){return dot.comp_binding_var_change(dot.input().type("checkbox").checked(), true, false)}});
+				dot.component({name: "comp_binding_input_change_checkbox_off", function(){return dot.comp_binding_input_change(dot.input().type("checkbox").checked(), true, false)}});
+				dot.component({name: "comp_binding_write_radio_on", function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest1"), false, true)}});
+				dot.component({name: "comp_binding_var_change_radio_on", function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest2"), false, true)}});
+				dot.component({name: "comp_binding_input_change_radio_on", function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest3"), false, true)}});
+				dot.component({name: "comp_binding_write_radio_off", function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest4"), true, false)}});
+				dot.component({name: "comp_binding_var_change_radio_off", function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest5"), true, false)}});
+				dot.component({name: "comp_binding_input_change_radio_off", function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest6"), true, false)}});
+				dot.component({name: "comp_binding_write_select", function(){return dot.comp_binding_write(dot.component_select(), "a", "b")}});
+				dot.component({name: "comp_binding_var_change_select", function(){return dot.comp_binding_var_change(dot.component_select(), "a", "b")}});
+				dot.component({name: "comp_binding_input_change_select", function(){return dot.comp_binding_input_change(dot.component_select(), "a", "b")}});
+				// dot.component({name: "comp_binding_write_option", function(){return dot.comp_binding_write(dot.input(),  false, true)}});
+				// dot.component({name: "comp_binding_var_change_option", function(){return dot.comp_binding_var_change(dot.input(),  false, true)}});
+				// dot.component({name: "comp_binding_input_change_option", function(){return dot.comp_binding_input_change(dot.input(),  false, true)}});
 				dot.component({name: "comp_binding_write_option", 
 					builder: function(){ 
 						this.myValue = true; 
@@ -574,14 +574,14 @@
 				});
 
 				// Testing $el
-				dot.component("comp_el_undefined_el", function(){});
-				dot.component("comp_el_zero_el", function(){return dot});
-				dot.component("comp_el_one_el", function(){return dot.div("abc")});
-				dot.component("comp_el_two_el", function(){return dot.div("abc").div("abc")});
-				dot.component("comp_el_deferred_el", function(){return dot.div("abc").wait(function(){}, 1000)});
-				dot.component("comp_el_text_zero_el", function(){return "abc"});
-				dot.component("comp_el_text_one_el", function(){return "<div>abc</div>"});
-				dot.component("comp_el_text_two_el", function(){return "<div>abc</div><div>123</div>"});
+				dot.component({name: "comp_el_undefined_el", builder: function(){}});
+				dot.component({name: "comp_el_zero_el", builder: function(){return dot}});
+				dot.component({name: "comp_el_one_el", builder: function(){return dot.div("abc")}});
+				dot.component({name: "comp_el_two_el", builder: function(){return dot.div("abc").div("abc")}});
+				dot.component({name: "comp_el_deferred_el", builder: function(){return dot.div("abc").wait(function(){}, 1000)}});
+				dot.component({name: "comp_el_text_zero_el", builder: function(){return "abc"}});
+				dot.component({name: "comp_el_text_one_el", builder: function(){return "<div>abc</div>"}});
+				dot.component({name: "comp_el_text_two_el", builder: function(){return "<div>abc</div><div>123</div>"}});
 		
 			}catch(e){ console.error(e);}
 			addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
@@ -629,17 +629,17 @@
 			//Routing
 			addHeader("Routing");
 			try{
-				dot.component("defaultpage", function(){return dot.h1("Default")});
-				dot.component("page1", function(){return dot.h1("Page 1.")});
-				dot.component("page2", function(){return dot.h1("Page 2.")});
-				dot.component("page3", function(){return dot.h1("Page 3.").router()});
-				dot.component("page4", function(){return dot.h1("Good.")});
-				dot.component("page5", function(){return dot.h1("Bad.")});
-				dot.component("page6_7", function(){return dot.h1("Page 6/7.")});
-				dot.component("page6", function(){return dot.h1("Page 6.")});
-				dot.component("page7", function(){return dot.h1("Page 7.")});
-				dot.component("awesomepage", function(params){return dot.h1(params.params.title).p(params.params.body)});
-				dot.component("notfound", function(){return dot.h1("Not Found.")});
+				dot.component({name: "defaultpage", builder: function(){return dot.h1("Default")}});
+				dot.component({name: "page1", builder: function(){return dot.h1("Page 1.")}});
+				dot.component({name: "page2", builder: function(){return dot.h1("Page 2.")}});
+				dot.component({name: "page3", builder: function(){return dot.h1("Page 3.").router()}});
+				dot.component({name: "page4", builder: function(){return dot.h1("Good.")}});
+				dot.component({name: "page5", builder: function(){return dot.h1("Bad.")}});
+				dot.component({name: "page6_7", builder: function(){return dot.h1("Page 6/7.")}});
+				dot.component({name: "page6", builder: function(){return dot.h1("Page 6.")}});
+				dot.component({name: "page7", builder: function(){return dot.h1("Page 7.")}});
+				dot.component({name: "awesomepage", function(params){return dot.h1(params.params.title).p(params.params.body)}});
+				dot.component({name: "notfound", builder: function(){return dot.h1("Not Found.")}});
 			}catch(e){console.error(e);}
 			var routes = [
 				{title: "DOT Tests", path: "/", component: dot.defaultpage},

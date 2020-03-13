@@ -2,11 +2,19 @@
 /**
  * Changes:
  * 4.0.0: 
+ * 
+ * Updates
  * - Double-underscore private vars.
  * - Changed element to $el in components.
  * - New rule that components must create exactly one parent element.
+ * - Added methods to components.
+ * 
+ * Deprecated
  * - Deprecate dot.lastNode.
  * - Deprecate component shortcut. Explicit params are now required.
+ * 
+ * Fixes
+ * - Fixed bug where navigating to "" would throw an exception because "" == null.
  */
 var dot = (function(){
 
@@ -1102,7 +1110,7 @@ var dot = (function(){
 			if(!params || !params.routes) {ERR("R"); return dot};
 			for(var i = 0; i < t.params.routes.length; i++){
 				var r = t.params.routes[i];
-				if(!r.path) {ERR("R"); return dot};
+				if(r.path === null || r.path === undefined) {ERR("R"); return dot};
 				r.segments = r.path.split("/");
 			}
 			if(params.autoNavigate === undefined) params.autoNavigate = true;
@@ -1315,12 +1323,12 @@ var dot = (function(){
 		return this;
 	}
 
-	dot.component("navLink", function(content, href){
+	dot.component({name: "navLink", builder: function(content, href){
 		return dot.a(content).href(href).onclick(function(e){
 			e.preventDefault();
 			dot.navigate(href);
 		});
-	});
+	}});
 
 	// Make all the names available to the dot object.
 	for (var k in _p) {

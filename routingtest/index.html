@@ -7,24 +7,31 @@
 
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>
-<script src="dothtml.js"></script>
+<script src="../dothtml.js"></script>
 
 <body>
 
 	<script>
+		dot.component({name:"pageHome", builder:function(){return dot.h1("WELCOME TO THE HOME PAGE!");}});
 		dot.component({name:"pageA", builder:function(){return dot.h1("WELCOME TO PAGE A!");}});
 		dot.component({name:"pageB", builder:function(){return dot.h1("WELCOME TO PAGE B!");}});
 		dot.component({name:"pageC", builder:function(){return dot.h1("WELCOME TO PAGE C!");}});
 
-		dot.route({path: "A", title: "Page A", component: dot.pageA})
-		.route({path: "B", title: "Page B", component: dot.pageB})
-		.route({path: "C", title: "Page C", component: dot.pageC});
+		/*dot.navigate({path: "A", title: "Page A", component: dot.pageA})
+		.navigate({path: "B", title: "Page B", component: dot.pageB})
+		.navigate({path: "C", title: "Page C", component: dot.pageC});*/
 
 		dot("body")
-		.button("A").onclick(function(){dot.navigate("A")})
-		.button("B").onclick(function(){dot.navigate("B")})
-		.button("C").onclick(function(){dot.navigate("C")})
-		.router();
+		.button("Home").onclick(function(){dot.navigate("/routingtest")})
+		.button("A").onclick(function(){dot.navigate("/routingtest/A")})
+		.button("B").onclick(function(){dot.navigate("/routingtest/B")})
+		.button("C").onclick(function(){dot.navigate("/routingtest/C")})
+		.router({routes: [
+			{path: "routingtest/", title: "HOME PAGE", component: dot.pageHome},
+			{path: "routingtest/A", title: "Page A", component: dot.pageA},
+			{path: "routingtest/B", title: "Page B", component: dot.pageB},
+			{path: "routingtest/C", title: "Page C", component: dot.pageC}
+		]});
 	</script>
 </body>
 </html>
