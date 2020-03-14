@@ -497,30 +497,30 @@
 					}
 				});
 		
-				dot.component({name:"comp_binding_write_input", function(){return dot.comp_binding_write(dot.input(), "a", "b")}});
-				dot.component({name:"comp_binding_var_change_input", function(){return dot.comp_binding_var_change(dot.input(), "a", "b")}});
-				dot.component({name:"comp_binding_input_change_input", function(){return dot.comp_binding_input_change(dot.input(), "a", "b")}});
-				dot.component({name:"comp_binding_write_textarea", function(){return dot.comp_binding_write(dot.textarea("x"), "a", "b")}});
-				dot.component({name: "comp_binding_var_change_textarea", function(){return dot.comp_binding_var_change(dot.textarea("x"), "a", "b")}});
-				dot.component({name: "comp_binding_input_change_textarea", function(){return dot.comp_binding_input_change(dot.textarea("x"), "a", "b")}});
-				dot.component({name: "comp_binding_write_checkbox_on", function(){return dot.comp_binding_write(dot.input().type("checkbox"), false, true)}});
-				dot.component({name: "comp_binding_var_change_checkbox_on", function(){return dot.comp_binding_var_change(dot.input().type("checkbox"), false, true)}});
-				dot.component({name: "comp_binding_input_change_checkbox_on", function(){return dot.comp_binding_input_change(dot.input().type("checkbox"), false, true)}});
-				dot.component({name: "comp_binding_write_checkbox_off", function(){return dot.comp_binding_write(dot.input().type("checkbox").checked(), true, false)}});
-				dot.component({name: "comp_binding_var_change_checkbox_off", function(){return dot.comp_binding_var_change(dot.input().type("checkbox").checked(), true, false)}});
-				dot.component({name: "comp_binding_input_change_checkbox_off", function(){return dot.comp_binding_input_change(dot.input().type("checkbox").checked(), true, false)}});
-				dot.component({name: "comp_binding_write_radio_on", function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest1"), false, true)}});
-				dot.component({name: "comp_binding_var_change_radio_on", function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest2"), false, true)}});
-				dot.component({name: "comp_binding_input_change_radio_on", function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest3"), false, true)}});
-				dot.component({name: "comp_binding_write_radio_off", function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest4"), true, false)}});
-				dot.component({name: "comp_binding_var_change_radio_off", function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest5"), true, false)}});
-				dot.component({name: "comp_binding_input_change_radio_off", function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest6"), true, false)}});
-				dot.component({name: "comp_binding_write_select", function(){return dot.comp_binding_write(dot.component_select(), "a", "b")}});
-				dot.component({name: "comp_binding_var_change_select", function(){return dot.comp_binding_var_change(dot.component_select(), "a", "b")}});
-				dot.component({name: "comp_binding_input_change_select", function(){return dot.comp_binding_input_change(dot.component_select(), "a", "b")}});
-				// dot.component({name: "comp_binding_write_option", function(){return dot.comp_binding_write(dot.input(),  false, true)}});
-				// dot.component({name: "comp_binding_var_change_option", function(){return dot.comp_binding_var_change(dot.input(),  false, true)}});
-				// dot.component({name: "comp_binding_input_change_option", function(){return dot.comp_binding_input_change(dot.input(),  false, true)}});
+				dot.component({name:"comp_binding_write_input", builder: function(){return dot.comp_binding_write(dot.input(), "a", "b")}});
+				dot.component({name:"comp_binding_var_change_input", builder: function(){return dot.comp_binding_var_change(dot.input(), "a", "b")}});
+				dot.component({name:"comp_binding_input_change_input", builder: function(){return dot.comp_binding_input_change(dot.input(), "a", "b")}});
+				dot.component({name:"comp_binding_write_textarea", builder: function(){return dot.comp_binding_write(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_var_change_textarea", builder: function(){return dot.comp_binding_var_change(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_input_change_textarea", builder: function(){return dot.comp_binding_input_change(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_write_checkbox_on", builder: function(){return dot.comp_binding_write(dot.input().type("checkbox"), false, true)}});
+				dot.component({name: "comp_binding_var_change_checkbox_on", builder: function(){return dot.comp_binding_var_change(dot.input().type("checkbox"), false, true)}});
+				dot.component({name: "comp_binding_input_change_checkbox_on", builder: function(){return dot.comp_binding_input_change(dot.input().type("checkbox"), false, true)}});
+				dot.component({name: "comp_binding_write_checkbox_off", builder: function(){return dot.comp_binding_write(dot.input().type("checkbox").checked(), true, false)}});
+				dot.component({name: "comp_binding_var_change_checkbox_off", builder: function(){return dot.comp_binding_var_change(dot.input().type("checkbox").checked(), true, false)}});
+				dot.component({name: "comp_binding_input_change_checkbox_off", builder: function(){return dot.comp_binding_input_change(dot.input().type("checkbox").checked(), true, false)}});
+				dot.component({name: "comp_binding_write_radio_on", builder: function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest1"), false, true)}});
+				dot.component({name: "comp_binding_var_change_radio_on", builder: function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest2"), false, true)}});
+				dot.component({name: "comp_binding_input_change_radio_on", builder: function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest3"), false, true)}});
+				dot.component({name: "comp_binding_write_radio_off", builder: function(){return dot.comp_binding_write(dot.input().type("radio").name("radiotest4"), true, false)}});
+				dot.component({name: "comp_binding_var_change_radio_off", builder: function(){return dot.comp_binding_var_change(dot.input().type("radio").name("radiotest5"), true, false)}});
+				dot.component({name: "comp_binding_input_change_radio_off", builder: function(){return dot.comp_binding_input_change(dot.input().type("radio").name("radiotest6"), true, false)}});
+				dot.component({name: "comp_binding_write_select", builder: function(){return dot.comp_binding_write(dot.component_select(), "a", "b")}});
+				dot.component({name: "comp_binding_var_change_select", builder: function(){return dot.comp_binding_var_change(dot.component_select(), "a", "b")}});
+				dot.component({name: "comp_binding_input_change_select", builder: function(){return dot.comp_binding_input_change(dot.component_select(), "a", "b")}});
+				// dot.component({name: "comp_binding_write_option", builder: function(){return dot.comp_binding_write(dot.input(),  false, true)}});
+				// dot.component({name: "comp_binding_var_change_option", builder: function(){return dot.comp_binding_var_change(dot.input(),  false, true)}});
+				// dot.component({name: "comp_binding_input_change_option", builder: function(){return dot.comp_binding_input_change(dot.input(),  false, true)}});
 				dot.component({name: "comp_binding_write_option", 
 					builder: function(){ 
 						this.myValue = true; 
@@ -591,6 +591,8 @@
 			addTest("Component w/ ready method.", function(){return dot.comp_ready()}, "<div>OKAY</div>");
 			addTest("Text component.", function(){return dot.h("a").comp_text().h("b")}, "a1b");
 			addTest("Text component w/ ready method.", function(){return dot.h("a").comp_textreplace().h("b")}, "a2b");
+
+			// $el
 			addTest("Undefined $el.", function(){try{return dot.comp_el_undefined_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_undefined_el' must return exactly one child node.</span>");
 			addTest("Zero $el.", function(){try{return dot.comp_el_zero_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_zero_el' must return exactly one child node.</span>");
 			addTest("One $el.", function(){return dot.comp_el_one_el()}, "<div>abc</div>");
