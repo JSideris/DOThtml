@@ -8,6 +8,8 @@
  * - Changed element to $el in components.
  * - New rule that components must create exactly one parent element.
  * - Added methods to components.
+ * - Added component classes. Each new component has its own class and prototype.
+ * - Added a new register hook, scoped to the prototype of components.
  * 
  * Deprecated
  * - Deprecate dot.lastNode.
@@ -190,7 +192,7 @@ var dot = (function(){
 	}
 	var _p = _D.prototype;
 
-	_p.version = "4.0.0.a2";
+	_p.version = "4.0.0.a3";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
@@ -558,7 +560,7 @@ var dot = (function(){
 						CC.prototype[k] = v;
 					});
 				}
-				prms.register && prms.register(CC);
+				prms.register && prms.register.apply(CC.prototype);
 				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
 				dot[prms.name] = _p[prms.name] = function(){
 					var obj = new CC();
@@ -578,6 +580,7 @@ var dot = (function(){
 		//_p[prms.name].prototype
 	};
 
+	// TODO: might remove this in v4+
 	dot.removeComponent = function(name){
 		if(componentNames[name]){
 			delete componentNames[name];

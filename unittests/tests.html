@@ -585,12 +585,20 @@
 
 				// Testing methods:
 				// TODO: passing callMethod in like this will soon be deprecated.
-				dot.component(
-					{
-						name: "comp_methods_basic", 
-						builder: function(callMethod){ this.callMethod = callMethod; return dot.div("123");}, 
-						ready: function(){if(this.callMethod) this.setVal("abc");},
-						methods: { setVal: function(val){ dot(this.$el).empty().t(val); } }});
+				dot.component({
+					name: "comp_methods_basic", 
+					builder: function(callMethod){ this.callMethod = callMethod; return dot.div("123");}, 
+					ready: function(){if(this.callMethod) this.setVal("abc");},
+					methods: { setVal: function(val){ dot(this.$el).empty().t(val); } }
+				});
+				
+				// Testing hooks:
+				dot.component({
+					name: "comp_hooks_register",
+					register: function(){ this.x = (this.x || 0); this.add1(); },
+					builder: function(add1){ if(add1)this.add1(); return dot.div(this.x) },
+					methods: { add1: function(){ this.x++ } }
+				});
 		
 			}catch(e){ console.error(e);}
 			addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
@@ -614,7 +622,12 @@
 			// methods
 			addTest("Instantiate comp w/ method.", function(){return dot.comp_methods_basic()}, "<div>123</div>");
 			addTest("Method gets called in ready function.", function(){return dot.comp_methods_basic(true)}, "<div>abc</div>"); // TODO: this functionality will soon be removed in favor of params.
-
+			
+			// hooks: 
+			addTest("Register hook gets called once.", function(){return dot.comp_hooks_register()}, "<div>1</div>");
+			addTest("Register hook gets called only once.", function(){return dot.comp_hooks_register()}, "<div>1</div>");
+			addTest("Prototype vars set by register cook can be updated.", function(){return dot.comp_hooks_register(true)}, "<div>2</div>");
+			addTest("Prototype vars are cloned from prototype.", function(){return dot.comp_hooks_register()}, "<div>1</div>"); // Kind of a weird javascript behavior. Cool though.
 
 			addHeader("Component Data Bindings");
 			addTest("Var bound to input.", function(){return dot.comp_binding_write_input()}, "<div>Var: b</div><div>Input: b</div>");
