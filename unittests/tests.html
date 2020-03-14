@@ -497,10 +497,10 @@
 					}
 				});
 		
-				dot.component({name:"comp_binding_write_input", builder: function(){return dot.comp_binding_write(dot.input(), "a", "b")}});
-				dot.component({name:"comp_binding_var_change_input", builder: function(){return dot.comp_binding_var_change(dot.input(), "a", "b")}});
-				dot.component({name:"comp_binding_input_change_input", builder: function(){return dot.comp_binding_input_change(dot.input(), "a", "b")}});
-				dot.component({name:"comp_binding_write_textarea", builder: function(){return dot.comp_binding_write(dot.textarea("x"), "a", "b")}});
+				dot.component({name: "comp_binding_write_input", builder: function(){return dot.comp_binding_write(dot.input(), "a", "b")}});
+				dot.component({name: "comp_binding_var_change_input", builder: function(){return dot.comp_binding_var_change(dot.input(), "a", "b")}});
+				dot.component({name: "comp_binding_input_change_input", builder: function(){return dot.comp_binding_input_change(dot.input(), "a", "b")}});
+				dot.component({name: "comp_binding_write_textarea", builder: function(){return dot.comp_binding_write(dot.textarea("x"), "a", "b")}});
 				dot.component({name: "comp_binding_var_change_textarea", builder: function(){return dot.comp_binding_var_change(dot.textarea("x"), "a", "b")}});
 				dot.component({name: "comp_binding_input_change_textarea", builder: function(){return dot.comp_binding_input_change(dot.textarea("x"), "a", "b")}});
 				dot.component({name: "comp_binding_write_checkbox_on", builder: function(){return dot.comp_binding_write(dot.input().type("checkbox"), false, true)}});
@@ -582,6 +582,15 @@
 				dot.component({name: "comp_el_text_zero_el", builder: function(){return "abc"}});
 				dot.component({name: "comp_el_text_one_el", builder: function(){return "<div>abc</div>"}});
 				dot.component({name: "comp_el_text_two_el", builder: function(){return "<div>abc</div><div>123</div>"}});
+
+				// Testing methods:
+				// TODO: passing callMethod in like this will soon be deprecated.
+				dot.component(
+					{
+						name: "comp_methods_basic", 
+						builder: function(callMethod){ this.callMethod = callMethod; return dot.div("123");}, 
+						ready: function(){if(this.callMethod) this.setVal("abc");},
+						methods: { setVal: function(val){ dot(this.$el).empty().t(val); } }});
 		
 			}catch(e){ console.error(e);}
 			addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
@@ -602,6 +611,11 @@
 			addTest("One $el.", function(){return dot.comp_el_text_one_el()}, "<div>abc</div>");
 			addTest("Undefined $el.", function(){try{return dot.comp_el_text_two_el()}catch(e){return dot.span(e)}}, "<span>Component 'comp_el_text_two_el' must return exactly one child node.</span>");
 			
+			// methods
+			addTest("Instantiate comp w/ method.", function(){return dot.comp_methods_basic()}, "<div>123</div>");
+			addTest("Method gets called in ready function.", function(){return dot.comp_methods_basic(true)}, "<div>abc</div>"); // TODO: this functionality will soon be removed in favor of params.
+
+
 			addHeader("Component Data Bindings");
 			addTest("Var bound to input.", function(){return dot.comp_binding_write_input()}, "<div>Var: b</div><div>Input: b</div>");
 			addTest("Var change updating input.", function(){return dot.comp_binding_var_change_input()}, "<div>Var: b</div><div>Input: b</div>");
