@@ -7,9 +7,12 @@
  * - Double-underscore private vars.
  * - Changed element to $el in components.
  * - New rule that components must create exactly one parent element.
- * - Added methods to components.
+ * - Added methods to components. Methods are scoped to the component.
  * - Added component classes. Each new component has its own class and prototype.
- * - Added a new register hook, scoped to the prototype of components.
+ * - Added register hook for components. Called once per component definition. Scoped to the prototype of components.
+ * - Added created hook. Called before builder. Gets builder args. Scoped to new component.
+ * - Added deleting hook. Called in dot.empty before delete. Scoped to component.
+ * - Added deleted hook. Called after delete. Scoped to component.
  * 
  * Deprecated
  * - Deprecate dot.lastNode.
@@ -192,7 +195,7 @@ var dot = (function(){
 	}
 	var _p = _D.prototype;
 
-	_p.version = "4.0.0.a3";
+	_p.version = "4.0.0.a4";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
@@ -470,14 +473,49 @@ var dot = (function(){
 	_p.empty = function(){
 		if(this.__document){
 			var innerRouters = this.__document.querySelectorAll("dothtml-router");
+			
+			
+			// Clean up all routers. Necessary because there may be nested routers on the page.
 			for(var i = 0; i < innerRouters.length; i++){
 				delete allRouters[innerRouters[i].dothtmlRouterId];
 			}
-			while (this.__document.firstChild) {
-				this.__document.removeChild(this.__document.firstChild);
-			}
 
+			// Build a queue of items to remove.
+			var queue = [this.__document];
+			var firstQ = true;
+			var stack = [];
+			while(queue.length > 0)
+			{
+				var current = queue.shift();
+				if(current.childNodes.length > 0){
+					for(var i = 0; i < current.childNodes.length; i++){
+						queue.push(current.childNodes[i]);
+					}
+				}
+				!firstQ && stack.push(current);
+				firstQ = false;
+
+			}
+			while(stack.length > 0){
+				var deleted = null;
+				var current = stack.pop();
+				var dc = current.dotComponent;
+				if(dc){
+					var d = dc.__prms.deleting;
+					d && d.apply(dc);
+					dc.$el = null;
+					deleted = dc.__prms.deleted;
+				}
+				if(current.parentNode) current.parentNode.removeChild(current);
+				deleted && deleted.apply(dc);
+			}
 		}
+		// Drop all the other nodes (like text)
+		// Text seems to get deleted even without this code :).
+		//while (this.__document.firstChild) {
+		//	this.__document.removeChild(this.__document.firstChild);
+		//}
+
 		return this;
 	}
 
@@ -554,6 +592,7 @@ var dot = (function(){
 				componentNames[prms.name] = 1;
 				var CC = function(){}
 				CC.prototype = Object.create(_C.prototype);
+				CC.prototype.__prms = prms;
 				if(prms.methods){
 					eachK(prms.methods, function(k, v){
 						if(!isF(v)) ERR("PF", ["component->methods->..."]);
@@ -564,12 +603,13 @@ var dot = (function(){
 				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
 				dot[prms.name] = _p[prms.name] = function(){
 					var obj = new CC();
-					prms.created && prms.created.apply(obj, []);
+					prms.created && prms.created.apply(obj, arguments);
 					var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
 					ret = ret instanceof _D ? ret : dot.h(ret);
 					(!ret.getLast() || (ret.getLast().parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
 					ret = this._appendOrCreateDocument(ret);
 					obj.$el = obj.$el || ret.getLast();
+					obj.$el.dotComponent = obj;
 					prms.ready && sT(function(){
 						prms.ready.apply(obj)
 					}, 0);
