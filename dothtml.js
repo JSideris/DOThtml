@@ -13,9 +13,12 @@
  * - Added created hook. Called before builder. Gets builder args. Scoped to new component.
  * - Added deleting hook. Called in dot.empty before delete. Scoped to component.
  * - Added deleted hook. Called after delete. Scoped to component.
+ * - Reworked the empty function to enqueue every element in the target tree and delete them one at a time, checking for dot hooks.
+ * - Added a remove function that works similarly to empty, but also deletes the target element.
+ * - Reworked routers so that deletion logic is in the deleting hook, instead of the empty function.
  * 
  * Deprecated
- * - Deprecate dot.lastNode.
+ * - Deprecate dot.lastNode (preferred method is getLast(), but __lastNode is still available internally).
  * - Deprecate component shortcut. Explicit params are now required.
  * 
  * Fixes
@@ -195,7 +198,7 @@ var dot = (function(){
 	}
 	var _p = _D.prototype;
 
-	_p.version = "4.0.0.a4";
+	_p.version = "4.0.0.a5";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
