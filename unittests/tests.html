@@ -369,6 +369,10 @@
 				addTest("Passing dot to h.", function(){ return dot.h(dot.div()); }, "<div></div>");
 				addTest("Passing function to h.", function(){ return dot.h(function(){return "<div></div>"}); }, "<div></div>");
 				addTest("Two internal attributes.", function(){ return dot.div(dot["class"]("1").id("two-internal-attributes")); }, "<div class=\"1\" id=\"two-internal-attributes\"></div>");
+				addTest("Remove an element.", function(){ return dot.h(function(){ var ret = dot.i().div(
+					dot.span("123").span("abc")
+				); var del = ret.getLast(); 
+				ret = ret.b(); setTimeout(function(){dot(del).remove() }, 0); return ret; }) }, "<i></i><b></b>");
 			}
 
 			//Array evalutation.
@@ -675,14 +679,15 @@
 
 					dot.component({
 						name: "comp_hooks_delete",
-						created: function(deleteMe, addEarlyMessage, addLateMessage){
+						created: function(deleteMe, addEarlyMessage, addLateMessage, messageInSibling){
 							this.deleteMe = deleteMe;
 							this.addEarlyMessage = addEarlyMessage;
 							this.addLateMessage = addLateMessage;
+							this.messageInSibling = messageInSibling;
 						},
 						builder: function(){ return dot.span("not deleted"); },
-						ready: function(){ this.parent = this.$el.parentNode; if(this.deleteMe) dot(this.parent).empty(); },
-						deleting: function(){ if(this.addEarlyMessage) dot(this.$el.parentNode).p("deleted"); },
+						ready: function(){ this.parent = this.messageInSibling ? this.$el.parentNode.nextSibling : this.$el.parentNode; if(this.deleteMe) dot(this.parent).empty(); },
+						deleting: function(){ if(this.addEarlyMessage) dot(this.messageInSibling ? this.$el.parentNode.nextSibling : this.$el.parentNode ).p("deleted"); },
 						deleted: function(){ if(this.addLateMessage) dot(this.parent).b(this.$el ? "failure" : "success"); },
 					});
 				}
@@ -700,6 +705,17 @@
 				addTest("Delete hook doesn't get called right away.", function(){return dot.div(dot.comp_hooks_delete());}, "<div><span>not deleted</span></div>");
 				addTest("Deleting hook.", function(){return dot.div(dot.comp_hooks_delete(true, true));}, "<div><p>deleted</p></div>");
 				addTest("Deleted hook.", function(){return dot.div(dot.comp_hooks_delete(true, false, true));}, "<div><b>success</b></div>");
+
+				//Ensure deletion happens for inner components when using remove.
+				addTest("Nested deleting via remove().", function(){ return dot.h(function(){ var ret = dot.i().div(
+					dot.comp_hooks_delete(false, true, false, true)
+				); var del = ret.getLast(); 
+				ret = ret.b(); setTimeout(function(){dot(del).remove() }, 0); return ret; }) }, "<i></i><b><p>deleted</p></b>");
+
+				addTest("Nested deleted via remove().", function(){ return dot.h(function(){ var ret = dot.i().div(
+					dot.comp_hooks_delete(false, false, true, true)
+				); var del = ret.getLast(); 
+				ret = ret.b(); setTimeout(function(){dot(del).remove() }, 0); return ret; }) }, "<i></i><b><b>success</b></b>");
 			}
 
 			addHeader("Component Data Bindings"); {

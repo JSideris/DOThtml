@@ -470,16 +470,23 @@ var dot = (function(){
 		return deferDot;
 	};
 
+	// Deletes one element (and not its children). 
+	// Used by _p.empty and _p.remove.
+	function deleteElement(element){
+		var deleted = null;
+		var dc = element.dotComponent;
+		if(dc){
+			var d = dc.__prms.deleting;
+			d && d.apply(dc);
+			dc.$el = null;
+			deleted = dc.__prms.deleted;
+		}
+		if(element.parentNode) element.parentNode.removeChild(element);
+		deleted && deleted.apply(dc);
+	}
+
 	_p.empty = function(){
 		if(this.__document){
-			var innerRouters = this.__document.querySelectorAll("dothtml-router");
-			
-			
-			// Clean up all routers. Necessary because there may be nested routers on the page.
-			for(var i = 0; i < innerRouters.length; i++){
-				delete allRouters[innerRouters[i].dothtmlRouterId];
-			}
-
 			// Build a queue of items to remove.
 			var queue = [this.__document];
 			var firstQ = true;
@@ -497,17 +504,7 @@ var dot = (function(){
 
 			}
 			while(stack.length > 0){
-				var deleted = null;
-				var current = stack.pop();
-				var dc = current.dotComponent;
-				if(dc){
-					var d = dc.__prms.deleting;
-					d && d.apply(dc);
-					dc.$el = null;
-					deleted = dc.__prms.deleted;
-				}
-				if(current.parentNode) current.parentNode.removeChild(current);
-				deleted && deleted.apply(dc);
+				deleteElement(stack.pop());
 			}
 		}
 		// Drop all the other nodes (like text)
@@ -517,6 +514,11 @@ var dot = (function(){
 		//}
 
 		return this;
+	}
+
+	_p.remove = function(){
+		this.empty();
+		deleteElement(this.__document);
 	}
 
 	/**
@@ -1111,10 +1113,10 @@ var dot = (function(){
 	var _anonFuncCounter = 0;
 
 	// ROUTING:
-	// TODO: recommend putting this in the router component completely.
-
+	// TODO: Put this in the register hook for router.
+	// TODO: Test to make sure allRouters get cleared when a nested router gets deleted.
 	var routerEventSet = false;
-	var allRouters = {};
+	var allRouters = {}; 
 	var routerId = 1;
 	var mayRedirect = false;
 
@@ -1333,6 +1335,9 @@ var dot = (function(){
 		
 				return navParams;
 			}
+		},
+		deleting: function(){
+			allRouters[this.id]
 		}
 	});
 
