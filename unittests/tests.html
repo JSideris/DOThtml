@@ -369,6 +369,11 @@
 				addTest("Passing dot to h.", function(){ return dot.h(dot.div()); }, "<div></div>");
 				addTest("Passing function to h.", function(){ return dot.h(function(){return "<div></div>"}); }, "<div></div>");
 				addTest("Two internal attributes.", function(){ return dot.div(dot["class"]("1").id("two-internal-attributes")); }, "<div class=\"1\" id=\"two-internal-attributes\"></div>");
+				// Note that empty is required for the core tests to work, but I also want an explicit test for it here in case the core tests change.
+				addTest("Empty an element.", function(){ return dot.h(function(){ var ret = dot.i().div(
+					dot.span("123").span("abc")
+				); var del = ret.getLast(); 
+				ret = ret.b(); setTimeout(function(){dot(del).empty() }, 0); return ret; }) }, "<i></i><div></div><b></b>");
 				addTest("Remove an element.", function(){ return dot.h(function(){ var ret = dot.i().div(
 					dot.span("123").span("abc")
 				); var del = ret.getLast(); 
