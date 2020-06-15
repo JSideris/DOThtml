@@ -656,6 +656,11 @@ var dot = (function(){
 	 * @param {Function} params.deleted - An optional function called after the component is deleted.
 	 */
 	dot.component = function(prms){
+
+		// TODO: generalize this (for routes).
+;;;		var prmsKeys = Object.keys(prms);
+;;;		for(var i = 0; i < prmsKeys.length; i++) try{["name", "register", "created", "methods", "props", "builder", "ready", "deleting", "deleted"][prmsKeys[i]];}catch(e){throw prmsKeys[i] + " is not a valid component field."}
+
 		prms.name ? (
 			(!dot[prms.name] && !_p[prms.name]) ? (function(){
 				componentNames[prms.name] = 1;
