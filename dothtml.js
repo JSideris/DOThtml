@@ -1,4 +1,5 @@
 /*! DOThtml v4.0.0 | (c) Joshua Sideris | dothtml.org/license */
+
 /**
  * Changes:
  * 4.0.0: 
@@ -16,6 +17,8 @@
  * - Reworked the empty function to enqueue every element in the target tree and delete them one at a time, checking for dot hooks.
  * - Added a remove function that works similarly to empty, but also deletes the target element.
  * - Reworked routers so that deletion logic is in the deleting hook, instead of the empty function.
+ * - Added scoped styles. Classnames within components will be scoped by default.
+ * - Updated dot.each function to allow iterating over json objects.
  * 
  * Deprecated
  * - Deprecate dot.lastNode (preferred method is getLast(), but __lastNode is still available internally).
@@ -149,7 +152,7 @@ var dot = (function(){
 			}
 			else{
 				
-				var pD = (retDOT.__pendingCalls.length > 0 ? retDOT : new _D(retDOT.__document));
+				var pD = (retDOT.__pendingCalls.length > 0 ? retDOT : new _D(retDOT.__document, retDOT.__classPrefix));
 				if(!pD.__pendingCalls) pD.__pendingCalls = [];
 				pD.__pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
 				return pD;
@@ -166,7 +169,7 @@ var dot = (function(){
 				return this;
 			}
 			else{
-				var pD = (this.__pendingCalls.length > 0 ? this : new _D(this.__document));
+				var pD = (this.__pendingCalls.length > 0 ? this : new _D(this.__document, this.__classPrefix));
 				if(!pD.__pendingCalls) pD.__pendingCalls = [];
 				pD.__pendingCalls.push({type: "jQuery event", name: name, params: arguments});
 				return pD;
@@ -186,8 +189,8 @@ var dot = (function(){
 	var DOCEL = "DOTHTML-DOCUMENT";
 	var DEFEL = "DOTHTML-DEFER";
 
-	// DOT:
-	function _D(document) {
+	// Dot document object.
+	function _D(document, classPrefix) {
 		var T = this;
 		T.__document = document;
 		T.__if = null;
@@ -195,10 +198,15 @@ var dot = (function(){
 		T.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
 
 		T.__lastNode = document ? document.lastChild : null;
+
+		T.__classPrefix = classPrefix || 0;
+		//T.__oldClassPrefix = [];
+		T.__classedElements = [];
 	}
+	// Prototype for the dot document object.
 	var _p = _D.prototype;
 
-	_p.version = "4.0.0.a5";
+	_p.version = "4.0.0.a6";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
@@ -207,7 +215,7 @@ var dot = (function(){
 	_p._getAnInstance = function(){
 		if(this.__document || this.__pendingCalls.length > 0) return this;
 		else {
-			var d = new _D(null);
+			var d = new _D(null, this.__classPrefix);
 			d.__if = this.__if;
 			return d;
 		};
@@ -231,12 +239,12 @@ var dot = (function(){
 	//before is passed in so that attributes or jquery wrappers can be associated with before's sibling, instead of inheritingParent, the default.
 	_p._evalContent = function(content, pendingCalls){
 		if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
-			var nDot = new _D(this._getNewDocument());
+			var nDot = new _D(this._getNewDocument(), this.__classPrefix);
 			nDot.__document.innerHTML = content;
 			return nDot.__document.childNodes;
 		}
 		else if(Object.prototype.toString.call( content ) === '[object Array]') { //Array
-			var nDot = new _D(this._getNewDocument());
+			var nDot = new _D(this._getNewDocument(), this.__classPrefix);
 			for(var i = 0; i < content.length; i++){
 				nDot._appendOrCreateDocument(content[i]);
 			}
@@ -250,6 +258,17 @@ var dot = (function(){
 			for(var i = 0; i < content.__pendingCalls.length; i++){
 				pendingCalls.push(content.__pendingCalls[i]);
 			}
+			
+			var cp = this.__classPrefix;
+			for(var i in content.__classedElements){
+				var el = content.__classedElements[i];
+				if(!cp){
+					this.__classedElements.push(el);
+				}
+				else{
+					el.className = "dot-" + (cp).toString(16) + "-" + el.className;
+				}
+			}
 			if(content.__document) return content.__document.childNodes; //Return all the nodes in here.
 		} 
 		
@@ -261,7 +280,7 @@ var dot = (function(){
 		//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
 		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T.__document || T._getNewDocument();
 		
-		var nd = T.__document === parentEl ? T : new _D(parentEl);
+		var nd = T.__document === parentEl ? T : new _D(parentEl, T.__classPrefix);
 		nd.__if = T.__if;
 		var pendingCalls = []; //This will populate with pending calls.
 		var eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
@@ -318,16 +337,18 @@ var dot = (function(){
 	_p.el = function(tag, content){
 		var T = this;
 		var ne = document.createElement(tag); 
-		var nDoc = this.__document || T._getNewDocument();
+		var nDoc = T.__document || T._getNewDocument();
 		nDoc.appendChild(ne);
 		T._appendOrCreateDocument(content, ne);
-		return T.__document === nDoc ? T : new _D(nDoc);
+		var ret = T.__document === nDoc ? T : new _D(nDoc, T.__classPrefix);
+		if(content instanceof _D) for(var i in content.__classedElements) ret.__classedElements.push(content.__classedElements[i]);
+		return ret;
 	};
 
 	_p.h = function(content){
 		var T = this;
 		var hDoc = T._getNewDocument();
-		var hDot = new _D(hDoc);
+		var hDot = new _D(hDoc, T.__classPrefix);
 		//if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") hDoc.innerHTML = content; //Raw data
 		hDot._appendOrCreateDocument(content)
 		
@@ -335,14 +356,14 @@ var dot = (function(){
 		while(hDoc.childNodes.length > 0){
 			nDoc.appendChild(hDoc.childNodes[0]);
 		}
-		return T.__document === nDoc ? T : new _D(nDoc); 
+		return T.__document === nDoc ? T : new _D(nDoc, T.__classPrefix); 
 	};
 
 	_p.t = function(content){
 		var textNode = document.createTextNode(content);
 		var nDoc = this.__document || this._getNewDocument();
 		nDoc.appendChild(textNode);
-		return new _D(nDoc);
+		return new _D(nDoc, this.__classPrefix);
 	};
 
 	_p.attr = function(attr, value, arg3){
@@ -408,8 +429,10 @@ var dot = (function(){
 
 	_p.each = function(array, callback){
 		var target = this;
-		for(var i = 0; i < array.length; i++){
-			target = target._appendOrCreateDocument(callback(array[i], i));
+		var keys = Object.keys(array);
+		for(var i = 0; i < keys.length; i++){
+			var k = keys[i];
+			target = target._appendOrCreateDocument(callback(array[k], k));
 		}
 		return target;
 	};
@@ -524,6 +547,46 @@ var dot = (function(){
 		deleteElement(this.__document);
 	}
 
+	var classPrefix = 0x10000;
+	// _p.scopeClass = function(prefix){
+	// 	var T = this;
+	// 	var nDoc = T.__document || T._getNewDocument();
+	// 	var doc = T.__document === nDoc ? T : new _D(nDoc);
+
+	// 	doc.__oldClassPrefix.push(prefix);
+	// 	doc.__classPrefix = prefix || classPrefix++;
+	// 	return doc;
+	// }
+
+	_p.scopeClass = function(prefix, content){
+		if(arguments.length == 1){
+			content = prefix;
+			prefix = null;
+		}
+		var T = this;
+
+		//T.__classPrefix = prefix || classPrefix++;
+		//doc.__oldClassPrefix.push(prefix);
+		T.__classPrefix = prefix || classPrefix++;
+		var ret = T.h(content);
+		T.__classPrefix = 0;
+		//doc.__oldClassPrefix.pop();
+		//T.__classPrefix = oldCp;
+		return ret;
+	}
+
+
+	// _p.unscopeClass = function(prefix){
+	// 	var ocp = this.__oldClassPrefix;
+	// 	ocp.pop();
+	// 	this.__classPrefix = ocp.length > 0 ? ocp[ocp.length - 1] : 0;
+	// 	return this;
+	// }
+
+	_p.resetScopeClass = function(){
+		classPrefix = 0x10000;
+	}
+
 	/**
 	 * Binds the value of an element to a data field.
 	 * @param {object} object
@@ -587,6 +650,7 @@ var dot = (function(){
 	 * @param {Function} params.registered - An optional function that gets called once per component after registering in the dot namespace, with the component class passed in as a parameter.
 	 * @param {Function} params.created - An optional function that gets called before the component is created, scoped to the new component object.
 	 * @param {Function} params.builder - A function returning DOThtml (required).
+	 * @param {Function} params.style - An optional function that is called after builder that stylizes .
 	 * @param {Function} params.ready - An optional function called after the element has been added. One parameter will be provided containing the added element.
 	 * @param {Function} params.deleting - An optional function called before the component is deleted.
 	 * @param {Function} params.deleted - An optional function called after the component is deleted.
@@ -605,6 +669,7 @@ var dot = (function(){
 					});
 				}
 				prms.register && prms.register.apply(CC.prototype);
+				var classNumb = classPrefix++;
 				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
 				dot[prms.name] = _p[prms.name] = function(){
 					var obj = new CC();
@@ -612,7 +677,7 @@ var dot = (function(){
 					var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
 					ret = ret instanceof _D ? ret : dot.h(ret);
 					(!ret.getLast() || (ret.getLast().parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
-					ret = this._appendOrCreateDocument(ret);
+					ret = this._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
 					obj.$el = obj.$el || ret.getLast();
 					obj.$el.dotComponent = obj;
 					prms.ready && sT(function(){
@@ -764,7 +829,7 @@ var dot = (function(){
 		"charoff",
 		"checked",
 		"cite", //*
-		"class",
+		//"class",
 		"classid",
 		"clear",
 		"codebase",
@@ -1017,6 +1082,15 @@ var dot = (function(){
 		}
 		return T.el("form", arg);
 	};
+
+	_p.class = _p.classA = function(value){
+		var cp = this.__classPrefix;
+		if(!cp){
+			var el = this.getLast();
+			el && this.__classedElements.push(el);
+		}
+		return this.attr("class", (cp ? "dot-" + (cp).toString(16) + "-" : "" ) + value);
+	}
 
 	_p.label = function(arg){
 		var T = this;

@@ -297,7 +297,7 @@
 					var testNumber = totalTests;
 
 					dot(tr) .td(dot.h(description)).id("test" + testNumber)
-							.td(dot.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}"))))["class"]("code")
+							.td(dot.t(testContents.slice(testContents.indexOf("return") + 7, testContents.lastIndexOf("}")).split(".").join("\r\n.")))["class"]("code")
 							.td(dot.t(expected))["class"]("code")
 							.td(dot.t(resultHtml))["class"]("code")
 							.td(testPassed ? "PASS" : "FAIL")["class"](testPassed ? "pass" : "fail");
@@ -473,18 +473,41 @@
 						return dot.iterate(2, function(j){return j})
 					}).h("f");
 				}, "s0101f");
-				addTest("Each.", function(){ return dot.each([0, 1, 2], function(x){return x}); }, "012");
-				addTest("Nested each.", function(){ return dot.each([0, 1, 2], function(x){return dot.h(x).each([3, 4, 5], function(y){return y})}); }, "034513452345");
+				addTest("Each.", function(){ return dot.each(["A", "B", "C"], function(x, i){return i + x}); }, "0A1B2C");
+				addTest("Nested each.", function(){ return dot.each(["A", "B", "C"], function(x, i){return dot.h(i + x).each(["D", "E", "F"], function(y, j){return j + y})}); }, "0A0D1E2F1B0D1E2F2C0D1E2F");
+				addTest("Hash each.", function(){ return dot.each({a: "A", b: "B", c: "C"}, function(x, i){return i + x}); }, "aAbBcC");
 			}
 
 			//Get Last Node
 			addHeader("Get Last Node"); {
 				//addTest("Get Last Node.", function(){ return dot.h(dot.div("text").__lastNode.innerHTML)}, "text"); // No longer supported.
 				//addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").__lastNode.innerHTML)}, "text"); // No longer supported.
-				addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").getLast().innerHTML)}, "text");
-				addTest("Using getLast() function.", function(){ return dot.h(dot.div("text").getLast().innerHTML)}, "text");
+				addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").getLast().innerHTML);}, "text");
+				addTest("Using getLast() function.", function(){ return dot.h(dot.div("text").getLast().innerHTML);}, "text");
 			}
 
+			addHeader("Scoped Classes"); {
+				dot.resetScopeClass();
+				
+				//addTest("Get Last Node.", function(){ return dot.h(dot.div("text").__lastNode.innerHTML)}, "text"); // No longer supported.
+				//addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").__lastNode.innerHTML)}, "text"); // No longer supported.
+				addTest("Named scope.", function(){ return dot.div().class("before").scopeClass("MYSCOPE1", dot.div().class("test")).div().class("after"); }, "<div class=\"before\"></div><div class=\"dot-MYSCOPE1-test\"></div><div class=\"after\"></div>");
+				addTest("No rollover scope.", function(){ return dot.div().class("test"); }, "<div class=\"test\"></div>");
+				addTest("Named scope multiple elements.", function(){ return dot.div().scopeClass("MYSCOPE2", dot.div().class("test").div().div().class("test")); }, "<div></div><div class=\"dot-MYSCOPE2-test\"></div><div></div><div class=\"dot-MYSCOPE2-test\"></div>");
+				//addTest("Unscope.", function(){ return dot.div().scopeClass("MYSCOPE2").div().class("test").div().div().class("test").unscopeClass().div().class("test"); }, "<div></div><div class=\"dot-MYSCOPE2-test\"></div><div></div><div class=\"dot-MYSCOPE2-test\"></div><div class=\"test\"></div>");
+				//addTest("Extra unscope.", function(){ return dot.div().scopeClass("MYSCOPE2").div().class("test").div().div().class("test").unscopeClass().unscopeClass().div().class("test"); }, "<div></div><div class=\"dot-MYSCOPE2-test\"></div><div></div><div class=\"dot-MYSCOPE2-test\"></div><div class=\"test\"></div>");
+				addTest("Nested element.", function(){ return dot.div().scopeClass("MYSCOPE", dot.div(dot.div().class("test-inner")).class("test-outer")); }, "<div></div><div class=\"dot-MYSCOPE-test-outer\"><div class=\"dot-MYSCOPE-test-inner\"></div></div>");
+				addTest("Nested element new document.", function(){ return dot.scopeClass("MYSCOPE", dot.div(dot.div().class("test-inner")).class("test-outer")); }, "<div class=\"dot-MYSCOPE-test-outer\"><div class=\"dot-MYSCOPE-test-inner\"></div></div>");
+				// I really don't care about this behavior. We can leave it as undefined, or accept the current behavior.
+				//addTest("Scoped h.", function(){ return dot.scopeClass("MYSCOPE2", dot.h(dot.div().class("test"))); }, "<div class=\"dot-MYSCOPE2-test\"></div>");
+				addTest("Nested scope.", function(){ return dot.scopeClass("MYSCOPE3", dot.div(dot.div().class("test-inner-before").scopeClass("MYSCOPE4", dot.div().class("test-inner"))).class("test-outer")); }, "<div class=\"dot-MYSCOPE3-test-outer\"><div class=\"dot-MYSCOPE3-test-inner-before\"></div><div class=\"dot-MYSCOPE4-test-inner\"></div></div>");
+				addTest("Autoscope 1.", function(){ return dot.scopeClass(dot.div().class("test")); }, "<div class=\"dot-10000-test\"></div>");
+				addTest("Autoscope 2.", function(){ return dot.scopeClass(dot.div().class("test")); }, "<div class=\"dot-10001-test\"></div>");
+				addTest("Autoscope 2 with nest.", function(){ return dot.scopeClass(dot.div(dot.div().class("test2")).class("test")); }, "<div class=\"dot-10002-test\"><div class=\"dot-10002-test2\"></div></div>");
+				dot.resetScopeClass();
+				addTest("Reset scope.", function(){ return dot.scopeClass(dot.div().class("test")); }, "<div class=\"dot-10000-test\"></div>");
+			}
+			
 			//Components
 			addHeader("Components"); {
 				try{
@@ -637,6 +660,17 @@
 						methods: { setVal: function(val){ dot(this.$el).empty().t(val); } }
 					});
 
+					// Scoped classes
+					dot.resetScopeClass();
+					dot.component({
+						name: "comp_scoped_class",
+						builder: function(){ return dot.div(dot.div().class("test2")).class("test1") }
+					});
+					dot.component({
+						name: "comp_scoped_class_2",
+						builder: function(){ return dot.div(dot.div().class("test2")).class("test1") }
+					});
+
 				}catch(e){ console.error(e);}
 				addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
 				addTest("Std params component, nested.", function(){return dot.div(2).comp_std().div(3)}, "<div>2</div><div><div>1</div></div><div>3</div>");
@@ -659,6 +693,11 @@
 				// methods
 				addTest("Instantiate comp w/ method.", function(){return dot.comp_methods_basic()}, "<div>123</div>");
 				addTest("Method gets called in ready function.", function(){return dot.comp_methods_basic(true)}, "<div>abc</div>"); // TODO: this functionality will soon be removed in favor of params.
+				
+				// Scoped classes
+				addTest("Component class scope.", function(){return dot.comp_scoped_class()}, "<div class=\"dot-10000-test1\"><div class=\"dot-10000-test2\"></div></div>");
+				addTest("Component class scope reuse.", function(){return dot.comp_scoped_class()}, "<div class=\"dot-10000-test1\"><div class=\"dot-10000-test2\"></div></div>");
+				addTest("Component class scope alt.", function(){return dot.comp_scoped_class_2()}, "<div class=\"dot-10001-test1\"><div class=\"dot-10001-test2\"></div></div>");
 			}
 
 			addHeader("Component Hooks"); {
