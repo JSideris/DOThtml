@@ -46,6 +46,7 @@ var dot = (function(){
 			"PF": "Method " + params[0] + " expects a callback function.",
 			"R": "Router must be passed a JSON object that contains an 'routes' array containing objects with a 'path', 'title', and 'component'.",
 			"S": "SVG is not supported by DOThtml.",
+			//"SF": "The style property of a component must be a string, a function that returns a string, or a JSON collection of those things."
 		}[code] || "Unknown error.";
 		
 	};
@@ -547,17 +548,7 @@ var dot = (function(){
 		deleteElement(this.__document);
 	}
 
-	var classPrefix = 0x10000;
-	// _p.scopeClass = function(prefix){
-	// 	var T = this;
-	// 	var nDoc = T.__document || T._getNewDocument();
-	// 	var doc = T.__document === nDoc ? T : new _D(nDoc);
-
-	// 	doc.__oldClassPrefix.push(prefix);
-	// 	doc.__classPrefix = prefix || classPrefix++;
-	// 	return doc;
-	// }
-
+	var classPrefix = 0x10000; _p.resetScopeClass = function(){classPrefix = 0x10000;}
 	_p.scopeClass = function(prefix, content){
 		if(arguments.length == 1){
 			content = prefix;
@@ -573,18 +564,6 @@ var dot = (function(){
 		//doc.__oldClassPrefix.pop();
 		//T.__classPrefix = oldCp;
 		return ret;
-	}
-
-
-	// _p.unscopeClass = function(prefix){
-	// 	var ocp = this.__oldClassPrefix;
-	// 	ocp.pop();
-	// 	this.__classPrefix = ocp.length > 0 ? ocp[ocp.length - 1] : 0;
-	// 	return this;
-	// }
-
-	_p.resetScopeClass = function(){
-		classPrefix = 0x10000;
 	}
 
 	/**
@@ -643,7 +622,7 @@ var dot = (function(){
 	// One option would be to have a global namespace where each item is only accessible by parent components who have registered to use it.
 	// Another option is to inject a custom reference to dot that inherits from the actual dot but also has sub-components in it.
 	var componentNames = {};
-
+	var componentStyleElement = null;
 	/**
 	 * @param {object} params - Params for the component builder.
 	 * @param {string} params.name - Name of the component (required).
@@ -674,16 +653,51 @@ var dot = (function(){
 					});
 				}
 				prms.register && prms.register.apply(CC.prototype);
-				var classNumb = classPrefix++;
+
+				// Scoped classes and styles.
+				var classNumb = undefined;
+				var style = prms.style;
+				if(style){
+					classNumb = classPrefix++;
+
+					if(isF(style)) style = style();
+
+					if(style instanceof string){
+						// TODO: need to parse?
+						// var cssParts = style.split("{");
+						// for(var i = 0; i < cssParts.length; i+=2){
+
+						// }
+						// style.split(".").join(".dot-" + classNumb.toString(16) + "-");
+					}
+					else{
+						// Assume json object.
+						var keys = Object.keys(style);
+						var result = "";
+						for(var k in keys){
+							var key = keys[k];
+							
+						}
+					}
+
+					if(!componentStyleElement)
+						componentStyleElement = dot("head").el("style", style);
+					else 
+						dot(componentStyleElement).t("\r\n" + style);
+					
+				}
+
+				// Adding the component to dot.
 				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
 				dot[prms.name] = _p[prms.name] = function(){
 					var obj = new CC();
 					prms.created && prms.created.apply(obj, arguments);
 					var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
 					ret = ret instanceof _D ? ret : dot.h(ret);
-					(!ret.getLast() || (ret.getLast().parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
+					var lst = ret.getLast();
+					(!lst || (lst.parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
 					ret = this._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
-					obj.$el = obj.$el || ret.getLast();
+					obj.$el = obj.$el || lst;
 					obj.$el.dotComponent = obj;
 					prms.ready && sT(function(){
 						prms.ready.apply(obj)
