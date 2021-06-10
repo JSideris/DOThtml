@@ -1,8 +1,8 @@
-/*! DOThtml v4.1.0 | (c) Joshua Sideris | dothtml.org/license */
+/*! DOThtml v4.1.2 | (c) Joshua Sideris | dothtml.org/license */
 
 /**
  * Changes:
- * 4.1.0: 
+ * 4.1.2: 
  * 
  * Updates
  * - Added a style builder (formerly, a separate package: dotcss).
@@ -190,7 +190,7 @@ var dot = (function(){
 	// Prototype for the dot document object.
 	var _p = _D.prototype;
 
-	_p.version = "4.0.0.a6";
+	_p.version = "4.1.2";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);

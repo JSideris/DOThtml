@@ -1,11 +1,9 @@
 {
   "name": "dothtml",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "DOThtml is a client-side framework for building single-page applications.",
   "main": "lib/dothtml.min.js",
-  "dependencies": {
-    "express": "^4.17.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@testing-library/jest-dom": "^5.13.0",
     "jest": "^27.0.4",
