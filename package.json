@@ -1,0 +1,39 @@
+{
+  "name": "dothtml",
+  "version": "4.1.1",
+  "description": "DOThtml is a client-side framework for building single-page applications.",
+  "main": "lib/dothtml.min.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.13.0",
+    "jest": "^27.0.4",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
+  },
+  "scripts": {
+    "test": "webpack & jest",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JSideris/DOThtml.git"
+  },
+  "keywords": [
+    "html",
+    "page",
+    "web",
+    "builder",
+    "generation",
+    "component",
+    "framework",
+    "spa"
+  ],
+  "author": "Joshua Sideris",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JSideris/DOThtml/issues"
+  },
+  "homepage": "https://github.com/JSideris/DOThtml#readme"
+}
