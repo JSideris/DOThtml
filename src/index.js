@@ -1,12 +1,19 @@
-/*! DOThtml v3.0.0 | (c) Joshua Sideris | dothtml.org/license */
+/*! DOThtml v4.1.0 | (c) Joshua Sideris | dothtml.org/license */
+
 /**
  * Changes:
- * 3.1.0: 
- * - Removed some debug code.
- * - Created a new dot.defer() special function that waits for the parent to render before creating the child element.
- * - Renamed dothtml-timeout to dothtml-defer.
+ * 4.1.0: 
+ * 
+ * Updates
+ * - Added a style builder (formerly, a separate package: dotcss).
+ * - Reorganized the repo. New src and lib folders. Cleaned up lots of debug stuff.
+ * - Package now available on npm.
+ * - Added dot.css (formerly the dotcss package) as a built-in css builder. Documentation to come.
  */
 var dot = (function(){
+
+	// Shortcuts:
+	var sT = setTimeout;
 
 	var ERR = function(code){throw "DOThtml usage error code " + code + ". Use an unminified version for more information."};
 	ERR = function(code, params){
@@ -16,11 +23,13 @@ var dot = (function(){
 			"CC": "The name \"" + params[0] + "\" conflicts with an existing DOThtml function.",
 			"CN": "The component name provided is invalid.",
 			"CU": "Invalid usage: a component should at least have a name and a builder function.",
+			"C#": "Component '" + params[0] + "' must return exactly one child node.",
 			"F": "Element \"" + params[0] + "\" not found.",
 			"J": "Can't use jQuery wrappers without jQuery.",
 			"PF": "Method " + params[0] + " expects a callback function.",
 			"R": "Router must be passed a JSON object that contains an 'routes' array containing objects with a 'path', 'title', and 'component'.",
 			"S": "SVG is not supported by DOThtml.",
+			//"SF": "The style property of a component must be a string, a function that returns a string, or a JSON collection of those things."
 		}[code] || "Unknown error.";
 		
 	};
@@ -40,7 +49,7 @@ var dot = (function(){
 		//console.log(targets);
 		var newDot = new _D();
 		if(targets.length > 0){
-			newDot._document = targets[0];
+			newDot.__document = targets[0];
 		}
 		
 		return newDot;
@@ -73,6 +82,12 @@ var dot = (function(){
 		xhttp.send();
 	}
 
+	// Polyfill for Object.keys(...).forEach.
+	function eachK(obj, cb){
+		var lst = Object.keys(obj);
+		for(var i = 0; i < lst.length; i++) cb(lst[i], obj[lst[i]]);
+	}
+
 	function createElement(tag){
 		_p[tag] = _p[tag + "E"] = function(c){return this.el(tag, c);}
 		//dot[tag] = dot[tag + "E"] = function(c){return this.el(tag, c);}
@@ -99,7 +114,7 @@ var dot = (function(){
 				}
 				if(isF(arg)){
 					timeoutDot = this.el(DEFEL);
-					timeoutNode = timeoutDot._document.lastChild;
+					timeoutNode = timeoutDot.__document.lastChild;
 					(function(arg, args, timeoutNode, timeoutDot){
 						args[i] = function(){
 							var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
@@ -112,18 +127,18 @@ var dot = (function(){
 			}
 			
 			var retDOT = timeoutDot || this;
-			if(this._document){
+			if(this.__document){
 				
 				jo[name].apply(jo, arguments);
 				//var jqargs = arguments;
-				//setTimeout(function(){jo[name].apply(jo, jqargs);}, 0);
+				//sT(function(){jo[name].apply(jo, jqargs);}, 0);
 				return retDOT;
 			}
 			else{
 				
-				var pD = (retDOT._pendingCalls.length > 0 ? retDOT : new _D(retDOT._document));
-				if(!pD._pendingCalls) pD._pendingCalls = [];
-				pD._pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
+				var pD = (retDOT.__pendingCalls.length > 0 ? retDOT : new _D(retDOT.__document, retDOT.__classPrefix));
+				if(!pD.__pendingCalls) pD.__pendingCalls = [];
+				pD.__pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
 				return pD;
 			}
 		}
@@ -132,15 +147,15 @@ var dot = (function(){
 	function createJQueryEventHandler(name){
 		_p["$" + name] = function(handler){
 			this.check$();
-			if(this._document){
+			if(this.__document){
 				var jo = jQuery(this._getLastChildOrNull());
 				jo[name](handler);
 				return this;
 			}
 			else{
-				var pD = (this._pendingCalls.length > 0 ? this : new _D(this._document));
-				if(!pD._pendingCalls) pD._pendingCalls = [];
-				pD._pendingCalls.push({type: "jQuery event", name: name, params: arguments});
+				var pD = (this.__pendingCalls.length > 0 ? this : new _D(this.__document, this.__classPrefix));
+				if(!pD.__pendingCalls) pD.__pendingCalls = [];
+				pD.__pendingCalls.push({type: "jQuery event", name: name, params: arguments});
 				return pD;
 			}
 		}
@@ -158,35 +173,40 @@ var dot = (function(){
 	var DOCEL = "DOTHTML-DOCUMENT";
 	var DEFEL = "DOTHTML-DEFER";
 
-	// DOT:
-	function _D(document) {
+	// Dot document object.
+	function _D(document, classPrefix) {
 		var T = this;
-		T._document = document;
-		T._if = null;
-		T._pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
-		T.anonAttrFuncs = {}; //Only to be used by top-level dot object.
+		T.__document = document;
+		T.__if = null;
+		T.__pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
+		T.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
 
-		T.lastNode = document ? document.lastChild : null;
+		T.__lastNode = document ? document.lastChild : null;
+
+		T.__classPrefix = classPrefix || 0;
+		//T.__oldClassPrefix = [];
+		T.__classedElements = [];
 	}
+	// Prototype for the dot document object.
 	var _p = _D.prototype;
 
-	_p.version = "3.1.0";
+	_p.version = "4.0.0.a6";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
 	};
 
 	_p._getAnInstance = function(){
-		if(this._document || this._pendingCalls.length > 0) return this;
+		if(this.__document || this.__pendingCalls.length > 0) return this;
 		else {
-			var d = new _D(null);
-			d._if = this._if;
+			var d = new _D(null, this.__classPrefix);
+			d.__if = this.__if;
 			return d;
 		};
 	};
 
 	_p._getLastChildOrNull = function(){
-		if(this._document && this._document.lastChild) return this._document.lastChild;
+		if(this.__document && this.__document.lastChild) return this.__document.lastChild;
 		return null;
 	};
 
@@ -196,33 +216,44 @@ var dot = (function(){
 	}
 
 	_p.toString = function(){
-		if(this._document) return this._document.innerHTML;
+		if(this.__document) return this.__document.innerHTML;
 		else return "";
 	}
 
 	//before is passed in so that attributes or jquery wrappers can be associated with before's sibling, instead of inheritingParent, the default.
 	_p._evalContent = function(content, pendingCalls){
 		if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
-			var nDot = new _D(this._getNewDocument());
-			nDot._document.innerHTML = content;
-			return nDot._document.childNodes;
+			var nDot = new _D(this._getNewDocument(), this.__classPrefix);
+			nDot.__document.innerHTML = content;
+			return nDot.__document.childNodes;
 		}
 		else if(Object.prototype.toString.call( content ) === '[object Array]') { //Array
-			var nDot = new _D(this._getNewDocument());
+			var nDot = new _D(this._getNewDocument(), this.__classPrefix);
 			for(var i = 0; i < content.length; i++){
 				nDot._appendOrCreateDocument(content[i]);
 			}
-			if(nDot._document) return nDot._document.childNodes;
+			if(nDot.__document) return nDot.__document.childNodes;
 		}
 		else if(isF(content)) //Function to evaluate
 		{
 			return this._evalContent(content(), pendingCalls);
 		}
 		else if(content && content instanceof _D) { //DOT
-			for(var i = 0; i < content._pendingCalls.length; i++){
-				pendingCalls.push(content._pendingCalls[i]);
+			for(var i = 0; i < content.__pendingCalls.length; i++){
+				pendingCalls.push(content.__pendingCalls[i]);
 			}
-			if(content._document) return content._document.childNodes; //Return all the nodes in here.
+			
+			var cp = this.__classPrefix;
+			for(var i in content.__classedElements){
+				var el = content.__classedElements[i];
+				if(!cp){
+					this.__classedElements.push(el);
+				}
+				else{
+					el.className = "dot-" + (cp).toString(16) + "-" + el.className;
+				}
+			}
+			if(content.__document) return content.__document.childNodes; //Return all the nodes in here.
 		} 
 		
 		return null;
@@ -230,11 +261,11 @@ var dot = (function(){
 
 	_p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 		var T = this;
-		//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this._document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
-		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T._document || T._getNewDocument();
+		//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
+		parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T.__document || T._getNewDocument();
 		
-		var nd = T._document === parentEl ? T : new _D(parentEl);
-		nd._if = T._if;
+		var nd = T.__document === parentEl ? T : new _D(parentEl, T.__classPrefix);
+		nd.__if = T.__if;
 		var pendingCalls = []; //This will populate with pending calls.
 		var eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
 		for(var i = 0; i < pendingCalls.length; i++){
@@ -266,7 +297,7 @@ var dot = (function(){
 				}
 			}
 			else{
-				nd._pendingCalls.push(call); /*3*/
+				nd.__pendingCalls.push(call); /*3*/
 			}
 		}
 		if(eContent !== null){
@@ -290,46 +321,48 @@ var dot = (function(){
 	_p.el = function(tag, content){
 		var T = this;
 		var ne = document.createElement(tag); 
-		var nDoc = this._document || T._getNewDocument();
+		var nDoc = T.__document || T._getNewDocument();
 		nDoc.appendChild(ne);
 		T._appendOrCreateDocument(content, ne);
-		return T._document === nDoc ? T : new _D(nDoc);
+		var ret = T.__document === nDoc ? T : new _D(nDoc, T.__classPrefix);
+		if(content instanceof _D) for(var i in content.__classedElements) ret.__classedElements.push(content.__classedElements[i]);
+		return ret;
 	};
 
 	_p.h = function(content){
 		var T = this;
 		var hDoc = T._getNewDocument();
-		var hDot = new _D(hDoc);
+		var hDot = new _D(hDoc, T.__classPrefix);
 		//if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") hDoc.innerHTML = content; //Raw data
 		hDot._appendOrCreateDocument(content)
 		
-		var nDoc = T._document || T._getNewDocument();
+		var nDoc = T.__document || T._getNewDocument();
 		while(hDoc.childNodes.length > 0){
 			nDoc.appendChild(hDoc.childNodes[0]);
 		}
-		return T._document === nDoc ? T : new _D(nDoc); 
+		return T.__document === nDoc ? T : new _D(nDoc, T.__classPrefix); 
 	};
 
 	_p.t = function(content){
 		var textNode = document.createTextNode(content);
-		var nDoc = this._document || this._getNewDocument();
+		var nDoc = this.__document || this._getNewDocument();
 		nDoc.appendChild(textNode);
-		return new _D(nDoc);
+		return new _D(nDoc, this.__classPrefix);
 	};
 
 	_p.attr = function(attr, value, arg3){
 		var T = this;
 		if (isF(value)) {
 			if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
-				dot.anonAttrFuncs[_anonFuncCounter] = (value);
-				value = "dot.anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
+				dot.__anonAttrFuncs[_anonFuncCounter] = (value);
+				value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
 			}
 			else {
 				attr = attr.substring(2);
 			}
 		}
-		if(T._document) {
-			var cn = T._document.childNodes;
+		if(T.__document) {
+			var cn = T.__document.childNodes;
 			var last = cn[cn.length - 1];
 			if(last && last.setAttribute){
 				if (!isF(value)) {
@@ -344,8 +377,8 @@ var dot = (function(){
 		}
 		else{
 			var pD = T._getAnInstance();
-			//if(!pD._pendingCalls.length > 0) pD._pendingCalls = [];
-			pD._pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
+			//if(!pD.__pendingCalls.length > 0) pD.__pendingCalls = [];
+			pD.__pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
 			return pD;
 		}
 		return T;
@@ -356,9 +389,9 @@ var dot = (function(){
 		if(!targetId) {ERR("A", [targetId]); return T;}
 		var destination = document.getElementById(targetId);
 		if(!destination) {ERR("F", [targetId]); return T;}
-		if(T._document) {
+		if(T.__document) {
 			if(!appendMode) destination.innerHTML = "";
-			while(T._document.childNodes.length > 0) destination.appendChild(T._document.childNodes[0]);
+			while(T.__document.childNodes.length > 0) destination.appendChild(T.__document.childNodes[0]);
 		}
 		return T;
 	};
@@ -367,11 +400,11 @@ var dot = (function(){
 		var target = this;
 		var content = callback;
 		var copycontent = null;
-		if(content instanceof _D)	copycontent = content._document.cloneNode(true);
+		if(content instanceof _D)	copycontent = content.__document.cloneNode(true);
 		
 		for(var i = 0; i < iterations; i++){
 			if(isF(callback)) content = callback(i, params);
-			if(copycontent) content._document = copycontent.cloneNode(true);
+			if(copycontent) content.__document = copycontent.cloneNode(true);
 			target = target._appendOrCreateDocument(content);
 		}
 		
@@ -380,33 +413,35 @@ var dot = (function(){
 
 	_p.each = function(array, callback){
 		var target = this;
-		for(var i = 0; i < array.length; i++){
-			target = target._appendOrCreateDocument(callback(array[i], i));
+		var keys = Object.keys(array);
+		for(var i = 0; i < keys.length; i++){
+			var k = keys[i];
+			target = target._appendOrCreateDocument(callback(array[k], k));
 		}
 		return target;
 	};
 
 	_p.IF = _p["if"] = function(condition, callback){
 		if(condition) {
-			this._if = true;
+			this.__if = true;
 			return this._getAnInstance()._appendOrCreateDocument(callback);
 		}
 		else{
-			this._if = false;
+			this.__if = false;
 		}
 		return this;
 	};
 
 	_p.ELSEIF = _p.elseif = function(condition, callback){
-		if(!this._if){
+		if(!this.__if){
 			return this["if"](condition, callback);
 		}
 		return this;
 	};
 
 	_p.ELSE = _p["else"] = function(callback){
-		if(!this._if){
-			this._if = null;
+		if(!this.__if){
+			this.__if = null;
 			return this._getAnInstance()._appendOrCreateDocument(callback);
 		}
 		return this;
@@ -414,15 +449,15 @@ var dot = (function(){
 
 	_p.script = function(callback){
 		var last = this.getLast();
-		setTimeout(function(){callback(last);}, 0);
+		sT(function(){callback(last);}, 0);
 		return this;
 	};
 
 	_p.wait = function(timeout, callback){
 		var timeoutDot = this.el(DEFEL);
-		var timeoutNode = timeoutDot._document.lastChild;
+		var timeoutNode = timeoutDot.__document.lastChild;
 
-		setTimeout(function(){
+		sT(function(){
 			timeoutDot._appendOrCreateDocument(callback, null, timeoutNode);
 			timeoutNode.parentElement.removeChild(timeoutNode);
 		}, timeout);
@@ -435,9 +470,9 @@ var dot = (function(){
 	_p.defer = function(callback, timeout){
 		if(!isF(callback)) ERR("PF", "defer");
 		var deferDot = this.el(DEFEL);
-		var deferNode = deferDot._document.lastChild;
+		var deferNode = deferDot.__document.lastChild;
 
-		setTimeout(function(){
+		sT(function(){
 			callback(dot(deferNode.parentElement));
 			deferNode.parentElement.removeChild(deferNode);
 		}, timeout || 0);
@@ -445,18 +480,73 @@ var dot = (function(){
 		return deferDot;
 	};
 
-	_p.empty = function(){
-		if(this._document){
-			var innerRouters = this._document.querySelectorAll("dothtml-router");
-			for(var i = 0; i < innerRouters.length; i++){
-				delete allRouters[innerRouters[i].dothtmlRouterId];
-			}
-			while (this._document.firstChild) {
-				this._document.removeChild(this._document.firstChild);
-			}
-
+	// Deletes one element (and not its children). 
+	// Used by _p.empty and _p.remove.
+	function deleteElement(element){
+		var deleted = null;
+		var dc = element.dotComponent;
+		if(dc){
+			var d = dc.__prms.deleting;
+			d && d.apply(dc);
+			dc.$el = null;
+			deleted = dc.__prms.deleted;
 		}
+		if(element.parentNode) element.parentNode.removeChild(element);
+		deleted && deleted.apply(dc);
+	}
+
+	_p.empty = function(){
+		if(this.__document){
+			// Build a queue of items to remove.
+			var queue = [this.__document];
+			var firstQ = true;
+			var stack = [];
+			while(queue.length > 0)
+			{
+				var current = queue.shift();
+				if(current.childNodes.length > 0){
+					for(var i = 0; i < current.childNodes.length; i++){
+						queue.push(current.childNodes[i]);
+					}
+				}
+				!firstQ && stack.push(current);
+				firstQ = false;
+
+			}
+			while(stack.length > 0){
+				deleteElement(stack.pop());
+			}
+		}
+		// Drop all the other nodes (like text)
+		// Text seems to get deleted even without this code :).
+		//while (this.__document.firstChild) {
+		//	this.__document.removeChild(this.__document.firstChild);
+		//}
+
 		return this;
+	}
+
+	_p.remove = function(){
+		this.empty();
+		deleteElement(this.__document);
+	}
+
+	var classPrefix = 0x10000; _p.resetScopeClass = function(){classPrefix = 0x10000;}
+	_p.scopeClass = function(prefix, content){
+		if(arguments.length == 1){
+			content = prefix;
+			prefix = null;
+		}
+		var T = this;
+
+		//T.__classPrefix = prefix || classPrefix++;
+		//doc.__oldClassPrefix.push(prefix);
+		T.__classPrefix = prefix || classPrefix++;
+		var ret = T.h(content);
+		T.__classPrefix = 0;
+		//doc.__oldClassPrefix.pop();
+		//T.__classPrefix = oldCp;
+		return ret;
 	}
 
 	/**
@@ -499,27 +589,102 @@ var dot = (function(){
 	// 	return ret;
 	// }
 
-	var componentNames = {};
+	// COMPONENTS
 
+	function _C(){
+		this.$el = null;
+		this.$refs = {};
+	}
+
+	_C.$emit = function(){
+		// TODO.
+		throw "NOT IMPLEMENTED";
+	}
+
+	// TODO: ideally we'd like to remove this, and create scoped namespaces for all components.
+	// One option would be to have a global namespace where each item is only accessible by parent components who have registered to use it.
+	// Another option is to inject a custom reference to dot that inherits from the actual dot but also has sub-components in it.
+	var componentNames = {};
+	var componentStyleElement = null;
 	/**
 	 * @param {object} params - Params for the component builder.
 	 * @param {string} params.name - Name of the component (required).
+	 * @param {Function} params.registered - An optional function that gets called once per component after registering in the dot namespace, with the component class passed in as a parameter.
+	 * @param {Function} params.created - An optional function that gets called before the component is created, scoped to the new component object.
 	 * @param {Function} params.builder - A function returning DOThtml (required).
-	 * @param {Function} params.ready - A function called after the element has been added. One parameter will be provided containing the added element.
+	 * @param {Function} params.style - An optional function that is called after builder that stylizes .
+	 * @param {Function} params.ready - An optional function called after the element has been added. One parameter will be provided containing the added element.
+	 * @param {Function} params.deleting - An optional function called before the component is deleted.
+	 * @param {Function} params.deleted - An optional function called after the component is deleted.
 	 */
-	dot.component = function(params){
-		var prms;
-		if(arguments.length == 1) prms = params;
-		else prms = {name: arguments[0], builder: arguments[1], ready: arguments[2]};
+	dot.component = function(prms){
+
+		// TODO: generalize this (for routes).
+;;;		var prmsKeys = Object.keys(prms);
+;;;		for(var i = 0; i < prmsKeys.length; i++) try{["name", "register", "created", "methods", "props", "builder", "ready", "deleting", "deleted"][prmsKeys[i]];}catch(e){throw prmsKeys[i] + " is not a valid component field."}
+
 		prms.name ? (
 			(!dot[prms.name] && !_p[prms.name]) ? (function(){
 				componentNames[prms.name] = 1;
+				var CC = function(){}
+				CC.prototype = Object.create(_C.prototype);
+				CC.prototype.__prms = prms;
+				if(prms.methods){
+					eachK(prms.methods, function(k, v){
+						if(!isF(v)) ERR("PF", ["component->methods->..."]);
+						CC.prototype[k] = v;
+					});
+				}
+				prms.register && prms.register.apply(CC.prototype);
+
+				// Scoped classes and styles.
+				var classNumb = undefined;
+				var style = prms.style;
+				if(style){
+					classNumb = classPrefix++;
+
+					if(isF(style)) style = style();
+
+					if(style instanceof string){
+						// TODO: need to parse?
+						// var cssParts = style.split("{");
+						// for(var i = 0; i < cssParts.length; i+=2){
+
+						// }
+						// style.split(".").join(".dot-" + classNumb.toString(16) + "-");
+					}
+					else{
+						// Assume json object.
+						var keys = Object.keys(style);
+						var result = "";
+						for(var k in keys){
+							var key = keys[k];
+							
+						}
+					}
+
+					if(!componentStyleElement)
+						componentStyleElement = dot("head").el("style", style);
+					else 
+						dot(componentStyleElement).t("\r\n" + style);
+					
+				}
+
+				// Adding the component to dot.
+				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
 				dot[prms.name] = _p[prms.name] = function(){
-					var obj = new function(){};
-					var ret = prms.builder.apply(obj, arguments);
-					ret = this._appendOrCreateDocument(ret instanceof _D ? ret : dot.h(ret));
-					obj.element = obj.element || ret.getLast();
-					prms.ready && setTimeout(function(){prms.ready.apply(obj)}, 0);
+					var obj = new CC();
+					prms.created && prms.created.apply(obj, arguments);
+					var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
+					ret = ret instanceof _D ? ret : dot.h(ret);
+					var lst = ret.getLast();
+					(!lst || (lst.parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
+					ret = this._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
+					obj.$el = obj.$el || lst;
+					obj.$el.dotComponent = obj;
+					prms.ready && sT(function(){
+						prms.ready.apply(obj)
+					}, 0);
 					return ret;
 				}
 			}()) : ERR("CC", [prms.name])
@@ -527,6 +692,7 @@ var dot = (function(){
 		//_p[prms.name].prototype
 	};
 
+	// TODO: might remove this in v4+
 	dot.removeComponent = function(name){
 		if(componentNames[name]){
 			delete componentNames[name];
@@ -665,7 +831,7 @@ var dot = (function(){
 		"charoff",
 		"checked",
 		"cite", //*
-		"class",
+		//"class",
 		"classid",
 		"clear",
 		"codebase",
@@ -878,7 +1044,7 @@ var dot = (function(){
 
 	_p.data = dot.data = function(){
 		var T = this;
-		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] !== "object") && T._document && T._document.lastChild && T._document.lastChild.tagName == "OBJECT"))
+		if(arguments.length > 1 || (arguments.length == 1 && (typeof arguments[0] !== "object") && T.__document && T.__document.lastChild && T.__document.lastChild.tagName == "OBJECT"))
 			return dot.dataA.apply(T, arguments);
 		return dot.dataE.apply(T, arguments);
 	}
@@ -888,8 +1054,8 @@ var dot = (function(){
 
 	_p.cite = dot.cite = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "BLOCKQUOTE" 
 				|| tagType == "DEL" 
 				|| tagType == "INS" 
@@ -901,8 +1067,8 @@ var dot = (function(){
 			
 	_p.form = dot.form = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "BUTTON" 
 				|| tagType == "FIELDSET" 
 				|| tagType == "INPUT" 
@@ -919,10 +1085,19 @@ var dot = (function(){
 		return T.el("form", arg);
 	};
 
+	_p.class = _p.classA = function(value){
+		var cp = this.__classPrefix;
+		if(!cp){
+			var el = this.getLast();
+			el && this.__classedElements.push(el);
+		}
+		return this.attr("class", (cp ? "dot-" + (cp).toString(16) + "-" : "" ) + value);
+	}
+
 	_p.label = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "TRACK")
 			return T.attr("label", arg);
 		}
@@ -931,8 +1106,8 @@ var dot = (function(){
 	
 	_p.span = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "COL" 
 			|| tagType == "COLGROUP")
 			return T.attr("span", arg);
@@ -942,8 +1117,8 @@ var dot = (function(){
 	
 	_p.summary = function(arg){
 		var T = this;
-		if(arg && (typeof arg !== "object") && T._document && T._document.lastChild){
-			var tagType = T._document.lastChild.tagName;
+		if(arg && (typeof arg !== "object") && T.__document && T.__document.lastChild){
+			var tagType = T.__document.lastChild.tagName;
 			if(tagType == "TABLE")
 			return T.attr("summary", arg);
 		}
@@ -955,7 +1130,7 @@ var dot = (function(){
 	 * @param {string} value - The value to be set.
 	 */
 	_p.setVal = function(value){
-		var last = this.getLast() || this._document;
+		var last = this.getLast() || this.__document;
 		if(!last) return this;
 		if(last.parentNode && last.parentNode.tagName != DOCEL) last = last.parentNode;
 		
@@ -984,7 +1159,7 @@ var dot = (function(){
 	}
 
 	_p.getVal = function(){
-		var element = this.lastNode || this._document;
+		var element = this.__lastNode || this.__document;
 		if(!element || element.nodeType !== 1) return undefined;
 
 		if ( element.type == "checkbox" ) {
@@ -1010,173 +1185,19 @@ var dot = (function(){
 	//Fill in all the other fields.
 	//if(Object.create) dot.prototype = Object.create(_p);
 	// dot.prototype.constructor = dot;
-	dot._document = null;
-	dot._if = null;
-	dot._pendingCalls = [];
-	dot.anonAttrFuncs = {};
+	dot.__document = null;
+	dot.__if = null;
+	dot.__pendingCalls = [];
+	dot.__anonAttrFuncs = {};
 	var _anonFuncCounter = 0;
 
 	// ROUTING:
-
+	// TODO: Put this in the register hook for router.
+	// TODO: Test to make sure allRouters get cleared when a nested router gets deleted.
 	var routerEventSet = false;
-	var allRouters = {};
+	var allRouters = {}; 
 	var routerId = 1;
 	var mayRedirect = false;
-
-	var routerNavigate = function(path, noHistory, force){
-		var t = this;
-		//console.log("NAVIGATING", path);
-		// Step 1: parse the path into a route queue:
-		path = path || "";
-		if(typeof path != "string") path = path + "";
-		var hashPath = path;
-		if(path.indexOf("#") != -1) hashPath = path.split("#")[1];
-		
-		var hashParts = path.split("#");
-		var allQueues = [];
-		
-		// Route navigating.
-		var routeQueue = hashParts[0].split("?")[0].split("/");
-		routeQueue[0] === "" ? routeQueue.shift() : 0;
-		allQueues.push(routeQueue);
-
-		// Hash navigating.
-		var tryHashQueue = hashParts.length > 1 ? hashParts[1].split("/") : null;
-		tryHashQueue ? ((tryHashQueue[0] === "" ? tryHashQueue.shift() : 0)) : 0;
-		tryHashQueue ? ((routeQueue.length > 1 ? allQueues.push(tryHashQueue) : allQueues.unshift(tryHashQueue))) : 0;
-
-		var cancel = false;
-		navParams = {
-			cancel: function(){cancel = true; navParams.wasCancelled = true;},
-			element: t.element,
-			httpResponse: null,
-			isNew: true,
-			params: {},
-			path: path,
-			title: null
-		};
-
-		// Step 2: determine the last router that is correctly loaded.
-
-		// var deepestRouter = null;
-		var bestRoute = null;
-		// Loop through the router stack from start to finish to find the deepest router and the best route to take.
-		// for(var i = 0; i < routerOutletStack.length; i++){
-
-		// var candidate = routerOutletStack[i];
-		// Find the an available route that matches.
-		// bestRoute = null;
-		for(var q in allQueues){
-			var Q = allQueues[q];
-			var rFound = false;
-			for(var r in t.params.routes){
-				rFound = true;
-				var nextRoute = t.params.routes[r];
-				var prms = {};
-				var rs = 0;
-				var ps = 0;
-				var lastRn = null;
-				while(1){
-					var rSn = nextRoute.segments[rs] || null;
-					var pSn = Q[ps] || null;
-					if(rSn === null && pSn === null) break;
-					if(rSn === null && pSn !== null || rSn !== null && pSn === null) {
-						rFound = false;
-						break;
-					}
-					if(rSn === null && lastRn == "*") rSn = "*";
-
-					if(rSn == pSn || rSn == "+" || rSn == "*"){ // It's the route, or it's a wildcard.
-						rs++;
-					}
-					else if(rSn.length > 2 && rSn.charAt(0) == "{" && rSn.charAt(rSn.length - 1) == "}"){ // It's a parameterized route.
-						rs++;
-						prms[rSn.substring(1, rSn.length - 1)] = pSn;
-					}
-					else if(lastRn != "*"){ // If the route doesn't match but the previous term was a super-wildcard, do nothing. Else, break.
-						rFound = false;
-						break;
-					}
-					ps++;
-					lastRn = rSn;
-				}
-				if(rFound){
-					bestRoute = nextRoute;
-					navParams.params = prms;
-					break;
-				}
-			}
-			if(rFound){
-				if(Q == routeQueue) {
-					if(!history.pushState && mayRedirect) {
-						window.location.hash = path;
-						window.location.pathname = "/";
-						return;
-					}
-					break;
-				};
-				if(Q == tryHashQueue) {
-					path = hashPath;
-					navParams.path = path;
-					if(history.pushState) {
-						window.location.hash = "";
-						history.replaceState({"pageTitle":document.title, "path": path}, document.title, path);
-					}
-					break;
-				};
-			}
-		}
-
-		navParams.isNew = !(!force && t.currentRoute == bestRoute && (!t.currentParams || t.currentParams == navParams.params || JSON.stringify(t.currentParams) === JSON.stringify(navParams.params)));
-		
-		t.params.onNavigateInit && t.params.onNavigateInit(navParams);
-
-		if(!navParams.isNew || cancel) return navParams;
-		t.currentRoute = bestRoute;
-		t.currentParams = navParams.params;
-
-		
-		var ro = t.outlet;
-		dot(ro).empty();
-		var navId = ++t.navId;
-
-
-		//if(deepestRouter == null) return this;
-		if(routeQueue.length == 0) return navParams;
-		if(bestRoute == null) return navParams;
-
-		navParams.title = bestRoute.title;
-
-		if(typeof bestRoute.component == "string"){
-			_get(bestRoute.component, function(result){
-				var text = result.responseText;
-				navParams.httpResponse = result;
-				if(navId != t.navId) return navParams;
-				t.params.onResponse && t.params.onResponse(navParams);
-				if(cancel) returnnavParams;
-				if(bestRoute.component.split("?")[0].split("#")[0].toLowerCase().indexOf(".js") == bestRoute.component.length - 3){
-					try{
-						text = Function("var exports=null,module={},route=arguments[0];" + text + "\r\nreturn module.exports || exports;")(navParams);
-					}
-					catch(e){
-						//e.fileName = bestRoute.component;
-						console.error(e);
-					}
-				}
-				dot(ro).h(text);
-				t.params.onComplete && t.params.onComplete(navParams);
-			}, function(result){
-				navParams.httpResponse = result;
-				t.params.onError && t.params.onError(navParams);
-			});
-		}
-		else{
-			dot(ro).h(bestRoute.component.call(dot, navParams));
-			t.params.onComplete && t.params.onComplete(navParams);
-		}
-
-		return navParams;
-	}
 
 	function setupPopupFunction(){
 		!routerEventSet && (routerEventSet = true) ? window.onpopstate = function(e){
@@ -1204,7 +1225,7 @@ var dot = (function(){
 		 */
 		builder: function(params){
 			var t = this;
-			t.navigate = function(p, nh, f){return routerNavigate.call(t, p, nh, f)};
+			//t.navigate = function(p, nh, f){return routerNavigate.call(t, p, nh, f)};
 			t.navId = 0;
 			t.currentRoute = null;
 			t.currentParams = null;
@@ -1213,7 +1234,7 @@ var dot = (function(){
 			if(!params || !params.routes) {ERR("R"); return dot};
 			for(var i = 0; i < t.params.routes.length; i++){
 				var r = t.params.routes[i];
-				if(!r.path) {ERR("R"); return dot};
+				if(r.path === null || r.path === undefined) {ERR("R"); return dot};
 				r.segments = r.path.split("/");
 			}
 			if(params.autoNavigate === undefined) params.autoNavigate = true;
@@ -1237,6 +1258,165 @@ var dot = (function(){
 
 			if(history.pushState) history.replaceState({"pageTitle":params.title || document.title, "path": params.path}, params || document.title, params.path);
 			else window.location.hash = params.path;
+		},
+		methods: {
+			navigate: function(path, noHistory, force){
+				var t = this;
+				//console.log("NAVIGATING", path);
+				// Step 1: parse the path into a route queue:
+				path = path || "";
+				if(typeof path != "string") path = path + "";
+				var hashPath = path;
+				if(path.indexOf("#") != -1) hashPath = path.split("#")[1];
+				
+				var hashParts = path.split("#");
+				var allQueues = [];
+				
+				// Route navigating.
+				var routeQueue = hashParts[0].split("?")[0].split("/");
+				routeQueue[0] === "" ? routeQueue.shift() : 0;
+				allQueues.push(routeQueue);
+		
+				// Hash navigating.
+				var tryHashQueue = hashParts.length > 1 ? hashParts[1].split("/") : null;
+				tryHashQueue ? ((tryHashQueue[0] === "" ? tryHashQueue.shift() : 0)) : 0;
+				tryHashQueue ? ((routeQueue.length > 1 ? allQueues.push(tryHashQueue) : allQueues.unshift(tryHashQueue))) : 0;
+		
+				var cancel = false;
+				navParams = {
+					cancel: function(){cancel = true; navParams.wasCancelled = true;},
+					element: t.element,
+					httpResponse: null,
+					isNew: true,
+					params: {},
+					path: path,
+					title: null
+				};
+		
+				// Step 2: determine the last router that is correctly loaded.
+		
+				// var deepestRouter = null;
+				var bestRoute = null;
+				// Loop through the router stack from start to finish to find the deepest router and the best route to take.
+				// for(var i = 0; i < routerOutletStack.length; i++){
+		
+				// var candidate = routerOutletStack[i];
+				// Find the an available route that matches.
+				// bestRoute = null;
+				for(var q in allQueues){
+					var Q = allQueues[q];
+					var rFound = false;
+					for(var r in t.params.routes){
+						rFound = true;
+						var nextRoute = t.params.routes[r];
+						var prms = {};
+						var rs = 0;
+						var ps = 0;
+						var lastRn = null;
+						while(1){
+							var rSn = nextRoute.segments[rs] || null;
+							var pSn = Q[ps] || null;
+							if(rSn === null && pSn === null) break;
+							if(rSn === null && pSn !== null || rSn !== null && pSn === null) {
+								rFound = false;
+								break;
+							}
+							if(rSn === null && lastRn == "*") rSn = "*";
+		
+							if(rSn == pSn || rSn == "+" || rSn == "*"){ // It's the route, or it's a wildcard.
+								rs++;
+							}
+							else if(rSn.length > 2 && rSn.charAt(0) == "{" && rSn.charAt(rSn.length - 1) == "}"){ // It's a parameterized route.
+								rs++;
+								prms[rSn.substring(1, rSn.length - 1)] = pSn;
+							}
+							else if(lastRn != "*"){ // If the route doesn't match but the previous term was a super-wildcard, do nothing. Else, break.
+								rFound = false;
+								break;
+							}
+							ps++;
+							lastRn = rSn;
+						}
+						if(rFound){
+							bestRoute = nextRoute;
+							navParams.params = prms;
+							break;
+						}
+					}
+					if(rFound){
+						if(Q == routeQueue) {
+							if(!history.pushState && mayRedirect) {
+								window.location.hash = path;
+								window.location.pathname = "/";
+								return;
+							}
+							break;
+						};
+						if(Q == tryHashQueue) {
+							path = hashPath;
+							navParams.path = path;
+							if(history.pushState) {
+								window.location.hash = "";
+								history.replaceState({"pageTitle":document.title, "path": path}, document.title, path);
+							}
+							break;
+						};
+					}
+				}
+		
+				navParams.isNew = !(!force && t.currentRoute == bestRoute && (!t.currentParams || t.currentParams == navParams.params || JSON.stringify(t.currentParams) === JSON.stringify(navParams.params)));
+				
+				t.params.onNavigateInit && t.params.onNavigateInit(navParams);
+		
+				if(!navParams.isNew || cancel) return navParams;
+				t.currentRoute = bestRoute;
+				t.currentParams = navParams.params;
+		
+				
+				var ro = t.outlet;
+				dot(ro).empty();
+				var navId = ++t.navId;
+		
+		
+				//if(deepestRouter == null) return this;
+				if(routeQueue.length == 0) return navParams;
+				if(bestRoute == null) return navParams;
+		
+				navParams.title = bestRoute.title;
+		
+				if(typeof bestRoute.component == "string"){
+					_get(bestRoute.component, function(result){
+						var text = result.responseText;
+						navParams.httpResponse = result;
+						if(navId != t.navId) return navParams;
+						t.params.onResponse && t.params.onResponse(navParams);
+						if(cancel) returnnavParams;
+						if(bestRoute.component.split("?")[0].split("#")[0].toLowerCase().indexOf(".js") == bestRoute.component.length - 3){
+							try{
+								text = Function("var exports=null,module={},route=arguments[0];" + text + "\r\nreturn module.exports || exports;")(navParams);
+							}
+							catch(e){
+								//e.fileName = bestRoute.component;
+								console.error(e);
+							}
+						}
+						dot(ro).h(text);
+						t.params.onComplete && t.params.onComplete(navParams);
+					}, function(result){
+						navParams.httpResponse = result;
+						t.params.onError && t.params.onError(navParams);
+					});
+				}
+				else{
+					dot(ro).h(bestRoute.component.call(dot, navParams));
+					t.params.onComplete && t.params.onComplete(navParams);
+				}
+		
+				return navParams;
+			}
+		},
+		deleting: function(){
+			allRouters[this.id]
 		}
 	});
 
@@ -1270,12 +1450,12 @@ var dot = (function(){
 		return this;
 	}
 
-	dot.component("navLink", function(content, href){
+	dot.component({name: "navLink", builder: function(content, href){
 		return dot.a(content).href(href).onclick(function(e){
 			e.preventDefault();
 			dot.navigate(href);
 		});
-	});
+	}});
 
 	// Make all the names available to the dot object.
 	for (var k in _p) {
@@ -1329,5 +1509,10 @@ var dot = (function(){
 	// }
 
 	// Done - return the object.
+
+	dot.css = require('./style-builder');
+
 	return dot;
 }());
+
+module.exports = dot;
