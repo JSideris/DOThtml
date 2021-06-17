@@ -2,18 +2,18 @@
 
 /**
  * Changes:
- * 4.1.2: 
+ * 4.2.0: 
  * 
  * Updates
- * - Added a style builder (formerly, a separate package: dotcss).
- * - Reorganized the repo. New src and lib folders. Cleaned up lots of debug stuff.
- * - Package now available on npm.
- * - Added dot.css (formerly the dotcss package) as a built-in css builder. Documentation to come.
+ * - Integrated dotcss into the style function for components.
+ *   - Styles from dotcss will be applied directly to the elements, not in a style tag.
+ * - Fixed a bug in dotcss where selectors of one character would trigger for "x".indexOf("{}") == "x".length - 2, causing styles to not attach to the element.
  */
 var dot = (function(){
 
 	// Shortcuts:
 	var sT = setTimeout;
+	var str = function(s,v){return (s||"").toString(v)}
 
 	var ERR = function(code){throw "DOThtml usage error code " + code + ". Use an unminified version for more information."};
 	ERR = function(code, params){
@@ -21,7 +21,6 @@ var dot = (function(){
 		throw {
 			"A": "Can't append \"" + params[0] + "\".",
 			"CC": "The name \"" + params[0] + "\" conflicts with an existing DOThtml function.",
-			"CN": "The component name provided is invalid.",
 			"CU": "Invalid usage: a component should at least have a name and a builder function.",
 			"C#": "Component '" + params[0] + "' must return exactly one child node.",
 			"F": "Element \"" + params[0] + "\" not found.",
@@ -57,8 +56,8 @@ var dot = (function(){
 
 	// TOOLS:
 
-	function isF(value){
-		return value && value.constructor && value.call && value.apply;
+	function isF(v){
+		return v && v.constructor && v.call && v.apply;
 	}
 
 	function attachEvent(el, ev, val, a3){
@@ -190,7 +189,7 @@ var dot = (function(){
 	// Prototype for the dot document object.
 	var _p = _D.prototype;
 
-	_p.version = "4.1.2";
+	_p.version = "4.2.0";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
@@ -250,7 +249,7 @@ var dot = (function(){
 					this.__classedElements.push(el);
 				}
 				else{
-					el.className = "dot-" + (cp).toString(16) + "-" + el.className;
+					el.className = "dot-" + str(cp,16) + "-" + el.className;
 				}
 			}
 			if(content.__document) return content.__document.childNodes; //Return all the nodes in here.
@@ -607,89 +606,105 @@ var dot = (function(){
 	var componentNames = {};
 	var componentStyleElement = null;
 	/**
-	 * @param {object} params - Params for the component builder.
-	 * @param {string} params.name - Name of the component (required).
-	 * @param {Function} params.registered - An optional function that gets called once per component after registering in the dot namespace, with the component class passed in as a parameter.
-	 * @param {Function} params.created - An optional function that gets called before the component is created, scoped to the new component object.
-	 * @param {Function} params.builder - A function returning DOThtml (required).
-	 * @param {Function} params.style - An optional function that is called after builder that stylizes .
-	 * @param {Function} params.ready - An optional function called after the element has been added. One parameter will be provided containing the added element.
-	 * @param {Function} params.deleting - An optional function called before the component is deleted.
-	 * @param {Function} params.deleted - An optional function called after the component is deleted.
+	 * @param {object} prms - Params for the component builder.
+	 * @param {string} prms.name - Name of the component (optional). If provided, dot and the vdbo will be extended.
+	 * @param {Function} prms.registered - An optional function that gets called once per component after registering in the dot namespace, with the component class passed in as a parameter.
+	 * @param {Function} prms.created - An optional function that gets called before the component is created, scoped to the new component object.
+	 * @param {Function} prms.builder - A function returning DOThtml (required).
+	 * @param {Function} prms.style - An optional function that is called after builder that stylizes .
+	 * @param {Function} prms.ready - An optional function called after the element has been added. One parameter will be provided containing the added element.
+	 * @param {Function} prms.deleting - An optional function called before the component is deleted.
+	 * @param {Function} prms.deleted - An optional function called after the component is deleted.
 	 */
 	dot.component = function(prms){
 
 		// TODO: generalize this (for routes).
 ;;;		var prmsKeys = Object.keys(prms);
 ;;;		for(var i = 0; i < prmsKeys.length; i++) try{["name", "register", "created", "methods", "props", "builder", "ready", "deleting", "deleted"][prmsKeys[i]];}catch(e){throw prmsKeys[i] + " is not a valid component field."}
+		
+		// Setting this potentially allows automatic code completion to get the method signature from builder. 
+		var comp = prms.builder;
 
-		prms.name ? (
-			(!dot[prms.name] && !_p[prms.name]) ? (function(){
-				componentNames[prms.name] = 1;
-				var CC = function(){}
-				CC.prototype = Object.create(_C.prototype);
-				CC.prototype.__prms = prms;
-				if(prms.methods){
-					eachK(prms.methods, function(k, v){
-						if(!isF(v)) ERR("PF", ["component->methods->..."]);
-						CC.prototype[k] = v;
-					});
+		let n = prms.name;
+		if(!n || (!dot[n] && !_p[n])) {
+			n && (componentNames[n] = 1);
+			var CC = function(){}
+			CC.prototype = Object.create(_C.prototype);
+			CC.prototype.__prms = prms;
+			if(prms.methods){
+				eachK(prms.methods, function(k, v){
+					if(!isF(v)) ERR("PF", ["component->methods->..."]);
+					CC.prototype[k] = v;
+				});
+			}
+			prms.register && prms.register.apply(CC.prototype);
+
+			// Scoped classes and styles.
+			var classNumb = undefined;
+			var st = prms.style;
+			if(st && !isF(st)){
+				// This is the less-preferred method of using component styles.
+
+				classNumb = classPrefix++;
+
+				if(st instanceof string){
+					// TODO: need to parse?
+					// var cssParts = st.split("{");
+					// for(var i = 0; i < cssParts.length; i+=2){
+
+					// }
+					// st.split(".").join(".dot-" + str(classNumb,16) + "-");
 				}
-				prms.register && prms.register.apply(CC.prototype);
-
-				// Scoped classes and styles.
-				var classNumb = undefined;
-				var style = prms.style;
-				if(style){
-					classNumb = classPrefix++;
-
-					if(isF(style)) style = style();
-
-					if(style instanceof string){
-						// TODO: need to parse?
-						// var cssParts = style.split("{");
-						// for(var i = 0; i < cssParts.length; i+=2){
-
-						// }
-						// style.split(".").join(".dot-" + classNumb.toString(16) + "-");
+				else{
+					// Assume json object.
+					var result = "";
+					for(var k in st){
+						result += k + ":" + str(st[k]) + ";"
 					}
-					else{
-						// Assume json object.
-						var keys = Object.keys(style);
-						var result = "";
-						for(var k in keys){
-							var key = keys[k];
-							
-						}
-					}
-
-					if(!componentStyleElement)
-						componentStyleElement = dot("head").el("style", style);
-					else 
-						dot(componentStyleElement).t("\r\n" + style);
-					
+					st = result;
 				}
 
-				// Adding the component to dot.
-				// TODO: might want to only add the component to areas in code that register for it so it doesn't clutter main dot namespace.
-				dot[prms.name] = _p[prms.name] = function(){
-					var obj = new CC();
-					prms.created && prms.created.apply(obj, arguments);
-					var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
-					ret = ret instanceof _D ? ret : dot.h(ret);
-					var lst = ret.getLast();
-					(!lst || (lst.parentNode.childNodes.length > 1)) && ERR("C#", [prms.name]);
-					ret = this._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
-					obj.$el = obj.$el || lst;
-					obj.$el.dotComponent = obj;
-					prms.ready && sT(function(){
-						prms.ready.apply(obj)
-					}, 0);
-					return ret;
+				if(!componentStyleElement)
+					componentStyleElement = dot("head").el("style", st);
+				else 
+					dot(componentStyleElement).t("\r\n" + st);
+				
+			}
+
+			// Adding the component to dot.
+			comp = function(){
+				var obj = new CC();
+				prms.created && prms.created.apply(obj, arguments);
+				var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
+				ret = ret instanceof _D ? ret : dot.h(ret);
+				
+
+				var lst = ret.getLast();
+				(!lst || (lst.parentNode.childNodes.length > 1)) && ERR("C#", [n || "(un-named component)"]);
+				if(classNumb || n) ret = this._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
+				obj.$el = obj.$el || lst;
+				obj.$el.dotComponent = obj;
+
+				if(isF(st)) {
+					// This will be the officially supported way to use dothtml.
+					dot.css.scopeToEl(obj.$el)
+					st.apply(obj, [dot.css]);
+					dot.css.unscope();
 				}
-			}()) : ERR("CC", [prms.name])
-		) : ERR("CN");
+
+				prms.ready && sT(function(){
+					prms.ready.apply(obj)
+				}, 0);
+				return ret;
+			}
+
+			n && (dot[n] = _p[n] = comp);
+		}
+		else ERR("CC", [n || "(un-named component)"]);
+		
 		//_p[prms.name].prototype
+
+		return function(){return comp.apply(dot, arguments)};
 	};
 
 	// TODO: might remove this in v4+
@@ -1091,7 +1106,7 @@ var dot = (function(){
 			var el = this.getLast();
 			el && this.__classedElements.push(el);
 		}
-		return this.attr("class", (cp ? "dot-" + (cp).toString(16) + "-" : "" ) + value);
+		return this.attr("class", (cp ? "dot-" + str(cp,16) + "-" : "" ) + value);
 	}
 
 	_p.label = function(arg){
@@ -1515,4 +1530,4 @@ var dot = (function(){
 	return dot;
 }());
 
-module.exports = dot;
+module && (module.exports = dot);

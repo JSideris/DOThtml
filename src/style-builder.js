@@ -11,21 +11,55 @@
 var dotcss = null;
 
 (function(){
-
-
 	dotcss = function(query){
 		//this.currentCss = "";
-
 		var target = null;
 		if(query){
+			// console.log(query, "?");
 			if(typeof query == "string" ) {
-				if(query.indexOf("{}") == query.length - 2){
+				if(query.length > 2 && query.indexOf("{}") == query.length - 2){
 					query = query.substring(0, query.length - 2);
 					target = [document.createElement("style")];
 					document.head.appendChild(target[0]);
 					target[0].innerHTML = query + "{}";
 				}
-				else target = document.querySelectorAll(query);
+				else {
+					// This is overly complicated, but here is the spiel. 
+					// If there's an element on the scopeStack, it should be used with the querySelectorAll.
+					// BUT, querySelectorAll doesn't actually select the element it's currently on, which is a requirement for dothtml. 
+					// To make matters worse, if we do querySelectorAll on the element's parents, we may accidentally select its siblings!!
+					// To fix this, we get a list from querySelectorAll on the element, then push the element itself to that list 
+					// iff it is in the list of elements queried from its parent. 
+					var s0 = scopeStack[0];
+					if(s0 && s0.parentNode && s0.querySelectorAll){
+						target = s0.querySelectorAll(query);
+						var parentTargets = s0.parentNode.querySelectorAll(query);
+						for(var t = 0; t < parentTargets.length; t++){
+							var T = parentTargets[t];
+							if(T === s0){
+								// console.log(s0.innerHTML);
+								// Unfortunately, we now need to convert the nodelist to an array, so we can add something to it. 
+								// This just gets better and better!
+								var target2 = [s0];
+								for(var e = 0; e < target.length; e++){
+									target2.push(target[e]);
+								}
+
+								target = target2;
+
+								// for(var i in target){
+								// 	console.log(target[i].outerHTML);
+								// }
+
+								break;
+							}
+						}
+					}
+					else{
+						target = document.querySelectorAll(query);
+					}
+					// target = referencePt.querySelectorAll(query);
+				}
 			}
 			if((query instanceof NodeList) || (query instanceof Array)) target = query;
 			if(query instanceof Node) target = [query]; //Doesn't need to be a NodeList. Just iterable.
@@ -43,12 +77,16 @@ var dotcss = null;
 
 	dotcss._floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
 
+	var scopeStack = [];
+
 	function _Builder(target){
 		this.currentCss = "";
 		this.target = target;
 	}
 
-	_Builder.prototype.toString = dotcss.prototype.toString = function(){
+	var _b = _Builder.prototype;
+
+	_b.toString = dotcss.prototype.toString = function(){
 		return this.currentCss;
 	};
 
@@ -62,7 +100,7 @@ var dotcss = null;
 	//	complete: on-complete callback.
 	//	hideStyle: fade, shrink, or normal
 	//	animationStyle: linear or exponential
-	_Builder.prototype.hide = function(){
+	_b.hide = function(){
 		if(this.target){
 			var arg0 = arguments[0] || {};
 			var ops = {};
@@ -131,7 +169,7 @@ var dotcss = null;
 	//	complete: on-complete callback.
 	//	showStyle: fade, grow, or normal
 	//	animationStyle: linear or exponential
-	_Builder.prototype.show = function(){
+	_b.show = function(){
 		if(this.target){
 			var arg0 = arguments[0] || {};
 			var ops = {};
@@ -182,7 +220,7 @@ var dotcss = null;
 		return this;
 	};
 
-	_Builder.prototype.fadeOut = function(duration, complete){
+	_b.fadeOut = function(duration, complete){
 		return this.hide({
 			duration: isNaN(duration) ? 400 : Number(duration), 
 			hideStyle: "fade",
@@ -190,7 +228,7 @@ var dotcss = null;
 		});
 	};
 
-	_Builder.prototype.fadeIn = function(duration, complete){
+	_b.fadeIn = function(duration, complete){
 		return this.show({
 			duration: isNaN(duration) ? 400 : Number(duration), 
 			showStyle: "fade",
@@ -1526,7 +1564,7 @@ var dotcss = null;
 	//Takes the property and generates all the dotcss and builder functions.
 	dotcss._makeFunction = function(prop, jsFriendlyProp, type){
 		//Create the new function.
-		_Builder.prototype[jsFriendlyProp] = function(){
+		_b[jsFriendlyProp] = function(){
 			if(arguments.length == 0) return this;
 			var args = [];
 			for(var i = 0; i < arguments.length; i++) args.push(arguments[i]);
@@ -1554,21 +1592,21 @@ var dotcss = null;
 			for(var u = 0; u < dotcss._allLengthUnits.length; u++){
 				var uu = dotcss._allLengthUnits[u];
 				(function(uu){
-					_Builder.prototype[jsFriendlyProp + (uu.jsName || uu.unit)] = function(){
+					_b[jsFriendlyProp + (uu.jsName || uu.unit)] = function(){
 						for(var i = 0; i < arguments.length; i++) arguments[i] = arguments[i] + uu.unit.toLowerCase();
-						return _Builder.prototype[jsFriendlyProp].apply(this, arguments);
+						return _b[jsFriendlyProp].apply(this, arguments);
 					}
 				})(uu);
 				dotcss._addPropFunctionToDotCssObject(jsFriendlyProp + (uu.jsName || uu.unit));
 			}
 		}
 		
-		//_Builder.prototype[jsFriendlyProp].__proto__ = Object.create(_StyleProperty.prototype);
-		_Builder.prototype[jsFriendlyProp].type = type;
-		_Builder.prototype[jsFriendlyProp].jsFriendlyProp = jsFriendlyProp;
+		//_b[jsFriendlyProp].__proto__ = Object.create(_StyleProperty.prototype);
+		_b[jsFriendlyProp].type = type;
+		_b[jsFriendlyProp].jsFriendlyProp = jsFriendlyProp;
 
 		for (var k in _StyleProperty.prototype) {
-			if(_Builder.prototype[jsFriendlyProp][k] === undefined) _Builder.prototype[jsFriendlyProp][k] = _StyleProperty.prototype[k];
+			if(_b[jsFriendlyProp][k] === undefined) _b[jsFriendlyProp][k] = _StyleProperty.prototype[k];
 		}
 	};
 
@@ -1618,14 +1656,23 @@ var dotcss = null;
 		return new dotcss._Transform();
 	};
 
+	dotcss.scopeToEl = function(el){
+		scopeStack.unshift(el);
+		return this;
+	};
+	dotcss.unscope = function(){
+		scopeStack.shift();
+		return this;
+	};
+
 	//Build dotcss.
 	for(var i = 0; i < dotcss._allProperties.length; i++) dotcss._makeFunction(dotcss._allProperties[i].prop.toLowerCase(), dotcss._allProperties[i].prop.replace(new RegExp("-", "g"), ""), dotcss._allProperties[i].type);
 	for(var i = 0; i < dotcss._allTransforms.length; i++) dotcss._makeTransformFunction(dotcss._allTransforms[i]);
 	//dotcss = new dotcss();
 
-	// for (var k in _Builder.prototype) {
+	// for (var k in _b) {
 	// 	if(_Builder[k] === undefined) dotcss[k] = _p[k];
 	// }
 })();
 
-module.exports = dotcss;
+module && (module.exports = dotcss);
