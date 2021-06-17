@@ -1,8 +1,8 @@
-/*! DOThtml v4.1.2 | (c) Joshua Sideris | dothtml.org/license */
+/*! DOThtml v4.2.2 | (c) Joshua Sideris | dothtml.org/license */
 
 /**
  * Changes:
- * 4.2.0: 
+ * 4.2.2: 
  * 
  * Updates
  * - Integrated dotcss into the style function for components.
@@ -189,7 +189,7 @@ var dot = (function(){
 	// Prototype for the dot document object.
 	var _p = _D.prototype;
 
-	_p.version = "4.2.0";
+	_p.version = "4.2.2";
 
 	_p._getNewDocument = function(){
 		return document.createElement(DOCEL);
