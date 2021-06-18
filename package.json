@@ -1,6 +1,6 @@
 {
   "name": "dothtml",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "description": "DOThtml is a client-side framework for building single-page applications.",
   "main": "lib/dothtml.min.js",
   "dependencies": {},

@@ -1,16 +1,20 @@
 import dotcss from "./style-builder";
+import eventBus from "./event-bus";
 import { eachK, isF } from "./util";
 
-/*! DOThtml v4.3.0 | (c) Joshua Sideris | dothtml.org/license */
+/*! DOThtml v4.4.0 | (c) Joshua Sideris | dothtml.org/license */
 
 /**
  * Changes:
- * 4.3.0: 
+ * 4.4.0: 
  * 
  * Updates
  * - Integrated dotcss into the style function for components.
  *   - Styles from dotcss will be applied directly to the elements, not in a style tag.
  * - Fixed a bug in dotcss where selectors of one character would trigger for "x".indexOf("{}") == "x".length - 2, causing styles to not attach to the element.
+ * - Removed jquery wrappers.
+ * - Added basic computed props.
+ * - Event bus.
  */
 
 
@@ -58,6 +62,7 @@ var dot = function(targetSelector){
 } 
 
 dot.css = dotcss;
+dot.bus = eventBus;
 
 // TOOLS:
 
@@ -120,7 +125,7 @@ function _D(document, classPrefix) {
 // Prototype for the dot document object.
 var _p = _D.prototype;
 
-_p.version = "4.3.0";
+_p.version = "4.4.0";
 
 _p._getNewDocument = function(){
 	return document.createElement(DOCEL);
@@ -1382,6 +1387,8 @@ dot.component({name: "navLink", builder: function(content, href){
 for (var k in _p) {
 	if(dot[k] === undefined) dot[k] = _p[k];
 }
+
+
 
 // BINDINGS:
 // function _B(value){
