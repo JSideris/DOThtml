@@ -1,6 +1,8 @@
 
+import {jest} from '@jest/globals';
 //var dot = require("../lib/dothtml.min");
-var dot = require("../src/index");
+//var dot = require("../src/index");
+import dot from "../src/index";
 // console.log(JSON.stringify(dot).substring(0, 100));
 // console.log(dot);
 
@@ -435,6 +437,12 @@ function addTest(description, testFunc, expected, testTimeout){
 		});
 
 	}catch(e){ console.error(e);}
+
+	// Nameless components (exports):
+	addTest("Nameless component.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return dot.div(comp(":)")) }, "<div><p>:)</p></div>");
+	addTest("Nameless component as a dot function.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return comp(":)") }, "<p>:)</p>" );
+
+	// Named components (extend dot):
 	addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
 	addTest("Std params component, nested.", function(){return dot.div(2).comp_std().div(3)}, "<div>2</div><div><div>1</div></div><div>3</div>");
 	addTest("Std prams component beside markup.", function(){return dot.h(2).comp_std().h(3)}, "2<div><div>1</div></div>3");
@@ -457,17 +465,46 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Instantiate comp w/ method.", function(){return dot.comp_methods_basic()}, "<div>123</div>");
 	addTest("Method gets called in ready function.", function(){return dot.comp_methods_basic(true)}, "<div>abc</div>"); // TODO: this functionality will soon be removed in favor of params.
 	
+	// Computed
+	addTest("Computed property.", function(){let comp = dot.component({builder: function(firstName,lastName){this.firstName = firstName; this.lastName = lastName; return dot.p(this.fullName.toUpperCase())}, computed: {fullName: function(){console.log("GETTING COMPUTED PROP!");return this.firstName + " " + this.lastName;}}});return dot.h(comp("J","S")).h(comp("1","2"));},"<p>J S</p><p>1 2</p>");
+	// TODO: setup this test and get it working.
+	// addTest("Computed property w/ updated dependency.", function(){
+	// 	let comp = dot.component({
+	// 		builder: function(firstName,lastName){this.firstName = firstName; this.lastName = lastName; return dot.p(this.fullName.toUpperCase())}, 
+	// 		computed: {
+	// 			fullName: function(){
+	// 				console.log("GETTING COMPUTED PROP!");
+	// 				return this.firstName + " " + this.lastName;
+	// 			}
+	// 		}
+	// 	});
+	// 	return dot.h(comp("J","S"));
+	// },"<p>J S</p>");
+
+
+	// Events // TODO: get these working.
+	// addTest(
+	// 	"Named events work.", 
+	// 	function(){
+	// 		let comp = dot.component({
+	// 			builder: function(a,b){this.a = a; this.b = b; return dot.p(a+b)}, 
+	// 			events: ["sumReady"],
+	// 			methods: {trigger: function(){this.sumReady(this.a+this.b);}}, 
+	// 		});
+	// 		let sumResult = 0;
+	// 		let c = comp(1,2).sumReady(function(v){ console.log("CALLING EVENT!!");sumResult = v});
+	// 		c.trigger();
+	// 		return dot.p(sumResult);
+	// 	},
+	// 	"<p>3</p>"
+	// );
+
 	// Scoped classes
 	// TODO: the tests work in browser, but seem to happen out of order in jest...
 	// addTest("Component class scope.", function(){return dot.comp_scoped_class()}, "<div class=\"dot-10000-test1\"><div class=\"dot-10000-test2\"></div></div>");
 	// addTest("Component class scope reuse.", function(){return dot.comp_scoped_class()}, "<div class=\"dot-10000-test1\"><div class=\"dot-10000-test2\"></div></div>");
 	// addTest("Component class scope alt.", function(){return dot.comp_scoped_class_2()}, "<div class=\"dot-10001-test1\"><div class=\"dot-10001-test2\"></div></div>");
 
-
-	// Nameless components (exports):
-	addTest("Nameless component.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return dot.div(comp(":)")) }, "<div><p>:)</p></div>");
-	addTest("Nameless component as a dot function.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return comp(":)") }, "<p>:)</p>" );
-	
 	// Styles
 	addTest("Set style directly", function(){var ret = dot.p(":)").style("width:100px;"); return ret;}, "<p style=\"width:100px;\">:)</p>");
 	addTest("Set style via dotcss", function(){var ret = dot.p(":)").style(dot.css.width(100)); return ret;}, "<p style=\"width:100px;\">:)</p>");
