@@ -9,7 +9,7 @@ const _e = EventBus.prototype;
 
 _e._checkAddEvent = function(event){
     var e = this._callbacks[event];
-    if(!e) e = this._callbacks[event] = [];
+    if(!e) this._callbacks[event] = e = [];
     return e;
 
 }
