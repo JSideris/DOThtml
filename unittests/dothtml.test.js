@@ -466,7 +466,7 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Method gets called in ready function.", function(){return dot.comp_methods_basic(true)}, "<div>abc</div>"); // TODO: this functionality will soon be removed in favor of params.
 	
 	// Computed
-	addTest("Computed property.", function(){let comp = dot.component({builder: function(firstName,lastName){this.firstName = firstName; this.lastName = lastName; return dot.p(this.fullName.toUpperCase())}, computed: {fullName: function(){console.log("GETTING COMPUTED PROP!");return this.firstName + " " + this.lastName;}}});return dot.h(comp("J","S")).h(comp("1","2"));},"<p>J S</p><p>1 2</p>");
+	addTest("Computed property.", function(){let comp = dot.component({builder: function(firstName,lastName){this.firstName = firstName; this.lastName = lastName; return dot.p(this.fullName.toUpperCase())}, computed: {fullName: function(){return this.firstName + " " + this.lastName;}}});return dot.h(comp("J","S")).h(comp("1","2"));},"<p>J S</p><p>1 2</p>");
 	// TODO: setup this test and get it working.
 	// addTest("Computed property w/ updated dependency.", function(){
 	// 	let comp = dot.component({
@@ -654,19 +654,6 @@ function addTest(description, testFunc, expected, testTimeout){
 	// CURRENTLY UNDEFINED:
 	//addTest("Two routers.", function(){return dot.router(routes, true).router(routes, true).navigate("1")}, "<dothtml-router></dothtml-router><dothtml-router><h1>Page 1.</h1></dothtml-router>");
 	// - Add test case for ensuring routers are removed from the allRouters object after calling empty().
-
-	//jQuery wrappers
-	// if(window.jQuery){
-	// 	addHeader("jQuery Wrappers");
-	// 	addTest("jQuery, set CSS.", function(){return dot.div().$css("color", "black");}, "<div style=\"color: black;\"></div>");
-	// 	addTest("jQuery, reset CSS.", function(){return dot.div().$css("color", "black").$css("color", "red");}, "<div style=\"color: red;\"></div>");
-	// 	addTest("jQuery, set CSS on h.", function(){return dot.h(1).$css("color", "black");}, "1");
-	// 	addTest("jQuery, set CSS inside h.", function(){return dot.h(dot.$css("color", "black").h(1));}, "1");
-	// 	addTest("jQuery, set CSS inside h 2.", function(){return dot.div(dot.h(dot.$css("color", "black").h(1)));}, "<div>1</div>");
-	// 	addTest("jQuery, set CSS inside div.", function(){return dot.div(dot.$css("color", "black"));}, "<div style=\"color: black;\"></div>");
-	// 	addTest("jQuery, set CSS inside nested div.", function(){return dot.div(dot.div(dot.$css("color", "black")));}, "<div><div style=\"color: black;\"></div></div>");
-	// 	addTest("jQuery, set CSS.", function(){return dot.div().$css("color", "black");}, "<div style=\"color: black;\"></div>");
-	// }
 }
 
 //Scripted
@@ -676,23 +663,6 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Script, return dot.", function(){ return dot.script(function(){return 2;}).div(1); }, "<div>1</div>");
 	addTest("Script, return function.", function(){ return dot.script(function(){return function(){return 2};}).div(1); }, "<div>1</div>");
 }
-
-//jQuery helpers
-// if(window.jQuery){
-// 	addHeader("jQuery Helpers");
-// 	addTest("jQuery hide.", function(){return dot.div().$hide()}, "<div style=\"display: none;\"></div>");
-// 	addTest("jQuery hide slow.", function(){return dot.div().$hide(50)}, "<div style=\"display: none;\"></div>", 500);
-// 	addTest("jQuery hide slow, callcack returns dot.", function(){return dot.div().$hide(50, function(){return dot.div()})}, "<div style=\"display: none;\"></div><div></div>", 500);
-// 	addTest("jQuery hide slow, callcack returns dot, internal",
-// 		function(){
-// 			return dot.div(dot.$hide(50, function(){
-// 				return dot.div();
-// 			}));
-// 		}, "<div style=\"display: none;\"><div></div></div>", 500);
-// 	addTest("jQuery hide slow, callcack is dot.", function(){return dot.div().$hide(50, dot.div())}, "<div style=\"display: none;\"></div><div></div>", 500);
-// 	addTest("jQuery hide slow, callcack is dot, internal.", function(){return dot.div(dot.$hide(50, dot.div()));}, "<div style=\"display: none;\"><div></div></div>", 500);
-// 	addTest("jQuery hide slow, callcack is dot, internal, after div.", function(){return dot.div(dot.div().$hide(50, dot.div()));}, "<div><div style=\"display: none;\"></div><div></div></div>", 500);
-// }
 
 //Wait
 {
@@ -721,11 +691,6 @@ function addTest(description, testFunc, expected, testTimeout){
 	//addTest("Waitception, late, deep class.", function(){ return dot.div().wait(10, dot.wait(10, dot["class"](1)))}, "<div class=\"1\"></div>", 500); //This one fails. Not sure if I should support it though.
 	addTest("Waitception, late.", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 25);
 	addTest("Waitception, late, short inner interval.", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 50);
-	// if(window.jQuery){
-	// 	addTest("Wait then $hide dot.", function(){return dot.div().wait(50, dot.$hide())}, "<div style=\"display: none;\"></div>", 500);
-	// 	addTest("Wait then $hide function.", function(){return dot.div().wait(50, function(){return dot.$hide()})}, "<div style=\"display: none;\"></div>", 500);
-	// 	addTest("Wait then $hide dot, internal.", function(){return dot.div(dot.wait(50, dot.$hide()))}, "<div style=\"display: none;\"></div>", 500);
-	// }
 }
 
 // CSS

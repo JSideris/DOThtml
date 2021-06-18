@@ -27,7 +27,6 @@ ERR = function(c, p){
 		"CU": "Invalid usage: a component should at least have a name and a builder function.",
 		"C#": "Component '" + p[0] + "' must return exactly one child node.",
 		"F": "Element \"" + p[0] + "\" not found.",
-		"J": "Can't use jQuery wrappers without jQuery.",
 		"R": "Router must be passed a JSON object that contains an 'routes' array containing objects with a 'path', 'title', and 'component'.",
 		"S": "SVG is not supported by DOThtml.",
 		"XS": "Expected a string.",
@@ -92,70 +91,6 @@ function createAttribute(attribute){
 	_p[attribute] = _p[attribute + "A"] = function(value){return this.attr(attribute, value);}
 };
 
-function createJQueryWrapper(name){
-	_p["$" + name] = function(){
-		this.check$();
-		var jo = jQuery(this._getLastChildOrNull()); // Get this first because a timeout tag is going to be added.
-		
-		var timeoutDot = null;
-		var timeoutNode = null;
-		
-		//Replace function args with a custom wrapper.
-		for(var i = 0; i < arguments.length; i++){
-			var arg = arguments[i];
-			if(arg instanceof _D){
-				var dot = arg;
-				arg = function(){return dot;}
-			}
-			if(isF(arg)){
-				timeoutDot = this.el(DEFEL);
-				timeoutNode = timeoutDot.__document.lastChild;
-				(function(arg, args, timeoutNode, timeoutDot){
-					args[i] = function(){
-						var ret = timeoutDot._appendOrCreateDocument(arg, null, timeoutNode);
-						timeoutNode.parentElement.removeChild(timeoutNode);
-						//timeoutNode.remove(); //Doesn't work in IE.
-					};
-				})(arg, arguments, timeoutNode, timeoutDot);
-				break; //First function is assumed to be the callback.
-			}
-		}
-		
-		var retDOT = timeoutDot || this;
-		if(this.__document){
-			
-			jo[name].apply(jo, arguments);
-			//var jqargs = arguments;
-			//sT(function(){jo[name].apply(jo, jqargs);}, 0);
-			return retDOT;
-		}
-		else{
-			
-			var pD = (retDOT.__pendingCalls.length > 0 ? retDOT : new _D(retDOT.__document, retDOT.__classPrefix));
-			if(!pD.__pendingCalls) pD.__pendingCalls = [];
-			pD.__pendingCalls.push({type: "jQuery wrapper", name: name, params: arguments});
-			return pD;
-		}
-	}
-};
-
-function createJQueryEventHandler(name){
-	_p["$" + name] = function(handler){
-		this.check$();
-		if(this.__document){
-			var jo = jQuery(this._getLastChildOrNull());
-			jo[name](handler);
-			return this;
-		}
-		else{
-			var pD = (this.__pendingCalls.length > 0 ? this : new _D(this.__document, this.__classPrefix));
-			if(!pD.__pendingCalls) pD.__pendingCalls = [];
-			pD.__pendingCalls.push({type: "jQuery event", name: name, params: arguments});
-			return pD;
-		}
-	}
-};
-
 // Compatibility:
 var Node = window.Node;
 if(!Node){
@@ -173,7 +108,7 @@ function _D(document, classPrefix) {
 	var T = this;
 	T.__document = document;
 	T.__if = null;
-	T.__pendingCalls = []; //Allows you to set parent attributes from children. Also allows for jquery helper calls.
+	T.__pendingCalls = []; //Allows you to set parent attributes from children.
 	T.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
 
 	T.__lastNode = document ? document.lastChild : null;
@@ -215,7 +150,7 @@ _p.toString = function(){
 	else return "";
 }
 
-//before is passed in so that attributes or jquery wrappers can be associated with before's sibling, instead of inheritingParent, the default.
+//before is passed in so that attributes can be associated with before's sibling, instead of inheritingParent, the default.
 _p._evalContent = function(content, pendingCalls){
 	if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
 		var nDot = new _D(this._getNewDocument(), this.__classPrefix);
@@ -278,14 +213,6 @@ _p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 				else {
 					attachEvent(pendingCallTarget, call.name, call.params[0], call.arg3);
 				}
-			}
-			else if(call.type == "jQuery wrapper"){
-				var jo = jQuery(pendingCallTarget);
-				jo[call.name].apply(jo, call.params);
-			}
-			else if(call.type == "jQuery event"){
-				var jo = jQuery(pendingCallTarget);
-				jo[call.name](handler);
 			}
 			else if(call.type == "wait"){
 				call.callback();
@@ -643,7 +570,6 @@ dot.component = function(prms){
 		});
 
 		eachK(prms.computed, function(k, v){
-			console.log("ADDING " + k);
 			Object.defineProperty(CC.prototype, k, {
 				enumerable: true,
 				get: isF(v) ? v : ERR("XF")
@@ -1021,48 +947,9 @@ var allAttributes = [
 	//"summaryA"
 ];
 
-var allJQueryWrappers = [
-	"animate",
-	"css",
-	"empty",
-	"fadeIn",
-	"fadeOut",
-	"fadeTo",
-	"hide",
-	"show"
-];
-
-var allJQueryEventHandlers = [
-	"blur",
-	"change",
-	"click",
-	"dblclick",
-	"focus",
-	"focusin",
-	"focusout",
-	"hover",
-	"keydown",
-	"keypress",
-	"keyup",
-	"mousedown",
-	"mouseenter",
-	"mouseleave",
-	"mousemove",
-	"mouseout",
-	"mouseover",
-	"mouseup",
-	"one",
-	"resize",
-	"scroll",
-	"select",
-	"submit"
-];
-
 var i;
 for(i in allTags) createElement(allTags[i]);
 for(i in allAttributes) createAttribute(allAttributes[i]);
-for(i in allJQueryWrappers) createJQueryWrapper(allJQueryWrappers[i]);
-for(i in allJQueryEventHandlers) createJQueryEventHandler(allJQueryEventHandlers[i]);
 
 //Hyphenated Attributes.
 _p["acceptCharset"] = _p["accept-charset"] = function(value){return this.attr("accept-charset", value);};
@@ -1215,12 +1102,6 @@ _p.getVal = function(){
 		return element.value;
 	}
 }
-
-//Jquery wrappers
-
-_p.check$ = function(){
-	if(!jQuery) ERR("J");
-};
 
 //Fill in all the other fields.
 //if(Object.create) dot.prototype = Object.create(_p);
