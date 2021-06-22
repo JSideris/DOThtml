@@ -3,12 +3,14 @@ import eventBus from "./event-bus";
 import { eachK, isF } from "./util";
 import {addComponent, removeComponent, dotReady} from "./component";
 import ERR from "./err";
+import ObservableArray from "./observable-array";
 
-/*! DOThtml v4.4.0 | (c) Joshua Sideris | dothtml.org/license */
+var v = "4.5.0";
+
+/*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
 /**
  * Changes:
- * 4.4.0: 
  * 
  * Updates
  * - Integrated dotcss into the style function for components.
@@ -17,6 +19,8 @@ import ERR from "./err";
  * - Removed jquery wrappers.
  * - Added basic computed props.
  * - Event bus.
+ * - Added advanced binding to data.
+ * - Added advanced binding to Arrays.
  */
 
 
@@ -47,6 +51,7 @@ var dot = function(targetSelector){
 
 dot.css = dotcss;
 dot.bus = eventBus;
+dot.__currentArgCallback = [];
 
 // TOOLS:
 
@@ -111,7 +116,7 @@ var _p = _D.prototype;
 
 dotReady(dot, _p, _D);
 
-_p.version = "4.4.0";
+_p.version = v;
 
 _p._getNewDocument = function(){
 	return document.createElement(DOCEL);
@@ -182,13 +187,32 @@ _p._evalContent = function(content, pendingCalls){
 
 _p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 	var T = this;
-	//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. 
-	parentEl = (beforeNode ? beforeNode.parentNode : null) || parentEl || T.__document || T._getNewDocument();
+	//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. )
+	parentEl = (beforeNode && isNaN(beforeNode) ? beforeNode.parentNode : null) || parentEl || T.__document || T._getNewDocument();
 	
+	if(!isNaN(beforeNode)){
+		beforeNode = parentEl.childNodes[beforeNode];
+	}
+
 	var nd = T.__document === parentEl ? T : new _D(parentEl, T.__classPrefix);
 	nd.__if = T.__if;
 	var pendingCalls = []; //This will populate with pending calls.
-	var eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
+	
+	var eContent;
+	if(isF(content)){
+		dot.__currentArgCallback.push({f:content,e:parentEl})
+		try{
+			eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
+		}
+		finally{
+			dot.__currentArgCallback.pop();
+		}
+	}
+	else{
+		eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
+	}
+
+
 	for(var i = 0; i < pendingCalls.length; i++){
 		var call = pendingCalls[i];
 		//Three possibilities.
@@ -324,12 +348,38 @@ _p.iterate = function(iterations, callback, params){
 	return target;
 };
 
-_p.each = function(array, callback){
+_p.each = function(array, callback, forceNoDeferred){
 	var target = this;
-	var keys = Object.keys(array);
-	for(var i = 0; i < keys.length; i++){
-		var k = keys[i];
-		target = target._appendOrCreateDocument(callback(array[k], k));
+
+	if(isF(array)){
+		if(!forceNoDeferred){
+			return target.defer(function(v){
+				v.each(array, callback, true);
+			});
+		}
+		// console.log(this.__document);
+		var func = array;
+		//target = target._appendOrCreateDocument();
+		dot.__currentArgCallback.push({f:callback,d:target})
+		try{
+			array = func();
+		}
+		finally{
+			dot.__currentArgCallback.pop();
+		}
+	}
+
+	if(array instanceof Array || array instanceof ObservableArray){
+		for(var i = 0; i < array.length; i++){
+			target = target._appendOrCreateDocument(callback(array[i], i));
+		}
+	}
+	else{
+		var keys = Object.keys(array);
+		for(var i = 0; i < keys.length; i++){
+			var k = keys[i];
+			target = target._appendOrCreateDocument(callback(array[k], k));
+		}
 	}
 	return target;
 };

@@ -1,5 +1,20 @@
 import { eachK, isF } from "./util";
 import ERR from "./err";
+import ObservableArray from "./observable-array";
+
+/** How it works:
+ * 
+ * _C represents the prototype for all components.
+ * You create a component with dot.component().
+ * This creates a new class (CC), which acts as the prototype to that component.
+ * The prototype of CC is set to a new _C.
+ * Instantiating the component creates a new CC.
+ * This CC is the `this` for each method of the component.
+ * 
+ * 
+ * */ 
+
+
 
 function _C(){
 	this.$el = null;
@@ -39,8 +54,8 @@ var componentStyleElement = null;
 export function addComponent(prms){
 
 	// TODO: generalize this (for routes).
-;;;		var prmsKeys = Object.keys(prms);
-;;;		for(var i = 0; i < prmsKeys.length; i++) try{["name", "register", "created", "methods", "events", "props", "computed", "builder", "ready", "deleting", "deleted"][prmsKeys[i]];}catch(e){throw prmsKeys[i] + " is not a valid component field."}
+;;; var prmsKeys = Object.keys(prms);
+;;;	for(var i = 0; i < prmsKeys.length; i++) try{["name", "register", "created", "methods", "events", "props", "computed", "builder", "ready", "deleting", "deleted"][prmsKeys[i]];}catch(e){throw prmsKeys[i] + " is not a valid component field."}
 	
 	// Setting this potentially allows automatic code completion to get the method signature from builder. 
 	var comp = prms.builder;
@@ -48,7 +63,10 @@ export function addComponent(prms){
 	let n = prms.name;
 	if(!n || (!dot[n] && !_p[n])) {
 		n && (componentNames[n] = 1);
-		var CC = function(){}
+		var CC = function(){
+            this.__rawProps = {};
+            this.__propDependencies = {};
+        }
 		CC.prototype = Object.create(_C.prototype);
 		CC.prototype.__prms = prms;
 
@@ -61,6 +79,66 @@ export function addComponent(prms){
 			if(!isF(v)) ERR("XF");
 			CC.prototype[k] = v;
 		});
+
+        eachK(prms.props, function(k,v){
+            var name = typeof v == "string" ? v : v.name;
+            var dependencies = [];
+            Object.defineProperty(CC.prototype, name, {
+                configurable: false,
+                enumerable: false,
+                get: function() {
+                    var ret = this.__rawProps[name];
+                    var cb = dot.__currentArgCallback[dot.__currentArgCallback.length-1];
+                    if(cb){
+                        // This means this getter is being used during the invocation of an arg callback.
+                        // Add it to a collection so that when the value is set, the appropriate component will update.
+                        if(ret instanceof ObservableArray){
+                            ret.addEventListener("itemadded", function(e) {
+                                cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
+                            });
+
+                            ret.addEventListener("itemset", function(e) {
+                                // console.log("Set index %d to %o.", e.index, e.item);
+                                var p = cb.d.__document;
+                                var el = p.childNodes[e.index];
+                                // el.innerHTML = e.item;
+                                p.removeChild(el);
+                                // console.log("SETTING", e.item);
+                                cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
+                                
+                            });
+
+                            ret.addEventListener("itemremoved", function(e) {
+                                cb.d.__document.removeChild(cb.d.__document.childNodes[e.index]);
+                            });
+                        }
+                        else{
+                            var ar = this.__propDependencies[name];
+                            if(!ar) ar = this.__propDependencies[name] = [];
+                            ar.push(cb);
+                        }
+                    }
+                    return ret;
+                },
+                set: function(value) {
+                    // TODO: if this value is set, get the list of dependencies, and update them by calling their dot argument callbacks.
+
+                    var propVal = value;
+                    if(value instanceof Array){
+                        propVal = new ObservableArray(value);
+                    }
+                    this.__rawProps[name] = propVal;
+
+                    var ar = this.__propDependencies[name];
+
+                    for(let i = 0; i < (ar||[]).length; i++){
+                        if(ar[i].e) dot(ar[i].e).empty().h(ar[i].f(propVal));
+                    }
+
+                    return propVal;
+                }
+            });
+        });
 
 		eachK(prms.computed, function(k, v){
 			Object.defineProperty(CC.prototype, k, {

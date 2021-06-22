@@ -33,6 +33,7 @@ function formatHTML(html){
 
 
 function addTest(description, testFunc, expected, testTimeout){
+	// if(description != "Set value in bound array.") return;
 	// let exception = null;
 	// try{
 	// }
@@ -271,6 +272,35 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Autoscope 2 with nest.", function(){ return dot.scopeClass(dot.div(dot.div().class("test2")).class("test")); }, "<div class=\"dot-10002-test\"><div class=\"dot-10002-test2\"></div></div>");
 	
 	addTest("Reset scope.", function(){ dot.resetScopeClass(); return dot.scopeClass(dot.div().class("test")); }, "<div class=\"dot-10000-test\"></div>");
+}
+
+//Wait
+{
+
+	addTest("Deferred.", function(){ return dot.div(dot.defer(function(v){v.h(1)}))}, "<div>1</div>");
+	addTest("Long deferred.", function(){ return dot.div(dot.defer(function(v){setTimeout(function(){v.h(1);},0)})); }, "<div>1</div>", 25);
+
+	addTest("Wait, timing early.", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><dothtml-defer></dothtml-defer><div>2</div>", 25);
+	addTest("Wait, for nothing.", function(){ return dot.div(1).wait(1, function(){}).div(2); }, "<div>1</div><div>2</div>", 25);
+	addTest("Wait, for a string.", function(){ return dot.div(1).wait(1, "3").div(2); }, "<div>1</div>3<div>2</div>", 25);
+	addTest("Wait, for a div.", function(){ return dot.div(1).wait(1, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 25);
+	addTest("Wait, inside a div.", function(){ return dot.div(1).div(dot.wait(1, dot.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 25);
+	addTest("Wait, for class.", function(){ return dot.div(1).wait(1, dot["class"](3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 25);
+	addTest("Wait, for class 2.", function(){ return dot.div(dot.div(1).wait(1, dot["class"](3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 25);
+	addTest("Wait, for class, internal.", function(){ return dot.div(dot.wait(1, dot["class"](3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 25);
+	addTest("Wait, for a function.", function(){ return dot.div(1).wait(1, function(){return dot.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 25);
+	addTest("Wait, append to nothing.", function(){ return dot.wait(1, dot.div(3)); }, "<div>3</div>", 25);
+	addTest("Wait, append to nothing, concat 2.", function(){ return dot.wait(1, dot.div(3)).h(2); }, "<div>3</div>2", 25);
+	addTest("Wait, append between text nodes.", function(){ return dot.h(1).wait(1, dot.div(3)).h(2); }, "1<div>3</div>2", 25);
+	addTest("Wait, out of order.", function(){ return dot.wait(15, dot.div(1)).wait(10, dot.div(2)).wait(5, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 25);
+	addTest("Wait, iterate.", function(){ return dot.div(1).wait(1, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 25);
+	addTest("Waitception, early.", function(){ return dot.wait(10, dot.div(dot.wait(50, dot.div(1)))); }, "<div><dothtml-defer></dothtml-defer></div>", 25);
+	addTest("Waitception, late, times shouldn't stack.", function(){ return dot.wait(5, dot.div(dot.wait(5, dot.div(1)))); }, "<div><div>1</div></div>", 25);
+	// addTest("Waitception, late, times stack for functions 1/2.", function(){ return dot.wait(50, function(){return dot.div(dot.wait(100, dot.div(1)))}); }, "<div><dothtml-defer></dothtml-defer></div>", 75);
+	// addTest("Waitception, late, times stack for functions 2/2.", function(){ return dot.wait(1, function(){return dot.div(dot.wait(1, dot.div(1)))}); }, "<div><div>1</div></div>", 25);
+	//addTest("Waitception, late, deep class.", function(){ return dot.div().wait(10, dot.wait(10, dot["class"](1)))}, "<div class=\"1\"></div>", 500); //This one fails. Not sure if I should support it though.
+	addTest("Waitception, late.", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 25);
+	addTest("Waitception, late, short inner interval.", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 50);
 }
 
 //Components
@@ -519,6 +549,189 @@ function addTest(description, testFunc, expected, testTimeout){
 // 
 }
 
+{// Advanced Bindings
+	addTest("Bind to number prop.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = 0;
+				var ret = dot.span(()=>this.myProp);
+				return ret;
+			},
+			ready(){
+				this.myProp++;
+			},
+			props:["myProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<span>1</span>");
+
+	addTest("Bind to calculated prop.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = 0;
+				var ret = dot.div(()=>dot.p("I have " + this.myProp + "!"));
+				return ret;
+			},
+			ready(){
+				this.myProp+=10;
+			},
+			props:["myProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><p>I have 10!</p></div>");
+
+	addTest("Bind to array.", function(){
+		const MyComp = dot.component({
+			builder(data){
+				this.myData = data;
+				return dot.ul(
+					dot.each(()=>this.myData, (v, i)=>{
+						return dot.li(v.value)
+					})
+				);
+			},
+			ready(){
+				this.myData.push({value: 5});
+				this.myData.push({value: 3});
+				this.myData.push({value: 1});
+			},
+			props:["myData"]
+		});
+		
+		var data = [];
+
+		return dot.h(MyComp(data));
+		
+	}, "<ul><li>5</li><li>3</li><li>1</li></ul>"); // If stops working, add a delay.
+	
+	addTest("Bind to start of array.", function(){
+		const MyComp = dot.component({
+			builder(data){
+				this.myData = data;
+				return dot.ul(
+					dot.each(()=>this.myData, (v, i)=>{
+						return dot.li(v.value)
+					})
+				);
+			},
+			ready(){
+				this.myData.push({value: 5});
+				this.myData.push({value: 3});
+				this.myData.unshift({value: 1});
+			},
+			props:["myData"]
+		});
+		
+		var data = [];
+
+		return dot.h(MyComp(data));
+		
+	}, "<ul><li>1</li><li>5</li><li>3</li></ul>");
+
+	addTest("Bind to array out of order.", function(){
+		const MyComp = dot.component({
+			builder(data){
+				this.myData = data;
+				return dot.ul(
+					dot.each(()=>this.myData, (v, i)=>{
+						return dot.li(v.value)
+					})
+				);
+			},
+			ready(){
+				this.myData.push({value: 5});
+				this.myData.push({value: 3});
+				this.myData.splice(1, 0, {value: 1});
+			},
+			props:["myData"]
+		});
+		
+		var data = [];
+
+		return dot.h(MyComp(data));
+		
+	}, "<ul><li>5</li><li>1</li><li>3</li></ul>");
+
+	addTest("Bind 2 to array out of order.", function(){
+		const MyComp = dot.component({
+			builder(data){
+				this.myData = data;
+				return dot.ul(
+					dot.each(()=>this.myData, (v, i)=>{
+						return dot.li(v.value)
+					})
+				);
+			},
+			ready(){
+				this.myData.push({value: 5});
+				this.myData.push({value: 3});
+				this.myData.splice(1, 0, {value: "a"}, {value: "b"});
+			},
+			props:["myData"]
+		});
+		
+		var data = [];
+
+		return dot.h(MyComp(data));
+		
+	}, "<ul><li>5</li><li>a</li><li>b</li><li>3</li></ul>");
+
+	addTest("Remove from bound array.", function(){
+		const MyComp = dot.component({
+			builder(data){
+				this.myData = data;
+				return dot.ul(
+					dot.each(()=>this.myData, (v, i)=>{
+						return dot.li(v.value)
+					})
+				);
+			},
+			ready(){
+				this.myData.push({value: 5});
+				this.myData.push({value: "A"});
+				this.myData.push({value: "B"});
+				this.myData.push({value: 1});
+				// this.myData.splice(1,2);
+				this.myData.splice(1,2, {value: 3});
+			},
+			props:["myData"]
+		});
+		
+		var data = [];
+
+		return dot.h(MyComp(data));
+		
+	}, "<ul><li>5</li><li>3</li><li>1</li></ul>");
+
+	addTest("Set value in bound array.", function(){
+		const MyComp = dot.component({
+			builder(data){
+				this.myData = data;
+				return dot.ul(
+					dot.each(()=>this.myData, (v, i)=>{
+						return dot.li(v.value)
+					})
+				);
+			},
+			ready(){
+				this.myData.push({value: 5});
+				this.myData.push({value: 3});
+				this.myData.push({value: 1});
+
+				this.myData[1] = {value: "YES!"};
+			},
+			props:["myData"]
+		});
+		
+		var data = [];
+
+		return dot.h(MyComp(data));
+		
+	}, "<ul><li>5</li><li>YES!</li><li>1</li></ul>"); // If stops working, add a delay.
+}
+
 {
 	try{
 		// Testing hooks:
@@ -666,35 +879,6 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Script, no return.", function(){ return dot.script(function(){1 + 1;}).div(1); }, "<div>1</div>");
 	addTest("Script, return dot.", function(){ return dot.script(function(){return 2;}).div(1); }, "<div>1</div>");
 	addTest("Script, return function.", function(){ return dot.script(function(){return function(){return 2};}).div(1); }, "<div>1</div>");
-}
-
-//Wait
-{
-
-	addTest("Deferred.", function(){ return dot.div(dot.defer(function(v){v.h(1)}))}, "<div>1</div>");
-	addTest("Long deferred.", function(){ return dot.div(dot.defer(function(v){setTimeout(function(){v.h(1);},0)})); }, "<div>1</div>", 25);
-
-	addTest("Wait, timing early.", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><dothtml-defer></dothtml-defer><div>2</div>", 25);
-	addTest("Wait, for nothing.", function(){ return dot.div(1).wait(1, function(){}).div(2); }, "<div>1</div><div>2</div>", 25);
-	addTest("Wait, for a string.", function(){ return dot.div(1).wait(1, "3").div(2); }, "<div>1</div>3<div>2</div>", 25);
-	addTest("Wait, for a div.", function(){ return dot.div(1).wait(1, dot.div(3)).div(2); }, "<div>1</div><div>3</div><div>2</div>", 25);
-	addTest("Wait, inside a div.", function(){ return dot.div(1).div(dot.wait(1, dot.div(3))).div(2); }, "<div>1</div><div><div>3</div></div><div>2</div>", 25);
-	addTest("Wait, for class.", function(){ return dot.div(1).wait(1, dot["class"](3)).div(2); }, "<div class=\"3\">1</div><div>2</div>", 25);
-	addTest("Wait, for class 2.", function(){ return dot.div(dot.div(1).wait(1, dot["class"](3)).div(2)); }, "<div><div class=\"3\">1</div><div>2</div></div>", 25);
-	addTest("Wait, for class, internal.", function(){ return dot.div(dot.wait(1, dot["class"](3))).div(2); }, "<div class=\"3\"></div><div>2</div>", 25);
-	addTest("Wait, for a function.", function(){ return dot.div(1).wait(1, function(){return dot.div(3)}).div(2); }, "<div>1</div><div>3</div><div>2</div>", 25);
-	addTest("Wait, append to nothing.", function(){ return dot.wait(1, dot.div(3)); }, "<div>3</div>", 25);
-	addTest("Wait, append to nothing, concat 2.", function(){ return dot.wait(1, dot.div(3)).h(2); }, "<div>3</div>2", 25);
-	addTest("Wait, append between text nodes.", function(){ return dot.h(1).wait(1, dot.div(3)).h(2); }, "1<div>3</div>2", 25);
-	addTest("Wait, out of order.", function(){ return dot.wait(15, dot.div(1)).wait(10, dot.div(2)).wait(5, dot.div(3)); }, "<div>1</div><div>2</div><div>3</div>", 25);
-	addTest("Wait, iterate.", function(){ return dot.div(1).wait(1, dot.h("s").iterate(3, "-").h("f")).div(2); }, "<div>1</div>s---f<div>2</div>", 25);
-	addTest("Waitception, early.", function(){ return dot.wait(10, dot.div(dot.wait(50, dot.div(1)))); }, "<div><dothtml-defer></dothtml-defer></div>", 25);
-	addTest("Waitception, late, times shouldn't stack.", function(){ return dot.wait(5, dot.div(dot.wait(5, dot.div(1)))); }, "<div><div>1</div></div>", 25);
-	// addTest("Waitception, late, times stack for functions 1/2.", function(){ return dot.wait(50, function(){return dot.div(dot.wait(100, dot.div(1)))}); }, "<div><dothtml-defer></dothtml-defer></div>", 75);
-	// addTest("Waitception, late, times stack for functions 2/2.", function(){ return dot.wait(1, function(){return dot.div(dot.wait(1, dot.div(1)))}); }, "<div><div>1</div></div>", 25);
-	//addTest("Waitception, late, deep class.", function(){ return dot.div().wait(10, dot.wait(10, dot["class"](1)))}, "<div class=\"1\"></div>", 500); //This one fails. Not sure if I should support it though.
-	addTest("Waitception, late.", function(){ return dot.wait(10, dot.div(dot.wait(20, dot.div(1)))); }, "<div><div>1</div></div>", 25);
-	addTest("Waitception, late, short inner interval.", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 50);
 }
 
 // CSS
