@@ -5,7 +5,7 @@ import {addComponent, removeComponent, dotReady} from "./component";
 import ERR from "./err";
 import ObservableArray from "./observable-array";
 
-var v = "4.5.0";
+var version = "4.6.0";
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
@@ -21,6 +21,7 @@ var v = "4.5.0";
  * - Event bus.
  * - Added advanced binding to data.
  * - Added advanced binding to Arrays.
+ * - Upgraded if statements to support property bindings.
  */
 
 
@@ -116,7 +117,7 @@ var _p = _D.prototype;
 
 dotReady(dot, _p, _D);
 
-_p.version = v;
+_p.version = version;
 
 _p._getNewDocument = function(){
 	return document.createElement(DOCEL);
@@ -148,11 +149,13 @@ _p.toString = function(){
 
 //before is passed in so that attributes can be associated with before's sibling, instead of inheritingParent, the default.
 _p._evalContent = function(content, pendingCalls){
+	if(content == null || content == undefined) return null;
 	if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
 		var nDot = new _D(this._getNewDocument(), this.__classPrefix);
 		nDot.__document.innerHTML = content;
 		return nDot.__document.childNodes;
 	}
+	else if(content instanceof Node) return content;
 	else if(Object.prototype.toString.call( content ) === '[object Array]') { //Array
 		var nDot = new _D(this._getNewDocument(), this.__classPrefix);
 		for(var i = 0; i < content.length; i++){
@@ -164,7 +167,7 @@ _p._evalContent = function(content, pendingCalls){
 	{
 		return this._evalContent(content(), pendingCalls);
 	}
-	else if(content && content instanceof _D) { //DOT
+	else if(content instanceof _D) { //DOT
 		for(var i = 0; i < content.__pendingCalls.length; i++){
 			pendingCalls.push(content.__pendingCalls[i]);
 		}
@@ -187,32 +190,38 @@ _p._evalContent = function(content, pendingCalls){
 
 _p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 	var T = this;
+	// Validation
+;;;	if(parentEl && beforeNode && isNaN(beforeNode) && beforeNode.parentNode != parentEl) throw "beforeNode is not in parentEl.";
+
+	// Find the parent, or create one.
 	//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. )
-	parentEl = (beforeNode && isNaN(beforeNode) ? beforeNode.parentNode : null) || parentEl || T.__document || T._getNewDocument();
+	parentEl = parentEl || (beforeNode && isNaN(beforeNode) ? beforeNode.parentNode : null) || T.__document || T._getNewDocument();
 	
 	if(!isNaN(beforeNode)){
 		beforeNode = parentEl.childNodes[beforeNode];
+//;;;		if(!beforeNode) throw "beforeNode not found."; // TODO: reenable this and investigate why it breaks.
 	}
 
+	// nd is a dot wrapper for parentEl (allows us to do dot ops on it).
 	var nd = T.__document === parentEl ? T : new _D(parentEl, T.__classPrefix);
 	nd.__if = T.__if;
 	var pendingCalls = []; //This will populate with pending calls.
 	
+	// Evaluate the content. This does not add it to the DOM pet.
 	var eContent;
-	if(isF(content)){
-		dot.__currentArgCallback.push({f:content,e:parentEl})
-		try{
-			eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
-		}
-		finally{
-			dot.__currentArgCallback.pop();
-		}
-	}
-	else{
+	var cf = isF(content);
+	// If it's a function, we need to consider 
+	if(cf) dot.__currentArgCallback.push({f:content,e:parentEl})
+	try{
 		eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
 	}
+	finally{
+		if(cf) dot.__currentArgCallback.pop();
+	}
 
 
+	// Pending calls are calls included in the dot element which didn't get consumed and must be propagated up.
+	// This usually includes attributes and waits.
 	for(var i = 0; i < pendingCalls.length; i++){
 		var call = pendingCalls[i];
 		//Three possibilities.
@@ -237,7 +246,9 @@ _p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 			nd.__pendingCalls.push(call); /*3*/
 		}
 	}
-	if(eContent !== null){
+
+	// Append content to the current document.
+	if(eContent !== null && eContent !== undefined){
 		if( eContent instanceof NodeList ) {
 			//for(var i = 0; i < eContent.length; i++){
 			while(eContent.length > 0){
@@ -260,9 +271,9 @@ _p.el = function(tag, content){
 	var ne = document.createElement(tag); 
 	var nDoc = T.__document || T._getNewDocument();
 	nDoc.appendChild(ne);
-	T._appendOrCreateDocument(content, ne);
+	if(content) T._appendOrCreateDocument(content, ne);
 	var ret = T.__document === nDoc ? T : new _D(nDoc, T.__classPrefix);
-	if(content instanceof _D) for(var i in content.__classedElements) ret.__classedElements.push(content.__classedElements[i]);
+	if(content && content instanceof _D) for(var i in content.__classedElements) ret.__classedElements.push(content.__classedElements[i]);
 	return ret;
 };
 
@@ -384,26 +395,87 @@ _p.each = function(array, callback, forceNoDeferred){
 	return target;
 };
 
-_p.IF = _p["if"] = function(condition, callback){
-	if(condition) {
-		this.__if = true;
-		return this._getAnInstance()._appendOrCreateDocument(callback);
+function _conditionalBlock(T, totalCondition, allConditions, contentCallback){
+	var startTextNode = document.createTextNode("");
+	var endTextNode = document.createTextNode("");
+	var cb = {f:contentCallback,startNode:startTextNode, endNode:endTextNode,condition:totalCondition};
+	dot.__currentArgCallback.push(cb);
+	
+	var renderContent = totalCondition();
+
+	T = T._appendOrCreateDocument(startTextNode);
+	
+	for(var i = 0; i < allConditions.length; i++) allConditions[i]();
+	cb.lastValue = renderContent;
+	if(renderContent) T = T._appendOrCreateDocument(contentCallback);
+	
+	T = T._appendOrCreateDocument(endTextNode);
+	dot.__currentArgCallback.pop();
+	return T;
+}
+
+_p.IF = _p["if"] = function(condition, contentCallback, ar){
+	var T = this._getAnInstance();
+	if(isF(condition)){
+		if(!ar) ar = T.__conditionalArray = [condition];
+		var l = ar.length - 1;
+		var totalCondition = function(){
+			for(var i = 0; i < l; i++){
+				if(!!ar[i]()) {
+					return false;
+				}
+			}
+			return !!condition();
+		}
+		T = _conditionalBlock(T, totalCondition, ar, contentCallback);
+		// ar.push(condition);
 	}
 	else{
-		this.__if = false;
+		// Old:
+		if(!!condition) {
+			T = T._appendOrCreateDocument(isF(contentCallback) ? contentCallback() : contentCallback);
+			T.__if = true;
+		}
+		else{
+			T.__if = false;
+		}
 	}
-	return this;
+	return T;
 };
 
 _p.ELSEIF = _p.elseif = function(condition, callback){
-	if(!this.__if){
-		return this["if"](condition, callback);
+	if(isF(condition)){
+		var ar = this.__conditionalArray;
+		if(!ar) ERR("MC");
+		//var l = ar.length - 1;
+		// var newCondition = function(){
+		// 	for(var i = 0; i <= l; i++){
+		// 		if(ar[i]()) return false;
+		// 	}
+		// 	return !!condition();
+		// }
+		ar.push(condition);
+		return this["if"](condition, callback, ar);
+	}
+	else{
+		if(!this.__if){
+			return this["if"](condition, callback);
+		}
 	}
 	return this;
 };
 
 _p.ELSE = _p["else"] = function(callback){
-	if(!this.__if){
+	var ar = this.__conditionalArray;
+	if(ar){
+		//var l = ar.length - 1;
+		var newCondition = function(){
+			return true;
+		}
+		ar.push(newCondition);
+		return this["if"](newCondition, callback, ar);
+	}
+	else if(!this.__if){
 		this.__if = null;
 		return this._getAnInstance()._appendOrCreateDocument(callback);
 	}

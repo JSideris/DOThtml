@@ -33,7 +33,7 @@ function formatHTML(html){
 
 
 function addTest(description, testFunc, expected, testTimeout){
-	// if(description != "Set value in bound array.") return;
+	//if(description != "Conditional rendering - if true->false elseif false->true.") return;
 	// let exception = null;
 	// try{
 	// }
@@ -225,8 +225,8 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("If {}.", function(){ return dot.IF({}, "if").ELSE("else"); }, "if");
 }
 
-//Iterations
-{
+
+{ //Iterations
 	addTest("Iterate.", function(){ return dot.iterate(3, function(i){return dot.h(i)}); }, "012");
 	addTest("Iterate w/ friends.", function(){ return dot.h("s").iterate(3, function(i){return dot.h(i)}).h("f"); }, "s012f");
 	addTest("Iterate no return.", function(){ return dot.h("s").iterate(3, function(i){dot.h(i)}).h("f"); }, "sf");
@@ -244,8 +244,8 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Hash each.", function(){ return dot.each({a: "A", b: "B", c: "C"}, function(x, i){return i + x}); }, "aAbBcC");
 }
 
-//Get Last Node
-{
+
+{ //Get Last Node
 	//addTest("Get Last Node.", function(){ return dot.h(dot.div("text").__lastNode.innerHTML)}, "text"); // No longer supported.
 	//addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").__lastNode.innerHTML)}, "text"); // No longer supported.
 	addTest("Get Last Node - h.", function(){ return dot.h(dot.h("<div>text</div>").getLast().innerHTML);}, "text");
@@ -274,8 +274,8 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Reset scope.", function(){ dot.resetScopeClass(); return dot.scopeClass(dot.div().class("test")); }, "<div class=\"dot-10000-test\"></div>");
 }
 
-//Wait
-{
+
+{ //Wait
 
 	addTest("Deferred.", function(){ return dot.div(dot.defer(function(v){v.h(1)}))}, "<div>1</div>");
 	addTest("Long deferred.", function(){ return dot.div(dot.defer(function(v){setTimeout(function(){v.h(1);},0)})); }, "<div>1</div>", 25);
@@ -303,8 +303,8 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Waitception, late, short inner interval.", function(){ return dot.wait(20, dot.div(dot.wait(10, dot.div(1)))); }, "<div><div>1</div></div>", 50);
 }
 
-//Components
-{
+
+{ //Components
 	try{
 		dot.component({name: "component_select", builder: function(){return dot.select(dot.option("a").value("a").option("b").value("b").option("c").value("c"));}});
 
@@ -549,7 +549,7 @@ function addTest(description, testFunc, expected, testTimeout){
 // 
 }
 
-{// Advanced Bindings
+{ // Advanced Bindings
 	addTest("Bind to number prop.", function(){
 		const MyComp = dot.component({
 			builder(){
@@ -730,6 +730,209 @@ function addTest(description, testFunc, expected, testTimeout){
 		return dot.h(MyComp(data));
 		
 	}, "<ul><li>5</li><li>YES!</li><li>1</li></ul>"); // If stops working, add a delay.
+
+	addTest("Conditional rendering.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myPropA = false;
+				this.myPropB = true;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myPropA, ()=>dot
+						.p("A"))
+					.if(()=>this.myPropB, ()=>dot
+						.p("B"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myPropA = !this.myPropA;
+				this.myPropB = !this.myPropB;
+			},
+			props:["myPropA", "myPropB"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>A</p><div>OUTER2</div></div>");
+	
+	addTest("Conditional rendering - out of order.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myPropA = false;
+				this.myPropB = false;
+				this.myPropC = false;
+				var ret = dot.div(dot.div().if(()=>this.myPropA, ()=>dot.p("A")).if(()=>this.myPropB, ()=>dot.p("B")).if(()=>this.myPropC, ()=>dot.p("C")).div());
+				return ret;
+			},
+			ready(){
+				this.myPropB = true;
+				this.myPropC = true;
+				this.myPropA = true;
+			},
+			props:["myPropA", "myPropB", "myPropC"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div></div><p>A</p><p>B</p><p>C</p><div></div></div>");
+	
+
+	addTest("Conditional rendering - if true->false else.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = false;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myProp, ()=>dot
+						.p("A"))
+					.else(()=>dot
+						.p("B"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myProp = !this.myProp;
+			},
+			props:["myProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>A</p><div>OUTER2</div></div>");
+
+	
+	addTest("Conditional rendering - if true->false elseif true.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = true;
+				this.myElseProp = true;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myProp, ()=>dot
+						.p("A"))
+					.elseif(()=>this.myElseProp, ()=>dot
+						.p("B"))
+					.else(()=>dot
+						.p("C"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myProp = false;
+			},
+			props:["myProp", "myElseProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>B</p><div>OUTER2</div></div>", 10);
+	
+	addTest("Conditional rendering - if true->false elseif true->false.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = true;
+				this.myElseProp = true;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myProp, ()=>dot
+						.p("A"))
+					.elseif(()=>this.myElseProp, ()=>dot
+						.p("B"))
+					.else(()=>dot
+						.p("C"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myProp = false;
+				this.myElseProp = false;
+			},
+			props:["myProp", "myElseProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>C</p><div>OUTER2</div></div>", 10);
+
+	addTest("Conditional rendering - if true->false elseif false->true.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = true;
+				this.myElseProp = false;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myProp, ()=>dot
+						.p("A"))
+					.elseif(()=>this.myElseProp, ()=>dot
+						.p("B"))
+					.else(()=>dot
+						.p("C"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myProp = false;
+				this.myElseProp = true;
+			},
+			props:["myProp", "myElseProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>B</p><div>OUTER2</div></div>", 10);
+
+	addTest("Conditional rendering - if true else true.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = false;
+				this.myElseProp = true;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myProp, ()=>dot
+						.p("A"))
+					.elseif(()=>this.myElseProp, ()=>dot
+						.p("B"))
+					.else(()=>dot
+						.p("C"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myProp = true;
+			},
+			props:["myProp", "myElseProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>A</p><div>OUTER2</div></div>", 10);
+
+	addTest("Conditional rendering - if true else false->true.", function(){
+		const MyComp = dot.component({
+			builder(){
+				this.myProp = false;
+				this.myElseProp = false;
+				var ret = dot.div(
+					dot.div("OUTER1")
+					.if(()=>this.myProp, ()=>dot
+						.p("A"))
+					.elseif(()=>this.myElseProp, ()=>dot
+						.p("B"))
+					.else(()=>dot
+						.p("C"))
+					.div("OUTER2")
+				);
+				return ret;
+			},
+			ready(){
+				this.myProp = true;
+				
+			},
+			props:["myProp", "myElseProp"]
+		});
+		
+		return dot.h(MyComp());
+	}, "<div><div>OUTER1</div><p>A</p><div>OUTER2</div></div>", 10);
 }
 
 {
@@ -816,8 +1019,8 @@ function addTest(description, testFunc, expected, testTimeout){
 	addTest("Option change updating var.", function(){return dot.comp_binding_input_change_option()}, "<div>Var: true</div><div>Input: b</div>");
 }
 
-//Routing
-{
+
+{ //Routing
 	try{
 		dot.component({name: "defaultpage", builder: function(){return dot.h1("Default")}});
 		dot.component({name: "page1", builder: function(){return dot.h1("Page 1.")}});

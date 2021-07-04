@@ -91,19 +91,17 @@ export function addComponent(prms){
                     var cb = dot.__currentArgCallback[dot.__currentArgCallback.length-1];
                     if(cb){
                         // This means this getter is being used during the invocation of an arg callback.
-                        // Add it to a collection so that when the value is set, the appropriate component will update.
-                        if(ret instanceof ObservableArray){
+						// Add it to a collection so that when the value is set, the appropriate component will update.
+						
+						if(ret instanceof ObservableArray){
                             ret.addEventListener("itemadded", function(e) {
                                 cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
                             });
 
                             ret.addEventListener("itemset", function(e) {
-                                // console.log("Set index %d to %o.", e.index, e.item);
                                 var p = cb.d.__document;
                                 var el = p.childNodes[e.index];
-                                // el.innerHTML = e.item;
                                 p.removeChild(el);
-                                // console.log("SETTING", e.item);
                                 cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
                                 
                             });
@@ -122,17 +120,33 @@ export function addComponent(prms){
                 },
                 set: function(value) {
                     // TODO: if this value is set, get the list of dependencies, and update them by calling their dot argument callbacks.
-
                     var propVal = value;
                     if(value instanceof Array){
                         propVal = new ObservableArray(value);
                     }
                     this.__rawProps[name] = propVal;
 
-                    var ar = this.__propDependencies[name];
+					var ar = this.__propDependencies[name];
 
+					// // {f:contentCallback,startNode:startNode, endNode:endNode,condition:condition}
                     for(let i = 0; i < (ar||[]).length; i++){
-                        if(ar[i].e) dot(ar[i].e).empty().h(ar[i].f(propVal));
+						if(ar[i].condition){
+							if(ar[i].lastValue != !!ar[i].condition()){
+								ar[i].lastValue = !ar[i].lastValue;
+								if(ar[i].lastValue){
+									dot._appendOrCreateDocument(ar[i].f, ar[i].endNode.parentNode, ar[i].endNode);
+								}
+								else {
+									do{
+										var e = ar[i].startNode.nextSibling;
+										if(e && e != ar[i].endNode){
+											e.parentNode.removeChild(e);
+										}
+									} while(ar[i].startNode.nextSibling && ar[i].startNode.nextSibling != ar[i].endNode)
+								}
+							}
+						}
+                        else if(ar[i].e) dot(ar[i].e).empty().h(ar[i].f(propVal));
                     }
 
                     return propVal;
