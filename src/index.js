@@ -1,11 +1,11 @@
 import dotcss from "./style-builder";
 import eventBus from "./event-bus";
 import { eachK, isF } from "./util";
-import {addComponent, removeComponent, dotReady} from "./component";
+import {addComponent, removeComponent, dotReady, _C} from "./component";
 import ERR from "./err";
 import ObservableArray from "./observable-array";
 
-var version = "4.6.0";
+var version = "4.7.0";
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
@@ -17,11 +17,16 @@ var version = "4.6.0";
  *   - Styles from dotcss will be applied directly to the elements, not in a style tag.
  * - Fixed a bug in dotcss where selectors of one character would trigger for "x".indexOf("{}") == "x".length - 2, causing styles to not attach to the element.
  * - Removed jquery wrappers.
- * - Added basic computed props.
  * - Event bus.
  * - Added advanced binding to data.
  * - Added advanced binding to Arrays.
  * - Upgraded if statements to support property bindings.
+ * - Redesigned components.
+ *   - Component will no longer return dot. It returns the component.
+ *   - Ability to call methods and set props within the component directly.
+ *   - Component events that can be raised.
+ *   - Computed props.
+ *   - Ability to pass data into and out of a component.
  */
 
 
@@ -84,6 +89,10 @@ function createElement(tag){
 
 function createAttribute(attribute){
 	_p[attribute] = _p[attribute + "A"] = function(value){return this.attr(attribute, value);}
+};
+function createEventAttribute(attribute){
+	createAttribute("on" + attribute);
+	createAttribute("on" + attribute.toLowerCase());
 };
 
 // Compatibility:
@@ -167,6 +176,9 @@ _p._evalContent = function(content, pendingCalls){
 	{
 		return this._evalContent(content(), pendingCalls);
 	}
+	else if(content instanceof _C){
+		return this._evalContent(content.$el);
+	}
 	else if(content instanceof _D) { //DOT
 		for(var i = 0; i < content.__pendingCalls.length; i++){
 			pendingCalls.push(content.__pendingCalls[i]);
@@ -183,7 +195,7 @@ _p._evalContent = function(content, pendingCalls){
 			}
 		}
 		if(content.__document) return content.__document.childNodes; //Return all the nodes in here.
-	} 
+	}
 	
 	return null;
 };
@@ -836,26 +848,6 @@ var allAttributes = [
 	"noshade",
 	"novalidate",
 	"nowrap",
-	"onblur",
-	"onchange",
-	"onclick",
-	"ondblclick",
-	"onfocus",
-	"onkeydown",
-	"onkeypress",
-	"onkeyup",
-	"onload",
-	"onmousedown",
-	"onmouseenter",
-	"onmousemove",
-	"onmouseout",
-	"onmouseover",
-	"onmouseup",
-	"onreset",
-	"onscroll",
-	"onselect",
-	"onsubmit",
-	"onunload",
 	"open",
 	"optimum",
 	"pattern",
@@ -910,9 +902,33 @@ var allAttributes = [
 	//"summaryA"
 ];
 
+var allEventAttr = [
+	"Blur",
+	"Change",
+	"Click",
+	"Dblclick",
+	"Focus",
+	"Keydown",
+	"Keypress",
+	"Keyup",
+	"Load",
+	"Mousedown",
+	"Mouseenter",
+	"Mousemove",
+	"Mouseout",
+	"Mouseover",
+	"Mouseup",
+	"Reset",
+	"Scroll",
+	"Select",
+	"Submit",
+	"Unload",
+]
+
 var i;
 for(i in allTags) createElement(allTags[i]);
 for(i in allAttributes) createAttribute(allAttributes[i]);
+for(i in allEventAttr) createEventAttribute(allEventAttr[i]);
 
 //Hyphenated Attributes.
 _p["acceptCharset"] = _p["accept-charset"] = function(value){return this.attr("accept-charset", value);};

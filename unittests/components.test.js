@@ -43,7 +43,8 @@ try{
 
 // Nameless components (exports):
 addTest("Nameless component.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return dot.div(comp(":)")) }, "<div><p>:)</p></div>");
-addTest("Nameless component as a dot function.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return comp(":)") }, "<p>:)</p>" );
+// This behavior was deprecated.
+//addTest("Nameless component as a dot function.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)} }); return comp(":)") }, "<p>:)</p>" );
 
 // Named components (extend dot):
 addTest("Std params component.", function(){return dot.comp_std()}, "<div><div>1</div></div>");
@@ -111,7 +112,7 @@ addTest("Computed property.", function(){let comp = dot.component({builder: func
 // Styles
 addTest("Set style directly", function(){var ret = dot.p(":)").style("width:100px;"); return ret;}, "<p style=\"width:100px;\">:)</p>");
 addTest("Set style via dotcss", function(){var ret = dot.p(":)").style(dot.css.width(100)); return ret;}, "<p style=\"width:100px;\">:)</p>");
-addTest("Styled component.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)}, style: function(css){css("p").width(100);} }); return comp(":)") }, "<p style=\"width: 100px;\">:)</p>" );
+addTest("Styled component.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)}, style: function(css){css("p").width(100);} }); return dot.h(comp(":)")) }, "<p style=\"width: 100px;\">:)</p>" );
 addTest("Advanced styled component.", function(){ var comp = dot.component({builder: function(c){return dot.p(c)}, style: function(css){css("p").width(100);} }); return dot.h(comp(":)")).h(comp(":)")) }, "<p style=\"width: 100px;\">:)</p><p style=\"width: 100px;\">:)</p>" );
 addTest("Component with multiple styles.", function(){ var comp = dot.component({builder: function(c, w){ this.w = w; return dot.p(c)}, style: function(css){css("p").width(this.w);} }); return dot.h(comp(":)", 200)).h(comp(":)", 300)) }, "<p style=\"width: 200px;\">:)</p><p style=\"width: 300px;\">:)</p>" );
 addTest("Component with class styles.", function(){ var comp = dot.component({builder: function(c, w,h){ this.w = w; this.h = h; return dot.div(dot.div(c).div("w").class("w").div("ok").class("h")).class("w")}, style: function(css){css(".w").width(this.w);css(".h").width(this.h);} }); return dot.h(comp(":)", 200, 400)).h(comp(":)", 300, 500)).div().class("h") }, "<div class=\"w\" style=\"width: 200px;\"><div>:)</div><div class=\"w\" style=\"width: 200px;\">w</div><div class=\"h\" style=\"width: 400px;\">ok</div></div><div class=\"w\" style=\"width: 300px;\"><div>:)</div><div class=\"w\" style=\"width: 300px;\">w</div><div class=\"h\" style=\"width: 500px;\">ok</div></div><div class=h></div>" );

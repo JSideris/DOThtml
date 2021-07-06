@@ -16,9 +16,16 @@ import ObservableArray from "./observable-array";
 
 
 
-function _C(){
+export function _C(){
 	this.$el = null;
 	this.$refs = {};
+	this.__handlers = {};
+}
+
+_C.prototype.__addHandler = function(eventName, event){
+	var h = this.__handlers[eventName];
+	if(!h) h = this.__handlers[eventName] = [];
+	h.push(event);
 }
 
 var dot, _p, _D;
@@ -64,16 +71,29 @@ export function addComponent(prms){
 	if(!n || (!dot[n] && !_p[n])) {
 		n && (componentNames[n] = 1);
 		var CC = function(){
+			_C.call(this);
             this.__rawProps = {};
-            this.__propDependencies = {};
+			this.__propDependencies = {};
+			this.__prms = prms;
         }
 		CC.prototype = Object.create(_C.prototype);
-		CC.prototype.__prms = prms;
+		CC.prototype.constructor = CC;
 
-		// eachK(prms.events, function(k, v){
-		// 	if(typeof v != "string") ERR("XS");
-		// 	CC.prototype[v] = function(cb){}
-		// });
+		eachK(prms.events, function(k, v){
+			if(typeof v != "string") ERR("XS");
+			var handlerName = "on" + v[0].toUpperCase() + v.substring(1);
+			CC.prototype[handlerName] = function(cb){
+				this.__addHandler(v, cb);
+			}
+			CC.prototype[v] = function(){
+				var h = this.__handlers[v];
+				if(h){
+					for(var i = 0; i < h.length; i++){
+						h[i].apply(this, arguments);
+					}
+				}
+			}
+		});
 
 		eachK(prms.methods, function(k, v){
 			if(!isF(v)) ERR("XF");
@@ -204,18 +224,21 @@ export function addComponent(prms){
 
 			// Add the events to ret.
 
-			// TODO: this is kind of bad, because it duplicates the function for each instance rather than using prototypes.
-			eachK(prms.events, function(k, v){
-				if(typeof v != "string") ERR("XS");
-				ret[v] = function(){obj[v].apply(obj, arguments); return ret;}
-			});
+			// // TODO: this is kind of bad, because it duplicates the function for each instance rather than using prototypes.
+			// eachK(prms.events, function(k, v){
+			// 	if(typeof v != "string") ERR("XS");
+			// 	ret[v] = function(){obj[v].apply(obj, arguments); return ret;}
+			// });
 
 			ret = ret instanceof _D ? ret : dot.h(ret);
-			
+			// ret = (this instanceof _D ? this : dot).h(ret);
 
 			var lst = ret.getLast();
 			(!lst || (lst.parentNode.childNodes.length > 1)) && ERR("C#", [n || "(un-named component)"]);
-			if(classNumb || n) ret = this._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
+			
+
+			// Some weird ass logic to support legacy named components and the new syntax.
+			if(classNumb || n) ret = (this instanceof _D ? this : dot)._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
 			obj.$el = obj.$el || lst;
 			obj.$el.dotComponent = obj;
 
@@ -231,7 +254,8 @@ export function addComponent(prms){
 			prms.ready && sT(function(){
 				prms.ready.apply(obj)
 			}, 0);
-			return ret;
+			if (n) return ret; // Named components - used with inline syntax (legacy).
+			else return obj; // Unnamed components - used with modern component syntax.
 		}
 
 		n && (dot[n] = _p[n] = comp);
@@ -240,7 +264,8 @@ export function addComponent(prms){
 	
 	//_p[prms.name].prototype
 
-	return function(){return comp.apply(dot, arguments)};
+	//return function(){return comp.apply(dot, arguments)};
+	return comp;
 };
 
 export function removeComponent(name){
