@@ -5,7 +5,7 @@ import {addComponent, removeComponent, dotReady, _C} from "./component";
 import ERR from "./err";
 import ObservableArray from "./observable-array";
 
-var version = "4.7.0";
+var version = "4.7.2";
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 

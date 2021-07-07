@@ -69,8 +69,7 @@ addTest("Undefined $el.", function(){try{return dot.comp_el_text_two_el()}catch(
 addTest("Instantiate comp w/ method.", function(){return dot.comp_methods_basic()}, "<div>123</div>");
 addTest("Method gets called in ready function.", function(){return dot.comp_methods_basic(true)}, "<div>abc</div>"); // TODO: this functionality will soon be removed in favor of params.
 
-// Computed
-addTest("Computed property.", function(){let comp = dot.component({builder: function(firstName,lastName){this.firstName = firstName; this.lastName = lastName; return dot.p(this.fullName.toUpperCase())}, computed: {fullName: function(){return this.firstName + " " + this.lastName;}}});return dot.h(comp("J","S")).h(comp("1","2"));},"<p>J S</p><p>1 2</p>");
+
 // TODO: setup this test and get it working.
 // addTest("Computed property w/ updated dependency.", function(){
 // 	let comp = dot.component({

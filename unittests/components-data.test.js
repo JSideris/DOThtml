@@ -18,6 +18,22 @@ addTest("Pass value into component.", function(){
 	return dot.h(myComp);
 }, "<span>2</span>");
 
+// TODO
+// addTest("Binding value into component.", function(){
+// 	const MyComp = dot.component({
+// 		builder(){
+// 			this.myProp = 1;
+// 			var ret = dot.span(()=>this.myProp);
+// 			return ret;
+// 		},
+// 		props:["myProp"]
+// 	});
+    
+// 	var myComp = MyComp();
+//     myComp.myProp = 2;
+// 	return dot.h(myComp);
+// }, "<span>2</span>");
+
 addTest("Raise event from component.", function(){
 	const MyComp = dot.component({
 		builder(){

@@ -14,7 +14,11 @@ import ObservableArray from "./observable-array";
  * 
  * */ 
 
-
+/** How computed props work.
+ * 
+ * If a computed property has a dependency on a regular property, 
+ * assigning the computed property to an element will cause the regular property's getter to trigger, establishing the dependency.
+ * */
 
 export function _C(){
 	this.$el = null;
@@ -37,6 +41,84 @@ export function dotReady(d, p, _d){
     _p = p;
     _D = _d;
 };
+
+function configureDependency(ret, name){
+	// TODO: verify that there is no memory leak!!
+	var cb = dot.__currentArgCallback[dot.__currentArgCallback.length-1];
+	if(cb){
+		// This means this getter is being used during the invocation of an arg callback.
+		// Add it to a collection so that when the value is set, the appropriate component will update.
+		
+		if(ret instanceof ObservableArray){
+			ret.addEventListener("itemadded", function(e) {
+				cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
+			});
+
+			ret.addEventListener("itemset", function(e) {
+				var p = cb.d.__document;
+				var el = p.childNodes[e.index];
+				p.removeChild(el);
+				cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
+				
+			});
+
+			ret.addEventListener("itemremoved", function(e) {
+				cb.d.__document.removeChild(cb.d.__document.childNodes[e.index]);
+			});
+		}
+		else{
+			var ar = this.__propDependencies[name];
+			if(!ar) ar = this.__propDependencies[name] = [];
+			ar.push(cb);
+		}
+	}
+}
+
+function createProp(name, CC){
+	var dependencies = [];
+	Object.defineProperty(CC.prototype, name, {
+		configurable: false,
+		enumerable: false,
+		get: function() {
+			var ret = this.__rawProps[name];
+			configureDependency.call(this, ret, name);
+			return ret;
+		},
+		set: function(value) {
+			// TODO: if this value is set, get the list of dependencies, and update them by calling their dot argument callbacks.
+			var propVal = value;
+			if(value instanceof Array){
+				propVal = new ObservableArray(value);
+			}
+			this.__rawProps[name] = propVal;
+
+			var ar = this.__propDependencies[name];
+
+			// // {f:contentCallback,startNode:startNode, endNode:endNode,condition:condition}
+			for(let i = 0; i < (ar||[]).length; i++){
+				if(ar[i].condition){
+					if(ar[i].lastValue != !!ar[i].condition()){
+						ar[i].lastValue = !ar[i].lastValue;
+						if(ar[i].lastValue){
+							dot._appendOrCreateDocument(ar[i].f, ar[i].endNode.parentNode, ar[i].endNode);
+						}
+						else {
+							do{
+								var e = ar[i].startNode.nextSibling;
+								if(e && e != ar[i].endNode){
+									e.parentNode.removeChild(e);
+								}
+							} while(ar[i].startNode.nextSibling && ar[i].startNode.nextSibling != ar[i].endNode)
+						}
+					}
+				}
+				else if(ar[i].e) dot(ar[i].e).empty().h(ar[i].f(propVal));
+			}
+
+			return propVal;
+		}
+	});
+}
 
 // TODO: ideally we'd like to remove this, and create scoped namespaces for all components.
 // One option would be to have a global namespace where each item is only accessible by parent components who have registered to use it.
@@ -79,6 +161,11 @@ export function addComponent(prms){
 		CC.prototype = Object.create(_C.prototype);
 		CC.prototype.constructor = CC;
 
+		eachK(prms.methods, function(k, v){
+			if(!isF(v)) ERR("XF");
+			CC.prototype[k] = v;
+		});
+
 		eachK(prms.events, function(k, v){
 			if(typeof v != "string") ERR("XS");
 			var handlerName = "on" + v[0].toUpperCase() + v.substring(1);
@@ -95,89 +182,20 @@ export function addComponent(prms){
 			}
 		});
 
-		eachK(prms.methods, function(k, v){
-			if(!isF(v)) ERR("XF");
-			CC.prototype[k] = v;
-		});
-
         eachK(prms.props, function(k,v){
-            var name = typeof v == "string" ? v : v.name;
-            var dependencies = [];
-            Object.defineProperty(CC.prototype, name, {
-                configurable: false,
-                enumerable: false,
-                get: function() {
-                    var ret = this.__rawProps[name];
-                    var cb = dot.__currentArgCallback[dot.__currentArgCallback.length-1];
-                    if(cb){
-                        // This means this getter is being used during the invocation of an arg callback.
-						// Add it to a collection so that when the value is set, the appropriate component will update.
-						
-						if(ret instanceof ObservableArray){
-                            ret.addEventListener("itemadded", function(e) {
-                                cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
-                            });
-
-                            ret.addEventListener("itemset", function(e) {
-                                var p = cb.d.__document;
-                                var el = p.childNodes[e.index];
-                                p.removeChild(el);
-                                cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
-                                
-                            });
-
-                            ret.addEventListener("itemremoved", function(e) {
-                                cb.d.__document.removeChild(cb.d.__document.childNodes[e.index]);
-                            });
-                        }
-                        else{
-                            var ar = this.__propDependencies[name];
-                            if(!ar) ar = this.__propDependencies[name] = [];
-                            ar.push(cb);
-                        }
-                    }
-                    return ret;
-                },
-                set: function(value) {
-                    // TODO: if this value is set, get the list of dependencies, and update them by calling their dot argument callbacks.
-                    var propVal = value;
-                    if(value instanceof Array){
-                        propVal = new ObservableArray(value);
-                    }
-                    this.__rawProps[name] = propVal;
-
-					var ar = this.__propDependencies[name];
-
-					// // {f:contentCallback,startNode:startNode, endNode:endNode,condition:condition}
-                    for(let i = 0; i < (ar||[]).length; i++){
-						if(ar[i].condition){
-							if(ar[i].lastValue != !!ar[i].condition()){
-								ar[i].lastValue = !ar[i].lastValue;
-								if(ar[i].lastValue){
-									dot._appendOrCreateDocument(ar[i].f, ar[i].endNode.parentNode, ar[i].endNode);
-								}
-								else {
-									do{
-										var e = ar[i].startNode.nextSibling;
-										if(e && e != ar[i].endNode){
-											e.parentNode.removeChild(e);
-										}
-									} while(ar[i].startNode.nextSibling && ar[i].startNode.nextSibling != ar[i].endNode)
-								}
-							}
-						}
-                        else if(ar[i].e) dot(ar[i].e).empty().h(ar[i].f(propVal));
-                    }
-
-                    return propVal;
-                }
-            });
+            createProp(typeof v == "string" ? v : v.name, CC);
         });
 
 		eachK(prms.computed, function(k, v){
+			isF(v) ? v : ERR("XF")
+			//createProp(k, CC);
+			CC.prototype[k] = v;
 			Object.defineProperty(CC.prototype, k, {
 				enumerable: true,
-				get: isF(v) ? v : ERR("XF")
+				get: function(){
+					//configureDependency(v(), this, k);
+					return v.call(this);
+				}
 			});
 		});
 
@@ -219,6 +237,14 @@ export function addComponent(prms){
 		comp = function(){
 			var obj = new CC();
 			prms.created && prms.created.apply(obj, arguments);
+
+			// eachK(prms.computed, function(k, v){
+			// 	dot.__currentArgCallback.push({f:v})
+			// 	//obj[k] = function(){return v.call(obj)};
+			// 	//obj[k] = v.call(obj);
+			// 	v.call(obj);
+			// 	dot.__currentArgCallback.pop()
+			// });
 
 			var ret = prms.builder.apply(obj, arguments); // TODO: eventually want to only pass in the slot and leave all other stuff up to params.
 
