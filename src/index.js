@@ -6,7 +6,7 @@ import ERR from "./err";
 import ObservableArray from "./observable-array";
 import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
 
-var version = "4.7.2";
+var version = "4.8.0";
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
@@ -21,6 +21,8 @@ var version = "4.7.2";
  * - Event bus.
  * - Added advanced binding to data.
  * - Added advanced binding to Arrays.
+ * - Added advanced binding to attributes.
+ * - Styles will now be recomputed when a property causes the classname for a component to change.
  * - Upgraded if statements to support property bindings.
  * - Redesigned components.
  *   - Component will no longer return dot. It returns the component.
