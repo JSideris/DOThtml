@@ -4,8 +4,9 @@ import { eachK, isF } from "./util";
 import {addComponent, removeComponent, dotReady, _C} from "./component";
 import ERR from "./err";
 import ObservableArray from "./observable-array";
+import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
 
-var version = "4.7.2";
+var version = "4.8.0";
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
@@ -20,6 +21,8 @@ var version = "4.7.2";
  * - Event bus.
  * - Added advanced binding to data.
  * - Added advanced binding to Arrays.
+ * - Added advanced binding to attributes.
+ * - Styles will now be recomputed when a property causes the classname for a component to change.
  * - Upgraded if statements to support property bindings.
  * - Redesigned components.
  *   - Component will no longer return dot. It returns the component.
@@ -223,7 +226,8 @@ _p._appendOrCreateDocument = function(content, parentEl, beforeNode){
 	var eContent;
 	var cf = isF(content);
 	// If it's a function, we need to consider 
-	if(cf) dot.__currentArgCallback.push({f:content,e:parentEl})
+	//if(cf) dot.__currentArgCallback.push({f:content,e:parentEl})
+	if(cf) dot.__currentArgCallback.push(new ContentArgCallback(parentEl, content));
 	try{
 		eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
 	}
@@ -312,7 +316,7 @@ _p.t = function(content){
 
 _p.attr = function(attr, value, arg3){
 	var T = this;
-	if (isF(value)) {
+	if (isF(value)) { // events.
 		if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
 			dot.__anonAttrFuncs[_anonFuncCounter] = (value);
 			value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
@@ -321,11 +325,32 @@ _p.attr = function(attr, value, arg3){
 			attr = attr.substring(2);
 		}
 	}
+
 	if(T.__document) {
 		var cn = T.__document.childNodes;
 		var last = cn[cn.length - 1];
 		if(last && last.setAttribute){
 			if (!isF(value)) {
+
+				// Objects (except for the css builder :/)
+				if(typeof value == "object" && !(value instanceof dot.css._Builder)){
+					var originalValue = value;
+					var valueSetter = function(){
+						var str = "";
+						eachK(originalValue, function(k,v){
+							v = isF(v) ? v() : v;
+							if(!v) return;
+							str += " " + k
+						});
+						return str.substring(1);
+					}
+
+					//dot.__currentArgCallback.push({f:valueSetter,e:parentEl,a:attr})
+					dot.__currentArgCallback.push(new AttrArgCallback(last, attr, valueSetter));
+					value = valueSetter();
+					dot.__currentArgCallback.pop();
+				}
+
 				var eValue = last.getAttribute(attr); //Appends the new value to any existing value.
 				if (!eValue) eValue = ""; else eValue += " ";
 				last.setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
@@ -336,6 +361,7 @@ _p.attr = function(attr, value, arg3){
 		}
 	}
 	else{
+		// TODO: should probably remove pending calls. This has turned out to be an anti-pattern.
 		var pD = T._getAnInstance();
 		//if(!pD.__pendingCalls.length > 0) pD.__pendingCalls = [];
 		pD.__pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
@@ -383,7 +409,8 @@ _p.each = function(array, callback, forceNoDeferred){
 		// console.log(this.__document);
 		var func = array;
 		//target = target._appendOrCreateDocument();
-		dot.__currentArgCallback.push({f:callback,d:target})
+		// dot.__currentArgCallback.push({f:callback,d:target}); 
+		dot.__currentArgCallback.push(new ArrayArgCallback(target, callback));
 		try{
 			array = func();
 		}
@@ -410,7 +437,8 @@ _p.each = function(array, callback, forceNoDeferred){
 function _conditionalBlock(T, totalCondition, allConditions, contentCallback){
 	var startTextNode = document.createTextNode("");
 	var endTextNode = document.createTextNode("");
-	var cb = {f:contentCallback,startNode:startTextNode, endNode:endTextNode,condition:totalCondition};
+	//var cb = {f:contentCallback,startNode:startTextNode, endNode:endTextNode,condition:totalCondition};
+	var cb = new ConditionalArgCallback(startTextNode, endTextNode, contentCallback, totalCondition);
 	dot.__currentArgCallback.push(cb);
 	
 	var renderContent = totalCondition();
@@ -993,11 +1021,22 @@ _p.form = dot.form = function(arg){
 
 _p.class = _p.classA = function(value){
 	var cp = this.__classPrefix;
-	if(!cp){
+	if(cp){
+		var prefix = "dot-" + str(cp, 16) + "-";
+		if(typeof value == "string") value = prefix + value;
+		else if(typeof value == "object"){
+			var v2 = {};
+			eachK(value, function(k,v){
+				v2[prefix + k] = v;
+			});
+			value = v2;
+		}
+	}
+	else{
 		var el = this.getLast();
 		el && this.__classedElements.push(el);
 	}
-	return this.attr("class", (cp ? "dot-" + str(cp,16) + "-" : "" ) + value);
+	return this.attr("class", value);
 }
 
 _p.label = function(arg){
