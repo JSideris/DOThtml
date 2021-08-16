@@ -82,9 +82,12 @@ function _Builder(target){
 	this.target = target;
 }
 
+dotcss._Builder = _Builder;
+
 var _b = _Builder.prototype;
 
 _b.toString = dotcss.prototype.toString = function(){
+	// console.log("CALLED TOSTRING!");
 	return this.currentCss;
 };
 
@@ -1154,258 +1157,15 @@ dotcss.formatNumberValue = function(value, unit){
 	}
 };
 
-dotcss._allProperties = [
-	{prop:"color", type:"color"},
-	{prop:"opacity"},
-	{prop:"background"},
-	{prop:"background-Attachment"},
-	{prop:"background-Blend-Mode"},
-	{prop:"background-Color", type:"color"},
-	{prop:"background-Image", type:"url"},
-	{prop:"background-Position"},
-	{prop:"background-Repeat"},
-	{prop:"background-Clip"},
-	{prop:"background-Origin"},
-	{prop:"background-Size", type:"length"},
-	{prop:"border"},
-	{prop:"border-Bottom"},
-	{prop:"border-Bottom-Color", type:"color"},
-	{prop:"border-Bottom-Left-Radius", type:"length"},
-	{prop:"border-Bottom-Right-Radius", type:"length"},
-	{prop:"border-Bottom-Style"},
-	{prop:"border-Bottom-Width", type:"length"},
-	{prop:"border-Color", type:"color"},
-	{prop:"border-Image", type:"url"},
-	{prop:"border-Image-Outset"},
-	{prop:"border-Image-Repeat"},
-	{prop:"border-Image-Slice"},
-	{prop:"border-Image-Source"},
-	{prop:"border-Image-Width", type:"length"},
-	{prop:"border-Left"},
-	{prop:"border-Left-Color", type:"color"},
-	{prop:"border-Left-Style"},
-	{prop:"border-Left-Width", type:"length"},
-	{prop:"border-Radius", type:"length"},
-	{prop:"border-Right"},
-	{prop:"border-Right-Color", type:"color"},
-	{prop:"border-Right-Style"},
-	{prop:"border-Right-Width", type:"length"},
-	{prop:"border-Style"},
-	{prop:"border-Top"},
-	{prop:"border-Top-Color", type:"color"},
-	{prop:"border-Top-Left-Radius", type:"length"},
-	{prop:"border-Top-Right-Radius", type:"length"},
-	{prop:"border-Top-Style"},
-	{prop:"border-Top-Width", type:"length"},
-	{prop:"border-Width", type:"length"},
-	{prop:"box-Decoration-Break"},
-	{prop:"box-Shadow"},
-	{prop:"bottom", type:"length"},
-	{prop:"clear"},
-	{prop:"clip"},
-	{prop:"display"},
-	{prop:"float"},
-	{prop:"height", type:"length"},
-	{prop:"left", type:"length"},
-	{prop:"margin", type:"length"},
-	{prop:"margin-Bottom", type:"length"},
-	{prop:"margin-Left", type:"length"},
-	{prop:"margin-Right", type:"length"},
-	{prop:"margin-Top", type:"length"},
-	{prop:"max-Height", type:"length"},
-	{prop:"max-Width", type:"length"},
-	{prop:"min-Height", type:"length"},
-	{prop:"min-Width", type:"length"},
-	{prop:"overflow"},
-	{prop:"box"},
-	{prop:"overflow-X"},
-	{prop:"overflow-Y"},
-	{prop:"padding", type:"length"},
-	{prop:"padding-Bottom", type:"length"},
-	{prop:"padding-Left", type:"length"},
-	{prop:"padding-Right", type:"length"},
-	{prop:"padding-Top", type:"length"},
-	{prop:"position"},
-	{prop:"right", type:"length"},
-	{prop:"top", type:"length"},
-	{prop:"visibility"},
-	{prop:"width", type:"length"},
-	{prop:"vertical-Align"},
-	{prop:"z-Index"},
-	{prop:"align-Content"},
-	{prop:"align-Items"},
-	{prop:"align-Self"},
-	{prop:"flex"},
-	{prop:"flex-Basis"},
-	{prop:"flex-Direction"},
-	{prop:"flex-Flow"},
-	{prop:"flex-Grow"},
-	{prop:"flex-Shrink"},
-	{prop:"flex-Wrap"},
+var _allProps = {
+	color: "color|background-Color|border-Bottom-Color|border-Color|border-Left-Color|border-Right-Color|border-Top-Color|text-Decoration-Color|outline-Color|column-Rule-Color",
+	length: "background-Size|border-Bottom-Left-Radius|border-Bottom-Right-Radius|border-Bottom-Width|border-Image-Width|border-Left-Width|border-Radius|border-Right-Width|border-Top-Left-Radius|border-Top-Right-Radius|border-Top-Width|border-Width|bottom|height|left|margin|margin-Bottom|margin-Left|margin-Right|margin-Top|max-Height|max-Width|min-Height|min-Width|padding|padding-Bottom|padding-Left|padding-Right|padding-Top|right|top|width|line-Height|font-Size",
+	url: "background-Image|border-Image|list-Style-Image|content|image-Orientation",
+	transformation: "transformation",
+	misc: "opacity|background|background-Attachment|background-Blend-Mode|background-Position|background-Repeat|background-Clip|background-Origin|border|border-Bottom|border-Bottom-Style|border-Image-Outset|border-Image-Repeat|border-Image-Slice|border-Image-Source|border-Left|border-Left-Style|border-Right|border-Right-Style|border-Style|border-Top|border-Top-Style|box-Decoration-Break|box-Shadow|clear|clip|display|float|overflow|box|overflow-X|overflow-Y|position|visibility|vertical-Align|z-Index|align-Content|align-Items|align-Self|flex|flex-Basis|flex-Direction|flex-Flow|flex-Grow|flex-Shrink|flex-Wrap|grid|grid-Area|grid-Auto-Columns|grid-auto-Rows|grid-Column|grid-Column-End|grid-Column-Gap|grid-Column-Start|grid-Gap|grid-Row|grid-Row-End|grid-Row-Gap|grid-Row-Start|grid-Template|grid-Template-Areas|grid-Template-Columns|grid-Template-Rows|justify-Content|order|hanging-Punctuation|hyphens|letter-Spacing|line-Break|overflow-Wrap|tab-Size|text-Align|text-Align-Last|text-Combine-Upright|text-Indent|text-Justify|text-Transform|white-Space|word-Break|word-Spacing|word-Wrap|text-Decoration|text-Decoration-Line|text-Decoration-Style|text-Shadow|text-Underline-Position|font|font-Family|font-Feature-Settings|font-Kerning|font-Language-Override|font-Size-Adjust|font-Stretch|font-Style|font-Synthesis|font-Variant|font-Variant-Alternates|font-Variant-Caps|font-Variant-East-Asian|font-Variant-Ligatures|font-Variant-Numeric|font-Variant-Position|font-Weight|direction|text-Orientation|text-Combine-Upright|unicode-Bidi|user-Select|writing-Mode|border-Collapse|border-Spacing|caption-Side|empty-Cells|table-Layout|counter-Increment|counter-Reset|list-Style|list-Style-Position|list-Style-Type|animation|animation-Delay|animation-Direction|animation-Duration|animation-Fill-Mode|animation-Iteration-Count|animation-Name|animation-Play-State|animation-Timing-Function|backface-Visibility|perspective2d|perspective-Origin|transform-Origin|transform-Style|transition|transition-Property|transition-Duration|transition-Timing-Function|transition-Delay|box-Sizing|cursor|ime-Mode|nav-Down|nav-Index|nav-Left|nav-Right|nav-Up|outline|outline-Offset|outline-Style|outline-Width|resize|text-Overflow|break-After|break-Before|break-Inside|column-Count|column-Fill|column-Gap|column-Rule|column-Rule-Style|column-Rule-Width|column-Span|column-Width|columns|widows|orphans|page-Break-After|page-Break-Before|page-Break-Inside|marks|quotes|filter|image-Rendering|image-Resolution|object-Fit|object-Position|mask|mask-Type|mark|mark-After|mark-Before|phonemes|rest|rest-After|rest-Before|voice-Balance|voice-Duration|voice-Pitch|voice-Pitch-Range|voice-Rate|voice-Stress|voice-Volume|marquee-Direction|marquee-Play-Count|marquee-Speed|marquee-Style"
+}
 
-	{prop:"grid"},
-	{prop:"grid-Area"},
-	{prop:"grid-Auto-Columns"},
-	{prop:"grid-auto-Rows"},
-	{prop:"grid-Column"},
-	{prop:"grid-Column-End"},
-	{prop:"grid-Column-Gap"},
-	{prop:"grid-Column-Start"},
-	{prop:"grid-Gap"},
-	{prop:"grid-Row"},
-	{prop:"grid-Row-End"},
-	{prop:"grid-Row-Gap"},
-	{prop:"grid-Row-Start"},
-	{prop:"grid-Template"},
-	{prop:"grid-Template-Areas"},
-	{prop:"grid-Template-Columns"},
-	{prop:"grid-Template-Rows"},
-
-	{prop:"justify-Content"},
-	{prop:"order"},
-	{prop:"hanging-Punctuation"},
-	{prop:"hyphens"},
-	{prop:"letter-Spacing"},
-	{prop:"line-Break"},
-	{prop:"line-Height", type:"length"},
-	{prop:"overflow-Wrap"},
-	{prop:"tab-Size"},
-	{prop:"text-Align"},
-	{prop:"text-Align-Last"},
-	{prop:"text-Combine-Upright"},
-	{prop:"text-Indent"},
-	{prop:"text-Justify"},
-	{prop:"text-Transform"},
-	{prop:"white-Space"},
-	{prop:"word-Break"},
-	{prop:"word-Spacing"},
-	{prop:"word-Wrap"},
-	{prop:"text-Decoration"},
-	{prop:"text-Decoration-Color", type:"color"},
-	{prop:"text-Decoration-Line"},
-	{prop:"text-Decoration-Style"},
-	{prop:"text-Shadow"},
-	{prop:"text-Underline-Position"},
-	{prop:"font"},
-	{prop:"font-Family"},
-	{prop:"font-Feature-Settings"},
-	{prop:"font-Kerning"},
-	{prop:"font-Language-Override"},
-	{prop:"font-Size", type:"length"},
-	{prop:"font-Size-Adjust"},
-	{prop:"font-Stretch"},
-	{prop:"font-Style"},
-	{prop:"font-Synthesis"},
-	{prop:"font-Variant"},
-	{prop:"font-Variant-Alternates"},
-	{prop:"font-Variant-Caps"},
-	{prop:"font-Variant-East-Asian"},
-	{prop:"font-Variant-Ligatures"},
-	{prop:"font-Variant-Numeric"},
-	{prop:"font-Variant-Position"},
-	{prop:"font-Weight"},
-	{prop:"direction"},
-	{prop:"text-Orientation"},
-	{prop:"text-Combine-Upright"},
-	{prop:"unicode-Bidi"},
-	{prop:"user-Select"},
-	{prop:"writing-Mode"},
-	{prop:"border-Collapse"},
-	{prop:"border-Spacing"},
-	{prop:"caption-Side"},
-	{prop:"empty-Cells"},
-	{prop:"table-Layout"},
-	{prop:"counter-Increment"},
-	{prop:"counter-Reset"},
-	{prop:"list-Style"},
-	{prop:"list-Style-Image", type:"url"},
-	{prop:"list-Style-Position"},
-	{prop:"list-Style-Type"},
-	{prop:"animation"},
-	{prop:"animation-Delay"},
-	{prop:"animation-Direction"},
-	{prop:"animation-Duration"},
-	{prop:"animation-Fill-Mode"},
-	{prop:"animation-Iteration-Count"},
-	{prop:"animation-Name"},
-	{prop:"animation-Play-State"},
-	{prop:"animation-Timing-Function"},
-	{prop:"backface-Visibility"},
-	{prop:"perspective2d"},
-	{prop:"perspective-Origin"},
-	{prop:"transform", type:"transformation"},
-	{prop:"transform-Origin"},
-	{prop:"transform-Style"},
-	{prop:"transition"},
-	{prop:"transition-Property"},
-	{prop:"transition-Duration"},
-	{prop:"transition-Timing-Function"},
-	{prop:"transition-Delay"},
-	{prop:"box-Sizing"},
-	{prop:"content", type:"url"},
-	{prop:"cursor"},
-	{prop:"ime-Mode"},
-	{prop:"nav-Down"},
-	{prop:"nav-Index"},
-	{prop:"nav-Left"},
-	{prop:"nav-Right"},
-	{prop:"nav-Up"},
-	{prop:"outline"},
-	{prop:"outline-Color", type:"color"},
-	{prop:"outline-Offset"},
-	{prop:"outline-Style"},
-	{prop:"outline-Width"},
-	{prop:"resize"},
-	{prop:"text-Overflow"},
-	{prop:"break-After"},
-	{prop:"break-Before"},
-	{prop:"break-Inside"},
-	{prop:"column-Count"},
-	{prop:"column-Fill"},
-	{prop:"column-Gap"},
-	{prop:"column-Rule"},
-	{prop:"column-Rule-Color", type:"color"},
-	{prop:"column-Rule-Style"},
-	{prop:"column-Rule-Width"},
-	{prop:"column-Span"},
-	{prop:"column-Width"},
-	{prop:"columns"},
-	{prop:"widows"},
-	{prop:"orphans"},
-	{prop:"page-Break-After"},
-	{prop:"page-Break-Before"},
-	{prop:"page-Break-Inside"},
-	{prop:"marks"},
-	{prop:"quotes"},
-	{prop:"filter"},
-	{prop:"image-Orientation", type:"url"},
-	{prop:"image-Rendering"},
-	{prop:"image-Resolution"},
-	{prop:"object-Fit"},
-	{prop:"object-Position"},
-	{prop:"mask"},
-	{prop:"mask-Type"},
-	{prop:"mark"},
-	{prop:"mark-After"},
-	{prop:"mark-Before"},
-	{prop:"phonemes"},
-	{prop:"rest"},
-	{prop:"rest-After"},
-	{prop:"rest-Before"},
-	{prop:"voice-Balance"},
-	{prop:"voice-Duration"},
-	{prop:"voice-Pitch"},
-	{prop:"voice-Pitch-Range"},
-	{prop:"voice-Rate"},
-	{prop:"voice-Stress"},
-	{prop:"voice-Volume"},
-	{prop:"marquee-Direction"},
-	{prop:"marquee-Play-Count"},
-	{prop:"marquee-Speed"},
-	{prop:"marquee-Style"}
-];
-
-dotcss._allLengthUnits = [
+var _allLengthUnits = [
 	{unit:"Em"},
 	{unit:"Ex"},
 	{unit:"Ch"},
@@ -1423,7 +1183,7 @@ dotcss._allLengthUnits = [
 	{unit:"Pc"}
 ];
 
-dotcss._allTransforms = [
+var _allTransforms = [
 	"matrix",
 	"matrix3d",
 	"translate",
@@ -1582,6 +1342,8 @@ dotcss._addPropFunctionToDotCssObject = function(funcName){
 dotcss._makeFunction = function(prop, jsFriendlyProp, type){
 	//Create the new function.
 	_b[jsFriendlyProp] = function(){
+
+		
 		if(arguments.length == 0) return this;
 		var args = [];
 		for(var i = 0; i < arguments.length; i++) args.push(arguments[i]);
@@ -1606,8 +1368,8 @@ dotcss._makeFunction = function(prop, jsFriendlyProp, type){
 	
 	//Each unit of length will also have its own version of this function (assuming this is a length property).
 	if(type == "length"){
-		for(var u = 0; u < dotcss._allLengthUnits.length; u++){
-			var uu = dotcss._allLengthUnits[u];
+		for(var u = 0; u < _allLengthUnits.length; u++){
+			var uu = _allLengthUnits[u];
 			(function(uu){
 				_b[jsFriendlyProp + (uu.jsName || uu.unit)] = function(){
 					for(var i = 0; i < arguments.length; i++) arguments[i] = arguments[i] + uu.unit.toLowerCase();
@@ -1683,8 +1445,13 @@ dotcss.unscope = function(){
 };
 
 //Build dotcss.
-for(var i = 0; i < dotcss._allProperties.length; i++) dotcss._makeFunction(dotcss._allProperties[i].prop.toLowerCase(), dotcss._allProperties[i].prop.replace(new RegExp("-", "g"), ""), dotcss._allProperties[i].type);
-for(var i = 0; i < dotcss._allTransforms.length; i++) dotcss._makeTransformFunction(dotcss._allTransforms[i]);
+for(var k in _allProps) {
+	let P = _allProps[k].split("|");
+	for(var i in P){
+		dotcss._makeFunction(P[i].toLowerCase(), P[i].replace(new RegExp("-", "g"), ""), k);
+	}
+}
+for(var i = 0; i < _allLengthUnits.length; i++) dotcss._makeTransformFunction(_allLengthUnits[i]);
 //dotcss = new dotcss();
 
 // for (var k in _b) {

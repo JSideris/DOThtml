@@ -1,6 +1,7 @@
 import { eachK, isF } from "./util";
 import ERR from "./err";
 import ObservableArray from "./observable-array";
+import { AttrArgCallback } from "./arg-callback-obj";
 
 /** How it works:
  * 
@@ -50,20 +51,21 @@ function configureDependency(ret, name){
 		// Add it to a collection so that when the value is set, the appropriate component will update.
 		
 		if(ret instanceof ObservableArray){
+			var d = cb.dotTarget;
 			ret.addEventListener("itemadded", function(e) {
-				cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
+				d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
 			});
 
 			ret.addEventListener("itemset", function(e) {
-				var p = cb.d.__document;
+				var p = d.__document;
 				var el = p.childNodes[e.index];
 				p.removeChild(el);
-				cb.d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
+				d._appendOrCreateDocument(cb.f(e.item, e.index), undefined, e.index);
 				
 			});
 
 			ret.addEventListener("itemremoved", function(e) {
-				cb.d.__document.removeChild(cb.d.__document.childNodes[e.index]);
+				d.__document.removeChild(d.__document.childNodes[e.index]);
 			});
 		}
 		else{
@@ -95,25 +97,16 @@ function createProp(name, CC){
 			var ar = this.__propDependencies[name];
 
 			// // {f:contentCallback,startNode:startNode, endNode:endNode,condition:condition}
+			var updateStyles = false;
 			for(let i = 0; i < (ar||[]).length; i++){
-				if(ar[i].condition){
-					if(ar[i].lastValue != !!ar[i].condition()){
-						ar[i].lastValue = !ar[i].lastValue;
-						if(ar[i].lastValue){
-							dot._appendOrCreateDocument(ar[i].f, ar[i].endNode.parentNode, ar[i].endNode);
-						}
-						else {
-							do{
-								var e = ar[i].startNode.nextSibling;
-								if(e && e != ar[i].endNode){
-									e.parentNode.removeChild(e);
-								}
-							} while(ar[i].startNode.nextSibling && ar[i].startNode.nextSibling != ar[i].endNode)
-						}
-					}
+				ar[i].updateContent(dot, propVal);
+
+				if(ar[i] instanceof AttrArgCallback && ar[i].attr == "class"){
+					updateStyles = true;
 				}
-				else if(ar[i].e) dot(ar[i].e).empty().h(ar[i].f(propVal));
 			}
+
+			if(updateStyles) this.$updateStyles();
 
 			return propVal;
 		}
@@ -233,6 +226,10 @@ export function addComponent(prms){
 			
 		}
 
+		CC.prototype.$updateStyles = function(){
+			this.$styleBuilder && this.$styleBuilder();
+		}
+
 		// Adding the component to dot.
 		comp = function(){
 			var obj = new CC();
@@ -270,9 +267,13 @@ export function addComponent(prms){
 
 			if(isF(st)) {
 				// This will be the officially supported way to use dothtml.
-				dot.css.scopeToEl(obj.$el)
-				st.apply(obj, [dot.css]);
-				dot.css.unscope();
+				obj.$styleBuilder = function(){
+					dot.css.scopeToEl(obj.$el)
+					st.apply(obj, [dot.css]);
+					dot.css.unscope();
+				}
+				obj.$updateStyles();
+				//styler();
 			}
 
 			prms.built && prms.built.apply(obj);
