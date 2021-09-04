@@ -6,7 +6,7 @@ import ERR from "./err";
 import ObservableArray from "./observable-array";
 import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
 
-var version = "4.8.0";
+var version = "4.8.3";
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
@@ -87,7 +87,6 @@ function _get(url, success, fail){
 
 function createElement(tag){
 	_p[tag] = _p[tag + "E"] = function(c){return this.el(tag, c);}
-	//dot[tag] = dot[tag + "E"] = function(c){return this.el(tag, c);}
 };
 
 function createAttribute(attribute){
@@ -559,7 +558,7 @@ _p.defer = function(callback, timeout){
 // Used by _p.empty and _p.remove.
 function deleteElement(element){
 	var deleted = null;
-	var dc = element.dotComponent;
+	var dc = element.__dothtml_component;
 	if(dc){
 		var d = dc.__prms.deleting;
 		d && d.apply(dc);

@@ -7,7 +7,7 @@ module.exports = {
   output: {
     filename: "dothtml.min.js",
     library: {
-        name: "dothtml",
+        //name: "dothtml",
         type: "commonjs2"
     },
     path: path.resolve(__dirname, "lib"),

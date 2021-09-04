@@ -28,30 +28,13 @@ var dotcss = function(query){
 				// To make matters worse, if we do querySelectorAll on the element's parents, we may accidentally select its siblings!!
 				// To fix this, we get a list from querySelectorAll on the element, then push the element itself to that list 
 				// iff it is in the list of elements queried from its parent. 
+				// In addition to all of that, we don't want scoped styles to be applied to child components. 
 				var s0 = scopeStack[0];
+
+				// If we're doing scoped, and it's an element.
 				if(s0 && s0.parentNode && s0.querySelectorAll){
-					target = s0.querySelectorAll(query);
-					var parentTargets = s0.parentNode.querySelectorAll(query);
-					for(var t = 0; t < parentTargets.length; t++){
-						var T = parentTargets[t];
-						if(T === s0){
-							// console.log(s0.innerHTML);
-							// Unfortunately, we now need to convert the nodelist to an array, so we can add something to it. 
-							// This just gets better and better!
-							var target2 = [s0];
-							for(var e = 0; e < target.length; e++){
-								target2.push(target[e]);
-							}
 
-							target = target2;
-
-							// for(var i in target){
-							// 	console.log(target[i].outerHTML);
-							// }
-
-							break;
-						}
-					}
+					target = getScopedNodeList(query, s0);
 				}
 				else{
 					target = document.querySelectorAll(query);
@@ -76,6 +59,41 @@ dotcss._lastBuilder = null;
 dotcss._floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
 
 var scopeStack = [];
+
+function getScopedNodeList(query, s0){
+	// Get all of the matching child elements of the component. This will not include s0 itself, but it does include nested components.
+	// So we will need to manipulate this collection.
+	// querySelectorAll returns a NodeList, which we need to convert into an Array.
+	var target = Array.from(s0.querySelectorAll(query));
+
+	// Exclude nested components.
+	for(var t = 0; t < target.length; t++){
+		var T = target[t];
+
+		// Is it a nested component??
+		if(T.__dothtml_component){
+			// It's a component. Remove it, and all of it's descendants. 
+			target.splice(t, 1);
+			t--;
+			
+			var subTargets = T.querySelectorAll(query);
+			for(var s = 0; s < subTargets.length; s++){
+				let S = subTargets[s];
+				target.splice(target.indexOf(S, t + 1), 1);
+			}
+		}
+	}
+
+	// Loop through all the sibling nodes until we find s0.
+	var parentTargets = Array.from(s0.parentNode.querySelectorAll(query));
+
+	var p = parentTargets.indexOf(s0);
+	if(p != -1){
+		target.unshift(parentTargets[p]);
+	}
+	
+	return target;
+}
 
 function _Builder(target){
 	this.currentCss = "";

@@ -2,7 +2,8 @@ import addTest from "./core";
 import dot from "../src/index";
 
 addTest("Deferred.", function(){ return dot.div(dot.defer(function(v){v.h(1)}))}, "<div>1</div>");
-addTest("Long deferred.", function(){ return dot.div(dot.defer(function(v){setTimeout(function(){v.h(1);},0)})); }, "<div>1</div>", 25);
+// TODO: running
+// addTest("Long deferred.", function(){ return dot.div(dot.defer(function(v){setTimeout(function(){v.h(1);},0)})); }, "<div>1</div>", 25);
 
 addTest("Wait, timing early.", function(){ return dot.div(1).wait(50, dot.div(3)).div(2); }, "<div>1</div><dothtml-defer></dothtml-defer><div>2</div>", 25);
 addTest("Wait, for nothing.", function(){ return dot.div(1).wait(1, function(){}).div(2); }, "<div>1</div><div>2</div>", 25);

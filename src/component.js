@@ -199,6 +199,7 @@ export function addComponent(prms){
 		var st = prms.style;
 		if(st && !isF(st)){
 			// This is the less-preferred method of using component styles.
+			// Might remove it.
 
 			classNumb = classPrefix++;
 
@@ -263,7 +264,7 @@ export function addComponent(prms){
 			// Some weird ass logic to support legacy named components and the new syntax.
 			if(classNumb || n) ret = (this instanceof _D ? this : dot)._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
 			obj.$el = obj.$el || lst;
-			obj.$el.dotComponent = obj;
+			obj.$el.__dothtml_component = obj;
 
 			if(isF(st)) {
 				// This will be the officially supported way to use dothtml.

@@ -116,6 +116,36 @@ addTest("Advanced styled component.", function(){ var comp = dot.component({buil
 addTest("Component with multiple styles.", function(){ var comp = dot.component({builder: function(c, w){ this.w = w; return dot.p(c)}, style: function(css){css("p").width(this.w);} }); return dot.h(comp(":)", 200)).h(comp(":)", 300)) }, "<p style=\"width: 200px;\">:)</p><p style=\"width: 300px;\">:)</p>" );
 addTest("Component with class styles.", function(){ var comp = dot.component({builder: function(c, w,h){ this.w = w; this.h = h; return dot.div(dot.div(c).div("w").class("w").div("ok").class("h")).class("w")}, style: function(css){css(".w").width(this.w);css(".h").width(this.h);} }); return dot.h(comp(":)", 200, 400)).h(comp(":)", 300, 500)).div().class("h") }, "<div class=\"w\" style=\"width: 200px;\"><div>:)</div><div class=\"w\" style=\"width: 200px;\">w</div><div class=\"h\" style=\"width: 400px;\">ok</div></div><div class=\"w\" style=\"width: 300px;\"><div>:)</div><div class=\"w\" style=\"width: 300px;\">w</div><div class=\"h\" style=\"width: 500px;\">ok</div></div><div class=h></div>" );
 
+addTest("Styles should not apply to nested elements.", function(){
+	var CompOuter = dot.component({
+		builder(inner){return dot.div(inner);},
+		style(css){
+			css("div").backgroundColor("#FF0000");
+		}
+	});
+
+	var CompInner = dot.component({
+		builder(){return dot.div("FOOBAR");}
+	});
+
+	return dot.h(new CompOuter(new CompInner()))
+}, "<div style=\"background-color: rgb(255, 0, 0);\"><div>FOOBAR</div></div>");
+
+addTest("Styles should not apply to nested elements 2.", function(){
+	var CompOuter = dot.component({
+		builder(inner){return dot.div(inner);},
+		style(css){
+			css("div").backgroundColor("#FF0000");
+		}
+	});
+
+	var CompInner = dot.component({
+		builder(){return dot.div(dot.div("FOOBAR"));}
+	});
+
+	return dot.h(new CompOuter(new CompInner()))
+}, "<div style=\"background-color: rgb(255, 0, 0);\"><div><div>FOOBAR</div></div></div>");
+
 // Event Bus
 
 addTest("Event bus basic usage.", function(){var comp1 = dot.component({builder: function(){var t = this; dot.bus.on("change", function(v){t.$el.innerHTML = v}); return dot.p()}  }); var ret = dot.h(comp1()); dot.bus.emit("change", "hello"); return ret;  }, "<p>hello</p>");
