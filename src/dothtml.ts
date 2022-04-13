@@ -1,5 +1,4 @@
 
-import { IDotElement, IDotGenericElement } from "i-dot";
 import dot from "./dot";
 
 dot.version = "5.0.0";
