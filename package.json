@@ -1,8 +1,8 @@
 {
   "name": "dothtml",
-  "version": "4.8.6",
+  "version": "5.0.0",
   "description": "DOThtml is a client-side framework for building single-page applications.",
-  "main": "lib/dothtml.min.js",
+  "main": "lib/dothtml.js",
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
     "@testing-library/jest-dom": "^5.13.0",
@@ -26,6 +26,9 @@
   "keywords": [
     "html",
     "page",
+    "dynamic",
+    "javascript",
+    "typescript",
     "web",
     "builder",
     "generation",
