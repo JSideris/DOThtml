@@ -610,7 +610,7 @@ ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element,
 					// TODO: how do we know it's a valid event?
 					let newName:string = call.name;
 					if(newName.indexOf("on") == 0 && allEventAttr.indexOf(newName) != -1){
-						newName = newName.substring(2);
+						newName = newName.substring(2).toLowerCase();
 					}
 					attachEvent((pendingCallTarget as Element), newName, call.params[0], call.arg3);
 				}
