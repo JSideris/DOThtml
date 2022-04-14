@@ -686,7 +686,7 @@ ext("attr", function(attr, value, arg3?){
 			value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
 		}
 		else {
-			attr = attr.substring(2);
+			// attr = attr.substring(2);
 		}
 	}
 
