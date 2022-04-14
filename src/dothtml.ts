@@ -1,7 +1,9 @@
 
+import Component from "component";
 import dot from "./dot";
 
 dot.version = "5.0.0";
+dot.Component = Component;
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
 
