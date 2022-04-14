@@ -609,9 +609,6 @@ ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element,
 				else {
 					// TODO: how do we know it's a valid event?
 					let newName:string = call.name;
-					if(newName.indexOf("on") == 0 && allEventAttr.indexOf(newName) != -1){
-						newName = newName.substring(2).toLowerCase();
-					}
 					attachEvent((pendingCallTarget as Element), newName, call.params[0], call.arg3);
 				}
 			}
@@ -681,11 +678,13 @@ ext("t", function(content): IDotDocument{
 ext("attr", function(attr, value, arg3?){
 	var T = this;
 	if (isF(value)) { // events.
-		if (attr.indexOf("on") != 0) {//But only do this if it's an unrecognized event.
-			dot["__anonAttrFuncs"][_anonFuncCounter] = (value);
-			value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
+		if (attr.indexOf("on") == 0 && allEventAttr.indexOf(attr) != -1) {
+			attr = attr.substring(2).toLowerCase();
 		}
 		else {
+			// Unrecognized event.
+			dot["__anonAttrFuncs"][_anonFuncCounter] = (value);
+			value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
 			// attr = attr.substring(2);
 		}
 	}
