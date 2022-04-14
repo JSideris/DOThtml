@@ -1,0 +1,27 @@
+{
+  "name": "dothtml-pages",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/jsideris/dothtml.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jsideris/dothtml/issues"
+  },
+  "homepage": "https://github.com/jsideris/dothtml#readme",
+  "dependencies": {
+    "dothtml": "github:JSideris/DOThtml"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.3",
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
+  }
+}
