@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/index";
+import dot from "../src/dothtml";
 
 addTest("Evaluate array.", function(){ return dot.div([1, 2, 3, 4]); }, "<div>1234</div>");
 addTest("Evaluate array of functions..", function(){ return dot.div([function(){return 1}, function(){return 2}]); }, "<div>12</div>");

@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/index";
+import dot from "../src/dothtml";
 
 dot.resetScopeClass();
 

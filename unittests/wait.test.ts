@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/index";
+import dot from "../src/dothtml";
 
 addTest("Deferred.", function(){ return dot.div(dot.defer(function(v){v.h(1)}))}, "<div>1</div>");
 // TODO: running

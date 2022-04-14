@@ -1,18 +1,18 @@
 import addTest from "./core";
-import dot from "../src/index";
+import dot from "../src/dothtml";
 import Component from "../src/component";
 
-class comp_legacy extends Component{
+class comp_legacy extends dot.Component{
 	builder(){
 		return dot.div(dot.div(1));
 	}
 }
-class comp_std extends Component{
+class comp_std extends dot.Component{
 	builder(){
 		return dot.div(dot.div(1));
 	}
 }
-class comp_ready extends Component{
+class comp_ready extends dot.Component{
 	builder(){
 		return dot.div(dot.div(1));
 	}
@@ -22,19 +22,19 @@ class comp_ready extends Component{
 	}
 }
 
-class comp_el_one_el extends Component{
+class comp_el_one_el extends dot.Component{
 	builder(){
 		return dot.div("abc");
 	}
 } 
 
-class comp_el_two_el extends Component{
+class comp_el_two_el extends dot.Component{
 	builder(){
 		return dot.div("abc").div("abc");
 	}
 } 
 
-abstract class ParameterizedComponent extends Component{
+abstract class ParameterizedComponent extends dot.Component{
 	params: Array<any>;
 	constructor(...params: Array<any>){
 		super();
@@ -42,7 +42,7 @@ abstract class ParameterizedComponent extends Component{
 	}
 }
 
-// class comp_el_deferred_el extends Component{
+// class comp_el_deferred_el extends dot.Component{
 // 	builder(){
 // 		return dot.div("abc").wait(function(){}, 1000);
 // 	}
@@ -50,7 +50,7 @@ abstract class ParameterizedComponent extends Component{
 
 // Testing methods:
 // TODO: passing callMethod in like this will soon be deprecated.
-class comp_methods_basic extends Component{
+class comp_methods_basic extends dot.Component{
 	callMethod: boolean;
 	constructor(callMethod: boolean){
 		super();
@@ -71,12 +71,12 @@ class comp_methods_basic extends Component{
 
 // Scoped classes
 dot.resetScopeClass();
-class comp_scoped_class extends Component{
+class comp_scoped_class extends dot.Component{
 	builder(){ 
 		return dot.div(dot.div().class("test2")).class("test1") 
 	}
 };
-class comp_scoped_class_2 extends Component{
+class comp_scoped_class_2 extends dot.Component{
 	builder(){ return dot.div(dot.div().class("test2")).class("test1") }
 };
 
@@ -214,7 +214,7 @@ addTest("Styles should not apply to nested elements.", function(){
 		}
 	};
 
-	class CompInner extends Component{
+	class CompInner extends dot.Component{
 		builder(){
 			return dot.div("FOOBAR");
 		}
@@ -233,7 +233,7 @@ addTest("Styles should not apply to nested elements 2.", function(){
 		}
 	}
 
-	class CompInner extends Component{
+	class CompInner extends dot.Component{
 		builder(){return dot.div(dot.div("FOOBAR"));}
 	}
 
@@ -243,7 +243,7 @@ addTest("Styles should not apply to nested elements 2.", function(){
 // Event Bus
 
 addTest("Event bus basic usage.", function(){
-	class comp1 extends Component{
+	class comp1 extends dot.Component{
 		builder(){
 			var t = this; 
 			dot.bus.on("change", function(v){t.$el.innerHTML = v}); 

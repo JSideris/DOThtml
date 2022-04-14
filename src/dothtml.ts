@@ -1,6 +1,6 @@
 
-import Component from "component";
 import dot from "./dot";
+import Component from "./component";
 
 dot.version = "5.0.0";
 dot.Component = Component;

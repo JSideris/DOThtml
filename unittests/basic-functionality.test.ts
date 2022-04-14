@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/index";
+import dot from "../src/dothtml";
 
 addTest("Dot object.", function(){ return dot; }, "");
 addTest("Calling dot as a function.", function(){ return dot(); }, "");

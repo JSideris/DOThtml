@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/index";
+import dot from "../src/dothtml";
 
 addTest("Conditional true.", function(){ return dot.h(1).when(true, dot.h("true")).h(2); }, "1true2");
 addTest("Conditional false.", function(){ return dot.h(1).when(false, dot.h("false")).h(2); }, "12");
