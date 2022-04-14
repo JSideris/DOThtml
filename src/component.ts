@@ -4,6 +4,7 @@ import { ClassPrefix, eachK, isF, sT } from "./dot-util";
 import ERR from "./err";
 import { IDotDocument, IDotElement, IDotGenericElement } from "./i-dot";
 import { ArgCallback, ArrayArgCallback, AttrArgCallback } from "./arg-callback-obj";
+import IDotcss from "i-dotcss";
 
 interface IPropertyContainer{
 	activePropConstructor: Function;
@@ -356,7 +357,7 @@ abstract class Component{
 	/**
 	 * An optional function that is called after builder that stylizes the component using a scoped style builder.
 	 */
-	style?(styleBuilder: unknown): void;
+	style?(styleBuilder: IDotcss): void;
 
 	// constructor(params: ComponentParams){
 	// 	this.name = params.name;
