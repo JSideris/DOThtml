@@ -248,7 +248,7 @@ var allAttributes = [
 	"char",
 	"charOff",
 	"checked",
-	"cite", //*
+	// "cite", //*
 	//"class",
 	"classId",
 	"clear",
@@ -283,7 +283,7 @@ var allAttributes = [
 	"fontSpecification",
 	"for",
 	"foreignObject",
-	"form", //*
+	// "form", //*
 	"formAction",
 	"frame",
 	"frameBorder",
@@ -301,7 +301,7 @@ var allAttributes = [
 	"itemProp",
 	"keyType",
 	"kind",
-	"label", //*
+	// "label", //*
 	"lang",
 	"list",
 	"longDesc",
@@ -350,7 +350,7 @@ var allAttributes = [
 	"shape",
 	"size",
 	"sizes",
-	"span", //*
+	// "span", //*
 	"spellCheck",
 	"src",
 	"srcDoc",
@@ -359,7 +359,7 @@ var allAttributes = [
 	"standby",
 	"start",
 	"step",
-	"summary", //*
+	// "summary", //*
 	"style",
 	"tabIndex",
 	"target",

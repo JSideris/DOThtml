@@ -36,3 +36,4 @@ addTest("acceptCharsetA.", function(){ return dot.form().acceptCharset("utf-8");
 // addTest("Smart data - basic attribute.", function(){ return dot.object().data(1); }, "<object data=\"1\"></object>");
 
 addTest("Smart data - custom attribute.", function(){ return dot.div().customData("a", 1); }, "<div data-a=\"1\"></div>");
+addTest("Span after an image.", function(){ return dot.span("1").img().src("").span("2"); }, "<span>1</span><img src=\"\"><span>2</span>");
