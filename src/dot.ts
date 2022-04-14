@@ -608,7 +608,11 @@ ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element,
 				}
 				else {
 					// TODO: how do we know it's a valid event?
-					attachEvent((pendingCallTarget as Element), call.name, call.params[0], call.arg3);
+					let newName:string = call.name;
+					if(newName.indexOf("on") == 0 && allEventAttr.indexOf(newName) != -1){
+						newName = newName.substring(2);
+					}
+					attachEvent((pendingCallTarget as Element), newName, call.params[0], call.arg3);
 				}
 			}
 			else if(call.type == "wait"){
