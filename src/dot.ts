@@ -3,7 +3,7 @@ import eventBus from "./event-bus";
 import {IDotCore, IDotGenericElement} from "./i-dot";
 import dotcss from "./style-builder";
 import ERR from "./err";
-import { DotContent, IDotElement, IDotDocument } from "./i-dot";
+import { DotContent, IDotElementDocument, IDotDocument } from "./i-dot";
 import { ClassPrefix, eachK, isF, sT, str } from "./dot-util";
 import Component from "./component";
 import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
@@ -640,7 +640,7 @@ ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element,
 	//return this;
 });
 
-ext("el", function(tag: string, content?: DotContent): IDotElement<IDotGenericElement>{
+ext("el", function(tag: string, content?: DotContent): IDotElementDocument<IDotGenericElement>{
 	var T = this;
 	var ne = document.createElement(tag); 
 	var nDoc = T.__document || T._getNewDocument();
@@ -852,7 +852,7 @@ _p.stop = function(){
  * Sets the value of an input or texterea.
  * @param {string} value - The value to be set.
  */
-_p.setVal = function(value): IDotElement<IDotGenericElement>{
+_p.setVal = function(value): IDotElementDocument<IDotGenericElement>{
 	let last = this.getCurrent();
 	
 	if(!last) return this;

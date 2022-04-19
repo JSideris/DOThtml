@@ -3,6 +3,7 @@ import dot from "../src/dothtml";
 import Component from "../src/component";
 
 class comp_legacy extends dot.Component{
+	
 	builder(){
 		return dot.div(dot.div(1));
 	}

@@ -1,5 +1,5 @@
 import { IDotElement, IDotGenericElement } from "./i-dot";
-import IDotcss from "i-dotcss";
+import IDotCss from "i-dotcss";
 interface Component {
     props?: {
         [key: string]: any;
@@ -73,7 +73,7 @@ declare abstract class Component {
     /**
      * An optional function that is called after builder that stylizes the component using a scoped style builder.
      */
-    style?(styleBuilder: IDotcss): void;
+    style?(styleBuilder: IDotCss): void;
     $styleBuilder?: Function;
     $updateStyles(): void;
 }

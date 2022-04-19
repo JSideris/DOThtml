@@ -1,6 +1,6 @@
 "use strict";
 
-import IDotcss, { HideParams, LengthProp, ShowParams } from "./i-dotcss";
+import IDotCss, { HideParams, LengthProp, ShowParams } from "./i-dotcss";
 
 //Latest Update.
 /*
@@ -12,7 +12,7 @@ import IDotcss, { HideParams, LengthProp, ShowParams } from "./i-dotcss";
 
 const STATIC_SYLES_ATTR = "data-dot-static-styles";
 
-const dotcss: IDotcss = function(query){
+const dotcss: IDotCss = function(query){
 	//this.currentCss = "";
 	var target = null;
 	if(query){
@@ -54,7 +54,7 @@ const dotcss: IDotcss = function(query){
 	}
 	dotcss2._lastBuilder = new _Builder(target);
 	return dotcss2._lastBuilder;
-} as IDotcss;
+} as IDotCss;
 
 // Easier way to extend dotcss with private methods without type concerns.
 const dotcss2 = dotcss as any;

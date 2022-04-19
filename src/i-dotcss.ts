@@ -842,7 +842,7 @@ interface IDotcssProp{
 	pointerEvents: (value: string)=>IDotcssProp
 }
 
-export default interface IDotcss extends IDotcssProp{
+export default interface IDotCss extends IDotcssProp{
 	(document?: Element|string): IDotcssProp;
 
 	version: string;

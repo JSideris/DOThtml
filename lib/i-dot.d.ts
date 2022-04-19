@@ -1,6 +1,6 @@
 import EventBus from "./event-bus";
 import type Component from "./component";
-import IDotcss from "i-dotcss";
+import IDotCss from "i-dotcss";
 export declare type DotContentPrimitive = string | number | boolean;
 export declare type DotContentBasic = DotContentPrimitive | Node | Element | NodeList | Component | IDotDocument;
 export declare type DotContent = DotContentBasic | Array<DotContent> | (() => DotContent);
@@ -176,7 +176,7 @@ export interface IDotCore extends IDotDocument {
     (targetSelector: string | Element | Node | NodeList | Array<Node | Element>): IDotElement<IDotGenericElement>;
     version: string;
     navigate(path: string, noHistory?: boolean, force?: boolean): void;
-    css: IDotcss;
+    css: IDotCss;
     bus: typeof EventBus;
     resetScopeClass(): void;
     Component: typeof Component;
