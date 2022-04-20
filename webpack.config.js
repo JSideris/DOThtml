@@ -6,7 +6,7 @@ module.exports = {
     devtool: 'inline-source-map',
     output: {
         path: `${__dirname}/dist`,
-        filename: 'main.js',
+        filename: 'main.js'
     },
     module: {
         rules: [
@@ -16,5 +16,7 @@ module.exports = {
     resolve: {
         extensions: [".ts", ".js"],
     },
-    plugins: [new HtmlWebpackPlugin()],
+    plugins: [new HtmlWebpackPlugin({
+        title: "DOThtml"
+    })],
 };
