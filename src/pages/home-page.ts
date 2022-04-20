@@ -1,12 +1,26 @@
-import dot from "dothtml";
-import { IDotElement, IDotGenericElement } from "dothtml/lib/i-dot";
+import dot, { IDotElement, IDotCss } from "dothtml";
 
 let d1 = ["a", "b", "c"];
 let d2 = ["1", "2", "3"];
 
 export default class HomePage extends dot.Component{
-	builder(...args: any[]): IDotElement<IDotGenericElement> {
-		throw new Error("Method not implemented.");
+	props={
+		data: d1
 	}
 
+	builder(): IDotElement {
+		return dot.div(
+			()=>this.props.data[0]
+		);
+	}
+	
+	ready(){
+		// this.props.data[0] = "1";
+		// this.props.data = d2;
+		//this.props.data = "1";
+	}
+
+	style(css: IDotCss){
+		css("div").color("red")
+	}
 }
