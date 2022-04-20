@@ -56,7 +56,9 @@ declare abstract class Component {
      * The main element of this component - automatically set after the builder is called.
     */
     get $el(): HTMLElement;
-    $refs: {};
+    $refs: {
+        [key: string]: Element;
+    };
     /**
      * Name of the component (optional). If provided, dot and the VDBO will be extended.
      */

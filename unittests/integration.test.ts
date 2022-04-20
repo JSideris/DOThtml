@@ -1,5 +1,4 @@
-import addTest from "./core";
-import dot from "../lib/dothtml.min.js";
+import dot from "../lib/dothtml.js";
 
 test("Integration test.", ()=>{
     dot.div();

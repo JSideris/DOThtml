@@ -4,7 +4,7 @@ import {IDotCore, IDotGenericElement} from "./i-dot";
 import dotcss from "./style-builder";
 import ERR from "./err";
 import { DotContent, IDotElementDocument, IDotDocument } from "./i-dot";
-import { ClassPrefix, eachK, isF, sT, str } from "./dot-util";
+import { ClassPrefix, eachK, GlobalComponentStack, isF, sT, str } from "./dot-util";
 import Component from "./component";
 import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
 import ObservableArray from "./observable-array";
@@ -514,6 +514,16 @@ _p.toString = function(){
 	if(this.__document) return this.__document.innerHTML;
 	else return "";
 };
+
+_p.ref = function(name){
+	let l = this.getLast();
+	let gl = GlobalComponentStack.length;
+	if(l && gl > 0){
+		let c = GlobalComponentStack[gl - 1];
+		c.$refs[name] = l;
+	}
+	return this;
+}
 
 //before is passed in so that attributes can be associated with before's sibling, instead of inheritingParent, the default.
 ext("_evalContent", function(content: DotContent, pendingCalls?: Array<unknown>){
@@ -1127,8 +1137,6 @@ dot["__document"] = null;
 dot["__if"] = null;
 dot["__pendingCalls"] = [];
 dot["__anonAttrFuncs"] = {};
-
-dot.div();
 
 // TODO: these may already exist?
 //dot.data = DotDocument.prototype.data;

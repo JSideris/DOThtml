@@ -1,3 +1,4 @@
+import type Component from "component";
 export declare function eachK(obj: any, cb: any): void;
 export declare function isF(v: any): any;
 export declare const sT: typeof setTimeout;
@@ -8,4 +9,5 @@ declare class _ClassPrefix {
     get next(): number;
 }
 export declare const ClassPrefix: _ClassPrefix;
+export declare const GlobalComponentStack: Array<Component>;
 export {};

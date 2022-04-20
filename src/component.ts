@@ -1,6 +1,6 @@
 import ObservableArray from "./observable-array";
 import dot from "./dot";
-import { ClassPrefix, eachK, isF, sT } from "./dot-util";
+import { ClassPrefix, eachK, GlobalComponentStack, isF, sT } from "./dot-util";
 import ERR from "./err";
 import { IDotDocument, IDotElement, IDotElementDocument, IDotGenericElement } from "./i-dot";
 import { ArgCallback, ArrayArgCallback, AttrArgCallback } from "./arg-callback-obj";
@@ -39,7 +39,7 @@ abstract class Component{
 	static build<T extends Component>(obj: T): Element{
 		Component.initializeComponent(obj);
 
-
+		GlobalComponentStack.push(obj);
 		obj.created && obj.created(...obj.__args);
 	
 		if(obj.__built) ERR("CB");
@@ -123,9 +123,13 @@ abstract class Component{
 	
 		// TODO: would be great to do this without a timer, once the DOM is updated. 
 		// May require some type of queueing system within dot.
-		obj.ready && sT(function(){
+		obj.ready && sT(()=>{
+			GlobalComponentStack.push(obj);
 			obj.ready();
+			GlobalComponentStack.pop()
 		}, 0);
+
+		GlobalComponentStack.pop();
 		
 		return obj.$el;
 	}
@@ -333,7 +337,7 @@ abstract class Component{
 		return this.__$el;
 	}
 
-	$refs = {};
+	$refs: {[key: string]: Element} = {};
 
 	/**
 	 * Name of the component (optional). If provided, dot and the VDBO will be extended.

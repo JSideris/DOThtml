@@ -4,7 +4,7 @@ export declare type LengthProp = "maxHeight"|"minHeight"|"top"|"bottom"|"height"
 
 
 
-interface IDotcssProp{
+export interface IDotcssProp{
 	angleToDeg(a: number|string);
 	matrixMultiply3D(a: Array<number>, b: Array<number>): Array<number>;
 	lengthToPx(l: string|number, prop?: LengthProp, element?: Element);
@@ -849,13 +849,13 @@ export default interface IDotCss extends IDotcssProp{
 
 }
 
-interface IDotcssAnimatable<T> extends IDotcssProp{
+export interface IDotcssAnimatable<T> extends IDotcssProp{
 	(value: T): IDotcssProp;
 
 	animate(value: number, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
 
-interface IDotcssAnimatableColor extends IDotcssProp{
+export interface IDotcssAnimatableColor extends IDotcssProp{
 	(value: string|Array<number>): IDotcssProp;
 	(r: number, g: number, b: number, a?: number): IDotcssProp;
 

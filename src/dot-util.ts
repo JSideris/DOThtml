@@ -1,5 +1,7 @@
 // Polyfill for Object.keys(...).forEach.
 
+import type Component from "component";
+
 export function eachK(obj, cb){
     if(obj){
         var lst = Object.keys(obj);
@@ -27,3 +29,5 @@ class _ClassPrefix{
 }
 
 export const ClassPrefix = new _ClassPrefix()
+
+export const GlobalComponentStack: Array<Component> = [];

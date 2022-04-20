@@ -192,7 +192,14 @@ export interface IDotElementDocument<T extends IDotDocument> extends IDotDocumen
      * Create a custom attribute.
     */
     attr(name: string, value: unknown, arg3?: unknown): T;
+    /**
+     * Adds a data-<suffix> attribute to the current element which can contain custom data.
+    */
     customData(suffix: string, value: DotContentPrimitive): T;
+    /**
+     * Create a named reference to the current element so that it can be accessed within the current component.
+    */
+    ref(name: string, index?: number): T;
     /** @deprecated Deprecated in HTML5. Use CSS. */
     bgColor(value: unknown): T;
     /** @deprecated Deprecated in HTML5. Use CSS. */

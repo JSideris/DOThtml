@@ -1,6 +1,6 @@
 export declare type ColorName = "aliceblue" | "antiquewhite" | "aqua" | "aquamarine" | "azure" | "beige" | "bisque" | "black" | "blanchedalmond" | "blue" | "blueviolet" | "brown" | "burlywood" | "cadetblue" | "chartreuse" | "chocolate" | "coral" | "cornflowerblue" | "cornsilk" | "crimson" | "cyan" | "darkblue" | "darkcyan" | "darkgoldenrod" | "darkgray" | "darkgrey" | "darkgreen" | "darkkhaki" | "darkmagenta" | "darkolivegreen" | "darkorange" | "darkorchid" | "darkred" | "darksalmon" | "darkseagreen" | "darkslateblue" | "darkslategray" | "darkslategrey" | "darkturquoise" | "darkviolet" | "deeppink" | "deepskyblue" | "dimgray" | "dimgrey" | "dodgerblue" | "firebrick" | "floralwhite" | "forestgreen" | "fuchsia" | "gainsboro" | "ghostwhite" | "gold" | "goldenrod" | "gray" | "grey" | "green" | "greenyellow" | "honeydew" | "hotpink" | "indianred" | "indigo" | "ivory" | "khaki" | "lavender" | "lavenderblush" | "lawngreen" | "lemonchiffon" | "lightblue" | "lightcoral" | "lightcyan" | "lightgoldenrodyellow" | "lightgray" | "lightgrey" | "lightgreen" | "lightpink" | "lightsalmon" | "lightseagreen" | "lightskyblue" | "lightslategray" | "lightslategrey" | "lightsteelblue" | "lightyellow" | "lime" | "limegreen" | "linen" | "magenta" | "maroon" | "mediumaquamarine" | "mediumblue" | "mediumorchid" | "mediumpurple" | "mediumseagreen" | "mediumslateblue" | "mediumspringgreen" | "mediumturquoise" | "mediumvioletred" | "midnightblue" | "mintcream" | "mistyrose" | "moccasin" | "navajowhite" | "navy" | "oldlace" | "olive" | "olivedrab" | "orange" | "orangered" | "orchid" | "palegoldenrod" | "palegreen" | "paleturquoise" | "palevioletred" | "papayawhip" | "peachpuff" | "peru" | "pink" | "plum" | "powderblue" | "purple" | "rebeccapurple" | "red" | "rosybrown" | "royalblue" | "saddlebrown" | "salmon" | "sandybrown" | "seagreen" | "seashell" | "sienna" | "silver" | "skyblue" | "slateblue" | "slategray" | "slategrey" | "snow" | "springgreen" | "steelblue" | "tan" | "teal" | "thistle" | "tomato" | "turquoise" | "violet" | "wheat" | "white" | "whitesmoke" | "yellow" | "yellowgreen";
 export declare type LengthProp = "maxHeight" | "minHeight" | "top" | "bottom" | "height" | "maxHidth" | "minWidth" | "right" | "left" | "width" | "margin" | "marginTop" | "marginBottom" | "marginLeft" | "marginRight" | "padding" | "paddingTop" | "paddingBottom" | "paddingLeft" | "paddingRight" | "lineHeight" | "fontSize";
-interface IDotcssProp {
+export interface IDotcssProp {
     angleToDeg(a: number | string): any;
     matrixMultiply3D(a: Array<number>, b: Array<number>): Array<number>;
     lengthToPx(l: string | number, prop?: LengthProp, element?: Element): any;
@@ -775,11 +775,11 @@ export default interface IDotCss extends IDotcssProp {
     (document?: Element | string): IDotcssProp;
     version: string;
 }
-interface IDotcssAnimatable<T> extends IDotcssProp {
+export interface IDotcssAnimatable<T> extends IDotcssProp {
     (value: T): IDotcssProp;
     animate(value: number, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
-interface IDotcssAnimatableColor extends IDotcssProp {
+export interface IDotcssAnimatableColor extends IDotcssProp {
     (value: string | Array<number>): IDotcssProp;
     (r: number, g: number, b: number, a?: number): IDotcssProp;
     animate(value: string | Array<number>, duration: number, style: "ease", complete: Function): IDotcssProp;
@@ -800,4 +800,3 @@ export interface ShowParams {
     showStyle?: "normal" | "fade" | "grow";
     animationStyle?: "ease";
 }
-export {};
