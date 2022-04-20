@@ -17,3 +17,5 @@ import dot from "./dot";
  * - Updated scopeClass method to put the optional parameter last.
  */
 export default dot;
+export { IDotElement } from "./i-dot";
+export { default as IDotCss } from "./i-dotcss";

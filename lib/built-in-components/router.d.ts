@@ -39,7 +39,7 @@ export default class DotRouter extends Component {
      * @param {Function} params.onResponse - Occurs after a successful HTTP response, but before rendering.
      * @param {Function} params.onComplete - Occurs after an uncancelled route completes without an error.
      */
-    builder(): import("../i-dot").IDotElement<import("../i-dot").IDotGenericElement>;
+    builder(): import("../i-dot").IDotElementDocument<import("../i-dot").IDotGenericElement>;
     registered(): void;
     ready(): void;
     deleting(): void;

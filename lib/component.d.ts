@@ -1,40 +1,5 @@
-import { IDotElement, IDotGenericElement } from "./i-dot";
+import { IDotElement } from "./i-dot";
 import IDotCss from "i-dotcss";
-interface Component {
-    props?: {
-        [key: string]: any;
-    };
-    /**
-     * An array of names that can be called as functions. The component will be extended by these names.
-     */
-    events?: {
-        [key: string]: (...params: Array<any>) => void;
-    };
-    /**
-     * An optional function that gets called once per component after registering in the dot namespace, with the component class passed in as a parameter.
-     */
-    registered?(): void;
-    /**
-     * An optional function that gets called before the component is created, scoped to the new component object.
-     */
-    created?(...args: Array<any>): void;
-    /**
-     * An optional function called after the element has been added. One parameter will be provided containing the added element.
-     */
-    ready?(): void;
-    /**
-     * An optional function called before the component is deleted.
-     */
-    deleting?(): void;
-    /**
-     * An optional function called after the component is deleted.
-     */
-    deleted?(): void;
-    /**
-     * An optional function called after the component is built.
-     */
-    built?(): void;
-}
 declare abstract class Component {
     static initializeComponent<T extends Component>(obj: T): void;
     static build<T extends Component>(obj: T): Element;
@@ -46,13 +11,39 @@ declare abstract class Component {
     /**
      * A function returning DOThtml (required).
      */
-    abstract builder(...args: Array<any>): IDotElement<IDotGenericElement>;
-    registered?(): void;
-    created?(...args: Array<any>): void;
-    ready?(): void;
-    deleting?(): void;
-    deleted?(): void;
-    built?(): void;
+    abstract builder(...args: Array<any>): IDotElement;
+    /**
+     *
+    */
+    props: {
+        [key: string]: any;
+    };
+    /**
+     * A series of events that can be raised from inside the component.
+     */
+    events: {
+        [key: string]: (...params: Array<any>) => void;
+    };
+    /**
+     * An optional function that gets called before the component is created, scoped to the new component object.
+     */
+    created(...args: Array<any>): void;
+    /**
+     * An optional function called after the element has been added. One parameter will be provided containing the added element.
+     */
+    ready(): void;
+    /**
+     * An optional function called before the component is deleted.
+     */
+    deleting(): void;
+    /**
+     * An optional function called after the component is deleted.
+     */
+    deleted(): void;
+    /**
+     * An optional function called after the component is built.
+     */
+    built(): void;
     on(event: string, handler: Function): void;
     off(event: string, handler: Function): void;
     private __$el;

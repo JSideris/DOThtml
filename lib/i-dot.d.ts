@@ -18,7 +18,7 @@ export interface IDotDocument {
     /**
      * Creates a custom element.
     */
-    el(tag: string, content?: DotContent): IDotElement<IDotGenericElement>;
+    el(tag: string, content?: DotContent): IDotElementDocument<IDotGenericElement>;
     /**
      * Creates a generic HTML node that can render a string, HTML nodes, or dotHTML content.
     */
@@ -70,92 +70,92 @@ export interface IDotDocument {
     wait(timeout: any, callback: any): any;
     defer(callback: any): any;
     a(content?: DotContent): IDotA;
-    aside(content?: DotContent): IDotElement<IDotGenericElement>;
-    abbr(content?: DotContent): IDotElement<IDotGenericElement>;
-    address(content?: DotContent): IDotElement<IDotGenericElement>;
+    aside(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    abbr(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    address(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     area(content?: DotContent): IDotArea;
-    article(content?: DotContent): IDotElement<IDotGenericElement>;
+    article(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     audio(content?: DotContent): IDotAudio;
-    b(content?: DotContent): IDotElement<IDotGenericElement>;
-    bdi(content?: DotContent): IDotElement<IDotGenericElement>;
-    bdo(content?: DotContent): IDotElement<IDotGenericElement>;
+    b(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    bdi(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    bdo(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     blockQuote(content?: DotContent): IDotBlockQuote;
     body(content?: DotContent): IDotBody;
     br(content?: DotContent): IDotBr;
     button(content?: DotContent): IDotButton;
     canvas(content?: DotContent): IDotCanvas;
-    caption(content?: DotContent): IDotElement<IDotGenericElement>;
-    cite(content?: DotContent): IDotElement<IDotGenericElement>;
-    code(content?: DotContent): IDotElement<IDotGenericElement>;
+    caption(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    cite(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    code(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     col(content?: DotContent): IDotCol;
     colGroup(content?: DotContent): IDotColGroup;
-    content(content?: DotContent): IDotElement<IDotGenericElement>;
-    data(content?: DotContent): IDotElement<IDotGenericElement>;
-    dataList(content?: DotContent): IDotElement<IDotGenericElement>;
-    dd(content?: DotContent): IDotElement<IDotGenericElement>;
+    content(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    data(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    dataList(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    dd(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     del(content?: DotContent): IDotDel;
     details(content?: DotContent): IDotDetails;
-    dfn(content?: DotContent): IDotElement<IDotGenericElement>;
-    dialog(content?: DotContent): IDotElement<IDotGenericElement>;
-    div(content?: DotContent): IDotElement<IDotGenericElement>;
-    dl(content?: DotContent): IDotElement<IDotGenericElement>;
-    dt(content?: DotContent): IDotElement<IDotGenericElement>;
-    em(content?: DotContent): IDotElement<IDotGenericElement>;
+    dfn(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    dialog(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    div(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    dl(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    dt(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    em(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     embed(content?: DotContent): IDotEmbed;
     fieldSet(content?: DotContent): IDotFieldSet;
-    figCaption(content?: DotContent): IDotElement<IDotGenericElement>;
-    figure(content?: DotContent): IDotElement<IDotGenericElement>;
-    footer(content?: DotContent): IDotElement<IDotGenericElement>;
+    figCaption(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    figure(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    footer(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     form(content?: DotContent): IDotForm;
-    h1(content?: DotContent): IDotElement<IDotGenericElement>;
-    h2(content?: DotContent): IDotElement<IDotGenericElement>;
-    h3(content?: DotContent): IDotElement<IDotGenericElement>;
-    h4(content?: DotContent): IDotElement<IDotGenericElement>;
-    h5(content?: DotContent): IDotElement<IDotGenericElement>;
-    h6(content?: DotContent): IDotElement<IDotGenericElement>;
-    header(content?: DotContent): IDotElement<IDotGenericElement>;
+    h1(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    h2(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    h3(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    h4(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    h5(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    h6(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    header(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     hr(content?: DotContent): IDotHr;
-    i(content?: DotContent): IDotElement<IDotGenericElement>;
+    i(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     iFrame(content?: DotContent): IDotIFrame;
     img(content?: DotContent): IDotImg;
     input(content?: DotContent): IDotInput;
     ins(content?: DotContent): IDotIns;
-    kbd(content?: DotContent): IDotElement<IDotGenericElement>;
+    kbd(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     keyGen(content?: DotContent): IDotKeyGen;
     label(content?: DotContent): IDotLabel;
-    legend(content?: DotContent): IDotElement<IDotGenericElement>;
+    legend(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     li(content?: DotContent): IDotLi;
-    main(content?: DotContent): IDotElement<IDotGenericElement>;
+    main(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     map(content?: DotContent): IDotMap;
-    mark(content?: DotContent): IDotElement<IDotGenericElement>;
+    mark(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     menu(content?: DotContent): IDotMenu;
     meter(content?: DotContent): IDotMeter;
-    nav(content?: DotContent): IDotElement<IDotGenericElement>;
+    nav(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     object(content?: DotContent): IDotObject;
     ol(content?: DotContent): IDotOl;
     optGroup(content?: DotContent): IDotOptGroup;
     option(content?: DotContent): IDotOption;
     output(content?: DotContent): IDotOutput;
-    p(content?: DotContent): IDotElement<IDotGenericElement>;
+    p(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     param(content?: DotContent): IDotParam;
-    pre(content?: DotContent): IDotElement<IDotGenericElement>;
+    pre(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     progress(content?: DotContent): IDotProgress;
     q(content?: DotContent): IDotQ;
-    rp(content?: DotContent): IDotElement<IDotGenericElement>;
-    rt(content?: DotContent): IDotElement<IDotGenericElement>;
-    ruby(content?: DotContent): IDotElement<IDotGenericElement>;
-    s(content?: DotContent): IDotElement<IDotGenericElement>;
-    samp(content?: DotContent): IDotElement<IDotGenericElement>;
-    section(content?: DotContent): IDotElement<IDotGenericElement>;
+    rp(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    rt(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    ruby(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    s(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    samp(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    section(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     select(content?: DotContent): IDotSelect;
-    small(content?: DotContent): IDotElement<IDotGenericElement>;
+    small(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     source(content?: DotContent): IDotSource;
-    span(content?: DotContent): IDotElement<IDotGenericElement>;
-    strong(content?: DotContent): IDotElement<IDotGenericElement>;
-    svg(content?: DotContent): IDotElement<IDotGenericElement>;
-    sub(content?: DotContent): IDotElement<IDotGenericElement>;
-    summary(content?: DotContent): IDotElement<IDotGenericElement>;
-    sup(content?: DotContent): IDotElement<IDotGenericElement>;
+    span(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    strong(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    svg(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    sub(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    summary(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    sup(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     table(content?: DotContent): IDotTable;
     tBody(content?: DotContent): IDotTBody;
     td(content?: DotContent): IDotTd;
@@ -166,14 +166,14 @@ export interface IDotDocument {
     time(content?: DotContent): IDotTime;
     tr(content?: DotContent): IDotTr;
     track(content?: DotContent): IDotTrack;
-    u(content?: DotContent): IDotElement<IDotGenericElement>;
-    ul(content?: DotContent): IDotElement<IDotGenericElement>;
-    var(content?: DotContent): IDotElement<IDotGenericElement>;
+    u(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    ul(content?: DotContent): IDotElementDocument<IDotGenericElement>;
+    var(content?: DotContent): IDotElementDocument<IDotGenericElement>;
     video(content?: DotContent): IDotVideo;
-    wbr(content?: DotContent): IDotElement<IDotGenericElement>;
+    wbr(content?: DotContent): IDotElementDocument<IDotGenericElement>;
 }
 export interface IDotCore extends IDotDocument {
-    (targetSelector: string | Element | Node | NodeList | Array<Node | Element>): IDotElement<IDotGenericElement>;
+    (targetSelector: string | Element | Node | NodeList | Array<Node | Element>): IDotElementDocument<IDotGenericElement>;
     version: string;
     navigate(path: string, noHistory?: boolean, force?: boolean): void;
     css: IDotCss;
@@ -181,7 +181,13 @@ export interface IDotCore extends IDotDocument {
     resetScopeClass(): void;
     Component: typeof Component;
 }
-export interface IDotElement<T extends IDotDocument> extends IDotDocument {
+/**
+ * Public interface indicating the return type of the Component builder method. Represents any VDBO containing an element.
+ * The VDBO returned by Component builder method must contain exactly one element.
+*/
+export interface IDotElement extends IDotElementDocument<IDotGenericElement> {
+}
+export interface IDotElementDocument<T extends IDotDocument> extends IDotDocument {
     /**
      * Create a custom attribute.
     */
@@ -246,9 +252,9 @@ export interface IDotElement<T extends IDotDocument> extends IDotDocument {
     onSubmit(callback: (e: SubmitEvent) => void): T;
     onUnload(callback: (e: Event) => void): T;
 }
-export interface IDotGenericElement extends IDotElement<IDotGenericElement> {
+export interface IDotGenericElement extends IDotElementDocument<IDotGenericElement> {
 }
-export interface IDotA extends IDotElement<IDotA> {
+export interface IDotA extends IDotElementDocument<IDotA> {
     download(value: unknown): IDotA;
     hRef(value: unknown): IDotA;
     hRefLang(value: unknown): IDotA;
@@ -259,7 +265,7 @@ export interface IDotA extends IDotElement<IDotA> {
     target(value: unknown): IDotA;
     type(value: unknown): IDotA;
 }
-export interface IDotArea extends IDotElement<IDotArea> {
+export interface IDotArea extends IDotElementDocument<IDotArea> {
     alt(value: unknown): IDotArea;
     coords(value: unknown): IDotArea;
     download(value: unknown): IDotArea;
@@ -271,7 +277,7 @@ export interface IDotArea extends IDotElement<IDotArea> {
     shape(value: unknown): IDotArea;
     target(value: unknown): IDotArea;
 }
-export interface IDotAudio extends IDotElement<IDotAudio> {
+export interface IDotAudio extends IDotElementDocument<IDotAudio> {
     autoPlay(value: unknown): IDotAudio;
     buffered(value: unknown): IDotAudio;
     controls(value: unknown): IDotAudio;
@@ -304,10 +310,10 @@ export interface IDotAudio extends IDotElement<IDotAudio> {
     onWaiting(callback: (e: Event) => void): IDotAudio;
     onCanPlay(callback: (e: Event) => void): IDotAudio;
 }
-export interface IDotBlockQuote extends IDotElement<IDotBlockQuote> {
+export interface IDotBlockQuote extends IDotElementDocument<IDotBlockQuote> {
     quoteCite(value: unknown): IDotBlockQuote;
 }
-export interface IDotBody extends IDotElement<IDotBody> {
+export interface IDotBody extends IDotElementDocument<IDotBody> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     align(value: unknown): IDotBody;
     /** @deprecated Deprecated in HTML5. Use CSS. */
@@ -321,11 +327,11 @@ export interface IDotBody extends IDotElement<IDotBody> {
     onResize(callback: (e: Event) => void): IDotBody;
     onStorage(callback: (e: Event) => void): IDotBody;
 }
-export interface IDotBr extends IDotElement<IDotBr> {
+export interface IDotBr extends IDotElementDocument<IDotBr> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     clear(value: unknown): IDotBr;
 }
-export interface IDotButton extends IDotElement<IDotButton> {
+export interface IDotButton extends IDotElementDocument<IDotButton> {
     autoFocus(value: unknown): IDotButton;
     formAction(value: unknown): IDotButton;
     disabled(value?: unknown): IDotButton;
@@ -334,42 +340,42 @@ export interface IDotButton extends IDotElement<IDotButton> {
     whichForm(value: unknown): IDotButton;
     value(value: unknown): IDotButton;
 }
-export interface IDotCanvas extends IDotElement<IDotCanvas> {
+export interface IDotCanvas extends IDotElementDocument<IDotCanvas> {
     height(value: unknown): IDotCanvas;
     width(value: unknown): IDotCanvas;
 }
-export interface IDotCol extends IDotElement<IDotCol> {
+export interface IDotCol extends IDotElementDocument<IDotCol> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     charOff(value: unknown): IDotCol;
     colSpan(value: unknown): IDotCol;
     vAlign(value: unknown): IDotCol;
 }
-export interface IDotColGroup extends IDotElement<IDotColGroup> {
+export interface IDotColGroup extends IDotElementDocument<IDotColGroup> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     charOff(value: unknown): IDotColGroup;
     colSpan(value: unknown): IDotColGroup;
     vAlign(value: unknown): IDotColGroup;
 }
-export interface IDotDel extends IDotElement<IDotDel> {
+export interface IDotDel extends IDotElementDocument<IDotDel> {
     dateTime(value: unknown): IDotDel;
     quoteCite(value: unknown): IDotDel;
 }
-export interface IDotDetails extends IDotElement<IDotDetails> {
+export interface IDotDetails extends IDotElementDocument<IDotDetails> {
     open(value: unknown): IDotDetails;
     onToggle(callback: (e: Event) => void): IDotDetails;
 }
-export interface IDotEmbed extends IDotElement<IDotEmbed> {
+export interface IDotEmbed extends IDotElementDocument<IDotEmbed> {
     height(value: unknown): IDotEmbed;
     src(value: unknown): IDotEmbed;
     type(value: unknown): IDotEmbed;
     width(value: unknown): IDotEmbed;
 }
-export interface IDotFieldSet extends IDotElement<IDotFieldSet> {
+export interface IDotFieldSet extends IDotElementDocument<IDotFieldSet> {
     disabled(value: unknown): IDotFieldSet;
     name(value: unknown): IDotFieldSet;
     whichForm(value: unknown): IDotFieldSet;
 }
-export interface IDotForm extends IDotElement<IDotForm> {
+export interface IDotForm extends IDotElementDocument<IDotForm> {
     acceptCharset(value: unknown): IDotForm;
     action(value: unknown): IDotForm;
     autoComplete(value: unknown): IDotForm;
@@ -380,10 +386,10 @@ export interface IDotForm extends IDotElement<IDotForm> {
     rel(value: unknown): IDotForm;
     target(value: unknown): IDotForm;
 }
-export interface IDotHr extends IDotElement<IDotHr> {
+export interface IDotHr extends IDotElementDocument<IDotHr> {
     noShade(value: unknown): IDotHr;
 }
-export interface IDotIFrame extends IDotElement<IDotIFrame> {
+export interface IDotIFrame extends IDotElementDocument<IDotIFrame> {
     height(value: unknown): IDotIFrame;
     longDesc(value: unknown): IDotIFrame;
     marginHeight(value: unknown): IDotIFrame;
@@ -396,7 +402,7 @@ export interface IDotIFrame extends IDotElement<IDotIFrame> {
     srcDoc(value: unknown): IDotIFrame;
     width(value: unknown): IDotIFrame;
 }
-export interface IDotImg extends IDotElement<IDotImg> {
+export interface IDotImg extends IDotElementDocument<IDotImg> {
     alt(value: unknown): IDotImg;
     height(value: unknown): IDotImg;
     /** @deprecated Deprecated in HTML5. Use CSS. */
@@ -409,7 +415,7 @@ export interface IDotImg extends IDotElement<IDotImg> {
     useMap(value: unknown): IDotImg;
     width(value: unknown): IDotImg;
 }
-export interface IDotInput extends IDotElement<IDotInput> {
+export interface IDotInput extends IDotElementDocument<IDotInput> {
     accept(value: unknown): IDotInput;
     alt(value: unknown): IDotInput;
     autoComplete(value: unknown): IDotInput;
@@ -440,28 +446,28 @@ export interface IDotInput extends IDotElement<IDotInput> {
     setVal(value: unknown): IDotInput;
     onSearch(callback: (e: Event) => void): IDotInput;
 }
-export interface IDotIns extends IDotElement<IDotIns> {
+export interface IDotIns extends IDotElementDocument<IDotIns> {
     dateTime(value: unknown): IDotIns;
     quoteCite(value: unknown): IDotIns;
 }
-export interface IDotKeyGen extends IDotElement<IDotKeyGen> {
+export interface IDotKeyGen extends IDotElementDocument<IDotKeyGen> {
     challenge(value: unknown): IDotKeyGen;
     keyType(value: unknown): IDotKeyGen;
 }
-export interface IDotLabel extends IDotElement<IDotLabel> {
+export interface IDotLabel extends IDotElementDocument<IDotLabel> {
     for(value: unknown): IDotLabel;
     whichForm(value: unknown): IDotLabel;
 }
-export interface IDotLi extends IDotElement<IDotLi> {
+export interface IDotLi extends IDotElementDocument<IDotLi> {
     value(value: unknown): IDotLi;
 }
-export interface IDotMap extends IDotElement<IDotMap> {
+export interface IDotMap extends IDotElementDocument<IDotMap> {
     name(value: unknown): IDotMap;
 }
-export interface IDotMenu extends IDotElement<IDotMenu> {
+export interface IDotMenu extends IDotElementDocument<IDotMenu> {
     type(value: unknown): IDotMenu;
 }
-export interface IDotMeter extends IDotElement<IDotMeter> {
+export interface IDotMeter extends IDotElementDocument<IDotMeter> {
     high(value: unknown): IDotMeter;
     low(value: unknown): IDotMeter;
     max(value: unknown): IDotMeter;
@@ -470,7 +476,7 @@ export interface IDotMeter extends IDotElement<IDotMeter> {
     whichForm(value: unknown): IDotMeter;
     value(value: unknown): IDotMeter;
 }
-export interface IDotObject extends IDotElement<IDotObject> {
+export interface IDotObject extends IDotElementDocument<IDotObject> {
     classId(value: unknown): IDotObject;
     codeBase(value: unknown): IDotObject;
     codeType(value: unknown): IDotObject;
@@ -484,14 +490,14 @@ export interface IDotObject extends IDotElement<IDotObject> {
     whichForm(value: unknown): IDotObject;
     width(value: unknown): IDotObject;
 }
-export interface IDotOl extends IDotElement<IDotOl> {
+export interface IDotOl extends IDotElementDocument<IDotOl> {
     reversed(value: unknown): IDotOl;
     start(value: unknown): IDotOl;
 }
-export interface IDotOptGroup extends IDotElement<IDotOptGroup> {
+export interface IDotOptGroup extends IDotElementDocument<IDotOptGroup> {
     disabled(value: unknown): IDotOptGroup;
 }
-export interface IDotOption extends IDotElement<IDotOption> {
+export interface IDotOption extends IDotElementDocument<IDotOption> {
     disabled(value: unknown): IDotOption;
     optionLabel(value: unknown): IDotOption;
     selected(value?: boolean): IDotOption;
@@ -500,24 +506,24 @@ export interface IDotOption extends IDotElement<IDotOption> {
     getVal(): string;
     setVal(value: unknown): IDotOption;
 }
-export interface IDotOutput extends IDotElement<IDotOutput> {
+export interface IDotOutput extends IDotElementDocument<IDotOutput> {
     for(value: unknown): IDotOutput;
     name(value: unknown): IDotOutput;
     whichForm(value: unknown): IDotOutput;
 }
-export interface IDotParam extends IDotElement<IDotParam> {
+export interface IDotParam extends IDotElementDocument<IDotParam> {
     name(value: unknown): IDotParam;
     value(value: unknown): IDotParam;
     valueType(value: unknown): IDotParam;
 }
-export interface IDotProgress extends IDotElement<IDotProgress> {
+export interface IDotProgress extends IDotElementDocument<IDotProgress> {
     max(value: unknown): IDotProgress;
     value(value: unknown): IDotProgress;
 }
-export interface IDotQ extends IDotElement<IDotQ> {
+export interface IDotQ extends IDotElementDocument<IDotQ> {
     quoteCite(value: unknown): IDotQ;
 }
-export interface IDotSelect extends IDotElement<IDotSelect> {
+export interface IDotSelect extends IDotElementDocument<IDotSelect> {
     autoFocus(value: unknown): IDotSelect;
     disabled(value: unknown): IDotSelect;
     multiple(value: unknown): IDotSelect;
@@ -529,7 +535,7 @@ export interface IDotSelect extends IDotElement<IDotSelect> {
     getVal(): string;
     setVal(value: unknown): IDotSelect;
 }
-export interface IDotSource extends IDotElement<IDotSource> {
+export interface IDotSource extends IDotElementDocument<IDotSource> {
     media(value: unknown): IDotSource;
     src(value: unknown): IDotSource;
     type(value: unknown): IDotSource;
@@ -538,7 +544,7 @@ export interface IDotSource extends IDotElement<IDotSource> {
     srcSet(value: unknown): IDotSource;
     type(value: unknown): IDotSource;
 }
-export interface IDotTable extends IDotElement<IDotTable> {
+export interface IDotTable extends IDotElementDocument<IDotTable> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     border(value: unknown): IDotTable;
     /** @deprecated Deprecated in HTML5. Use CSS. */
@@ -550,7 +556,7 @@ export interface IDotTable extends IDotElement<IDotTable> {
     rules(value: unknown): IDotTable;
     tableSummary(value: unknown): IDotTable;
 }
-export interface IDotTextArea extends IDotElement<IDotTextArea> {
+export interface IDotTextArea extends IDotElementDocument<IDotTextArea> {
     autoFocus(value: unknown): IDotTextArea;
     cols(value: unknown): IDotTextArea;
     dirName(value: unknown): IDotTextArea;
@@ -567,12 +573,12 @@ export interface IDotTextArea extends IDotElement<IDotTextArea> {
     getVal(): string;
     setVal(value: unknown): IDotTextArea;
 }
-export interface IDotTBody extends IDotElement<IDotTBody> {
+export interface IDotTBody extends IDotElementDocument<IDotTBody> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     charOff(value: unknown): IDotTBody;
     vAlign(value: unknown): IDotTBody;
 }
-export interface IDotTd extends IDotElement<IDotTd> {
+export interface IDotTd extends IDotElementDocument<IDotTd> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     axis(value: unknown): IDotTd;
     /** @deprecated Deprecated in HTML5. Use CSS. */
@@ -586,15 +592,15 @@ export interface IDotTd extends IDotElement<IDotTd> {
     rowSpan(value: unknown): IDotTd;
     vAlign(value: unknown): IDotTd;
 }
-export interface IDotTFoot extends IDotElement<IDotTFoot> {
+export interface IDotTFoot extends IDotElementDocument<IDotTFoot> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     charOff(value: unknown): IDotTFoot;
     vAlign(value: unknown): IDotTFoot;
 }
-export interface IDotTime extends IDotElement<IDotTime> {
+export interface IDotTime extends IDotElementDocument<IDotTime> {
     dateTime(value: unknown): IDotTime;
 }
-export interface IDotTh extends IDotElement<IDotTh> {
+export interface IDotTh extends IDotElementDocument<IDotTh> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     axis(value: unknown): IDotTh;
     colSpan(value: unknown): IDotTh;
@@ -605,17 +611,17 @@ export interface IDotTh extends IDotElement<IDotTh> {
     scope(value: unknown): IDotTh;
     vAlign(value: unknown): IDotTh;
 }
-export interface IDotTHead extends IDotElement<IDotTHead> {
+export interface IDotTHead extends IDotElementDocument<IDotTHead> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     charOff(value: unknown): IDotTHead;
     vAlign(value: unknown): IDotTHead;
 }
-export interface IDotTr extends IDotElement<IDotTr> {
+export interface IDotTr extends IDotElementDocument<IDotTr> {
     /** @deprecated Deprecated in HTML5. Use CSS. */
     charOff(value: unknown): IDotTr;
     vAlign(value: unknown): IDotTr;
 }
-export interface IDotTrack extends IDotElement<IDotTrack> {
+export interface IDotTrack extends IDotElementDocument<IDotTrack> {
     default(value: unknown): IDotTrack;
     kind(value: unknown): IDotTrack;
     src(value: unknown): IDotTrack;
@@ -623,7 +629,7 @@ export interface IDotTrack extends IDotElement<IDotTrack> {
     trackLabel(value: unknown): IDotTrack;
     onCueChange(callback: (e: Event) => void): IDotTrack;
 }
-export interface IDotVideo extends IDotElement<IDotVideo> {
+export interface IDotVideo extends IDotElementDocument<IDotVideo> {
     autoPlay(value: unknown): IDotVideo;
     buffered(value: unknown): IDotVideo;
     controls(value: unknown): IDotVideo;
