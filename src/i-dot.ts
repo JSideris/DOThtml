@@ -1,6 +1,6 @@
 import EventBus from "./event-bus";
 import type Component from "./component";
-import IDotCss from "./i-dotcss";
+import IDotCss, { IDotcssProp } from "./i-dotcss";
 
 export type DotContentPrimitive = string|number|boolean;
 export type DotContentBasic = DotContentPrimitive|Node|Element|NodeList|Component|IDotDocument//typeof DotDocument;
@@ -297,7 +297,7 @@ export interface IDotElementDocument<T extends IDotDocument> extends IDotDocumen
 	itemProp(value: unknown): T;
 	lang(value: unknown): T;
 	spellCheck(value: unknown): T;
-	style(value: string|((css: IDotCss)=>unknown)): T;
+	style(value: string|IDotcssProp): T;
 	tabIndex(value: unknown): T;
 	title(value: unknown): T;
 

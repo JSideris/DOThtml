@@ -11,6 +11,8 @@ export declare type BackgroundSizeValues = BasicCommonValues | "auto" | number |
 export declare type BackfaceVisibilityValues = BasicCommonValues | "visible" | "hidden";
 export declare type BorderStyles = BasicCommonValues | "dotted" | "dashed" | "solid" | "double" | "groove" | "ridge" | "inset" | "outset" | "none" | "hidden";
 export declare type ColorName = BasicCommonValues | "aliceblue" | "antiquewhite" | "aqua" | "aquamarine" | "azure" | "beige" | "bisque" | "black" | "blanchedalmond" | "blue" | "blueviolet" | "brown" | "burlywood" | "cadetblue" | "chartreuse" | "chocolate" | "coral" | "cornflowerblue" | "cornsilk" | "crimson" | "cyan" | "darkblue" | "darkcyan" | "darkgoldenrod" | "darkgray" | "darkgrey" | "darkgreen" | "darkkhaki" | "darkmagenta" | "darkolivegreen" | "darkorange" | "darkorchid" | "darkred" | "darksalmon" | "darkseagreen" | "darkslateblue" | "darkslategray" | "darkslategrey" | "darkturquoise" | "darkviolet" | "deeppink" | "deepskyblue" | "dimgray" | "dimgrey" | "dodgerblue" | "firebrick" | "floralwhite" | "forestgreen" | "fuchsia" | "gainsboro" | "ghostwhite" | "gold" | "goldenrod" | "gray" | "grey" | "green" | "greenyellow" | "honeydew" | "hotpink" | "indianred" | "indigo" | "ivory" | "khaki" | "lavender" | "lavenderblush" | "lawngreen" | "lemonchiffon" | "lightblue" | "lightcoral" | "lightcyan" | "lightgoldenrodyellow" | "lightgray" | "lightgrey" | "lightgreen" | "lightpink" | "lightsalmon" | "lightseagreen" | "lightskyblue" | "lightslategray" | "lightslategrey" | "lightsteelblue" | "lightyellow" | "lime" | "limegreen" | "linen" | "magenta" | "maroon" | "mediumaquamarine" | "mediumblue" | "mediumorchid" | "mediumpurple" | "mediumseagreen" | "mediumslateblue" | "mediumspringgreen" | "mediumturquoise" | "mediumvioletred" | "midnightblue" | "mintcream" | "mistyrose" | "moccasin" | "navajowhite" | "navy" | "oldlace" | "olive" | "olivedrab" | "orange" | "orangered" | "orchid" | "palegoldenrod" | "palegreen" | "paleturquoise" | "palevioletred" | "papayawhip" | "peachpuff" | "peru" | "pink" | "plum" | "powderblue" | "purple" | "rebeccapurple" | "red" | "rosybrown" | "royalblue" | "saddlebrown" | "salmon" | "sandybrown" | "seagreen" | "seashell" | "sienna" | "silver" | "skyblue" | "slateblue" | "slategray" | "slategrey" | "snow" | "springgreen" | "steelblue" | "tan" | "teal" | "thistle" | "tomato" | "turquoise" | "violet" | "wheat" | "white" | "whitesmoke" | "yellow" | "yellowgreen";
+export declare type DisplayValues = BasicCommonValues | "inline" | "block" | "contents" | "flex" | "grid" | "inline-block" | "inline-flex" | "inline-grid" | "inline-table" | "list-item" | "run-in" | "table" | "table-caption" | "table-column-group" | "table-header-group" | "table-footer-group" | "table-row-group" | "table-cell" | "table-column" | "table-row" | "none";
+export declare type DirectionValues = BasicCommonValues | "ltr" | "rtl";
 export declare type LengthProp = BasicCommonValues | "maxHeight" | "minHeight" | "top" | "bottom" | "height" | "maxHidth" | "minWidth" | "right" | "left" | "width" | "margin" | "marginTop" | "marginBottom" | "marginLeft" | "marginRight" | "padding" | "paddingTop" | "paddingBottom" | "paddingLeft" | "paddingRight" | "lineHeight" | "fontSize";
 export declare type PositionNames = BasicCommonValues | "static" | "relative" | "fixed" | "absolute" | "sticky";
 export declare type ColorFormat = BasicCommonValues | ColorName | number | `#${string}` | `rgb(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})` | `rgba(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})` | `hsl(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%)` | `hsla(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%,${OptionalWhitespace}${number})`;
@@ -33,6 +35,10 @@ export interface IDotcssProp {
     clearDynamicStyles(el: HTMLElement): any;
     unscope(): any;
     formatNumberValue(value: number, unit?: string): any;
+    hide(params?: HideParams): any;
+    show(params?: ShowParams): any;
+    fadeOut(duration: number, complete: Function): any;
+    fadeIn(duration: number, complete: Function): any;
     color: IDotcssAnimatableColor;
     backgroundColor: IDotcssAnimatableColor;
     borderBottomColor: IDotcssAnimatableColor;
@@ -618,7 +624,7 @@ export interface IDotcssProp {
     boxShadow: (value: string) => IDotcssProp;
     clear: (value: string) => IDotcssProp;
     clip: (value: string) => IDotcssProp;
-    display: (value: string) => IDotcssProp;
+    display: (value: DisplayValues) => IDotcssProp;
     float: (value: string) => IDotcssProp;
     overflow: (value: string) => IDotcssProp;
     box: (value: string) => IDotcssProp;
@@ -696,7 +702,7 @@ export interface IDotcssProp {
     fontVariantNumeric: (value: string) => IDotcssProp;
     fontVariantPosition: (value: string) => IDotcssProp;
     fontWeight: (value: string) => IDotcssProp;
-    direction: (value: string) => IDotcssProp;
+    direction: (value: DirectionValues) => IDotcssProp;
     textOrientation: (value: string) => IDotcssProp;
     unicodeBidi: (value: string) => IDotcssProp;
     userSelect: (value: string) => IDotcssProp;
@@ -811,7 +817,7 @@ export interface HideParams {
 }
 export interface ShowParams {
     duration?: number;
-    display?: string;
+    display?: DisplayValues;
     complete?: Function;
     opacity?: number;
     width?: number;
