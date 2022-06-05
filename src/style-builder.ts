@@ -1305,6 +1305,7 @@ dotcss.lengthToPx = function(l: string|number, prop: LengthProp, element: Elemen
 			case "marginBottom":
 			case "marginLeft":
 			case "marginRight":
+			case "outlineOffset":
 			case "padding":
 			case "paddingTop":
 			case "paddingBottom":

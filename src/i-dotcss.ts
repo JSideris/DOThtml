@@ -5,6 +5,7 @@ export declare type RelativeUnits = "em"|"ex"|"ch"|"rem"|"vw"|"vh"|"vmin"|"vmax"
 export declare type AllUnits = AbsoluteUnits|RelativeUnits;
 export declare type OptionalWhitespace = ""|" ";
 export declare type UrlType = `url('${string}')`;
+export declare type LengthOrDefault = number|`${number}${AllUnits}`;
 
 // ts starts complaining about the complexity of the type :(
 //export declare type DigitStr = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
@@ -14,14 +15,20 @@ export declare type UrlType = `url('${string}')`;
 export declare type BackgroundAttachmentValues = BasicCommonValues|"scroll"|"fixed"|"local"
 export declare type BackgroundRepeatValues = BasicCommonValues|"no-repeat"|"repeat"|"space"|"round";
 export declare type BackgroundOriginValues = BasicCommonValues|"padding-box"|"border-box"|"content-box";
-export declare type BackgroundSizeValues = BasicCommonValues|"auto"|number|`${number}${AllUnits}`|"cover"|"contain";
+export declare type BackgroundSizeValues = BasicCommonValues|"auto"|LengthOrDefault|"cover"|"contain";
 export declare type BackfaceVisibilityValues = BasicCommonValues|"visible"|"hidden";
 export declare type BorderStyles = BasicCommonValues|"dotted"|"dashed"|"solid"|"double"|"groove"|"ridge"|"inset"|"outset"|"none"|"hidden";
 export declare type ColorName = BasicCommonValues|"aliceblue"|"antiquewhite"|"aqua"|"aquamarine"|"azure"|"beige"|"bisque"|"black"|"blanchedalmond"|"blue"|"blueviolet"|"brown"|"burlywood"|"cadetblue"|"chartreuse"|"chocolate"|"coral"|"cornflowerblue"|"cornsilk"|"crimson"|"cyan"|"darkblue"|"darkcyan"|"darkgoldenrod"|"darkgray"|"darkgrey"|"darkgreen"|"darkkhaki"|"darkmagenta"|"darkolivegreen"|"darkorange"|"darkorchid"|"darkred"|"darksalmon"|"darkseagreen"|"darkslateblue"|"darkslategray"|"darkslategrey"|"darkturquoise"|"darkviolet"|"deeppink"|"deepskyblue"|"dimgray"|"dimgrey"|"dodgerblue"|"firebrick"|"floralwhite"|"forestgreen"|"fuchsia"|"gainsboro"|"ghostwhite"|"gold"|"goldenrod"|"gray"|"grey"|"green"|"greenyellow"|"honeydew"|"hotpink"|"indianred"|"indigo"|"ivory"|"khaki"|"lavender"|"lavenderblush"|"lawngreen"|"lemonchiffon"|"lightblue"|"lightcoral"|"lightcyan"|"lightgoldenrodyellow"|"lightgray"|"lightgrey"|"lightgreen"|"lightpink"|"lightsalmon"|"lightseagreen"|"lightskyblue"|"lightslategray"|"lightslategrey"|"lightsteelblue"|"lightyellow"|"lime"|"limegreen"|"linen"|"magenta"|"maroon"|"mediumaquamarine"|"mediumblue"|"mediumorchid"|"mediumpurple"|"mediumseagreen"|"mediumslateblue"|"mediumspringgreen"|"mediumturquoise"|"mediumvioletred"|"midnightblue"|"mintcream"|"mistyrose"|"moccasin"|"navajowhite"|"navy"|"oldlace"|"olive"|"olivedrab"|"orange"|"orangered"|"orchid"|"palegoldenrod"|"palegreen"|"paleturquoise"|"palevioletred"|"papayawhip"|"peachpuff"|"peru"|"pink"|"plum"|"powderblue"|"purple"|"rebeccapurple"|"red"|"rosybrown"|"royalblue"|"saddlebrown"|"salmon"|"sandybrown"|"seagreen"|"seashell"|"sienna"|"silver"|"skyblue"|"slateblue"|"slategray"|"slategrey"|"snow"|"springgreen"|"steelblue"|"tan"|"teal"|"thistle"|"tomato"|"turquoise"|"violet"|"wheat"|"white"|"whitesmoke"|"yellow"|"yellowgreen";
 export declare type DisplayValues = BasicCommonValues|"inline"|"block"|"contents"|"flex"|"grid"|"inline-block"|"inline-flex"|"inline-grid"|"inline-table"|"list-item"|"run-in"|"table"|"table-caption"|"table-column-group"|"table-header-group"|"table-footer-group"|"table-row-group"|"table-cell"|"table-column"|"table-row"|"none";
 export declare type DirectionValues = BasicCommonValues|"ltr"|"rtl";
-export declare type LengthProp = BasicCommonValues|"maxHeight"|"minHeight"|"top"|"bottom"|"height"|"maxHidth"|"minWidth"|"right"|"left"|"width"|"margin"|"marginTop"|"marginBottom"|"marginLeft"|"marginRight"|"padding"|"paddingTop"|"paddingBottom"|"paddingLeft"|"paddingRight"|"lineHeight"|"fontSize";
+export declare type FontStyleValues = BasicCommonValues|"normal"|"italic"|"oblique";
+export declare type FontVariantValues = BasicCommonValues|"normal"|"small-caps";
+export declare type FontVariantCapsValues = FontVariantValues|"all-small-caps"|"petite-caps"|"all-petite-caps"|"unicase"|"titling-caps";
+export declare type FontWeightValues = BasicCommonValues|number|"normal"|"bold"|"bolder"|"lighter";
+export declare type LengthProp = BasicCommonValues|"maxHeight"|"minHeight"|"top"|"bottom"|"height"|"maxHidth"|"minWidth"|"right"|"left"|"width"|"margin"|"marginTop"|"marginBottom"|"marginLeft"|"marginRight"|"outlineOffset"|"padding"|"paddingTop"|"paddingBottom"|"paddingLeft"|"paddingRight"|"lineHeight"|"fontSize";
+export declare type OutlineWidthValues = BasicCommonValues|"medium"|"thin"|"thick"|LengthOrDefault;
 export declare type PositionNames = BasicCommonValues|"static"|"relative"|"fixed"|"absolute"|"sticky";
+
 
 // Advanced formatted types.
 export declare type ColorFormat = BasicCommonValues|ColorName|number|`#${string}`|`rgb(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})`|`rgba(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})`|`hsl(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%)`|`hsla(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%,${OptionalWhitespace}${number})`;
@@ -31,6 +38,7 @@ export declare type BorderShorthand = BasicCommonValues|`${number}${AllUnits} ${
 export declare type BackgroundImageFormat = BasicCommonValues|UrlType|`${UrlType}, ${UrlType}`;
 export declare type BackgroundPositionShorthand2D = BasicCommonValues|`${number} ${number}`|`${number}% ${number}%`|`${"left"|"right"|"center"} ${"top"|"center"|"bottom"}`;
 export declare type BackgroundShorthand = BasicCommonValues|`${ColorFormat} ${UrlType} ${BackgroundRepeatValues} ${BackgroundPositionShorthand2D}`
+
 
 export interface IDotcssProp{
 	angleToDeg(a: number|string);
@@ -86,7 +94,7 @@ export interface IDotcssProp{
 	columnRuleColor: IDotcssAnimatableColor;
 
 	//length: 
-	backgroundSize: IDotcssAnimatable<BackgroundSizeValues>;
+	backgroundSize: ((value: BasicCommonValues)=>IDotcssProp)|IDotcssAnimatable<BackgroundSizeValues>;
 	backgroundSizeCm: IDotcssAnimatable<number>;
 	backgroundSizeCh: IDotcssAnimatable<number>;
 	backgroundSizeEm: IDotcssAnimatable<number>;
@@ -494,6 +502,23 @@ export interface IDotcssProp{
 	minWidthVMax: IDotcssAnimatable<number>;
 	minWidthVMin: IDotcssAnimatable<number>;
 
+	outlineOffset: IDotcssAnimatable<number|string>;
+	outlineOffsetCm: IDotcssAnimatable<number>;
+	outlineOffsetCh: IDotcssAnimatable<number>;
+	outlineOffsetEm: IDotcssAnimatable<number>;
+	outlineOffsetEx: IDotcssAnimatable<number>;
+	outlineOffsetIn: IDotcssAnimatable<number>;
+	outlineOffsetMm: IDotcssAnimatable<number>;
+	outlineOffsetP: IDotcssAnimatable<number>;
+	outlineOffsetPc: IDotcssAnimatable<number>;
+	outlineOffsetPt: IDotcssAnimatable<number>;
+	outlineOffsetPx: IDotcssAnimatable<number>;
+	outlineOffsetRem: IDotcssAnimatable<number>;
+	outlineOffsetVh: IDotcssAnimatable<number>;
+	outlineOffsetVw: IDotcssAnimatable<number>;
+	outlineOffsetVMax: IDotcssAnimatable<number>;
+	outlineOffsetVMin: IDotcssAnimatable<number>;
+
 	padding: IDotcssAnimatable<number|string>;
 	paddingCm: IDotcssAnimatable<number>;
 	paddingCh: IDotcssAnimatable<number>;
@@ -715,7 +740,7 @@ export interface IDotcssProp{
 	position: (value: PositionNames)=>IDotcssProp
 	visibility: (value: string)=>IDotcssProp
 	verticalAlign: (value: string)=>IDotcssProp
-	zIndex: (value: string)=>IDotcssProp
+	zIndex: (value: string|number)=>IDotcssProp
 	alignContent: (value: string)=>IDotcssProp
 	alignItems: (value: string)=>IDotcssProp
 	alignSelf: (value: string)=>IDotcssProp
@@ -774,11 +799,11 @@ export interface IDotcssProp{
 	fontLanguageOverride: (value: string)=>IDotcssProp
 	fontSizeAdjust: (value: string)=>IDotcssProp
 	fontStretch: (value: string)=>IDotcssProp
-	fontStyle: (value: string)=>IDotcssProp
+	fontStyle: (value: FontStyleValues)=>IDotcssProp
 	fontSynthesis: (value: string)=>IDotcssProp
-	fontVariant: (value: string)=>IDotcssProp
+	fontVariant: (value: FontVariantValues)=>IDotcssProp
 	fontVariantAlternates: (value: string)=>IDotcssProp
-	fontVariantCaps: (value: string)=>IDotcssProp
+	fontVariantCaps: (value: FontVariantCapsValues)=>IDotcssProp
 	fontVariantEastAsian: (value: string)=>IDotcssProp
 	fontVariantLigatures: (value: string)=>IDotcssProp
 	fontVariantNumeric: (value: string)=>IDotcssProp
@@ -826,10 +851,10 @@ export interface IDotcssProp{
 	navLeft: (value: string)=>IDotcssProp
 	navRight: (value: string)=>IDotcssProp
 	navUp: (value: string)=>IDotcssProp
-	outline: (value: string)=>IDotcssProp
-	outlineOffset: (value: string)=>IDotcssProp
-	outlineStyle: (value: string)=>IDotcssProp
-	outlineWidth: (value: string)=>IDotcssProp
+	outline: (value: BorderShorthand)=>IDotcssProp
+	//outlineOffset: (value: string)=>IDotcssProp // Now animated.
+	outlineStyle: (value: BorderStyles)=>IDotcssProp
+	outlineWidth: (value: OutlineWidthValues)=>IDotcssProp
 	resize: (value: string)=>IDotcssProp
 	textOverflow: (value: string)=>IDotcssProp
 	breakAfter: (value: string)=>IDotcssProp
