@@ -22,10 +22,10 @@ class _EventBus{
         }
     }
     
-    emit (event, arg){
+    emit (event, ...args){
         var e = this._checkAddEvent(event);
         eachK(e, function(k, v){
-            v(arg);
+            v(...args);
         });
     }
     

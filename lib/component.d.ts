@@ -1,5 +1,5 @@
 import { IDotElement } from "./i-dot";
-import IDotCss from "i-dotcss";
+import IDotCss from "./i-dotcss";
 declare abstract class Component {
     static initializeComponent<T extends Component>(obj: T): void;
     static build<T extends Component>(obj: T): Element;

@@ -59,7 +59,7 @@ const dotcss: IDotCss = function(query){
 // Easier way to extend dotcss with private methods without type concerns.
 const dotcss2 = dotcss as any;
 
-dotcss.version = "0.15.0";
+dotcss.version = "0.16.0";
 
 //Inverse of framerate in ms/frame.
 dotcss2._fxInterval = 1000 / 60;

@@ -1,6 +1,6 @@
 import EventBus from "./event-bus";
 import type Component from "./component";
-import IDotCss from "i-dotcss";
+import IDotCss from "./i-dotcss";
 export declare type DotContentPrimitive = string | number | boolean;
 export declare type DotContentBasic = DotContentPrimitive | Node | Element | NodeList | Component | IDotDocument;
 export declare type DotContent = DotContentBasic | Array<DotContent> | (() => DotContent);
@@ -219,7 +219,7 @@ export interface IDotElementDocument<T extends IDotDocument> extends IDotDocumen
     itemProp(value: unknown): T;
     lang(value: unknown): T;
     spellCheck(value: unknown): T;
-    style(value: unknown): T;
+    style(value: string | ((css: IDotCss) => unknown)): T;
     tabIndex(value: unknown): T;
     title(value: unknown): T;
     onContextMenu(callback: (e: Event) => void): T;

@@ -1,6 +1,6 @@
 // Polyfill for Object.keys(...).forEach.
 
-import type Component from "component";
+import type Component from "./component";
 
 export function eachK(obj, cb){
     if(obj){

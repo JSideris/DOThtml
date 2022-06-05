@@ -1,6 +1,6 @@
-import Component from "component";
-import dot from "dot";
-import { DotContent } from "i-dot";
+import Component from "../component";
+import dot from "../dot";
+import { DotContent } from "../i-dot";
 
 // TODO: make text and links mutable by making them properties.
 export class NavLink extends Component{

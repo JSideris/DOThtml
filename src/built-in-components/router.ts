@@ -1,9 +1,9 @@
 // ROUTING:
 // TODO: Put this in the register hook for router.
 
-import Component from "component";
-import dot from "dot";
-import ERR from "err";
+import Component from "../component";
+import dot from "../dot";
+import ERR from "../err";
 
 
 

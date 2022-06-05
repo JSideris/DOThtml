@@ -1,4 +1,4 @@
-import type Component from "component";
+import type Component from "./component";
 export declare function eachK(obj: any, cb: any): void;
 export declare function isF(v: any): any;
 export declare const sT: typeof setTimeout;

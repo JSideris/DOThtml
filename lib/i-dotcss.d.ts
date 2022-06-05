@@ -1,5 +1,24 @@
-export declare type ColorName = "aliceblue" | "antiquewhite" | "aqua" | "aquamarine" | "azure" | "beige" | "bisque" | "black" | "blanchedalmond" | "blue" | "blueviolet" | "brown" | "burlywood" | "cadetblue" | "chartreuse" | "chocolate" | "coral" | "cornflowerblue" | "cornsilk" | "crimson" | "cyan" | "darkblue" | "darkcyan" | "darkgoldenrod" | "darkgray" | "darkgrey" | "darkgreen" | "darkkhaki" | "darkmagenta" | "darkolivegreen" | "darkorange" | "darkorchid" | "darkred" | "darksalmon" | "darkseagreen" | "darkslateblue" | "darkslategray" | "darkslategrey" | "darkturquoise" | "darkviolet" | "deeppink" | "deepskyblue" | "dimgray" | "dimgrey" | "dodgerblue" | "firebrick" | "floralwhite" | "forestgreen" | "fuchsia" | "gainsboro" | "ghostwhite" | "gold" | "goldenrod" | "gray" | "grey" | "green" | "greenyellow" | "honeydew" | "hotpink" | "indianred" | "indigo" | "ivory" | "khaki" | "lavender" | "lavenderblush" | "lawngreen" | "lemonchiffon" | "lightblue" | "lightcoral" | "lightcyan" | "lightgoldenrodyellow" | "lightgray" | "lightgrey" | "lightgreen" | "lightpink" | "lightsalmon" | "lightseagreen" | "lightskyblue" | "lightslategray" | "lightslategrey" | "lightsteelblue" | "lightyellow" | "lime" | "limegreen" | "linen" | "magenta" | "maroon" | "mediumaquamarine" | "mediumblue" | "mediumorchid" | "mediumpurple" | "mediumseagreen" | "mediumslateblue" | "mediumspringgreen" | "mediumturquoise" | "mediumvioletred" | "midnightblue" | "mintcream" | "mistyrose" | "moccasin" | "navajowhite" | "navy" | "oldlace" | "olive" | "olivedrab" | "orange" | "orangered" | "orchid" | "palegoldenrod" | "palegreen" | "paleturquoise" | "palevioletred" | "papayawhip" | "peachpuff" | "peru" | "pink" | "plum" | "powderblue" | "purple" | "rebeccapurple" | "red" | "rosybrown" | "royalblue" | "saddlebrown" | "salmon" | "sandybrown" | "seagreen" | "seashell" | "sienna" | "silver" | "skyblue" | "slateblue" | "slategray" | "slategrey" | "snow" | "springgreen" | "steelblue" | "tan" | "teal" | "thistle" | "tomato" | "turquoise" | "violet" | "wheat" | "white" | "whitesmoke" | "yellow" | "yellowgreen";
-export declare type LengthProp = "maxHeight" | "minHeight" | "top" | "bottom" | "height" | "maxHidth" | "minWidth" | "right" | "left" | "width" | "margin" | "marginTop" | "marginBottom" | "marginLeft" | "marginRight" | "padding" | "paddingTop" | "paddingBottom" | "paddingLeft" | "paddingRight" | "lineHeight" | "fontSize";
+export declare type BasicCommonValues = "inherit" | "initial" | "unset";
+export declare type AbsoluteUnits = "cm" | "mm" | "in" | "px" | "pt" | "pc";
+export declare type RelativeUnits = "em" | "ex" | "ch" | "rem" | "vw" | "vh" | "vmin" | "vmax" | "%";
+export declare type AllUnits = AbsoluteUnits | RelativeUnits;
+export declare type OptionalWhitespace = "" | " ";
+export declare type UrlType = `url('${string}')`;
+export declare type BackgroundAttachmentValues = BasicCommonValues | "scroll" | "fixed" | "local";
+export declare type BackgroundRepeatValues = BasicCommonValues | "no-repeat" | "repeat" | "space" | "round";
+export declare type BackgroundOriginValues = BasicCommonValues | "padding-box" | "border-box" | "content-box";
+export declare type BackgroundSizeValues = BasicCommonValues | "auto" | number | `${number}${AllUnits}` | "cover" | "contain";
+export declare type BackfaceVisibilityValues = BasicCommonValues | "visible" | "hidden";
+export declare type BorderStyles = BasicCommonValues | "dotted" | "dashed" | "solid" | "double" | "groove" | "ridge" | "inset" | "outset" | "none" | "hidden";
+export declare type ColorName = BasicCommonValues | "aliceblue" | "antiquewhite" | "aqua" | "aquamarine" | "azure" | "beige" | "bisque" | "black" | "blanchedalmond" | "blue" | "blueviolet" | "brown" | "burlywood" | "cadetblue" | "chartreuse" | "chocolate" | "coral" | "cornflowerblue" | "cornsilk" | "crimson" | "cyan" | "darkblue" | "darkcyan" | "darkgoldenrod" | "darkgray" | "darkgrey" | "darkgreen" | "darkkhaki" | "darkmagenta" | "darkolivegreen" | "darkorange" | "darkorchid" | "darkred" | "darksalmon" | "darkseagreen" | "darkslateblue" | "darkslategray" | "darkslategrey" | "darkturquoise" | "darkviolet" | "deeppink" | "deepskyblue" | "dimgray" | "dimgrey" | "dodgerblue" | "firebrick" | "floralwhite" | "forestgreen" | "fuchsia" | "gainsboro" | "ghostwhite" | "gold" | "goldenrod" | "gray" | "grey" | "green" | "greenyellow" | "honeydew" | "hotpink" | "indianred" | "indigo" | "ivory" | "khaki" | "lavender" | "lavenderblush" | "lawngreen" | "lemonchiffon" | "lightblue" | "lightcoral" | "lightcyan" | "lightgoldenrodyellow" | "lightgray" | "lightgrey" | "lightgreen" | "lightpink" | "lightsalmon" | "lightseagreen" | "lightskyblue" | "lightslategray" | "lightslategrey" | "lightsteelblue" | "lightyellow" | "lime" | "limegreen" | "linen" | "magenta" | "maroon" | "mediumaquamarine" | "mediumblue" | "mediumorchid" | "mediumpurple" | "mediumseagreen" | "mediumslateblue" | "mediumspringgreen" | "mediumturquoise" | "mediumvioletred" | "midnightblue" | "mintcream" | "mistyrose" | "moccasin" | "navajowhite" | "navy" | "oldlace" | "olive" | "olivedrab" | "orange" | "orangered" | "orchid" | "palegoldenrod" | "palegreen" | "paleturquoise" | "palevioletred" | "papayawhip" | "peachpuff" | "peru" | "pink" | "plum" | "powderblue" | "purple" | "rebeccapurple" | "red" | "rosybrown" | "royalblue" | "saddlebrown" | "salmon" | "sandybrown" | "seagreen" | "seashell" | "sienna" | "silver" | "skyblue" | "slateblue" | "slategray" | "slategrey" | "snow" | "springgreen" | "steelblue" | "tan" | "teal" | "thistle" | "tomato" | "turquoise" | "violet" | "wheat" | "white" | "whitesmoke" | "yellow" | "yellowgreen";
+export declare type LengthProp = BasicCommonValues | "maxHeight" | "minHeight" | "top" | "bottom" | "height" | "maxHidth" | "minWidth" | "right" | "left" | "width" | "margin" | "marginTop" | "marginBottom" | "marginLeft" | "marginRight" | "padding" | "paddingTop" | "paddingBottom" | "paddingLeft" | "paddingRight" | "lineHeight" | "fontSize";
+export declare type PositionNames = BasicCommonValues | "static" | "relative" | "fixed" | "absolute" | "sticky";
+export declare type ColorFormat = BasicCommonValues | ColorName | number | `#${string}` | `rgb(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})` | `rgba(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})` | `hsl(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%)` | `hsla(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%,${OptionalWhitespace}${number})`;
+export declare type BackgroundRepeatValues2d = BackgroundRepeatValues | "repeat-x" | "repeat-y" | `${BackgroundRepeatValues} ${BackgroundRepeatValues}`;
+export declare type BorderShorthand = BasicCommonValues | `${number}${AllUnits} ${BorderStyles} ${ColorFormat}`;
+export declare type BackgroundImageFormat = BasicCommonValues | UrlType | `${UrlType}, ${UrlType}`;
+export declare type BackgroundPositionShorthand2D = BasicCommonValues | `${number} ${number}` | `${number}% ${number}%` | `${"left" | "right" | "center"} ${"top" | "center" | "bottom"}`;
+export declare type BackgroundShorthand = BasicCommonValues | `${ColorFormat} ${UrlType} ${BackgroundRepeatValues} ${BackgroundPositionShorthand2D}`;
 export interface IDotcssProp {
     angleToDeg(a: number | string): any;
     matrixMultiply3D(a: Array<number>, b: Array<number>): Array<number>;
@@ -24,7 +43,7 @@ export interface IDotcssProp {
     textDecorationColor: IDotcssAnimatableColor;
     outlineColor: IDotcssAnimatableColor;
     columnRuleColor: IDotcssAnimatableColor;
-    backgroundSize: IDotcssAnimatable<number | string>;
+    backgroundSize: IDotcssAnimatable<BackgroundSizeValues>;
     backgroundSizeCm: IDotcssAnimatable<number>;
     backgroundSizeCh: IDotcssAnimatable<number>;
     backgroundSizeEm: IDotcssAnimatable<number>;
@@ -568,34 +587,33 @@ export interface IDotcssProp {
     fontSizeVw: IDotcssAnimatable<number>;
     fontSizeVMax: IDotcssAnimatable<number>;
     fontSizeVMin: IDotcssAnimatable<number>;
-    backgroundImage: (value: string) => IDotcssProp;
-    borderImage: (value: string) => IDotcssProp;
-    listStyleImage: (value: string) => IDotcssProp;
-    content: (value: string) => IDotcssProp;
-    imageOrientation: (value: string) => IDotcssProp;
+    backgroundImage: (value: BackgroundImageFormat) => IDotcssProp;
+    borderImage: (value: BackgroundImageFormat) => IDotcssProp;
+    listStyleImage: (value: BackgroundImageFormat) => IDotcssProp;
+    content: (value: BasicCommonValues | UrlType) => IDotcssProp;
     transformation: any;
     opacity: IDotcssAnimatable<number | string>;
     background: (value: string) => IDotcssProp;
-    backgroundAttachment: (value: string) => IDotcssProp;
+    backgroundAttachment: (value: BackgroundAttachmentValues) => IDotcssProp;
     backgroundBlendMode: (value: string) => IDotcssProp;
-    backgroundPosition: (value: string) => IDotcssProp;
-    backgroundRepeat: (value: string) => IDotcssProp;
+    backgroundPosition: (value: BackgroundPositionShorthand2D) => IDotcssProp;
+    backgroundRepeat: (value: BackgroundRepeatValues2d) => IDotcssProp;
     backgroundClip: (value: string) => IDotcssProp;
-    backgroundOrigin: (value: string) => IDotcssProp;
-    border: (value: string) => IDotcssProp;
-    borderBottom: (value: string) => IDotcssProp;
-    borderBottomStyle: (value: string) => IDotcssProp;
+    backgroundOrigin: (value: BackgroundOriginValues) => IDotcssProp;
     borderImageOutset: (value: string) => IDotcssProp;
-    borderImageRepeat: (value: string) => IDotcssProp;
+    borderImageRepeat: (value: BackgroundRepeatValues2d) => IDotcssProp;
     borderImageSlice: (value: string) => IDotcssProp;
     borderImageSource: (value: string) => IDotcssProp;
-    borderLeft: (value: string) => IDotcssProp;
-    borderLeftStyle: (value: string) => IDotcssProp;
-    borderRight: (value: string) => IDotcssProp;
-    borderRightStyle: (value: string) => IDotcssProp;
-    borderStyle: (value: string) => IDotcssProp;
-    borderTop: (value: string) => IDotcssProp;
-    borderTopStyle: (value: string) => IDotcssProp;
+    border: (value: BorderShorthand) => IDotcssProp;
+    borderBottom: (value: BorderShorthand) => IDotcssProp;
+    borderLeft: (value: BorderShorthand) => IDotcssProp;
+    borderRight: (value: BorderShorthand) => IDotcssProp;
+    borderTop: (value: BorderShorthand) => IDotcssProp;
+    borderBottomStyle: (value: BorderStyles) => IDotcssProp;
+    borderLeftStyle: (value: BorderStyles) => IDotcssProp;
+    borderRightStyle: (value: BorderStyles) => IDotcssProp;
+    borderStyle: (value: BorderStyles) => IDotcssProp;
+    borderTopStyle: (value: BorderStyles) => IDotcssProp;
     boxDecorationBreak: (value: string) => IDotcssProp;
     boxShadow: (value: string) => IDotcssProp;
     clear: (value: string) => IDotcssProp;
@@ -606,7 +624,7 @@ export interface IDotcssProp {
     box: (value: string) => IDotcssProp;
     overflowX: (value: string) => IDotcssProp;
     overflowY: (value: string) => IDotcssProp;
-    position: (value: string) => IDotcssProp;
+    position: (value: PositionNames) => IDotcssProp;
     visibility: (value: string) => IDotcssProp;
     verticalAlign: (value: string) => IDotcssProp;
     zIndex: (value: string) => IDotcssProp;
@@ -637,6 +655,7 @@ export interface IDotcssProp {
     gridTemplateAreas: (value: string) => IDotcssProp;
     gridTemplateColumns: (value: string) => IDotcssProp;
     gridTemplateRows: (value: string) => IDotcssProp;
+    imageOrientation: (value: string) => IDotcssProp;
     justifyContent: (value: string) => IDotcssProp;
     order: (value: string) => IDotcssProp;
     hangingPunctuation: (value: string) => IDotcssProp;
@@ -701,7 +720,7 @@ export interface IDotcssProp {
     animationName: (value: string) => IDotcssProp;
     animationPlayState: (value: string) => IDotcssProp;
     animationTimingFunction: (value: string) => IDotcssProp;
-    backfaceVisibility: (value: string) => IDotcssProp;
+    backfaceVisibility: (value: BackfaceVisibilityValues) => IDotcssProp;
     perspective2d: (value: string) => IDotcssProp;
     perspectiveOrigin: (value: string) => IDotcssProp;
     transformOrigin: (value: string) => IDotcssProp;
@@ -780,9 +799,9 @@ export interface IDotcssAnimatable<T> extends IDotcssProp {
     animate(value: number, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
 export interface IDotcssAnimatableColor extends IDotcssProp {
-    (value: string | Array<number>): IDotcssProp;
+    (value: ColorFormat | Array<number>): IDotcssProp;
     (r: number, g: number, b: number, a?: number): IDotcssProp;
-    animate(value: string | Array<number>, duration: number, style: "ease", complete: Function): IDotcssProp;
+    animate(value: ColorFormat | Array<number>, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
 export interface HideParams {
     duration?: number;

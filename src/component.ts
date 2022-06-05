@@ -4,7 +4,7 @@ import { ClassPrefix, eachK, GlobalComponentStack, isF, sT } from "./dot-util";
 import ERR from "./err";
 import { IDotDocument, IDotElement, IDotElementDocument, IDotGenericElement } from "./i-dot";
 import { ArgCallback, ArrayArgCallback, AttrArgCallback } from "./arg-callback-obj";
-import IDotCss from "i-dotcss";
+import IDotCss from "./i-dotcss";
 
 interface IPropertyContainer{
 	activePropConstructor: Function;
