@@ -61,7 +61,7 @@
 
         /* Advanced Options */
         // "forceConsistentCasingInFileNames": true,  /* Disallow inconsistently-cased references to the same file. */
-        "baseUrl": "./src", /* Base directory to resolve non-absolute module names. */
+        // "baseUrl": "./src", /* Don't use this. Base directory to resolve non-absolute module names. */
         // "paths": {
         //     "*": ["../../../src/"], // This mapping is relative to "baseUrl"
         // }
