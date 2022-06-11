@@ -74,7 +74,7 @@
     // ],
     "exclude": [
         "node_modules",
-        "dist",
+        "lib",
         "tsout",
         "unittests",
         "**/*.spec.ts",
