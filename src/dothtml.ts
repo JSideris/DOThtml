@@ -27,6 +27,7 @@ dot.Component = Component;
 
 
 export default dot;
+export {default as DotComponent} from "./component";
 export {IDotElement} from "./i-dot";
 export {default as IDotCss} from "./i-dotcss";
 
