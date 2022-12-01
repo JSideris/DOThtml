@@ -864,218 +864,223 @@ dotcss2._Unknown.prototype.toString = function(){
 	return this.value;
 }
 
-function _StyleProperty(){
-	this.type = null;
-	this.jsFriendlyProp = null;
-};
+class _StyleProperty{
+	type: string;
+	jsFriendlyProp: string;
+	constructor(){
+		this.type = null;
+		this.jsFriendlyProp = null;
 
-//toString override gets the value.
-_StyleProperty.prototype.toString = function(){
-	if(dotcss2._lastBuilder.target){
-		var ret = null;
-		if(dotcss2._lastBuilder.target.length > 1){
-			ret = [];
-			for(var i = 0; i < dotcss2._lastBuilder.target.length; i++){
-				ret.push(dotcss2._lastBuilder.target[i].style[this.jsFriendlyProp]);
-			}
-		}
-		else ret = dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp];
-		return ret;
 	}
-	else return null;
-};
-
-//val is another special function that breaks the value into a special object.
-_StyleProperty.prototype.val = function(){
-	if(dotcss2._lastBuilder.target){
-		var ret = null;
-		if(dotcss2._lastBuilder.target.length > 1){
-			ret = null;
-			for(var i = 0; i < dotcss2._lastBuilder.target.length; i++){
-				if(dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp]){
-					ret.push(dotcss2._convertStyleIntoDotCssObject(dotcss2._lastBuilder.target[i].style[this.jsFriendlyProp], this.type));
+	//toString override gets the value.
+	toString(){
+		if(dotcss2._lastBuilder.target){
+			var ret = null;
+			if(dotcss2._lastBuilder.target.length > 1){
+				ret = [];
+				for(var i = 0; i < dotcss2._lastBuilder.target.length; i++){
+					ret.push(dotcss2._lastBuilder.target[i].style[this.jsFriendlyProp]);
 				}
-				else ret.push(null);
 			}
+			else ret = dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp];
+			return ret;
 		}
-		else{
-			if(dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp]){
-				ret = dotcss2._convertStyleIntoDotCssObject(dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp], this.type)
-			}
-			else ret = null;
-		}
-		return ret;
+		else return null;
 	}
-	else return null;
-};
-
-//Ability to animate just like jquery.
-//complete does not get called if the animation was cancelled.
-_StyleProperty.prototype.animate = function(value, duration, style, complete){
-	duration = isNaN(duration) ? 400 : (duration || 0);
-	if(dotcss2._lastBuilder && dotcss2._lastBuilder.target){
-		if(!complete && style && style.call && style.apply){ //Fix params.
-			complete = style;
-			style = undefined;
-		}
-		for(var i = 0; i < dotcss2._lastBuilder.target.length; i++){
-			var target = dotcss2._lastBuilder.target[i];
-			var oldValue = null;
-			var newValue = null;
-			var finalValue = null; //newValue might be in different units from the final value...
-
-			//Get the old and new values.
-			newValue = dotcss2._convertStyleIntoDotCssObject(value, this.type);
-
-			//If it's a transformation, a little extra work is required.
-			//Need to frame all the rotations properly, and combine both the new and the old transformations.
-			if(this.type == "transformation"){
-				//Special handling. We'd like to consider the transformation as a complex data type first, then if that's not possible, convert it into a matrix data type.
-				//Reason being: linear transformations on matrices are inaccurate. Rotations end up scaling the target.
-				//Don't want to get the computed value for transformations.
-				oldValue = dotcss2._convertStyleIntoDotCssObject(target.style[this.jsFriendlyProp], this.type);
-			}
-			if(!oldValue){ //Standard. Happens when the type is not a transformation.
-				oldValue = dotcss2._convertStyleIntoDotCssObject(dotcss2._computedStyleOrActualStyle(target, this.jsFriendlyProp), this.type);
-			}
-
-			finalValue = newValue.toString();
-
-			//Do a little type/unit checking.
-			
-			if(this.type == "length"){
-				if(oldValue.units != newValue.units){
-					//Need to rectify this.
-					//This can get messy. If one of the lengths is zero, it would minimize the likelihood of an error.
-					if(oldValue.length == 0){
-						oldValue.units = newValue.units;
-						oldValue.length = 0;
+	
+	//val is another special function that breaks the value into a special object.
+	val(){
+		if(dotcss2._lastBuilder.target){
+			var ret = null;
+			if(dotcss2._lastBuilder.target.length > 1){
+				ret = null;
+				for(var i = 0; i < dotcss2._lastBuilder.target.length; i++){
+					if(dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp]){
+						ret.push(dotcss2._convertStyleIntoDotCssObject(dotcss2._lastBuilder.target[i].style[this.jsFriendlyProp], this.type));
 					}
-					else if(newValue.length == 0){
-						newValue.units = oldValue.units;
-						newValue.length = 0;
-					}
-					else{
-						//Things are messy. Try to mitigate. Convert the old value into the new units, as best we can.
-						var currentLengthPx = dotcss.lengthToPx(oldValue.toString(), this.jsFriendlyProp, target);
-						var newLengthPx = dotcss.lengthToPx(newValue.toString(), this.jsFriendlyProp, target);
-						oldValue.length = currentLengthPx;
-						oldValue.units = "px";
-						newValue.length = newLengthPx;
-						newValue.units = "px";
-
-						//Won't need this anymore.
-						//console.warn("Couldn't animate " + this.jsFriendlyProp + ". Inconsistent units.");
-						//return dotcss2._lastBuilder;
-					}
-				}
-			}
-			else if(this.type == "color"){} //OK
-			else if(this.type == "transformation"){
-				//Couple things to do here.
-				//1. The old and new values must contain the exact same transformation template.
-				//2. Angles in the old transformation should be reframed so that they are close to the new angles (or should they)
-
-				var startTransform = "";
-				var desiredTransform = "";
-				var oldIndex = oldValue.transformations.length - 1;
-				var newIndex = newValue.transformations.length - 1;
-				while(oldIndex >= 0 || newIndex >= 0){
-					var transformToAdd = "";
-					var oldTransformValues = null;
-					var newTransformValues = null;
-					if(oldIndex >= 0 && newIndex >= 0 && oldValue.transformations[oldIndex].transformation == newValue.transformations[newIndex].transformation){
-						var currentOldT = oldValue.transformations[oldIndex];
-						var currentNewT = newValue.transformations[newIndex];
-						
-						transformToAdd = currentOldT.transformation;
-						oldTransformValues = currentOldT.args;
-						newTransformValues = currentNewT.args;
-
-						oldIndex--;
-						newIndex--;
-					}
-					else if(oldIndex >= newIndex){
-						var currentOldT = oldValue.transformations[oldIndex];
-						transformToAdd = currentOldT.transformation;
-						oldTransformValues = currentOldT.args;
-						if(transformToAdd == "matrix"){
-							newTransformValues = [1,0, 0,1, 0,0];
-						}
-						else if(transformToAdd == "matrix3d"){
-							newTransformValues = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
-						}
-						else {
-							var filler = (transformToAdd.indexOf("scale") == -1) ? 0 : 1;
-							newTransformValues = [];
-							for(var j = 0; j < oldTransformValues.length; j++) newTransformValues.push(!isNaN(oldTransformValues[j]) ? filler : (
-								!isNaN(oldTransformValues[j].angle) ? new dotcss2._Angle(0) : (
-									!isNaN(oldTransformValues[j].length) ? new dotcss2._Length(0) : (0)
-								)));
-						}
-						oldIndex--;
-					}
-					else{
-						var currentNewT = newValue.transformations[newIndex];
-						transformToAdd = currentNewT.transformation;
-						newTransformValues = currentNewT.args;
-						if(transformToAdd == "matrix"){
-							oldTransformValues = [1,0, 0,1, 0,0];
-						}
-						else if(transformToAdd == "matrix3d"){
-							oldTransformValues = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
-						}
-						else {
-							var filler = (transformToAdd.indexOf("scale") == -1) ? 0 : 1;
-							oldTransformValues = [];
-							for(var j = 0; j < newTransformValues.length; j++) oldTransformValues.push(!isNaN(newTransformValues[j]) ? filler : (
-								!isNaN(newTransformValues[j].angle) ? new dotcss2._Angle(0) : (
-									!isNaN(newTransformValues[j].length) ? new dotcss2._Length(0) : (0)
-								)));
-						}
-						newIndex--;
-					}
-
-					startTransform = ") " + startTransform;
-					desiredTransform = ") " + desiredTransform;
-					//Handle special values here.
-					if(transformToAdd.indexOf("rotate") != -1){
-						var oldAngle = oldTransformValues[oldTransformValues.length - 1].angle;
-						var newAngle = newTransformValues[newTransformValues.length - 1].angle;
-						var sep = dotcss.angleSubtract(newAngle, oldAngle);
-						oldTransformValues[oldTransformValues.length - 1].angle = newAngle - sep;
-					}
-					for(var j = oldTransformValues.length - 1; j >= 0; j--){
-						startTransform = "," + oldTransformValues[i] + startTransform;
-						desiredTransform = "," + newTransformValues[i] + desiredTransform;
-					}
-					startTransform = transformToAdd + "(" + startTransform.substring(1);
-					desiredTransform = transformToAdd + "(" + desiredTransform.substring(1);
-				}
-				oldValue = dotcss2._convertStyleIntoDotCssObject(startTransform, "transformation");
-				newValue = dotcss2._convertStyleIntoDotCssObject(desiredTransform, "transformation");
-
-			}
-			else if(oldValue.type == "number" && newValue.type == "number"){} //OK
-			else if(oldValue.type == "complex" && newValue.type == "complex"){
-				if(!dotcss2._compareComplexDataTypes(oldValue, newValue)){
-					console.warn("Couldn't animate " + this.jsFriendlyProp + ". Value mismatch.");
-					continue;
+					else ret.push(null);
 				}
 			}
 			else{
-				console.warn("Couldn't animate " + this.jsFriendlyProp + ". Not a recognizable length, color, or number.");
-				continue;
+				if(dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp]){
+					ret = dotcss2._convertStyleIntoDotCssObject(dotcss2._lastBuilder.target[0].style[this.jsFriendlyProp], this.type)
+				}
+				else ret = null;
 			}
-			dotcss2._animate(target, this.jsFriendlyProp, oldValue.type || this.type, oldValue, newValue, finalValue, dotcss2._fxInterval, duration, style || "ease", complete);
+			return ret;
 		}
+		else return null;
 	}
-	return dotcss2._lastBuilder;
+	
+	//Ability to animate just like jquery.
+	//complete does not get called if the animation was cancelled.
+	animate(value, duration, style, complete){
+		duration = isNaN(duration) ? 400 : (duration || 0);
+		if(dotcss2._lastBuilder && dotcss2._lastBuilder.target){
+			if(!complete && style && style.call && style.apply){ //Fix params.
+				complete = style;
+				style = undefined;
+			}
+			for(var i = 0; i < dotcss2._lastBuilder.target.length; i++){
+				var target = dotcss2._lastBuilder.target[i];
+				var oldValue = null;
+				var newValue = null;
+				var finalValue = null; //newValue might be in different units from the final value...
+	
+				//Get the old and new values.
+				newValue = dotcss2._convertStyleIntoDotCssObject(value, this.type);
+	
+				//If it's a transformation, a little extra work is required.
+				//Need to frame all the rotations properly, and combine both the new and the old transformations.
+				if(this.type == "transformation"){
+					//Special handling. We'd like to consider the transformation as a complex data type first, then if that's not possible, convert it into a matrix data type.
+					//Reason being: linear transformations on matrices are inaccurate. Rotations end up scaling the target.
+					//Don't want to get the computed value for transformations.
+					oldValue = dotcss2._convertStyleIntoDotCssObject(target.style[this.jsFriendlyProp], this.type);
+				}
+				if(!oldValue){ //Standard. Happens when the type is not a transformation.
+					oldValue = dotcss2._convertStyleIntoDotCssObject(dotcss2._computedStyleOrActualStyle(target, this.jsFriendlyProp), this.type);
+				}
+	
+				finalValue = newValue.toString();
+	
+				//Do a little type/unit checking.
+				
+				if(this.type == "length"){
+					if(oldValue.units != newValue.units){
+						//Need to rectify this.
+						//This can get messy. If one of the lengths is zero, it would minimize the likelihood of an error.
+						if(oldValue.length == 0){
+							oldValue.units = newValue.units;
+							oldValue.length = 0;
+						}
+						else if(newValue.length == 0){
+							newValue.units = oldValue.units;
+							newValue.length = 0;
+						}
+						else{
+							//Things are messy. Try to mitigate. Convert the old value into the new units, as best we can.
+							var currentLengthPx = dotcss.lengthToPx(oldValue.toString(), this.jsFriendlyProp as LengthProp, target);
+							var newLengthPx = dotcss.lengthToPx(newValue.toString(), this.jsFriendlyProp as LengthProp, target);
+							oldValue.length = currentLengthPx;
+							oldValue.units = "px";
+							newValue.length = newLengthPx;
+							newValue.units = "px";
+	
+							//Won't need this anymore.
+							//console.warn("Couldn't animate " + this.jsFriendlyProp + ". Inconsistent units.");
+							//return dotcss2._lastBuilder;
+						}
+					}
+				}
+				else if(this.type == "color"){} //OK
+				else if(this.type == "transformation"){
+					//Couple things to do here.
+					//1. The old and new values must contain the exact same transformation template.
+					//2. Angles in the old transformation should be reframed so that they are close to the new angles (or should they)
+	
+					var startTransform = "";
+					var desiredTransform = "";
+					var oldIndex = oldValue.transformations.length - 1;
+					var newIndex = newValue.transformations.length - 1;
+					while(oldIndex >= 0 || newIndex >= 0){
+						var transformToAdd = "";
+						var oldTransformValues = null;
+						var newTransformValues = null;
+						if(oldIndex >= 0 && newIndex >= 0 && oldValue.transformations[oldIndex].transformation == newValue.transformations[newIndex].transformation){
+							var currentOldT = oldValue.transformations[oldIndex];
+							var currentNewT = newValue.transformations[newIndex];
+							
+							transformToAdd = currentOldT.transformation;
+							oldTransformValues = currentOldT.args;
+							newTransformValues = currentNewT.args;
+	
+							oldIndex--;
+							newIndex--;
+						}
+						else if(oldIndex >= newIndex){
+							var currentOldT = oldValue.transformations[oldIndex];
+							transformToAdd = currentOldT.transformation;
+							oldTransformValues = currentOldT.args;
+							if(transformToAdd == "matrix"){
+								newTransformValues = [1,0, 0,1, 0,0];
+							}
+							else if(transformToAdd == "matrix3d"){
+								newTransformValues = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+							}
+							else {
+								var filler = (transformToAdd.indexOf("scale") == -1) ? 0 : 1;
+								newTransformValues = [];
+								for(var j = 0; j < oldTransformValues.length; j++) newTransformValues.push(!isNaN(oldTransformValues[j]) ? filler : (
+									!isNaN(oldTransformValues[j].angle) ? new dotcss2._Angle(0) : (
+										!isNaN(oldTransformValues[j].length) ? new dotcss2._Length(0) : (0)
+									)));
+							}
+							oldIndex--;
+						}
+						else{
+							var currentNewT = newValue.transformations[newIndex];
+							transformToAdd = currentNewT.transformation;
+							newTransformValues = currentNewT.args;
+							if(transformToAdd == "matrix"){
+								oldTransformValues = [1,0, 0,1, 0,0];
+							}
+							else if(transformToAdd == "matrix3d"){
+								oldTransformValues = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+							}
+							else {
+								var filler = (transformToAdd.indexOf("scale") == -1) ? 0 : 1;
+								oldTransformValues = [];
+								for(var j = 0; j < newTransformValues.length; j++) oldTransformValues.push(!isNaN(newTransformValues[j]) ? filler : (
+									!isNaN(newTransformValues[j].angle) ? new dotcss2._Angle(0) : (
+										!isNaN(newTransformValues[j].length) ? new dotcss2._Length(0) : (0)
+									)));
+							}
+							newIndex--;
+						}
+	
+						startTransform = ") " + startTransform;
+						desiredTransform = ") " + desiredTransform;
+						//Handle special values here.
+						if(transformToAdd.indexOf("rotate") != -1){
+							var oldAngle = oldTransformValues[oldTransformValues.length - 1].angle;
+							var newAngle = newTransformValues[newTransformValues.length - 1].angle;
+							var sep = dotcss.angleSubtract(newAngle, oldAngle);
+							oldTransformValues[oldTransformValues.length - 1].angle = newAngle - sep;
+						}
+						for(var j = oldTransformValues.length - 1; j >= 0; j--){
+							startTransform = "," + oldTransformValues[i] + startTransform;
+							desiredTransform = "," + newTransformValues[i] + desiredTransform;
+						}
+						startTransform = transformToAdd + "(" + startTransform.substring(1);
+						desiredTransform = transformToAdd + "(" + desiredTransform.substring(1);
+					}
+					oldValue = dotcss2._convertStyleIntoDotCssObject(startTransform, "transformation");
+					newValue = dotcss2._convertStyleIntoDotCssObject(desiredTransform, "transformation");
+	
+				}
+				else if(oldValue.type == "number" && newValue.type == "number"){} //OK
+				else if(oldValue.type == "complex" && newValue.type == "complex"){
+					if(!dotcss2._compareComplexDataTypes(oldValue, newValue)){
+						console.warn("Couldn't animate " + this.jsFriendlyProp + ". Value mismatch.");
+						continue;
+					}
+				}
+				else{
+					console.warn("Couldn't animate " + this.jsFriendlyProp + ". Not a recognizable length, color, or number.");
+					continue;
+				}
+				dotcss2._animate(target, this.jsFriendlyProp, oldValue.type || this.type, oldValue, newValue, finalValue, dotcss2._fxInterval, duration, style || "ease", complete);
+			}
+		}
+		return dotcss2._lastBuilder;
+	}
+	
+	//Have to add these back since we're going to replace the __proto__ of a function with this new prototype.
+	apply = Function.apply;
+	call = Function.call;
 };
 
-//Have to add these back since we're going to replace the __proto__ of a function with this new prototype.
-_StyleProperty.prototype.apply = Function.apply;
-_StyleProperty.prototype.call = Function.call;
 
 dotcss2._animate = function(element, jsFriendlyProp, propType, startValue, targetValue, finalValue, currentTime, totalDuration, animationStyle, callback, lastValue){
 	if(lastValue && element.style[jsFriendlyProp] != lastValue) return; //Animation can be cancelled any time by setting the value directly.
@@ -1194,7 +1199,7 @@ var _allProps = {
 		color: "color|background-Color|border-Bottom-Color|border-Color|border-Left-Color|border-Right-Color|border-Top-Color|text-Decoration-Color|outline-Color|column-Rule-Color",
 		length: "background-Size|border-Bottom-Left-Radius|border-Bottom-Right-Radius|border-Bottom-Width|border-Image-Width|border-Left-Width|border-Radius|border-Right-Width|border-Top-Left-Radius|border-Top-Right-Radius|border-Top-Width|border-Width|bottom|height|left|margin|margin-Bottom|margin-Left|margin-Right|margin-Top|max-Height|max-Width|min-Height|min-Width|padding|padding-Bottom|padding-Left|padding-Right|padding-Top|right|top|width|line-Height|flex-Basis|font-Size",
 		url: "background-Image|border-Image|list-Style-Image|content|image-Orientation",
-		transformation: "transformation",
+		transformation: "transform",
 		misc: "opacity|background|background-Attachment|background-Blend-Mode|background-Position|background-Repeat|background-Clip|background-Origin|border|border-Bottom|border-Bottom-Style|border-Image-Outset|border-Image-Repeat|border-Image-Slice|border-Image-Source|border-Left|border-Left-Style|border-Right|border-Right-Style|border-Style|border-Top|border-Top-Style|box-Decoration-Break|box-Shadow|clear|clip|display|float|overflow|box|overflow-X|overflow-Y|position|visibility|vertical-Align|z-Index|align-Content|align-Items|align-Self|flex|flex-Basis|flex-Direction|flex-Flow|flex-Grow|flex-Shrink|flex-Wrap|grid|grid-Area|grid-Auto-Columns|grid-auto-Rows|grid-Column|grid-Column-End|grid-Column-Gap|grid-Column-Start|grid-Gap|grid-Row|grid-Row-End|grid-Row-Gap|grid-Row-Start|grid-Template|grid-Template-Areas|grid-Template-Columns|grid-Template-Rows|justify-Content|order|hanging-Punctuation|hyphens|letter-Spacing|line-Break|overflow-Wrap|tab-Size|text-Align|text-Align-Last|text-Combine-Upright|text-Indent|text-Justify|text-Transform|white-Space|word-Break|word-Spacing|word-Wrap|text-Decoration|text-Decoration-Line|text-Decoration-Style|text-Shadow|text-Underline-Position|font|font-Family|font-Feature-Settings|font-Kerning|font-Language-Override|font-Size-Adjust|font-Stretch|font-Style|font-Synthesis|font-Variant|font-Variant-Alternates|font-Variant-Caps|font-Variant-East-Asian|font-Variant-Ligatures|font-Variant-Numeric|font-Variant-Position|font-Weight|direction|text-Orientation|text-Combine-Upright|unicode-Bidi|user-Select|writing-Mode|border-Collapse|border-Spacing|caption-Side|empty-Cells|table-Layout|counter-Increment|counter-Reset|list-Style|list-Style-Position|list-Style-Type|animation|animation-Delay|animation-Direction|animation-Duration|animation-Fill-Mode|animation-Iteration-Count|animation-Name|animation-Play-State|animation-Timing-Function|backface-Visibility|perspective2d|perspective-Origin|transform-Origin|transform-Style|transition|transition-Property|transition-Duration|transition-Timing-Function|transition-Delay|box-Sizing|cursor|ime-Mode|nav-Down|nav-Index|nav-Left|nav-Right|nav-Up|outline|outline-Offset|outline-Style|outline-Width|resize|text-Overflow|break-After|break-Before|break-Inside|column-Count|column-Fill|column-Gap|column-Rule|column-Rule-Style|column-Rule-Width|column-Span|column-Width|columns|widows|orphans|page-Break-After|page-Break-Before|page-Break-Inside|marks|quotes|filter|image-Rendering|image-Resolution|object-Fit|object-Position|mask|mask-Type|mark|mark-After|mark-Before|phonemes|rest|rest-After|rest-Before|voice-Balance|voice-Duration|voice-Pitch|voice-Pitch-Range|voice-Rate|voice-Stress|voice-Volume|marquee-Direction|marquee-Play-Count|marquee-Speed|marquee-Style|pointer-Events"
 }
 
@@ -1216,29 +1221,29 @@ var _allLengthUnits = [
 	{unit:"Pc"}
 ];
 
-var _allTransforms = [
-	"matrix",
-	"matrix3d",
-	"translate",
-	"translate3d",
-	"translateX",
-	"translateY",
-	"translateZ",
-	"scale",
-	"scale3d",
-	"scaleX",
-	"scaleY",
-	"scaleZ",
-	"rotate",
-	"rotate3d",
-	"rotateX",
-	"rotateY",
-	"rotateZ",
-	"skew",
-	"skewX",
-	"skewY",
-	"perspective"
-]
+// var _allTransforms = [
+// 	"matrix",
+// 	"matrix3d",
+// 	"translate",
+// 	"translate3d",
+// 	"translateX",
+// 	"translateY",
+// 	"translateZ",
+// 	"scale",
+// 	"scale3d",
+// 	"scaleX",
+// 	"scaleY",
+// 	"scaleZ",
+// 	"rotate",
+// 	"rotate3d",
+// 	"rotateX",
+// 	"rotateY",
+// 	"rotateZ",
+// 	"skew",
+// 	"skewX",
+// 	"skewY",
+// 	"perspective"
+// ]
 
 dotcss.matrixMultiply3D = function(A: Array<number>, B: Array<number>){
 	if(A.length != 16 || B.length != 16) throw "3D matrices must be arrays of 16 length.";
@@ -1420,6 +1425,8 @@ dotcss2._makeFunction = function(prop, jsFriendlyProp, type){
 	_b[jsFriendlyProp].type = type;
 	_b[jsFriendlyProp].jsFriendlyProp = jsFriendlyProp;
 
+	// This is weird. It looks like I was trying to implement some form of multilpe inheritance.
+	// This should really be upgraded.
 	for (var k in _StyleProperty.prototype) {
 		if(_b[jsFriendlyProp][k] === undefined) _b[jsFriendlyProp][k] = _StyleProperty.prototype[k];
 	}
@@ -1443,7 +1450,7 @@ dotcss2._modDeg = function(a){
 
 //Public functions.
 
-dotcss.angleSubtract = function(a, b){
+dotcss.angleSubtract = function(a: number, b: number):number{
 	if(a < 0) a = 360 - ((-a) % 360); else a = a % 360;
 	if(b < 0) b = 360 - ((-b) % 360); else b = b % 360;
 	var phi = Math.abs(b - a) % 360;
@@ -1453,23 +1460,24 @@ dotcss.angleSubtract = function(a, b){
 };
 
 //Special handler for building urls.
-dotcss.url = function(url){
-	return "url('" + url + "')";
+dotcss.url = function(url: string): string{
+	return `url('${url}')`;
 };
 
 //Special handler for building rgb colors.
-dotcss.rgb = function(r, g, b){
-	return "rgb(" + r + ", " + g + ", " + b + ")";
+dotcss.rgb = function(r: number, g: number, b: number): string{
+	return `rgb(${r},${g},${b})`;
 };
 
 //Special handler for building rgba colors.
-dotcss.rgba = function(r, g, b, a){
-	return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
+dotcss.rgba = function(r: number, g: number, b: number, a: number): string{
+	return `rgba(${r},${g},${b},${a})`;
 };
 
-dotcss.buildTransform = function(){
-	return new dotcss2._Transform();
-};
+// We don't do this anymore.
+// dotcss.buildTransform = function(){
+// 	return new dotcss2._Transform();
+// };
 
 dotcss["cacheScopedStaticStyles"] = function(el: HTMLElement){
 	let elements = getScopedNodeList("*", el);
@@ -1507,6 +1515,7 @@ for(var k in _allProps) {
 	}
 }
 for(let i: number = 0; i < _allLengthUnits.length; i++) dotcss2._makeTransformFunction(_allLengthUnits[i]);
+
 //dotcss = new dotcss();
 
 // for (var k in _b) {

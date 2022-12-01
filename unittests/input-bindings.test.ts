@@ -17,7 +17,7 @@ class CompBindingInputChangeOption extends Component{
         //this.myValue.setFrom(this.$el.childNodes[1]);
         var v = dot(this.$el).as(dot.select).getVal();
         this.$el.children[1].dispatchEvent(new Event("change"));
-        dot(this.$el.parentNode).empty()
+        dot(this.$el.parentNode as ParentNode).empty()
         .div("Var: " + this.props.myValue)
         .div("Input: " + v);
     }
@@ -58,7 +58,7 @@ class CompBindingWrite extends Component{
     }
     ready(){
         var v = dot(this.$el).as(dot.input).getVal();
-        dot(this.$el.parentNode).empty()
+        dot(this.$el.parentNode as ParentNode).empty()
         .div("Var: " + this.props.v2)
         .div("Input: " + v);
     }
@@ -73,7 +73,7 @@ class CompBindingVarChange extends Component{
     ready(){
         this.props.v1 = this.props.v2;
         var v = dot(this.$el).as(dot.input).getVal();
-        dot(this.$el.parentNode).empty()
+        dot(this.$el.parentNode as ParentNode).empty()
         .div("Var: " + this.props.v1)
         .div("Input: " + v);
     }
@@ -92,7 +92,7 @@ class CompBindingInputChange extends Component{
         var v = dot(this.$el).as(dot.input).getVal();
         this.$el.dispatchEvent(new Event("change"));
         //this.v1 = v;
-        dot(this.$el.parentNode).empty()
+        dot(this.$el.parentNode as ParentNode).empty()
         .div("Var: " + this.props.v1)
         .div("Input: " + v);
     }
@@ -113,7 +113,7 @@ class CompBindingWriteOption extends Component{
     }
     ready(){
         var v = dot(this.$el).as(dot.select).getVal();
-        dot(this.$el.parentNode).empty()
+        dot(this.$el.parentNode as ParentNode).empty()
         .div("Var: " + this.props.myValue).div("Input: " + v)
     }
 }
@@ -129,7 +129,7 @@ class CompBindingVarChangeOption extends Component{
     ready(){
         this.props.myValue = true;
         var v = dot(this.$el).as(dot.select).getVal();
-        dot(this.$el.parentNode).empty()
+        dot(this.$el.parentNode as ParentNode).empty()
         .div("Var: " + this.props.myValue)
         .div("Input: " + v)
     }

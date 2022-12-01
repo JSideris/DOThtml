@@ -5,7 +5,9 @@ export declare type RelativeUnits = "em"|"ex"|"ch"|"rem"|"vw"|"vh"|"vmin"|"vmax"
 export declare type AllUnits = AbsoluteUnits|RelativeUnits;
 export declare type OptionalWhitespace = ""|" ";
 export declare type UrlType = `url('${string}')`;
-export declare type LengthOrDefault = number|`${number}${AllUnits}`;
+export declare type NumericLength = number|`${number}${AllUnits}`;
+export declare type AngleUnits = "deg"|"turn"|"rad"|"grad";
+export declare type NumericAngle = number|`${number}${AngleUnits}`
 
 // ts starts complaining about the complexity of the type :(
 //export declare type DigitStr = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
@@ -15,7 +17,7 @@ export declare type LengthOrDefault = number|`${number}${AllUnits}`;
 export declare type BackgroundAttachmentValues = BasicCommonValues|"scroll"|"fixed"|"local"
 export declare type BackgroundRepeatValues = BasicCommonValues|"no-repeat"|"repeat"|"space"|"round";
 export declare type BackgroundOriginValues = BasicCommonValues|"padding-box"|"border-box"|"content-box";
-export declare type BackgroundSizeValues = BasicCommonValues|"auto"|LengthOrDefault|"cover"|"contain";
+export declare type BackgroundSizeValues = BasicCommonValues|"auto"|NumericLength|"cover"|"contain";
 export declare type BackfaceVisibilityValues = BasicCommonValues|"visible"|"hidden";
 export declare type BorderStyles = BasicCommonValues|"dotted"|"dashed"|"solid"|"double"|"groove"|"ridge"|"inset"|"outset"|"none"|"hidden";
 export declare type ColorName = BasicCommonValues|"aliceblue"|"antiquewhite"|"aqua"|"aquamarine"|"azure"|"beige"|"bisque"|"black"|"blanchedalmond"|"blue"|"blueviolet"|"brown"|"burlywood"|"cadetblue"|"chartreuse"|"chocolate"|"coral"|"cornflowerblue"|"cornsilk"|"crimson"|"cyan"|"darkblue"|"darkcyan"|"darkgoldenrod"|"darkgray"|"darkgrey"|"darkgreen"|"darkkhaki"|"darkmagenta"|"darkolivegreen"|"darkorange"|"darkorchid"|"darkred"|"darksalmon"|"darkseagreen"|"darkslateblue"|"darkslategray"|"darkslategrey"|"darkturquoise"|"darkviolet"|"deeppink"|"deepskyblue"|"dimgray"|"dimgrey"|"dodgerblue"|"firebrick"|"floralwhite"|"forestgreen"|"fuchsia"|"gainsboro"|"ghostwhite"|"gold"|"goldenrod"|"gray"|"grey"|"green"|"greenyellow"|"honeydew"|"hotpink"|"indianred"|"indigo"|"ivory"|"khaki"|"lavender"|"lavenderblush"|"lawngreen"|"lemonchiffon"|"lightblue"|"lightcoral"|"lightcyan"|"lightgoldenrodyellow"|"lightgray"|"lightgrey"|"lightgreen"|"lightpink"|"lightsalmon"|"lightseagreen"|"lightskyblue"|"lightslategray"|"lightslategrey"|"lightsteelblue"|"lightyellow"|"lime"|"limegreen"|"linen"|"magenta"|"maroon"|"mediumaquamarine"|"mediumblue"|"mediumorchid"|"mediumpurple"|"mediumseagreen"|"mediumslateblue"|"mediumspringgreen"|"mediumturquoise"|"mediumvioletred"|"midnightblue"|"mintcream"|"mistyrose"|"moccasin"|"navajowhite"|"navy"|"oldlace"|"olive"|"olivedrab"|"orange"|"orangered"|"orchid"|"palegoldenrod"|"palegreen"|"paleturquoise"|"palevioletred"|"papayawhip"|"peachpuff"|"peru"|"pink"|"plum"|"powderblue"|"purple"|"rebeccapurple"|"red"|"rosybrown"|"royalblue"|"saddlebrown"|"salmon"|"sandybrown"|"seagreen"|"seashell"|"sienna"|"silver"|"skyblue"|"slateblue"|"slategray"|"slategrey"|"snow"|"springgreen"|"steelblue"|"tan"|"teal"|"thistle"|"tomato"|"turquoise"|"violet"|"wheat"|"white"|"whitesmoke"|"yellow"|"yellowgreen";
@@ -26,7 +28,7 @@ export declare type FontVariantValues = BasicCommonValues|"normal"|"small-caps";
 export declare type FontVariantCapsValues = FontVariantValues|"all-small-caps"|"petite-caps"|"all-petite-caps"|"unicase"|"titling-caps";
 export declare type FontWeightValues = BasicCommonValues|number|"normal"|"bold"|"bolder"|"lighter";
 export declare type LengthProp = BasicCommonValues|"maxHeight"|"minHeight"|"top"|"bottom"|"height"|"maxHidth"|"minWidth"|"right"|"left"|"width"|"margin"|"marginTop"|"marginBottom"|"marginLeft"|"marginRight"|"outlineOffset"|"padding"|"paddingTop"|"paddingBottom"|"paddingLeft"|"paddingRight"|"lineHeight"|"flexBasis"|"fontSize";
-export declare type OutlineWidthValues = BasicCommonValues|"medium"|"thin"|"thick"|LengthOrDefault;
+export declare type OutlineWidthValues = BasicCommonValues|"medium"|"thin"|"thick"|NumericLength;
 export declare type PositionNames = BasicCommonValues|"static"|"relative"|"fixed"|"absolute"|"sticky";
 
 export declare type FlexDirectionNames = BasicCommonValues|"row"|"row-reverse"|"column"|"column-reverse";
@@ -37,7 +39,7 @@ export declare type FlexWrapNames = BasicCommonValues|"nowrap"|"wrap"|"wrap-reve
 export declare type ColorFormat = BasicCommonValues|ColorName|number|`#${string}`|`rgb(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})`|`rgba(${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number},${OptionalWhitespace}${number})`|`hsl(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%)`|`hsla(${number},${OptionalWhitespace}${number}%,${OptionalWhitespace}${number}%,${OptionalWhitespace}${number})`;
 
 export declare type BackgroundRepeatValues2d = BackgroundRepeatValues|"repeat-x"|"repeat-y"|`${BackgroundRepeatValues} ${BackgroundRepeatValues}`;
-export declare type BorderShorthand = BasicCommonValues|`${number}${AllUnits} ${BorderStyles} ${ColorFormat}`;
+export declare type BorderShorthand = BasicCommonValues|`${BorderStyles}`|`${BorderStyles} ${ColorFormat}`|`${number}${AllUnits} ${BorderStyles} ${ColorFormat}`;
 export declare type BackgroundImageFormat = BasicCommonValues|UrlType|`${UrlType}, ${UrlType}`;
 export declare type BackgroundPositionShorthand2D = BasicCommonValues|`${BasicCommonValues|number} ${BasicCommonValues|number}`|`${number}% ${number}%`|`${"left"|"right"|"center"} ${"top"|"center"|"bottom"}`;
 export declare type BackgroundShorthand = BasicCommonValues|`${ColorFormat} ${UrlType} ${BackgroundRepeatValues} ${BackgroundPositionShorthand2D}`;
@@ -116,7 +118,7 @@ export interface IDotcssProp{
 	backgroundSizeVMax: IDotcssAnimatable<number>;
 	backgroundSizeVMin: IDotcssAnimatable<number>;
 
-	borderBottomLeftRadius: IDotcssAnimatable<number|string>;
+	borderBottomLeftRadius: IDotcssAnimatable<NumericLength>;
 	borderBottomLeftRadiusCm: IDotcssAnimatable<number>;
 	borderBottomLeftRadiusCh: IDotcssAnimatable<number>;
 	borderBottomLeftRadiusEm: IDotcssAnimatable<number>;
@@ -133,7 +135,7 @@ export interface IDotcssProp{
 	borderBottomLeftRadiusVMax: IDotcssAnimatable<number>;
 	borderBottomLeftRadiusVMin: IDotcssAnimatable<number>;
 
-	borderBottomRightRadius: IDotcssAnimatable<number|string>;
+	borderBottomRightRadius: IDotcssAnimatable<NumericLength>;
 	borderBottomRightRadiusCm: IDotcssAnimatable<number>;
 	borderBottomRightRadiusCh: IDotcssAnimatable<number>;
 	borderBottomRightRadiusEm: IDotcssAnimatable<number>;
@@ -150,7 +152,7 @@ export interface IDotcssProp{
 	borderBottomRightRadiusVMax: IDotcssAnimatable<number>;
 	borderBottomRightRadiusVMin: IDotcssAnimatable<number>;
 
-	borderBottomWidth: IDotcssAnimatable<number|string>;
+	borderBottomWidth: IDotcssAnimatable<NumericLength>;
 	borderBottomWidthCm: IDotcssAnimatable<number>;
 	borderBottomWidthCh: IDotcssAnimatable<number>;
 	borderBottomWidthEm: IDotcssAnimatable<number>;
@@ -167,7 +169,7 @@ export interface IDotcssProp{
 	borderBottomWidthVMax: IDotcssAnimatable<number>;
 	borderBottomWidthVMin: IDotcssAnimatable<number>;
 
-	borderImageWidth: IDotcssAnimatable<number|string>;
+	borderImageWidth: IDotcssAnimatable<NumericLength>;
 	borderImageWidthCm: IDotcssAnimatable<number>;
 	borderImageWidthCh: IDotcssAnimatable<number>;
 	borderImageWidthEm: IDotcssAnimatable<number>;
@@ -184,7 +186,7 @@ export interface IDotcssProp{
 	borderImageWidthVMax: IDotcssAnimatable<number>;
 	borderImageWidthVMin: IDotcssAnimatable<number>;
 
-	borderLeftWidth: IDotcssAnimatable<number|string>;
+	borderLeftWidth: IDotcssAnimatable<NumericLength>;
 	borderLeftWidthCm: IDotcssAnimatable<number>;
 	borderLeftWidthCh: IDotcssAnimatable<number>;
 	borderLeftWidthEm: IDotcssAnimatable<number>;
@@ -201,7 +203,7 @@ export interface IDotcssProp{
 	borderLeftWidthVMax: IDotcssAnimatable<number>;
 	borderLeftWidthVMin: IDotcssAnimatable<number>;
 
-	borderRadius: IDotcssAnimatable<number|string>;
+	borderRadius: IDotcssAnimatable<NumericLength>;
 	borderRadiusCm: IDotcssAnimatable<number>;
 	borderRadiusCh: IDotcssAnimatable<number>;
 	borderRadiusEm: IDotcssAnimatable<number>;
@@ -218,7 +220,7 @@ export interface IDotcssProp{
 	borderRadiusVMax: IDotcssAnimatable<number>;
 	borderRadiusVMin: IDotcssAnimatable<number>;
 
-	borderRightWidth: IDotcssAnimatable<number|string>;
+	borderRightWidth: IDotcssAnimatable<NumericLength>;
 	borderRightWidthCm: IDotcssAnimatable<number>;
 	borderRightWidthCh: IDotcssAnimatable<number>;
 	borderRightWidthEm: IDotcssAnimatable<number>;
@@ -235,7 +237,7 @@ export interface IDotcssProp{
 	borderRightWidthVMax: IDotcssAnimatable<number>;
 	borderRightWidthVMin: IDotcssAnimatable<number>;
 
-	borderTopLeftRadius: IDotcssAnimatable<number|string>;
+	borderTopLeftRadius: IDotcssAnimatable<NumericLength>;
 	borderTopLeftRadiusCm: IDotcssAnimatable<number>;
 	borderTopLeftRadiusCh: IDotcssAnimatable<number>;
 	borderTopLeftRadiusEm: IDotcssAnimatable<number>;
@@ -252,7 +254,7 @@ export interface IDotcssProp{
 	borderTopLeftRadiusVMax: IDotcssAnimatable<number>;
 	borderTopLeftRadiusVMin: IDotcssAnimatable<number>;
 
-	borderTopRightRadius: IDotcssAnimatable<number|string>;
+	borderTopRightRadius: IDotcssAnimatable<NumericLength>;
 	borderTopRightRadiusCm: IDotcssAnimatable<number>;
 	borderTopRightRadiusCh: IDotcssAnimatable<number>;
 	borderTopRightRadiusEm: IDotcssAnimatable<number>;
@@ -269,7 +271,7 @@ export interface IDotcssProp{
 	borderTopRightRadiusVMax: IDotcssAnimatable<number>;
 	borderTopRightRadiusVMin: IDotcssAnimatable<number>;
 
-	borderTopWidth: IDotcssAnimatable<number|string>;
+	borderTopWidth: IDotcssAnimatable<NumericLength>;
 	borderTopWidthCm: IDotcssAnimatable<number>;
 	borderTopWidthCh: IDotcssAnimatable<number>;
 	borderTopWidthEm: IDotcssAnimatable<number>;
@@ -286,7 +288,7 @@ export interface IDotcssProp{
 	borderTopWidthVMax: IDotcssAnimatable<number>;
 	borderTopWidthVMin: IDotcssAnimatable<number>;
 
-	borderWidth: IDotcssAnimatable<number|string>;
+	borderWidth: IDotcssAnimatable<NumericLength>;
 	borderWidthCm: IDotcssAnimatable<number>;
 	borderWidthCh: IDotcssAnimatable<number>;
 	borderWidthEm: IDotcssAnimatable<number>;
@@ -303,7 +305,7 @@ export interface IDotcssProp{
 	borderWidthVMax: IDotcssAnimatable<number>;
 	borderWidthVMin: IDotcssAnimatable<number>;
 
-	bottom: IDotcssAnimatable<number|string>;
+	bottom: IDotcssAnimatable<NumericLength>;
 	bottomCm: IDotcssAnimatable<number>;
 	bottomCh: IDotcssAnimatable<number>;
 	bottomEm: IDotcssAnimatable<number>;
@@ -320,7 +322,7 @@ export interface IDotcssProp{
 	bottomVMax: IDotcssAnimatable<number>;
 	bottomVMin: IDotcssAnimatable<number>;
 
-	height: IDotcssAnimatable<number|string>;
+	height: IDotcssAnimatable<NumericLength>;
 	heightCm: IDotcssAnimatable<number>;
 	heightCh: IDotcssAnimatable<number>;
 	heightEm: IDotcssAnimatable<number>;
@@ -337,7 +339,7 @@ export interface IDotcssProp{
 	heightVMax: IDotcssAnimatable<number>;
 	heightVMin: IDotcssAnimatable<number>;
 
-	left: IDotcssAnimatable<number|string>;
+	left: IDotcssAnimatable<NumericLength>;
 	leftCm: IDotcssAnimatable<number>;
 	leftCh: IDotcssAnimatable<number>;
 	leftEm: IDotcssAnimatable<number>;
@@ -354,7 +356,7 @@ export interface IDotcssProp{
 	leftVMax: IDotcssAnimatable<number>;
 	leftVMin: IDotcssAnimatable<number>;
 
-	margin: IDotcssAnimatable<number|string>;
+	margin: IDotcssAnimatable<NumericLength>;
 	marginCm: IDotcssAnimatable<number>;
 	marginCh: IDotcssAnimatable<number>;
 	marginEm: IDotcssAnimatable<number>;
@@ -371,7 +373,7 @@ export interface IDotcssProp{
 	marginVMax: IDotcssAnimatable<number>;
 	marginVMin: IDotcssAnimatable<number>;
 
-	marginBottom: IDotcssAnimatable<number|string>;
+	marginBottom: IDotcssAnimatable<NumericLength>;
 	marginBottomCm: IDotcssAnimatable<number>;
 	marginBottomCh: IDotcssAnimatable<number>;
 	marginBottomEm: IDotcssAnimatable<number>;
@@ -388,7 +390,7 @@ export interface IDotcssProp{
 	marginBottomVMax: IDotcssAnimatable<number>;
 	marginBottomVMin: IDotcssAnimatable<number>;
 
-	marginLeft: IDotcssAnimatable<number|string>;
+	marginLeft: IDotcssAnimatable<NumericLength>;
 	marginLeftCm: IDotcssAnimatable<number>;
 	marginLeftCh: IDotcssAnimatable<number>;
 	marginLeftEm: IDotcssAnimatable<number>;
@@ -405,7 +407,7 @@ export interface IDotcssProp{
 	marginLeftVMax: IDotcssAnimatable<number>;
 	marginLeftVMin: IDotcssAnimatable<number>;
 
-	marginRight: IDotcssAnimatable<number|string>;
+	marginRight: IDotcssAnimatable<NumericLength>;
 	marginRightCm: IDotcssAnimatable<number>;
 	marginRightCh: IDotcssAnimatable<number>;
 	marginRightEm: IDotcssAnimatable<number>;
@@ -422,7 +424,7 @@ export interface IDotcssProp{
 	marginRightVMax: IDotcssAnimatable<number>;
 	marginRightVMin: IDotcssAnimatable<number>;
 
-	marginTop: IDotcssAnimatable<number|string>;
+	marginTop: IDotcssAnimatable<NumericLength>;
 	marginTopCm: IDotcssAnimatable<number>;
 	marginTopCh: IDotcssAnimatable<number>;
 	marginTopEm: IDotcssAnimatable<number>;
@@ -439,7 +441,7 @@ export interface IDotcssProp{
 	marginTopVMax: IDotcssAnimatable<number>;
 	marginTopVMin: IDotcssAnimatable<number>;
 
-	maxHeight: IDotcssAnimatable<number|string>;
+	maxHeight: IDotcssAnimatable<NumericLength>;
 	maxHeightCm: IDotcssAnimatable<number>;
 	maxHeightCh: IDotcssAnimatable<number>;
 	maxHeightEm: IDotcssAnimatable<number>;
@@ -456,7 +458,7 @@ export interface IDotcssProp{
 	maxHeightVMax: IDotcssAnimatable<number>;
 	maxHeightVMin: IDotcssAnimatable<number>;
 
-	maxWidth: IDotcssAnimatable<number|string>;
+	maxWidth: IDotcssAnimatable<NumericLength>;
 	maxWidthCm: IDotcssAnimatable<number>;
 	maxWidthCh: IDotcssAnimatable<number>;
 	maxWidthEm: IDotcssAnimatable<number>;
@@ -473,7 +475,7 @@ export interface IDotcssProp{
 	maxWidthVMax: IDotcssAnimatable<number>;
 	maxWidthVMin: IDotcssAnimatable<number>;
 
-	minHeight: IDotcssAnimatable<number|string>;
+	minHeight: IDotcssAnimatable<NumericLength>;
 	minHeightCm: IDotcssAnimatable<number>;
 	minHeightCh: IDotcssAnimatable<number>;
 	minHeightEm: IDotcssAnimatable<number>;
@@ -490,7 +492,7 @@ export interface IDotcssProp{
 	minHeightVMax: IDotcssAnimatable<number>;
 	minHeightVMin: IDotcssAnimatable<number>;
 
-	minWidth: IDotcssAnimatable<number|string>;
+	minWidth: IDotcssAnimatable<NumericLength>;
 	minWidthCm: IDotcssAnimatable<number>;
 	minWidthCh: IDotcssAnimatable<number>;
 	minWidthEm: IDotcssAnimatable<number>;
@@ -507,7 +509,7 @@ export interface IDotcssProp{
 	minWidthVMax: IDotcssAnimatable<number>;
 	minWidthVMin: IDotcssAnimatable<number>;
 
-	outlineOffset: IDotcssAnimatable<number|string>;
+	outlineOffset: IDotcssAnimatable<NumericLength>;
 	outlineOffsetCm: IDotcssAnimatable<number>;
 	outlineOffsetCh: IDotcssAnimatable<number>;
 	outlineOffsetEm: IDotcssAnimatable<number>;
@@ -524,7 +526,7 @@ export interface IDotcssProp{
 	outlineOffsetVMax: IDotcssAnimatable<number>;
 	outlineOffsetVMin: IDotcssAnimatable<number>;
 
-	padding: IDotcssAnimatable<number|string>;
+	padding: IDotcssAnimatable<NumericLength>;
 	paddingCm: IDotcssAnimatable<number>;
 	paddingCh: IDotcssAnimatable<number>;
 	paddingEm: IDotcssAnimatable<number>;
@@ -541,7 +543,7 @@ export interface IDotcssProp{
 	paddingVMax: IDotcssAnimatable<number>;
 	paddingVMin: IDotcssAnimatable<number>;
 
-	paddingBottom: IDotcssAnimatable<number|string>;
+	paddingBottom: IDotcssAnimatable<NumericLength>;
 	paddingBottomCm: IDotcssAnimatable<number>;
 	paddingBottomCh: IDotcssAnimatable<number>;
 	paddingBottomEm: IDotcssAnimatable<number>;
@@ -558,7 +560,7 @@ export interface IDotcssProp{
 	paddingBottomVMax: IDotcssAnimatable<number>;
 	paddingBottomVMin: IDotcssAnimatable<number>;
 
-	paddingLeft: IDotcssAnimatable<number|string>;
+	paddingLeft: IDotcssAnimatable<NumericLength>;
 	paddingLeftCm: IDotcssAnimatable<number>;
 	paddingLeftCh: IDotcssAnimatable<number>;
 	paddingLeftEm: IDotcssAnimatable<number>;
@@ -575,7 +577,7 @@ export interface IDotcssProp{
 	paddingLeftVMax: IDotcssAnimatable<number>;
 	paddingLeftVMin: IDotcssAnimatable<number>;
 
-	paddingRight: IDotcssAnimatable<number|string>;
+	paddingRight: IDotcssAnimatable<NumericLength>;
 	paddingRightCm: IDotcssAnimatable<number>;
 	paddingRightCh: IDotcssAnimatable<number>;
 	paddingRightEm: IDotcssAnimatable<number>;
@@ -592,7 +594,7 @@ export interface IDotcssProp{
 	paddingRightVMax: IDotcssAnimatable<number>;
 	paddingRightVMin: IDotcssAnimatable<number>;
 
-	paddingTop: IDotcssAnimatable<number|string>;
+	paddingTop: IDotcssAnimatable<NumericLength>;
 	paddingTopCm: IDotcssAnimatable<number>;
 	paddingTopCh: IDotcssAnimatable<number>;
 	paddingTopEm: IDotcssAnimatable<number>;
@@ -609,7 +611,7 @@ export interface IDotcssProp{
 	paddingTopVMax: IDotcssAnimatable<number>;
 	paddingTopVMin: IDotcssAnimatable<number>;
 
-	right: IDotcssAnimatable<number|string>;
+	right: IDotcssAnimatable<NumericLength>;
 	rightCm: IDotcssAnimatable<number>;
 	rightCh: IDotcssAnimatable<number>;
 	rightEm: IDotcssAnimatable<number>;
@@ -626,7 +628,7 @@ export interface IDotcssProp{
 	rightVMax: IDotcssAnimatable<number>;
 	rightVMin: IDotcssAnimatable<number>;
 
-	top: IDotcssAnimatable<number|string>;
+	top: IDotcssAnimatable<NumericLength>;
 	topCm: IDotcssAnimatable<number>;
 	topCh: IDotcssAnimatable<number>;
 	topEm: IDotcssAnimatable<number>;
@@ -643,7 +645,7 @@ export interface IDotcssProp{
 	topVMax: IDotcssAnimatable<number>;
 	topVMin: IDotcssAnimatable<number>;
 
-	width: IDotcssAnimatable<number|string>;
+	width: IDotcssAnimatable<NumericLength>;
 	widthCm: IDotcssAnimatable<number>;
 	widthCh: IDotcssAnimatable<number>;
 	widthEm: IDotcssAnimatable<number>;
@@ -660,7 +662,7 @@ export interface IDotcssProp{
 	widthVMax: IDotcssAnimatable<number>;
 	widthVMin: IDotcssAnimatable<number>;
 
-	lineHeight: IDotcssAnimatable<number|string>;
+	lineHeight: IDotcssAnimatable<NumericLength>;
 	lineHeightCm: IDotcssAnimatable<number>;
 	lineHeightCh: IDotcssAnimatable<number>;
 	lineHeightEm: IDotcssAnimatable<number>;
@@ -677,7 +679,7 @@ export interface IDotcssProp{
 	lineHeightVMax: IDotcssAnimatable<number>;
 	lineHeightVMin: IDotcssAnimatable<number>;
 
-	fontSize: IDotcssAnimatable<number|string>;
+	fontSize: IDotcssAnimatable<NumericLength>;
 	fontSizeCm: IDotcssAnimatable<number>;
 	fontSizeCh: IDotcssAnimatable<number>;
 	fontSizeEm: IDotcssAnimatable<number>;
@@ -694,7 +696,7 @@ export interface IDotcssProp{
 	fontSizeVMax: IDotcssAnimatable<number>;
 	fontSizeVMin: IDotcssAnimatable<number>;
 
-	flexBasis: IDotcssAnimatable<number|string>;
+	flexBasis: IDotcssAnimatable<NumericLength>;
 	flexBasisCm: IDotcssAnimatable<number>;
 	flexBasisCh: IDotcssAnimatable<number>;
 	flexBasisEm: IDotcssAnimatable<number>;
@@ -712,13 +714,13 @@ export interface IDotcssProp{
 	flexBasisVMin: IDotcssAnimatable<number>;
 	
 	//url: 
-	backgroundImage: (value: BackgroundImageFormat)=>IDotcssProp
-	borderImage: (value: BackgroundImageFormat)=>IDotcssProp
-	listStyleImage: (value: BackgroundImageFormat)=>IDotcssProp
-	content: (value: BasicCommonValues|UrlType)=>IDotcssProp
+	backgroundImage: (value: BackgroundImageFormat)=>IDotcssProp;
+	borderImage: (value: BackgroundImageFormat)=>IDotcssProp;
+	listStyleImage: (value: BackgroundImageFormat)=>IDotcssProp;
+	content: (value: BasicCommonValues|UrlType)=>IDotcssProp;
 
 	//transformation: 
-	transformation
+	transform: (transformOrTransformBuilder: BasicCommonValues|TransformationBuilder)=>IDotcssProp;
 	
 	//misc numeric: 
 	opacity: IDotcssAnimatable<number|string>;
@@ -930,7 +932,6 @@ export default interface IDotCss extends IDotcssProp{
 	(document?: Element|string): IDotcssProp;
 
 	version: string;
-
 }
 
 export interface IDotcssAnimatable<T> extends IDotcssProp{
@@ -946,13 +947,13 @@ export interface IDotcssAnimatableColor extends IDotcssProp{
 	animate(value: ColorFormat|Array<number>, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
 
-
 export interface HideParams{
 	duration?: number,
 	complete?: Function,
 	hideStyle?: "normal"|"fade"|"shrink",
 	animationStyle?: "ease",
 }
+
 export interface ShowParams{
 	duration?: number,
 	display?: DisplayValues, // TODO: potential to expand this.
@@ -963,3 +964,147 @@ export interface ShowParams{
 	showStyle?: "normal"|"fade"|"grow",
 	animationStyle?: "ease",
 }
+
+export interface TransformationBuilder {
+	(trns: ITransformationContext): ITransformationContext|string;
+}
+
+export type ITransformationContext = {
+	matrix: (a: number, b: number, c: number, d: number, tx: number, ty: number)=>ITransformationContext;
+	matrix3d: (a1:number, b1:number, c1:number, d1:number, a2:number, b2:number, c2:number, d2:number, a3:number, b3:number, c3:number, d3:number, a4:number, b4:number, c4:number, d4:number)=>ITransformationContext;
+	
+	translate: (x: NumericLength, y?:NumericLength)=>ITransformationContext;
+	translateCm: (x: number, y?:number)=>ITransformationContext;
+	translateCh: (x: number, y?:number)=>ITransformationContext;
+	translateEm: (x: number, y?:number)=>ITransformationContext;
+	translateEx: (x: number, y?:number)=>ITransformationContext;
+	translateIn: (x: number, y?:number)=>ITransformationContext;
+	translateMm: (x: number, y?:number)=>ITransformationContext;
+	translateP: (x: number, y?:number)=>ITransformationContext;
+	translatePc: (x: number, y?:number)=>ITransformationContext;
+	translatePt: (x: number, y?:number)=>ITransformationContext;
+	translatePx: (x: number, y?:number)=>ITransformationContext;
+	translateRem: (x: number, y?:number)=>ITransformationContext;
+	translateVh: (x: number, y?:number)=>ITransformationContext;
+	translateVw: (x: number, y?:number)=>ITransformationContext;
+	translateVMax: (x: number, y?:number)=>ITransformationContext;
+	translateVMin: (x: number, y?:number)=>ITransformationContext;
+	translate3d: (x: NumericLength, y: NumericLength, z: NumericLength)=>ITransformationContext;
+	translate3dCm: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dCh: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dEm: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dEx: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dIn: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dMm: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dP: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dPc: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dPt: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dPx: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dRem: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dVh: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dVw: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dVMax: (x: number, y: number, z: number)=>ITransformationContext;
+	translate3dVMin: (x: number, y: number, z: number)=>ITransformationContext;
+	translateX: (v: NumericLength)=>ITransformationContext;
+	translateXCm: (v: number)=>ITransformationContext;
+	translateXCh: (v: number)=>ITransformationContext;
+	translateXEm: (v: number)=>ITransformationContext;
+	translateXEx: (v: number)=>ITransformationContext;
+	translateXIn: (v: number)=>ITransformationContext;
+	translateXMm: (v: number)=>ITransformationContext;
+	translateXP: (v: number)=>ITransformationContext;
+	translateXPc: (v: number)=>ITransformationContext;
+	translateXPt: (v: number)=>ITransformationContext;
+	translateXPx: (v: number)=>ITransformationContext;
+	translateXRem: (v: number)=>ITransformationContext;
+	translateXVh: (v: number)=>ITransformationContext;
+	translateXVw: (v: number)=>ITransformationContext;
+	translateXVMax: (v: number)=>ITransformationContext;
+	translateXVMin: (v: number)=>ITransformationContext;
+	translateY: (v: NumericLength)=>ITransformationContext;
+	translateYCm: (v: number)=>ITransformationContext;
+	translateYCh: (v: number)=>ITransformationContext;
+	translateYEm: (v: number)=>ITransformationContext;
+	translateYEx: (v: number)=>ITransformationContext;
+	translateYIn: (v: number)=>ITransformationContext;
+	translateYMm: (v: number)=>ITransformationContext;
+	translateYP: (v: number)=>ITransformationContext;
+	translateYPc: (v: number)=>ITransformationContext;
+	translateYPt: (v: number)=>ITransformationContext;
+	translateYPx: (v: number)=>ITransformationContext;
+	translateYRem: (v: number)=>ITransformationContext;
+	translateYVh: (v: number)=>ITransformationContext;
+	translateYVw: (v: number)=>ITransformationContext;
+	translateYVMax: (v: number)=>ITransformationContext;
+	translateYVMin: (v: number)=>ITransformationContext;
+	translateZ: (v: NumericLength)=>ITransformationContext;
+	translateZCm: (v: number)=>ITransformationContext;
+	translateZCh: (v: number)=>ITransformationContext;
+	translateZEm: (v: number)=>ITransformationContext;
+	translateZEx: (v: number)=>ITransformationContext;
+	translateZIn: (v: number)=>ITransformationContext;
+	translateZMm: (v: number)=>ITransformationContext;
+	translateZP: (v: number)=>ITransformationContext;
+	translateZPc: (v: number)=>ITransformationContext;
+	translateZPt: (v: number)=>ITransformationContext;
+	translateZPx: (v: number)=>ITransformationContext;
+	translateZRem: (v: number)=>ITransformationContext;
+	translateZVh: (v: number)=>ITransformationContext;
+	translateZVw: (v: number)=>ITransformationContext;
+	translateZVMax: (v: number)=>ITransformationContext;
+	translateZVMin: (v: number)=>ITransformationContext;
+	
+	scale: (x: number, y?: number)=>ITransformationContext;
+	scale3d: (x: number, y: number, z: number)=>ITransformationContext;
+	scaleX: (v: number)=>ITransformationContext;
+	scaleY: (v: number)=>ITransformationContext;
+	scaleZ: (v: number)=>ITransformationContext;
+	
+	rotate: (v: NumericAngle)=>ITransformationContext;
+	rotateDeg: (v: number)=>ITransformationContext;
+	rotateTurn: (v: number)=>ITransformationContext;
+	rotateRad: (v: number)=>ITransformationContext;
+	rotateGrad: (v: number)=>ITransformationContext;
+	rotate3d: (x: NumericAngle, y: NumericAngle, z: NumericAngle)=>ITransformationContext;
+	rotate3dDeg: (x: number, y: number, z: number)=>ITransformationContext;
+	rotate3dTurn: (x: number, y: number, z: number)=>ITransformationContext;
+	rotate3dRad: (x: number, y: number, z: number)=>ITransformationContext;
+	rotate3dGrad: (x: number, y: number, z: number)=>ITransformationContext;
+	rotateX: (v: NumericAngle)=>ITransformationContext;
+	rotateXDeg: (v: number)=>ITransformationContext;
+	rotateXTurn: (v: number)=>ITransformationContext;
+	rotateXRad: (v: number)=>ITransformationContext;
+	rotateXGrad: (v: number)=>ITransformationContext;
+	rotateY: (v: NumericAngle)=>ITransformationContext;
+	rotateYDeg: (v: number)=>ITransformationContext;
+	rotateYTurn: (v: number)=>ITransformationContext;
+	rotateYRad: (v: number)=>ITransformationContext;
+	rotateYGrad: (v: number)=>ITransformationContext;
+	rotateZ: (v: NumericAngle)=>ITransformationContext;
+	rotateZDeg: (v: number)=>ITransformationContext;
+	rotateZTurn: (v: number)=>ITransformationContext;
+	rotateZRad: (v: number)=>ITransformationContext;
+	rotateZGrad: (v: number)=>ITransformationContext;
+	
+	skew: (x: number, y?: number)=>ITransformationContext;
+	skewX: (v: number)=>ITransformationContext;
+	skewY: (v: number)=>ITransformationContext;
+	
+	perspective: (v: NumericLength)=>ITransformationContext;
+	perspectiveCm: (v: number)=>ITransformationContext;
+	perspectiveCh: (v: number)=>ITransformationContext;
+	perspectiveEm: (v: number)=>ITransformationContext;
+	perspectiveEx: (v: number)=>ITransformationContext;
+	perspectiveIn: (v: number)=>ITransformationContext;
+	perspectiveMm: (v: number)=>ITransformationContext;
+	perspectiveP: (v: number)=>ITransformationContext;
+	perspectivePc: (v: number)=>ITransformationContext;
+	perspectivePt: (v: number)=>ITransformationContext;
+	perspectivePx: (v: number)=>ITransformationContext;
+	perspectiveRem: (v: number)=>ITransformationContext;
+	perspectiveVh: (v: number)=>ITransformationContext;
+	perspectiveVw: (v: number)=>ITransformationContext;
+	perspectiveVMax: (v: number)=>ITransformationContext;
+	perspectiveVMin: (v: number)=>ITransformationContext;
+}
+
