@@ -85,4 +85,4 @@ addTest("Script, return dot.", function(){ return dot.script(function(){return 2
 addTest("Script, return function.", function(){ return dot.script(function(){return function(){return 2};}).div(1); }, "<div>1</div>");
 
 // CSS 
-addTest("CSS module included.", function(){ return dot.h(dot.css?.color ? "yes" : "no"); }, "yes");
+addTest("CSS module included.", function(){ return dot.h(dot["css"] ? "yes" : "no"); }, "yes");

@@ -1,6 +1,6 @@
 import EventBus from "./event-bus";
 import type Component from "./component";
-import IDotCss, { IDotcssProp } from "./i-dotcss";
+import IDotCss, { IDotcssProp } from "./styling/i-dotcss";
 
 export type DotContentPrimitive = string|number|boolean;
 export type DotContentBasic = DotContentPrimitive|Node|Element|NodeList|Component|IDotDocument//typeof DotDocument;

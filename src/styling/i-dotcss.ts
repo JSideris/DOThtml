@@ -929,7 +929,7 @@ export interface IDotcssProp{
 }
 
 export default interface IDotCss extends IDotcssProp{
-	(document?: Element|string): IDotcssProp;
+	(document?: Array<HTMLElement>|HTMLElement|string): IDotcssProp;
 
 	version: string;
 }
@@ -937,7 +937,7 @@ export default interface IDotCss extends IDotcssProp{
 export interface IDotcssAnimatable<T> extends IDotcssProp{
 	(value: T): IDotcssProp;
 
-	animate(value: number, duration: number, style: "ease", complete: Function): IDotcssProp;
+	animate(value: number|string, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
 
 export interface IDotcssAnimatableColor extends IDotcssProp{
@@ -1065,11 +1065,11 @@ export type ITransformationContext = {
 	rotateTurn: (v: number)=>ITransformationContext;
 	rotateRad: (v: number)=>ITransformationContext;
 	rotateGrad: (v: number)=>ITransformationContext;
-	rotate3d: (x: NumericAngle, y: NumericAngle, z: NumericAngle)=>ITransformationContext;
-	rotate3dDeg: (x: number, y: number, z: number)=>ITransformationContext;
-	rotate3dTurn: (x: number, y: number, z: number)=>ITransformationContext;
-	rotate3dRad: (x: number, y: number, z: number)=>ITransformationContext;
-	rotate3dGrad: (x: number, y: number, z: number)=>ITransformationContext;
+	rotate3d: (x: number, y: number, z: number, a: NumericAngle)=>ITransformationContext;
+	rotate3dDeg: (x: number, y: number, z: number, a: number)=>ITransformationContext;
+	rotate3dTurn: (x: number, y: number, z: number, a: number)=>ITransformationContext;
+	rotate3dRad: (x: number, y: number, z: number, a: number)=>ITransformationContext;
+	rotate3dGrad: (x: number, y: number, z: number, a: number)=>ITransformationContext;
 	rotateX: (v: NumericAngle)=>ITransformationContext;
 	rotateXDeg: (v: number)=>ITransformationContext;
 	rotateXTurn: (v: number)=>ITransformationContext;
@@ -1086,9 +1086,21 @@ export type ITransformationContext = {
 	rotateZRad: (v: number)=>ITransformationContext;
 	rotateZGrad: (v: number)=>ITransformationContext;
 	
-	skew: (x: number, y?: number)=>ITransformationContext;
-	skewX: (v: number)=>ITransformationContext;
-	skewY: (v: number)=>ITransformationContext;
+	skew: (x: NumericAngle, y?: NumericAngle)=>ITransformationContext;
+	skewDeg: (x: number, y?: number)=>ITransformationContext;
+	skewTurn: (x: number, y?: number)=>ITransformationContext;
+	skewRad: (x: number, y?: number)=>ITransformationContext;
+	skewGrad: (x: number, y?: number)=>ITransformationContext;
+	skewX: (v: NumericAngle)=>ITransformationContext;
+	skewXDeg: (v: number)=>ITransformationContext;
+	skewXTurn: (v: number)=>ITransformationContext;
+	skewXRad: (v: number)=>ITransformationContext;
+	skewXGrad: (v: number)=>ITransformationContext;
+	skewY: (v: NumericAngle)=>ITransformationContext;
+	skewYDeg: (v: number)=>ITransformationContext;
+	skewYTurn: (v: number)=>ITransformationContext;
+	skewYRad: (v: number)=>ITransformationContext;
+	skewYGrad: (v: number)=>ITransformationContext;
 	
 	perspective: (v: NumericLength)=>ITransformationContext;
 	perspectiveCm: (v: number)=>ITransformationContext;

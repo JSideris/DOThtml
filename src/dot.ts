@@ -1,7 +1,7 @@
 
 import eventBus from "./event-bus";
 import {IDotCore, IDotGenericElement} from "./i-dot";
-import dotcss from "./style-builder";
+import dotcss, { _Builder } from "./styling/style-builder";
 import ERR from "./err";
 import { DotContent, IDotElementDocument, IDotDocument } from "./i-dot";
 import { ClassPrefix, eachK, GlobalComponentStack, isF, sT, str } from "./dot-util";
@@ -706,7 +706,7 @@ ext("attr", function(attr, value, arg3?){
 			if (!isF(value)) {
 
 				// Objects (except for the css builder :/)
-				if(typeof value == "object" && !(value instanceof dot.css["_Builder"])){
+				if(typeof value == "object" && !(value instanceof _Builder)){
 					var originalValue = value;
 					var valueSetter = function(){
 						var str = "";

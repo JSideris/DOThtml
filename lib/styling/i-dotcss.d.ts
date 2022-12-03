@@ -839,12 +839,12 @@ export interface IDotcssProp {
     pointerEvents: (value: BasicCommonValues | string) => IDotcssProp;
 }
 export default interface IDotCss extends IDotcssProp {
-    (document?: Element | string): IDotcssProp;
+    (document?: Array<HTMLElement> | HTMLElement | string): IDotcssProp;
     version: string;
 }
 export interface IDotcssAnimatable<T> extends IDotcssProp {
     (value: T): IDotcssProp;
-    animate(value: number, duration: number, style: "ease", complete: Function): IDotcssProp;
+    animate(value: number | string, duration: number, style: "ease", complete: Function): IDotcssProp;
 }
 export interface IDotcssAnimatableColor extends IDotcssProp {
     (value: ColorFormat | Array<number>): IDotcssProp;
@@ -870,7 +870,7 @@ export interface ShowParams {
 export interface TransformationBuilder {
     (trns: ITransformationContext): ITransformationContext | string;
 }
-export declare type ITransformationContext = {
+export type ITransformationContext = {
     matrix: (a: number, b: number, c: number, d: number, tx: number, ty: number) => ITransformationContext;
     matrix3d: (a1: number, b1: number, c1: number, d1: number, a2: number, b2: number, c2: number, d2: number, a3: number, b3: number, c3: number, d3: number, a4: number, b4: number, c4: number, d4: number) => ITransformationContext;
     translate: (x: NumericLength, y?: NumericLength) => ITransformationContext;

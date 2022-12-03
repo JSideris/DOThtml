@@ -25,73 +25,73 @@ addTest("Translate.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translate(10, 20))
 	);
-}, `<div style="transform:'translate(10px, 20px)';"></div>`);
+}, `<div style="transform:'translate(10px,20px)';"></div>`);
 addTest("Translate (custom units).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translate("10cm", "20cm"))
 	);
-}, `<div style="transform:'translate(10cm, 20cm)';"></div>`);
+}, `<div style="transform:'translate(10cm,20cm)';"></div>`);
 addTest("Translate (unit function).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateCm(10, 20))
 	);
-}, `<div style="transform:'translate(10cm, 20cm)';"></div>`);
+}, `<div style="transform:'translate(10cm,20cm)';"></div>`);
 addTest("Translate X.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateX("10cm"))
 	);
-}, `<div style="transform:'traslateX(10cm)';"></div>`);
+}, `<div style="transform:'translateX(10cm)';"></div>`);
 addTest("Translate X (unit function).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateXCm(10))
 	);
-}, `<div style="transform:'traslateX(10cm)';"></div>`);
+}, `<div style="transform:'translateX(10cm)';"></div>`);
 addTest("Translate Y.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateY("10cm"))
 	);
-}, `<div style="transform:'traslateY(10cm)';"></div>`);
+}, `<div style="transform:'translateY(10cm)';"></div>`);
 addTest("Translate Y (unit function).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateYCm(10))
 	);
-}, `<div style="transform:'traslateY(10cm)';"></div>`);
+}, `<div style="transform:'translateY(10cm)';"></div>`);
 addTest("Translate Z.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateZ("10cm"))
 	);
-}, `<div style="transform:'traslateZ(10cm)';"></div>`);
+}, `<div style="transform:'translateZ(10cm)';"></div>`);
 addTest("Translate Z (unit function).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translateZCm(10))
 	);
-}, `<div style="transform:'traslateZ(10cm)';"></div>`);
+}, `<div style="transform:'translateZ(10cm)';"></div>`);
 addTest("Translate 3D.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translate3d(10, 20, 30))
 	);
-}, `<div style="transform:'translate3d(10px, 20px, 30px)';"></div>`);
+}, `<div style="transform:'translate3d(10px,20px,30px)';"></div>`);
 addTest("Translate 3D (unit function).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.translate3dCm(10, 20, 30))
 	);
-}, `<div style="transform:'translate3d(10cm, 20cm, 30cm)';"></div>`);
+}, `<div style="transform:'translate3d(10cm,20cm,30cm)';"></div>`);
 
 addTest("Scale (x only).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.scale(10))
 	);
-}, `<div style="transform:'scale(10)';"></div>`);
+}, `<div style="transform:'scale(10,1)';"></div>`);
 addTest("Scale.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.scale(10, 20))
 	);
-}, `<div style="transform:'scale(10, 20)';"></div>`);
+}, `<div style="transform:'scale(10,20)';"></div>`);
 addTest("Scale custom units.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.scale(10, 20))
 	);
-}, `<div style="transform:'scale(10, 20)';"></div>`);
+}, `<div style="transform:'scale(10,20)';"></div>`);
 addTest("Scale X.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.scaleX(10))
@@ -111,7 +111,7 @@ addTest("Scale 3D.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.scale3d(10, 20, 30))
 	);
-}, `<div style="transform:'scale3d(10, 20, 30)';"></div>`);
+}, `<div style="transform:'scale3d(10,20,30)';"></div>`);
 
 addTest("Rotate.", function(){
 	return dot.div().style(
@@ -142,7 +142,7 @@ addTest("Rotate Y.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.rotateY(10))
 	);
-}, `<div style="transform:'rotateY(10)';"></div>`);
+}, `<div style="transform:'rotateY(10deg)';"></div>`);
 addTest("Rotate Y (unit function).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.rotateYRad(10))
@@ -160,35 +160,55 @@ addTest("Rotate Z (unit function).", function(){
 }, `<div style="transform:'rotateZ(10grad)';"></div>`);
 addTest("Rotate 3D.", function(){
 	return dot.div().style(
-		dot.css.transform(t=>t.rotate3d(10, 20, 30))
+		dot.css.transform(t=>t.rotate3d(10, 20, 30, 40))
 	);
-}, `<div style="transform:'rotate3d(10deg, 20deg, 30deg)';"></div>`);
+}, `<div style="transform:'rotate3d(10,20,30,40deg)';"></div>`);
 addTest("Rotate 3D (unit function).", function(){
 	return dot.div().style(
-		dot.css.transform(t=>t.rotate3dRad(10, 20, 30))
+		dot.css.transform(t=>t.rotate3dRad(10, 20, 30, 40))
 	);
-}, `<div style="transform:'rotate3d(10rad, 20rad, 30rad)';"></div>`);
+}, `<div style="transform:'rotate3d(10,20,30,40rad)';"></div>`);
 
 addTest("Skew (x only).", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.skew(1))
 	);
-}, `<div style="transform:'skew(1)';"></div>`);
+}, `<div style="transform:'skew(1deg)';"></div>`);
 addTest("Skew.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.skew(1, 2))
 	);
-}, `<div style="transform:'skew(1,2)';"></div>`);
+}, `<div style="transform:'skew(1deg,2deg)';"></div>`);
+addTest("Skew (custom units).", function(){
+	return dot.div().style(
+		dot.css.transform(t=>t.skew("1grad", "2deg"))
+	);
+}, `<div style="transform:'skew(1grad,2deg)';"></div>`);
+addTest("Skew (unit function).", function(){
+	return dot.div().style(
+		dot.css.transform(t=>t.skewGrad(1, 2))
+	);
+}, `<div style="transform:'skew(1grad,2grad)';"></div>`);
 addTest("Skew X.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.skewX(5))
 	);
-}, `<div style="transform:'skewX(5)';"></div>`);
+}, `<div style="transform:'skewX(5deg)';"></div>`);
+addTest("Skew X (unit function).", function(){
+	return dot.div().style(
+		dot.css.transform(t=>t.skewXRad(5))
+	);
+}, `<div style="transform:'skewX(5rad)';"></div>`);
 addTest("Skew Y.", function(){
 	return dot.div().style(
 		dot.css.transform(t=>t.skewY(5))
 	);
-}, `<div style="transform:'skewY(5)';"></div>`);
+}, `<div style="transform:'skewY(5deg)';"></div>`);
+addTest("Skew Y (unit function).", function(){
+	return dot.div().style(
+		dot.css.transform(t=>t.skewYTurn(0.5))
+	);
+}, `<div style="transform:'skewY(0.5turn)';"></div>`);
 
 addTest("Perspective.", function(){
 	return dot.div().style(
@@ -208,7 +228,7 @@ addTest("Perspective (unit function).", function(){
 
 addTest("Combined transformation.", function(){
 	return dot.div().style(
-		dot.css.transform(t=>t.translate("10cm", "10cm").scale(2,4).rotate("0.5turn"))
+		dot.css.transform(t=>t.translate("10cm", "20cm").scale(2,4).rotate("0.5turn"))
 	);
-}, `<div style="transform:'translate(10cm, 20cm) scale(2, 4) rotate(0.5turn)';"></div>`);
+}, `<div style="transform:'translate(10cm,20cm) scale(2,4) rotate(0.5turn)';"></div>`);
 

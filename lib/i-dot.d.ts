@@ -1,9 +1,9 @@
 import EventBus from "./event-bus";
 import type Component from "./component";
-import IDotCss, { IDotcssProp } from "./i-dotcss";
-export declare type DotContentPrimitive = string | number | boolean;
-export declare type DotContentBasic = DotContentPrimitive | Node | Element | NodeList | Component | IDotDocument;
-export declare type DotContent = DotContentBasic | Array<DotContent> | (() => DotContent);
+import IDotCss, { IDotcssProp } from "./styling/i-dotcss";
+export type DotContentPrimitive = string | number | boolean;
+export type DotContentBasic = DotContentPrimitive | Node | Element | NodeList | Component | IDotDocument;
+export type DotContent = DotContentBasic | Array<DotContent> | (() => DotContent);
 export interface IDotDocument {
     (document?: Element, classPrefix?: number): void;
     _appendOrCreateDocument(content: DotContent, parentEl?: Element, beforeNode?: Node | number): any;

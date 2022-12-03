@@ -19,4 +19,4 @@ import dot from "./dot";
 export default dot;
 export { default as DotComponent } from "./component";
 export { IDotElement } from "./i-dot";
-export { default as IDotCss } from "./i-dotcss";
+export { default as IDotCss } from "./styling/i-dotcss";
