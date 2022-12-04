@@ -149,7 +149,7 @@ class Dotcss2{
 
 			if(this.targets){
 				for(var q = 0; q < this.targets.length; q++){
-					//this.target[q].style += newCss;
+					//this.targets[q].style += newCss;
 					var t = this.targets[q];
 					if(t.tagName == "STYLE") t.innerHTML = t.innerHTML.substring(0, t.innerHTML.length - 1) + prop + ":" + value + ";}";
 					else t.style[jsFriendlyProp] = value;
@@ -483,7 +483,7 @@ export class _Builder{
 						dotcss(this.targets[i]).height.animate(h, ops.duration, ops.animationStyle, function(){doneCnt++; if(doneCnt >= q * m) ops.complete();});
 					}
 
-					//let o = this.target[i].style.opacity; //Guess I should fade to 1?
+					//let o = this.targets[i].style.opacity; //Guess I should fade to 1?
 					dotcss(this.targets[i]).opacity(0);
 					dotcss(this.targets[i]).display(ops.display);
 

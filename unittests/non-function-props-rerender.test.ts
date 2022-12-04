@@ -37,32 +37,32 @@ class TestComponentA extends DotComponent{
 	}
 }
 
-addTest("Basic build and style.", function(){ 
-	let component = new TestComponentA();
-	dot(document.body).h(component);
+// addTest("Basic build and style.", function(){ 
+// 	let component = new TestComponentA();
+// 	dot(document.body).h(component);
 
-	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
-}, "<div><div>not-set</div><div>not-set</div><div>not-set</div></div> 1 1");
+// 	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
+// }, "<div><div>not-set</div><div>not-set</div><div>not-set</div></div> 1 1");
 
-addTest("Update rebuild prop.", function(){ 
-	let component = new TestComponentA();
-	dot(document.body).h(component);
+// addTest("Update rebuild prop.", function(){ 
+// 	let component = new TestComponentA();
+// 	dot(document.body).h(component);
 
-	component.props.rebuild = "yes 1";
-	component.props.rebuild = "yes 2";
+// 	component.props.rebuild = "yes 1";
+// 	component.props.rebuild = "yes 2";
 
-	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
-}, "<div><div>not-set</div><div>not-set</div><div>not-set</div></div> 3 1");
+// 	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
+// }, "<div><div>not-set</div><div>not-set</div><div>not-set</div></div> 3 1");
 
-addTest("Update restyle prop.", function(){ 
-	let component = new TestComponentA();
-	dot(document.body).h(component);
+// addTest("Update restyle prop.", function(){ 
+// 	let component = new TestComponentA();
+// 	dot(document.body).h(component);
 
-	component.props.restyle = "yes 1";
-	component.props.restyle = "yes 2";
+// 	component.props.restyle = "yes 1";
+// 	component.props.restyle = "yes 2";
 
-	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
-}, "<div><div>not-set</div><div>not-set</div><div>not-set</div></div> 1 3");
+// 	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
+// }, "<div><div>not-set</div><div>not-set</div><div>not-set</div></div> 1 3");
 
 addTest("Update value.", function(){ 
 	let component = new TestComponentA();
@@ -73,13 +73,13 @@ addTest("Update value.", function(){
 	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
 }, "<div><div>set</div><div>set</div><div>set</div></div> 2 2");
 
-addTest("Update value and other props.", function(){ 
-	let component = new TestComponentA();
-	dot(document.body).h(component);
+// addTest("Update value and other props.", function(){ 
+// 	let component = new TestComponentA();
+// 	dot(document.body).h(component);
 
-	component.props.rebuild = "yes";
-	component.props.restyle = "yes";
-	component.props.myValue = "set";
+// 	component.props.rebuild = "yes";
+// 	component.props.restyle = "yes";
+// 	component.props.myValue = "set";
 
-	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
-}, "<div><div>set</div><div>set</div><div>set</div></div> 3 3");
+// 	return dot.h(`${component.$el.outerHTML} ${component.builds} ${component.styled}`);
+// }, "<div><div>set</div><div>set</div><div>set</div></div> 3 3");
