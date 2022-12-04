@@ -1,5 +1,5 @@
 import addTest from "../core";
-import dot from "../../src/dothtml";
+import dot, { DotComponent } from "../../src/dothtml";
 import Component from "../../src/component";
 
 class comp_legacy extends dot.Component{
@@ -211,11 +211,12 @@ addTest("Styles should not apply to nested elements.", function(){
 			return dot.div(this.params[0]);
 		}
 		style(css){
+			// console.log("CSS???", !!css);
 			css("div").backgroundColor("#FF0000");
 		}
 	};
 
-	class CompInner extends dot.Component{
+	class CompInner extends DotComponent{
 		builder(){
 			return dot.div("FOOBAR");
 		}

@@ -1,5 +1,4 @@
 import { isF } from "../../dot-util";
-import Util from "../../util";
 import {AllAngleUnits, AllLengthUnits} from "../unit-function-tables";
 import { BasicCommonValues, ITransformationContext, NumericAngle, NumericLength } from "../i-dotcss";
 import dotcss from "../style-builder";

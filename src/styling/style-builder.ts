@@ -1,6 +1,5 @@
 "use strict";
 
-import Util, { AnimationType } from "../util";
 import {AllLengthUnits} from "./unit-function-tables";
 import CssAngle from "./css-types.ts/css-angle";
 import CssColor from "./css-types.ts/css-color";
@@ -12,6 +11,7 @@ import CssTransform from "./css-types.ts/css-transform";
 import CssUnknown from "./css-types.ts/css-unknown";
 import CssUrl from "./css-types.ts/css-url";
 import IDotCss, { HideParams, LengthProp, NumericLength, ShowParams } from "./i-dotcss";
+import { AnimationType, floatRegex, numberStep } from "../dot-util";
 
 //Latest Update.
 /*
@@ -56,14 +56,14 @@ class Dotcss2{
 		if(totalDuration - currentTime > 0){
 			switch(propType){
 				case "color":
-					var r = Math.round(Util.numberStep(startValue.r, targetValue.r, currentTime, totalDuration, animationStyle));
-					var g = Math.round(Util.numberStep(startValue.g, targetValue.g, currentTime, totalDuration, animationStyle ));
-					var b = Math.round(Util.numberStep(startValue.b, targetValue.b, currentTime, totalDuration, animationStyle ));
-					var a = dotcss.formatNumberValue(Util.numberStep(startValue.a, targetValue.a, currentTime, totalDuration, animationStyle )); //TODO: make sure this doesn't need to be rounded or something.
+					var r = Math.round(numberStep(startValue.r, targetValue.r, currentTime, totalDuration, animationStyle));
+					var g = Math.round(numberStep(startValue.g, targetValue.g, currentTime, totalDuration, animationStyle ));
+					var b = Math.round(numberStep(startValue.b, targetValue.b, currentTime, totalDuration, animationStyle ));
+					var a = dotcss.formatNumberValue(numberStep(startValue.a, targetValue.a, currentTime, totalDuration, animationStyle )); //TODO: make sure this doesn't need to be rounded or something.
 					dotcss(element)[jsFriendlyProp](r, g, b, a);
 					break;
 				case "length":
-					dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(Util.numberStep(startValue.length, targetValue.length, currentTime, totalDuration, animationStyle), startValue.units) + startValue.units);
+					dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(numberStep(startValue.length, targetValue.length, currentTime, totalDuration, animationStyle), startValue.units) + startValue.units);
 					break;
 				case "transformation":
 					var newTransform = "";
@@ -78,7 +78,7 @@ class Dotcss2{
 							var actualV1 = isNaN(v1) ? v1.length || v1.angle || v1.value || 0 : v1;
 							var actualV2 = isNaN(v2) ? v2.length || v2.angle || v2.value || 0 : v2;
 							var units = isNaN(v1) ? v1.units : "";
-							newTransform += dotcss.formatNumberValue(Util.numberStep(actualV1, actualV2, currentTime, totalDuration, animationStyle), units) + units + ",";
+							newTransform += dotcss.formatNumberValue(numberStep(actualV1, actualV2, currentTime, totalDuration, animationStyle), units) + units + ",";
 						}
 						newTransform = newTransform.substring(0, newTransform.length - 1);
 						newTransform += ") ";
@@ -88,13 +88,13 @@ class Dotcss2{
 				default:
 					switch(startValue.type){
 						case "number":
-							dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(Util.numberStep(startValue.value, targetValue.value, currentTime, totalDuration, animationStyle)));
+							dotcss(element)[jsFriendlyProp](dotcss.formatNumberValue(numberStep(startValue.value, targetValue.value, currentTime, totalDuration, animationStyle)));
 							break;
 						case "complex":
 							var newVal = "";
 							for(var i = 0; i < startValue.numbers.length; i++){
 								newVal += startValue.parts[i];
-								newVal += dotcss.formatNumberValue(Util.numberStep(startValue.numbers[i], targetValue.numbers[i], currentTime, totalDuration, animationStyle))
+								newVal += dotcss.formatNumberValue(numberStep(startValue.numbers[i], targetValue.numbers[i], currentTime, totalDuration, animationStyle))
 							}
 							newVal += startValue.parts[startValue.parts.length - 1];
 							
@@ -147,10 +147,10 @@ class Dotcss2{
 			// console.log(`SETTING ${jsFriendlyProp}:`, this.toString());
 			// this.toString()
 
-			if(this.target){
-				for(var q = 0; q < this.target.length; q++){
+			if(this.targets){
+				for(var q = 0; q < this.targets.length; q++){
 					//this.target[q].style += newCss;
-					var t = this.target[q];
+					var t = this.targets[q];
 					if(t.tagName == "STYLE") t.innerHTML = t.innerHTML.substring(0, t.innerHTML.length - 1) + prop + ":" + value + ";}";
 					else t.style[jsFriendlyProp] = value;
 				}
@@ -192,13 +192,13 @@ class Dotcss2{
 		if(!(value instanceof Array)) value = [value];
 		if(cssDataType == "color") return new CssColor(value);
 		else if (cssDataType == "url") return new CssUrl(value);
-		else if (cssDataType == "length" && (!isNaN(value[0]) || (value[0].indexOf(" ") == -1 && value[0].replace(Util.floatRegex, "") != value[0]))) return new CssLength(value[0]);
+		else if (cssDataType == "length" && (!isNaN(value[0]) || (value[0].indexOf(" ") == -1 && value[0].replace(floatRegex, "") != value[0]))) return new CssLength(value[0]);
 		else if (cssDataType == "transformation") return (new CssTransform(value[0])).toString()
 		else{
 			if(value[0] === "" 
 				|| (
 					(isNaN(value[0]))
-					&& ("" + value[0]).replace(Util.floatRegex, "") == value[0])
+					&& ("" + value[0]).replace(floatRegex, "") == value[0])
 				) return new CssUnknown(value[0]); //No numbers.
 			if(isNaN(value[0])) return new CssComplex(value[0]); //Numbers
 			else return new CssNumber(value[0]); //Just a number.

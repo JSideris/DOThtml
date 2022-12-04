@@ -1,4 +1,4 @@
-import Util from "../../util";
+import { floatRegex } from "../../dot-util";
 import CssDataType from "./css-data-type";
 
 export default class CssComplex extends CssDataType{
@@ -6,8 +6,8 @@ export default class CssComplex extends CssDataType{
 	numbers: string;
 	constructor(value){
 		super("complex");
-		this.parts = (" " + value + " ").split(Util.floatRegex);
-		this.numbers = value.match(Util.floatRegex);
+		this.parts = (" " + value + " ").split(floatRegex);
+		this.numbers = value.match(floatRegex);
 	}
 	
 	toString(){

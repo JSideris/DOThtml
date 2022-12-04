@@ -1,4 +1,4 @@
-import Util from "../../util";
+import { floatRegex } from "../../dot-util";
 import CssDataType from "./css-data-type";
 
 export default class CssAngle extends CssDataType{
@@ -8,8 +8,8 @@ export default class CssAngle extends CssDataType{
 		super("angle");
 		value = value || "0deg";
 		if(!isNaN(value as number)) value = `${Math.round(value as number)}deg`;
-		this.angle = Number((value as string).match(Util.floatRegex)[0]);
-		this.units = (value as string).split(Util.floatRegex)[1] || "deg";
+		this.angle = Number((value as string).match(floatRegex)[0]);
+		this.units = (value as string).split(floatRegex)[1] || "deg";
 	}
 
 	toString(){
