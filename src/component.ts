@@ -19,6 +19,22 @@ interface IPropertyContainer{
 
 abstract class Component{
 
+	/**
+	 * Used internally to indicate the first time $updateStyles is called.
+	 * This method is called by the static component builder when the component is created.
+	 * If a prop is accessed within the style builder, the getter reads this field to mark $updateStyles as a dependency.
+	*/
+	#initializingStyles: boolean = false;
+	#initializingBuild: boolean = false;
+	// A bit messy but gets us to MVP for this feature.
+	// Ideally this should be made a singleton somehow, perhaps put in the property metadata.
+	#rebuildStylesOnPropChange: {[propName: string]: true} = {};
+	#rebuildBuilderOnPropChange: {[propName: string]: true} = {};
+
+	/**
+	 * Called once per component, on the first build.
+	 * TODO: this shouldn't require an instance of the component. Please experiment with fixing this.
+	*/
 	static initializeComponent<T extends Component>(obj: T): void{
 		if(!(obj.constructor as any).__dotComponentInitialized) {
 			(obj.constructor as any).__dotComponentInitialized = true;
@@ -36,7 +52,7 @@ abstract class Component{
 
 	}
 
-	static build<T extends Component>(obj: T): Element{
+	static build<T extends Component>(obj: T): HTMLElement{
 		Component.initializeComponent(obj);
 
 		GlobalComponentStack.push(obj);
@@ -87,20 +103,45 @@ abstract class Component{
 
 		Component.initializeEventHandlers(obj);
 	
+		Component.rebuild(obj);
+	
+		// TODO: would be great to do this without a timer, once the DOM is updated. 
+		// May require some type of queueing system within dot.
+		obj.ready && sT(()=>{
+			GlobalComponentStack.push(obj);
+			obj.ready();
+			GlobalComponentStack.pop()
+		}, 0);
+
+		GlobalComponentStack.pop();
+		
+		return obj.$el;
+	}
+
+	/**
+	 * Called any time the component needs to be completely rebuilt.
+	*/
+	static rebuild<T extends Component>(obj: T) {
+
+		let oldEl = obj.$el;
+		
+		if(!obj.__eventsInitialized) obj.#initializingBuild = true;
 		let ret = obj.builder(...obj.__args);
+		obj.#initializingBuild = false;
 	
 		let lst = ret.getLast();
 		(!lst || (lst.parentNode.childNodes.length > 1)) && ERR("C#", obj.name || obj.constructor.name || "(unnamed obj)");
 		
-	
-	
-		// Some weird ass logic to support legacy named components and the new syntax.
-		// if(classNumb || n) ret = (obj instanceof DotDocument ? obj : dot)._appendOrCreateDocument(dot.scopeClass(classNumb, ret));
-		// ret = ret.scopeClass(ret, (obj.constructor as any).__dotClassNumb);
-		
-		obj["__$el"] = obj.$el || lst;
+
+		// Note: I don't know what the justification was for using $obj.el, but all tests pass without it.
+		// It was removed to facilitate rebuilding the component (during a prop change).
+		obj["__$el"] = /*obj.$el ||*/ lst;
 		obj.$el["__dothtml_component"] = obj;
-	
+
+		if(oldEl){
+			// Clean it up and replace it with the new element!
+		}
+
 		// TODO: would there be a way to not have to create obj function for each instance?
 		if(obj.style) {
 			// obj will be the officially supported way to use dothtml.
@@ -115,23 +156,13 @@ abstract class Component{
 				obj.style(dot.css);
 				dot.css.unscope();
 			}
+			if(!obj.__eventsInitialized) obj.#initializingStyles = true;
 			obj.$updateStyles();
+			obj.#initializingStyles = false;
 			//styler();
 		}
 	
 		obj.built && obj.built();
-	
-		// TODO: would be great to do this without a timer, once the DOM is updated. 
-		// May require some type of queueing system within dot.
-		obj.ready && sT(()=>{
-			GlobalComponentStack.push(obj);
-			obj.ready();
-			GlobalComponentStack.pop()
-		}, 0);
-
-		GlobalComponentStack.pop();
-		
-		return obj.$el;
 	}
 
 	static initializeEventHandlers(obj){
@@ -238,6 +269,14 @@ abstract class Component{
 			if(!ar) ar = cc.__propContainer.propDependencies[name] = [];
 			ar.push(cb);
 		}
+
+		// Again I find this a weird way to do it that kind of side-steps the above approach, but it gets the job done and is dead simple.
+		if(cc.#initializingStyles){
+			cc.#rebuildStylesOnPropChange[name] = true;
+		}
+		if(cc.#initializingBuild){
+			cc.#rebuildBuilderOnPropChange[name] = true;
+		}
 	}
 	
 	static updateProp(obj: Component, name: string){
@@ -246,14 +285,21 @@ abstract class Component{
 	
 		// // {f:contentCallback,startNode:startNode, endNode:endNode,condition:condition}
 		let updateStyles = false;
-		for(let i = 0; i < (ar||[]).length; i++){
-			let arg = ar[i];
-			// TODO: this could be used to update attributes.
-			// But right now that relies exclusively on function setters. It's a bit weird.
-			arg.updateContent(dot, value);
-			
-			if(arg instanceof AttrArgCallback && arg.attr == "class"){
-				updateStyles = true;
+		if(false && obj.#rebuildBuilderOnPropChange[name] && !obj.#initializingBuild){
+			// Call the builder again.
+		}
+		else{
+			// Maybe update specific areas.
+			// This is admittedly more efficient.
+			for(let i = 0; i < (ar||[]).length; i++){
+				let arg = ar[i];
+				// TODO: this could be used to update attributes.
+				// But right now that relies exclusively on function setters. It's a bit weird.
+				arg.updateContent(dot, value);
+				
+				if(obj.#rebuildStylesOnPropChange[name] || (arg instanceof AttrArgCallback && arg.attr == "class")){
+					updateStyles = true;
+				}
 			}
 		}
 	
@@ -337,7 +383,7 @@ abstract class Component{
 		return this.__$el;
 	}
 
-	$refs: {[key: string]: Element} = {};
+	$refs: {[key: string]: HTMLElement} = {};
 
 	/**
 	 * Name of the component (optional). If provided, dot and the VDBO will be extended.

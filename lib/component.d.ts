@@ -1,8 +1,17 @@
 import { IDotElement } from "./i-dot";
 import IDotCss from "./styling/i-dotcss";
 declare abstract class Component {
+    #private;
+    /**
+     * Called once per component, on the first build.
+     * TODO: this shouldn't require an instance of the component. Please experiment with fixing this.
+    */
     static initializeComponent<T extends Component>(obj: T): void;
-    static build<T extends Component>(obj: T): Element;
+    static build<T extends Component>(obj: T): HTMLElement;
+    /**
+     * Called any time the component needs to be completely rebuilt.
+    */
+    static rebuild<T extends Component>(obj: T): void;
     static initializeEventHandlers(obj: any): void;
     static createProp(activePropContainer: Function, name: string): void;
     static configureDependency(cc: Component, name: string): void;
@@ -57,7 +66,7 @@ declare abstract class Component {
     */
     get $el(): HTMLElement;
     $refs: {
-        [key: string]: Element;
+        [key: string]: HTMLElement;
     };
     /**
      * Name of the component (optional). If provided, dot and the VDBO will be extended.

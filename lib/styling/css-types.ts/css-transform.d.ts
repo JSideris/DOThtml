@@ -6,6 +6,7 @@ export default class CssTransform extends CssDataType {
         args: Array<any>;
     }>;
     finalMatrix: number[];
+    simpleValue: string;
     constructor(value: any);
     toString(): string;
     private appendTransformString;
@@ -23,6 +24,10 @@ export default class CssTransform extends CssDataType {
     scaleZ(z: number): this;
     rotate(x: NumericAngle): this;
     rotate3d(x: number, y: number, z: number, a: NumericAngle): this;
+    rotate3dDeg(x: number, y: number, z: number, a: number): this;
+    rotate3dRad(x: number, y: number, z: number, a: number): this;
+    rotate3dGrad(x: number, y: number, z: number, a: number): this;
+    rotate3dTurn(x: number, y: number, z: number, a: number): this;
     rotateX(x: NumericAngle): this;
     rotateY(y: NumericAngle): this;
     rotateZ(z: NumericAngle): this;
