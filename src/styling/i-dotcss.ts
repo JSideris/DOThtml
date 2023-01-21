@@ -1,5 +1,5 @@
 // Building blocks.
-export declare type BasicCommonValues = "inherit"|"initial"|"unset";
+export declare type BasicCommonValues = "inherit"|"initial"|"unset"|"revert"|"revert-layer";
 export declare type AbsoluteUnits = "cm"|"mm"|"in"|"px"|"pt"|"pc";
 export declare type RelativeUnits = "em"|"ex"|"ch"|"rem"|"vw"|"vh"|"vmin"|"vmax"|"%";
 export declare type AllUnits = AbsoluteUnits|RelativeUnits;
@@ -7,14 +7,16 @@ export declare type OptionalWhitespace = ""|" ";
 export declare type UrlType = `url('${string}')`;
 export declare type NumericLength = number|`${number}${AllUnits}`;
 export declare type AngleUnits = "deg"|"turn"|"rad"|"grad";
-export declare type NumericAngle = number|`${number}${AngleUnits}`
+export declare type NumericAngle = number|`${number}${AngleUnits}`;
+export declare type Percentage = number|`${number}%`; // Used for filters.
 
 // ts starts complaining about the complexity of the type :(
 //export declare type DigitStr = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
 // export declare type HexStr = DigitStr|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f";
 
 // Types
-export declare type BackgroundAttachmentValues = BasicCommonValues|"scroll"|"fixed"|"local"
+export declare type AppearanceValues = BasicCommonValues|"none"|"menulist-button"|"textfield"|"button"|"searchfield"|"textarea"|"push-button"|"slider-horizontal"|"checkbox"|"radio"|"square-button"|"menulist"|"listbox"|"meter"|"progress-bar"|"scrollbarbutton-up"|"button-bevel"|"media-mute-button"|"caret";
+export declare type BackgroundAttachmentValues = BasicCommonValues|"scroll"|"fixed"|"local";
 export declare type BackgroundRepeatValues = BasicCommonValues|"no-repeat"|"repeat"|"space"|"round";
 export declare type BackgroundOriginValues = BasicCommonValues|"padding-box"|"border-box"|"content-box";
 export declare type BackgroundSizeValues = BasicCommonValues|"auto"|NumericLength|"cover"|"contain";
@@ -101,7 +103,7 @@ export interface IDotcssProp{
 	columnRuleColor: IDotcssAnimatableColor;
 
 	//length: 
-	backgroundSize: ((value: BasicCommonValues)=>IDotcssProp)|IDotcssAnimatable<BackgroundSizeValues>;
+	backgroundSize: IDotcssAnimatable<BackgroundSizeValues>;
 	backgroundSizeCm: IDotcssAnimatable<number>;
 	backgroundSizeCh: IDotcssAnimatable<number>;
 	backgroundSizeEm: IDotcssAnimatable<number>;
@@ -117,6 +119,23 @@ export interface IDotcssProp{
 	backgroundSizeVw: IDotcssAnimatable<number>;
 	backgroundSizeVMax: IDotcssAnimatable<number>;
 	backgroundSizeVMin: IDotcssAnimatable<number>;
+
+	blockSize: IDotcssAnimatable<NumericLength>;
+	blockSizeCm: IDotcssAnimatable<number>;
+	blockSizeCh: IDotcssAnimatable<number>;
+	blockSizeEm: IDotcssAnimatable<number>;
+	blockSizeEx: IDotcssAnimatable<number>;
+	blockSizeIn: IDotcssAnimatable<number>;
+	blockSizeMm: IDotcssAnimatable<number>;
+	blockSizeP: IDotcssAnimatable<number>;
+	blockSizePc: IDotcssAnimatable<number>;
+	blockSizePt: IDotcssAnimatable<number>;
+	blockSizePx: IDotcssAnimatable<number>;
+	blockSizeRem: IDotcssAnimatable<number>;
+	blockSizeVh: IDotcssAnimatable<number>;
+	blockSizeVw: IDotcssAnimatable<number>;
+	blockSizeVMax: IDotcssAnimatable<number>;
+	blockSizeVMin: IDotcssAnimatable<number>;
 
 	borderBottomLeftRadius: IDotcssAnimatable<NumericLength>;
 	borderBottomLeftRadiusCm: IDotcssAnimatable<number>;
@@ -719,13 +738,18 @@ export interface IDotcssProp{
 	listStyleImage: (value: BackgroundImageFormat)=>IDotcssProp;
 	content: (value: BasicCommonValues|UrlType)=>IDotcssProp;
 
-	//transformation: 
+	//complex: 
 	transform: (transformOrTransformBuilder: BasicCommonValues|TransformationBuilder)=>IDotcssProp;
+	filter: (filterBuilder: FilterBuilder)=>IDotcssProp;
+	backdropFilter: (filterBuilder: FilterBuilder)=>IDotcssProp;
 	
 	//misc numeric: 
 	opacity: IDotcssAnimatable<number|string>;
 
 	//misc: 
+	appearance: (value: AppearanceValues)=>IDotcssProp;
+	aspectRatio: (value: string)=>IDotcssProp; // TODO: better typing on this. Low priority.
+
 	background: (value: BasicCommonValues|string)=>IDotcssProp
 	backgroundAttachment: (value: BackgroundAttachmentValues)=>IDotcssProp
 	backgroundBlendMode: (value: BasicCommonValues|string)=>IDotcssProp
@@ -900,7 +924,6 @@ export interface IDotcssProp{
 	pageBreakInside: (value: BasicCommonValues|string)=>IDotcssProp
 	marks: (value: BasicCommonValues|string)=>IDotcssProp
 	quotes: (value: BasicCommonValues|string)=>IDotcssProp
-	filter: (value: BasicCommonValues|string)=>IDotcssProp
 	imageRendering: (value: BasicCommonValues|string)=>IDotcssProp
 	imageResolution: (value: BasicCommonValues|string)=>IDotcssProp
 	objectFit: (value: BasicCommonValues|string)=>IDotcssProp
@@ -1120,3 +1143,21 @@ export type ITransformationContext = {
 	perspectiveVMin: (v: number)=>ITransformationContext;
 }
 
+export interface FilterBuilder{
+	(filtCtx: IFilterContext): IFilterContext|string;
+}
+
+export type IFilterContext = {
+	// url(commonfilters.svg#filter); // Don't know how this works yet.
+	blur(v: NumericLength): IFilterContext;
+	brightness(v: Percentage): IFilterContext;
+	contrast(v: Percentage): IFilterContext;
+	dropShadow(x: NumericLength, y: NumericLength, blur: NumericLength, color: ColorFormat): IFilterContext;
+	grayscale(v: Percentage): IFilterContext;
+	hueRotate(v: AngleUnits): IFilterContext;
+	invert(v: Percentage): IFilterContext;
+	opacity(v: Percentage): IFilterContext;
+	sepia(v: Percentage): IFilterContext;
+	saturate(v: Percentage): IFilterContext;
+	// url(filters.svg#filter) blur(4px) saturate(150%); // example.
+}

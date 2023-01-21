@@ -30,6 +30,7 @@ class TestComponentA extends DotComponent{
 	}
 	
 	style(css: IDotCss){
+		console.log("RESTYLING!!");
 		this.styled++;
 
 		this.props.restyle;

@@ -2,7 +2,7 @@
 import dot from "./dot";
 import Component from "./component";
 
-dot.version = "5.0.0";
+dot.version = "5.2.0";
 dot.Component = Component;
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
@@ -22,6 +22,8 @@ dot.Component = Component;
  * - Re-imagined components from the ground up. Components are now classes that inherit from `Component`. Plays very nicely with TS and ES6.
  * - Added interfaces for new methods that can be invoked on various elements. For instance, play, pause, and stop on audio and video elements.
  * - Updated scopeClass method to put the optional parameter last.
+ * - Fixed some color bugs.
+ * - Added a filter builder.
  */
 
 

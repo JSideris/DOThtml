@@ -2,6 +2,10 @@
 import addTest from "../core";
 import dot from "../../src/dothtml";
 
+describe("Pseudo Selectors", () => {
+    test.todo("pass");
+});
+
 // Possible syntaxes:
 // 1. Multiple style functions.
 // 	- dot(target).style(dot.css...)

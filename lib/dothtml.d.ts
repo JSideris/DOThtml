@@ -15,6 +15,8 @@ import dot from "./dot";
  * - Re-imagined components from the ground up. Components are now classes that inherit from `Component`. Plays very nicely with TS and ES6.
  * - Added interfaces for new methods that can be invoked on various elements. For instance, play, pause, and stop on audio and video elements.
  * - Updated scopeClass method to put the optional parameter last.
+ * - Fixed some color bugs.
+ * - Added a filter builder.
  */
 export default dot;
 export { default as DotComponent } from "./component";

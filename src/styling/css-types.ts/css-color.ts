@@ -11,16 +11,20 @@ export default class CssColor extends CssDataType{
 		this.g = 0;
 		this.b = 0;
 		this.a = 1;
-		if(value.length == 1) {
-			value = value[0];
+
+		// This is typically the way dothtml passes in values to colors. Flatten.
+		if(Array.isArray(value) && value.length == 1) value = value[0];
+
+		if(typeof value == "number") {
+			this.b = value & 0xFF;
+			value >>= 8;
+			this.g = value & 0xFF;
+			value >>= 8;
+			this.r = value & 0xFF;
+		}
+		else if(typeof value == "string") {
+			// value = value[0];
 			if(value == "" || value == "none" || value == "initial" || value == "inherit"){} //Nothing more needs to be done.
-			else if(!isNaN(value)){
-				this.b = value & 0xFF;
-				value >>= 8;
-				this.g = value & 0xFF;
-				value >>= 8;
-				this.r = value & 0xFF;
-			}
 			else if(value[0] == "#"){
 				var cH = value.split("#")[1];
 				if(cH.length == 3){
@@ -40,12 +44,12 @@ export default class CssColor extends CssDataType{
 				//This also handles rgba.
 				var cData = value.split("(")[1];
 				cData = cData.split(")")[0];
-				cData = cData.split(",");
-				if(cData.length == 3 || cData.length == 4){
-					this.r = Number(cData[0]);
-					this.g = Number(cData[1]);
-					this.b = Number(cData[2]);
-					this.a = Number(cData[3] || 1);
+				var cDataItems = cData.split(",");
+				if(cDataItems.length == 3 || cDataItems.length == 4){
+					this.r = Number(cDataItems[0]);
+					this.g = Number(cDataItems[1]);
+					this.b = Number(cDataItems[2]);
+					this.a = Number(cDataItems[3] || 1);
 				}
 			}
 			else{
