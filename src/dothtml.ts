@@ -2,7 +2,7 @@
 import dot from "./dot";
 import Component from "./component";
 
-dot.version = "5.2.0";
+dot.version = "5.2.1";
 dot.Component = Component;
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
@@ -24,6 +24,7 @@ dot.Component = Component;
  * - Updated scopeClass method to put the optional parameter last.
  * - Fixed some color bugs.
  * - Added a filter builder.
+ * - Added flex gap.
  */
 
 

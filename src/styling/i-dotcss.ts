@@ -341,6 +341,23 @@ export interface IDotcssProp{
 	bottomVMax: IDotcssAnimatable<number>;
 	bottomVMin: IDotcssAnimatable<number>;
 
+	gap: IDotcssAnimatable<NumericLength>;
+	gapCm: IDotcssAnimatable<number>;
+	gapCh: IDotcssAnimatable<number>;
+	gapEm: IDotcssAnimatable<number>;
+	gapEx: IDotcssAnimatable<number>;
+	gapIn: IDotcssAnimatable<number>;
+	gapMm: IDotcssAnimatable<number>;
+	gapP: IDotcssAnimatable<number>;
+	gapPc: IDotcssAnimatable<number>;
+	gapPt: IDotcssAnimatable<number>;
+	gapPx: IDotcssAnimatable<number>;
+	gapRem: IDotcssAnimatable<number>;
+	gapVh: IDotcssAnimatable<number>;
+	gapVw: IDotcssAnimatable<number>;
+	gapVMax: IDotcssAnimatable<number>;
+	gapVMin: IDotcssAnimatable<number>;
+
 	height: IDotcssAnimatable<NumericLength>;
 	heightCm: IDotcssAnimatable<number>;
 	heightCh: IDotcssAnimatable<number>;
@@ -989,6 +1006,7 @@ export interface ShowParams{
 }
 
 export interface TransformationBuilder {
+	// TODO: it would be cool if this didn't have to return anything, and the trns parameter that's passed in would just retain a memory of the transformations.
 	(trns: ITransformationContext): ITransformationContext|string;
 }
 

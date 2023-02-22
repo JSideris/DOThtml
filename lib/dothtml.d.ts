@@ -17,6 +17,7 @@ import dot from "./dot";
  * - Updated scopeClass method to put the optional parameter last.
  * - Fixed some color bugs.
  * - Added a filter builder.
+ * - Added flex gap.
  */
 export default dot;
 export { default as DotComponent } from "./component";
