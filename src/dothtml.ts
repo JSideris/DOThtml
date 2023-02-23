@@ -2,7 +2,7 @@
 import dot from "./dot";
 import Component from "./component";
 
-dot.version = "5.2.1";
+dot.version = "5.2.2";
 dot.Component = Component;
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
@@ -25,6 +25,8 @@ dot.Component = Component;
  * - Fixed some color bugs.
  * - Added a filter builder.
  * - Added flex gap.
+ * - Added "auto" as an accepted value to many length types.
+ * - Made textIndent a numeric prop.
  */
 
 

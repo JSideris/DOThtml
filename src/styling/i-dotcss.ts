@@ -6,6 +6,7 @@ export declare type AllUnits = AbsoluteUnits|RelativeUnits;
 export declare type OptionalWhitespace = ""|" ";
 export declare type UrlType = `url('${string}')`;
 export declare type NumericLength = number|`${number}${AllUnits}`;
+export declare type NumericLengthOrAuto = NumericLength|"auto";
 export declare type AngleUnits = "deg"|"turn"|"rad"|"grad";
 export declare type NumericAngle = number|`${number}${AngleUnits}`;
 export declare type Percentage = number|`${number}%`; // Used for filters.
@@ -324,7 +325,7 @@ export interface IDotcssProp{
 	borderWidthVMax: IDotcssAnimatable<number>;
 	borderWidthVMin: IDotcssAnimatable<number>;
 
-	bottom: IDotcssAnimatable<NumericLength>;
+	bottom: IDotcssAnimatable<NumericLengthOrAuto>;
 	bottomCm: IDotcssAnimatable<number>;
 	bottomCh: IDotcssAnimatable<number>;
 	bottomEm: IDotcssAnimatable<number>;
@@ -358,7 +359,7 @@ export interface IDotcssProp{
 	gapVMax: IDotcssAnimatable<number>;
 	gapVMin: IDotcssAnimatable<number>;
 
-	height: IDotcssAnimatable<NumericLength>;
+	height: IDotcssAnimatable<NumericLengthOrAuto>;
 	heightCm: IDotcssAnimatable<number>;
 	heightCh: IDotcssAnimatable<number>;
 	heightEm: IDotcssAnimatable<number>;
@@ -375,7 +376,7 @@ export interface IDotcssProp{
 	heightVMax: IDotcssAnimatable<number>;
 	heightVMin: IDotcssAnimatable<number>;
 
-	left: IDotcssAnimatable<NumericLength>;
+	left: IDotcssAnimatable<NumericLengthOrAuto>;
 	leftCm: IDotcssAnimatable<number>;
 	leftCh: IDotcssAnimatable<number>;
 	leftEm: IDotcssAnimatable<number>;
@@ -392,7 +393,7 @@ export interface IDotcssProp{
 	leftVMax: IDotcssAnimatable<number>;
 	leftVMin: IDotcssAnimatable<number>;
 
-	margin: IDotcssAnimatable<NumericLength>;
+	margin: IDotcssAnimatable<NumericLengthOrAuto>;
 	marginCm: IDotcssAnimatable<number>;
 	marginCh: IDotcssAnimatable<number>;
 	marginEm: IDotcssAnimatable<number>;
@@ -409,7 +410,7 @@ export interface IDotcssProp{
 	marginVMax: IDotcssAnimatable<number>;
 	marginVMin: IDotcssAnimatable<number>;
 
-	marginBottom: IDotcssAnimatable<NumericLength>;
+	marginBottom: IDotcssAnimatable<NumericLengthOrAuto>;
 	marginBottomCm: IDotcssAnimatable<number>;
 	marginBottomCh: IDotcssAnimatable<number>;
 	marginBottomEm: IDotcssAnimatable<number>;
@@ -426,7 +427,7 @@ export interface IDotcssProp{
 	marginBottomVMax: IDotcssAnimatable<number>;
 	marginBottomVMin: IDotcssAnimatable<number>;
 
-	marginLeft: IDotcssAnimatable<NumericLength>;
+	marginLeft: IDotcssAnimatable<NumericLengthOrAuto>;
 	marginLeftCm: IDotcssAnimatable<number>;
 	marginLeftCh: IDotcssAnimatable<number>;
 	marginLeftEm: IDotcssAnimatable<number>;
@@ -443,7 +444,7 @@ export interface IDotcssProp{
 	marginLeftVMax: IDotcssAnimatable<number>;
 	marginLeftVMin: IDotcssAnimatable<number>;
 
-	marginRight: IDotcssAnimatable<NumericLength>;
+	marginRight: IDotcssAnimatable<NumericLengthOrAuto>;
 	marginRightCm: IDotcssAnimatable<number>;
 	marginRightCh: IDotcssAnimatable<number>;
 	marginRightEm: IDotcssAnimatable<number>;
@@ -460,7 +461,7 @@ export interface IDotcssProp{
 	marginRightVMax: IDotcssAnimatable<number>;
 	marginRightVMin: IDotcssAnimatable<number>;
 
-	marginTop: IDotcssAnimatable<NumericLength>;
+	marginTop: IDotcssAnimatable<NumericLengthOrAuto>;
 	marginTopCm: IDotcssAnimatable<number>;
 	marginTopCh: IDotcssAnimatable<number>;
 	marginTopEm: IDotcssAnimatable<number>;
@@ -477,7 +478,7 @@ export interface IDotcssProp{
 	marginTopVMax: IDotcssAnimatable<number>;
 	marginTopVMin: IDotcssAnimatable<number>;
 
-	maxHeight: IDotcssAnimatable<NumericLength>;
+	maxHeight: IDotcssAnimatable<NumericLengthOrAuto>;
 	maxHeightCm: IDotcssAnimatable<number>;
 	maxHeightCh: IDotcssAnimatable<number>;
 	maxHeightEm: IDotcssAnimatable<number>;
@@ -494,7 +495,7 @@ export interface IDotcssProp{
 	maxHeightVMax: IDotcssAnimatable<number>;
 	maxHeightVMin: IDotcssAnimatable<number>;
 
-	maxWidth: IDotcssAnimatable<NumericLength>;
+	maxWidth: IDotcssAnimatable<NumericLengthOrAuto>;
 	maxWidthCm: IDotcssAnimatable<number>;
 	maxWidthCh: IDotcssAnimatable<number>;
 	maxWidthEm: IDotcssAnimatable<number>;
@@ -511,7 +512,7 @@ export interface IDotcssProp{
 	maxWidthVMax: IDotcssAnimatable<number>;
 	maxWidthVMin: IDotcssAnimatable<number>;
 
-	minHeight: IDotcssAnimatable<NumericLength>;
+	minHeight: IDotcssAnimatable<NumericLengthOrAuto>;
 	minHeightCm: IDotcssAnimatable<number>;
 	minHeightCh: IDotcssAnimatable<number>;
 	minHeightEm: IDotcssAnimatable<number>;
@@ -528,7 +529,7 @@ export interface IDotcssProp{
 	minHeightVMax: IDotcssAnimatable<number>;
 	minHeightVMin: IDotcssAnimatable<number>;
 
-	minWidth: IDotcssAnimatable<NumericLength>;
+	minWidth: IDotcssAnimatable<NumericLengthOrAuto>;
 	minWidthCm: IDotcssAnimatable<number>;
 	minWidthCh: IDotcssAnimatable<number>;
 	minWidthEm: IDotcssAnimatable<number>;
@@ -562,7 +563,7 @@ export interface IDotcssProp{
 	outlineOffsetVMax: IDotcssAnimatable<number>;
 	outlineOffsetVMin: IDotcssAnimatable<number>;
 
-	padding: IDotcssAnimatable<NumericLength>;
+	padding: IDotcssAnimatable<NumericLengthOrAuto>;
 	paddingCm: IDotcssAnimatable<number>;
 	paddingCh: IDotcssAnimatable<number>;
 	paddingEm: IDotcssAnimatable<number>;
@@ -579,7 +580,7 @@ export interface IDotcssProp{
 	paddingVMax: IDotcssAnimatable<number>;
 	paddingVMin: IDotcssAnimatable<number>;
 
-	paddingBottom: IDotcssAnimatable<NumericLength>;
+	paddingBottom: IDotcssAnimatable<NumericLengthOrAuto>;
 	paddingBottomCm: IDotcssAnimatable<number>;
 	paddingBottomCh: IDotcssAnimatable<number>;
 	paddingBottomEm: IDotcssAnimatable<number>;
@@ -596,7 +597,7 @@ export interface IDotcssProp{
 	paddingBottomVMax: IDotcssAnimatable<number>;
 	paddingBottomVMin: IDotcssAnimatable<number>;
 
-	paddingLeft: IDotcssAnimatable<NumericLength>;
+	paddingLeft: IDotcssAnimatable<NumericLengthOrAuto>;
 	paddingLeftCm: IDotcssAnimatable<number>;
 	paddingLeftCh: IDotcssAnimatable<number>;
 	paddingLeftEm: IDotcssAnimatable<number>;
@@ -613,7 +614,7 @@ export interface IDotcssProp{
 	paddingLeftVMax: IDotcssAnimatable<number>;
 	paddingLeftVMin: IDotcssAnimatable<number>;
 
-	paddingRight: IDotcssAnimatable<NumericLength>;
+	paddingRight: IDotcssAnimatable<NumericLengthOrAuto>;
 	paddingRightCm: IDotcssAnimatable<number>;
 	paddingRightCh: IDotcssAnimatable<number>;
 	paddingRightEm: IDotcssAnimatable<number>;
@@ -630,7 +631,7 @@ export interface IDotcssProp{
 	paddingRightVMax: IDotcssAnimatable<number>;
 	paddingRightVMin: IDotcssAnimatable<number>;
 
-	paddingTop: IDotcssAnimatable<NumericLength>;
+	paddingTop: IDotcssAnimatable<NumericLengthOrAuto>;
 	paddingTopCm: IDotcssAnimatable<number>;
 	paddingTopCh: IDotcssAnimatable<number>;
 	paddingTopEm: IDotcssAnimatable<number>;
@@ -647,7 +648,7 @@ export interface IDotcssProp{
 	paddingTopVMax: IDotcssAnimatable<number>;
 	paddingTopVMin: IDotcssAnimatable<number>;
 
-	right: IDotcssAnimatable<NumericLength>;
+	right: IDotcssAnimatable<NumericLengthOrAuto>;
 	rightCm: IDotcssAnimatable<number>;
 	rightCh: IDotcssAnimatable<number>;
 	rightEm: IDotcssAnimatable<number>;
@@ -664,7 +665,24 @@ export interface IDotcssProp{
 	rightVMax: IDotcssAnimatable<number>;
 	rightVMin: IDotcssAnimatable<number>;
 
-	top: IDotcssAnimatable<NumericLength>;
+	textIndent: IDotcssAnimatable<NumericLengthOrAuto>;
+	textIndentCm: IDotcssAnimatable<number>;
+	textIndentCh: IDotcssAnimatable<number>;
+	textIndentEm: IDotcssAnimatable<number>;
+	textIndentEx: IDotcssAnimatable<number>;
+	textIndentIn: IDotcssAnimatable<number>;
+	textIndentMm: IDotcssAnimatable<number>;
+	textIndentP: IDotcssAnimatable<number>;
+	textIndentPc: IDotcssAnimatable<number>;
+	textIndentPt: IDotcssAnimatable<number>;
+	textIndentPx: IDotcssAnimatable<number>;
+	textIndentRem: IDotcssAnimatable<number>;
+	textIndentVh: IDotcssAnimatable<number>;
+	textIndentVw: IDotcssAnimatable<number>;
+	textIndentVMax: IDotcssAnimatable<number>;
+	textIndentVMin: IDotcssAnimatable<number>;
+
+	top: IDotcssAnimatable<NumericLengthOrAuto>;
 	topCm: IDotcssAnimatable<number>;
 	topCh: IDotcssAnimatable<number>;
 	topEm: IDotcssAnimatable<number>;
@@ -681,7 +699,7 @@ export interface IDotcssProp{
 	topVMax: IDotcssAnimatable<number>;
 	topVMin: IDotcssAnimatable<number>;
 
-	width: IDotcssAnimatable<NumericLength>;
+	width: IDotcssAnimatable<NumericLengthOrAuto>;
 	widthCm: IDotcssAnimatable<number>;
 	widthCh: IDotcssAnimatable<number>;
 	widthEm: IDotcssAnimatable<number>;
@@ -732,7 +750,7 @@ export interface IDotcssProp{
 	fontSizeVMax: IDotcssAnimatable<number>;
 	fontSizeVMin: IDotcssAnimatable<number>;
 
-	flexBasis: IDotcssAnimatable<NumericLength>;
+	flexBasis: IDotcssAnimatable<NumericLengthOrAuto>;
 	flexBasisCm: IDotcssAnimatable<number>;
 	flexBasisCh: IDotcssAnimatable<number>;
 	flexBasisEm: IDotcssAnimatable<number>;
@@ -845,7 +863,6 @@ export interface IDotcssProp{
 	textAlign: (value: BasicCommonValues|string)=>IDotcssProp
 	textAlignLast: (value: BasicCommonValues|string)=>IDotcssProp
 	textCombineUpright: (value: BasicCommonValues|string)=>IDotcssProp
-	textIndent: (value: BasicCommonValues|string)=>IDotcssProp
 	textJustify: (value: BasicCommonValues|string)=>IDotcssProp
 	textTransform: (value: BasicCommonValues|string)=>IDotcssProp
 	whiteSpace: (value: BasicCommonValues|string)=>IDotcssProp

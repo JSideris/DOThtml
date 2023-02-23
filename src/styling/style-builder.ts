@@ -20,7 +20,7 @@ import CssFilter from "./css-types.ts/css-filter";
 * - Hid _Builder and _StyleProperty.
 * - Increased compatibility with IE 8, 9, and 10.
 * - Allowed 0-length animations.
-* 5.1 
+* 5.1
 * - Typified style builder.
 * - Fixed up transformations and redid transform builder.
 * - Removed some old junk.
@@ -34,26 +34,26 @@ class Dotcss2{
 	//Inverse of framerate in ms/frame.
 	// Used for old browsers that don't support requestAnimationFrameframe.
 	fxInterval = 1000/60;
-	
+
 	lastBuilder: _Builder = null;
 	scopeStack: Array<HTMLElement> = [];
 
 	globalStyleElement: HTMLStyleElement = null;
 
 	animateFull(
-		element: HTMLElement, 
-		jsFriendlyProp: string, 
-		propType: string, 
-		startValue: any, 
-		targetValue: any, 
-		finalValue: any, 
-		currentTime: number, 
-		totalDuration: number, 
-		animationStyle: AnimationType, 
-		callback: Function, 
+		element: HTMLElement,
+		jsFriendlyProp: string,
+		propType: string,
+		startValue: any,
+		targetValue: any,
+		finalValue: any,
+		currentTime: number,
+		totalDuration: number,
+		animationStyle: AnimationType,
+		callback: Function,
 		lastValue?: any){
 		if(lastValue && element.style[jsFriendlyProp] != lastValue) return; //Animation can be cancelled any time by setting the value directly.
-	
+
 		if(totalDuration - currentTime > 0){
 			switch(propType){
 				case "color":
@@ -98,14 +98,14 @@ class Dotcss2{
 								newVal += dotcss.formatNumberValue(numberStep(startValue.numbers[i], targetValue.numbers[i], currentTime, totalDuration, animationStyle))
 							}
 							newVal += startValue.parts[startValue.parts.length - 1];
-							
+
 							dotcss(element)[jsFriendlyProp](newVal);
 							break;
 						default:
 							console.warn("Unexpected data type for animation.");
 					}
 			}
-	
+
 			var now = (window.performance && window.performance.now) ? window.performance.now() : null;
 			//var reachedAnimFrame = false;
 			//TODO: there could be a memory leak here. Need to investigate.
@@ -133,7 +133,7 @@ class Dotcss2{
 		//Create the new function by extending the builder.
 		let _b = _Builder.prototype;
 		_b[jsFriendlyProp] = function(){
-			
+
 			if(arguments.length == 0) return this;
 			var args = [];
 			for(var i = 0; i < arguments.length; i++) args.push(arguments[i]);
@@ -141,8 +141,8 @@ class Dotcss2{
 			// TODO: Why can't I just pass arguments directly into this function?
 			// Try it.
 			var value = dotcss2.convertStyleIntoDotCssObject(args, type).toString();
-			
-			
+
+
 			var newCss = prop + ":" + value + ";";
 			this.currentCss += newCss;
 			// console.log(`SETTING ${jsFriendlyProp}:`, this.toString());
@@ -156,12 +156,12 @@ class Dotcss2{
 					else t.style[jsFriendlyProp] = value;
 				}
 			}
-			
+
 			return this;
 		}
 		//Add the new function to the dotcss object so that it can be accessed without doing dotcss().
 		dotcss2.addPropFunctionToDotCssObject(jsFriendlyProp);
-		
+
 		//Each unit of length will also have its own version of this function (assuming this is a length property).
 		if(type == "length"){
 			for(var u = 0; u < AllLengthUnits.length; u++){
@@ -175,7 +175,7 @@ class Dotcss2{
 				dotcss2.addPropFunctionToDotCssObject(jsFriendlyProp + (uu.jsName || uu.unit));
 			}
 		}
-		
+
 		//_b[jsFriendlyProp].__proto__ = Object.create(_StyleProperty.prototype);
 		_b[jsFriendlyProp].type = type;
 		_b[jsFriendlyProp].jsFriendlyProp = jsFriendlyProp;
@@ -197,7 +197,7 @@ class Dotcss2{
 		else if (cssDataType == "transformation") return (new CssTransform(value[0])).toString()
 		else if (cssDataType == "filter") return (new CssFilter(value[0])).toString()
 		else{
-			if(value[0] === "" 
+			if(value[0] === ""
 				|| (
 					(isNaN(value[0]))
 					&& ("" + value[0]).replace(floatRegex, "") == value[0])
@@ -205,7 +205,7 @@ class Dotcss2{
 			if(isNaN(value[0])) return new CssComplex(value[0]); //Numbers
 			else return new CssNumber(value[0]); //Just a number.
 		}
-		
+
 	};
 
 	//Ensures that two complex values match.
@@ -219,7 +219,7 @@ class Dotcss2{
 		return true;
 	};
 
-	//Adds a builder function directly to the dotcss object so that dotcss doesn't 
+	//Adds a builder function directly to the dotcss object so that dotcss doesn't
 	//have to be used as a function when a target doesn't need to be specified.
 	addPropFunctionToDotCssObject(funcName){
 		dotcss[funcName] = function(){
@@ -269,13 +269,13 @@ const dotcss = function(query:Array<HTMLElement>|HTMLElement|Array<string>|strin
 				target[0].innerHTML += query + "{}\r\n";
 			}
 			else {
-				// This is overly complicated, but here is the spiel. 
+				// This is overly complicated, but here is the spiel.
 				// If there's an element on the scopeStack, it should be used with the querySelectorAll.
-				// BUT, querySelectorAll doesn't actually select the element it's currently on, which is a requirement for dothtml. 
+				// BUT, querySelectorAll doesn't actually select the element it's currently on, which is a requirement for dothtml.
 				// To make matters worse, if we do querySelectorAll on the element's parents, we may accidentally select its siblings!!
-				// To fix this, we get a list from querySelectorAll on the element, then push the element itself to that list 
-				// iff it is in the list of elements queried from its parent. 
-				// In addition to all of that, we don't want scoped styles to be applied to child components. 
+				// To fix this, we get a list from querySelectorAll on the element, then push the element itself to that list
+				// iff it is in the list of elements queried from its parent.
+				// In addition to all of that, we don't want scoped styles to be applied to child components.
 				var s0 = dotcss2.scopeStack[0];
 				// if(s0 instanceof Component){
 				// 	s0 = s0.$el;
@@ -315,10 +315,10 @@ function getScopedNodeList(query: String, s0: Element): Array<HTMLElement>{
 
 		// Is it a nested component??
 		if(T["__dothtml_component"]){
-			// It's a component. Remove it, and all of it's descendants. 
+			// It's a component. Remove it, and all of it's descendants.
 			target.splice(t, 1);
 			t--;
-			
+
 			var subTargets = T.querySelectorAll(query as any);
 			for(var s = 0; s < subTargets.length; s++){
 				let S = subTargets[s];
@@ -334,7 +334,7 @@ function getScopedNodeList(query: String, s0: Element): Array<HTMLElement>{
 	if(p != -1){
 		target.unshift(parentTargets[p]);
 	}
-	
+
 	return target;
 }
 
@@ -386,7 +386,7 @@ export class _Builder{
 			ops.complete = arg0O.complete || (typeof arguments[1] == "function" ? arguments[1] : (typeof arguments[2] == "function" ? arguments[2] : function(){}));
 			ops.hideStyle = arg0O.hideStyle || "normal";
 			ops.animationStyle = arg0O.animationStyle || (typeof arguments[1] == "string" ? arguments[1] as any : "ease");
-	
+
 			if(ops.duration > 0){
 				let doneCnt = 0;
 				let m = 0;
@@ -411,7 +411,7 @@ export class _Builder{
 								dotcss(t).display("none").height(h);
 								doneCnt++; if(doneCnt >= m * q) ops.complete(that);
 							});
-						})(this, this.targets[i], w, h, ov);	
+						})(this, this.targets[i], w, h, ov);
 					}
 					if(ops.hideStyle != "shrink"){
 						m++;
@@ -477,7 +477,7 @@ export class _Builder{
 						m += 2;
 						let w = ops.width || this.targets[i].style.width as NumericLength;
 						let h = ops.height || this.targets[i].style.height as NumericLength;
-						
+
 						dotcss(this.targets[i]).width(0);
 						dotcss(this.targets[i]).height(0);
 						// console.log(doneCnt + " " + q*m);
@@ -504,15 +504,15 @@ export class _Builder{
 
 	fadeOut(duration, complete){
 		return this.hide({
-			duration: isNaN(duration) ? 400 : Number(duration), 
+			duration: isNaN(duration) ? 400 : Number(duration),
 			hideStyle: "fade",
 			complete: complete
 		});
 	};
-	
+
 	fadeIn(duration, complete){
 		return this.show({
-			duration: isNaN(duration) ? 400 : Number(duration), 
+			duration: isNaN(duration) ? 400 : Number(duration),
 			showStyle: "fade",
 			complete: complete
 		});
@@ -547,7 +547,7 @@ class _StyleProperty{
 		}
 		else return null;
 	}
-	
+
 	//val is another special function that breaks the value into a special object.
 	val(){
 		if(dotcss2.lastBuilder.targets){
@@ -572,7 +572,7 @@ class _StyleProperty{
 		}
 		else return null;
 	}
-	
+
 	//Ability to animate just like jquery.
 	//complete does not get called if the animation was cancelled.
 	animate(value, duration, style, complete){
@@ -587,10 +587,10 @@ class _StyleProperty{
 				let oldValue = null;
 				let newValue = null;
 				let finalValue = null; //newValue might be in different units from the final value...
-	
+
 				//Get the old and new values.
 				newValue = dotcss2.convertStyleIntoDotCssObject(value, this.type);
-	
+
 				//If it's a transformation, a little extra work is required.
 				//Need to frame all the rotations properly, and combine both the new and the old transformations.
 				if(this.type == "transformation"){
@@ -602,11 +602,11 @@ class _StyleProperty{
 				if(!oldValue){ //Standard. Happens when the type is not a transformation.
 					oldValue = dotcss2.convertStyleIntoDotCssObject(dotcss2.computedStyleOrActualStyle(target, this.jsFriendlyProp), this.type);
 				}
-	
+
 				finalValue = newValue.toString();
-	
+
 				//Do a little type/unit checking.
-				
+
 				if(this.type == "length"){
 					if(oldValue.units != newValue.units){
 						//Need to rectify this.
@@ -627,7 +627,7 @@ class _StyleProperty{
 							oldValue.units = "px";
 							newValue.length = newLengthPx;
 							newValue.units = "px";
-	
+
 							//Won't need this anymore.
 							//console.warn("Couldn't animate " + this.jsFriendlyProp + ". Inconsistent units.");
 							//return dotcss2._lastBuilder;
@@ -639,7 +639,7 @@ class _StyleProperty{
 					//Couple things to do here.
 					//1. The old and new values must contain the exact same transformation template.
 					//2. Angles in the old transformation should be reframed so that they are close to the new angles (or should they)
-	
+
 					let startTransform = "";
 					let desiredTransform = "";
 					let oldIndex = oldValue.transformations.length - 1;
@@ -651,11 +651,11 @@ class _StyleProperty{
 						if(oldIndex >= 0 && newIndex >= 0 && oldValue.transformations[oldIndex].transformation == newValue.transformations[newIndex].transformation){
 							let currentOldT = oldValue.transformations[oldIndex];
 							let currentNewT = newValue.transformations[newIndex];
-							
+
 							transformToAdd = currentOldT.transformation;
 							oldTransformValues = currentOldT.args;
 							newTransformValues = currentNewT.args;
-	
+
 							oldIndex--;
 							newIndex--;
 						}
@@ -699,7 +699,7 @@ class _StyleProperty{
 							}
 							newIndex--;
 						}
-	
+
 						startTransform = ") " + startTransform;
 						desiredTransform = ") " + desiredTransform;
 						//Handle special values here.
@@ -718,7 +718,7 @@ class _StyleProperty{
 					}
 					oldValue = dotcss2.convertStyleIntoDotCssObject(startTransform, "transformation");
 					newValue = dotcss2.convertStyleIntoDotCssObject(desiredTransform, "transformation");
-	
+
 				}
 				else if(oldValue.type == "number" && newValue.type == "number"){} //OK
 				else if(oldValue.type == "complex" && newValue.type == "complex"){
@@ -736,7 +736,7 @@ class _StyleProperty{
 		}
 		return dotcss2.lastBuilder;
 	}
-	
+
 	//Have to add these back since we're going to replace the __proto__ of a function with this new prototype.
 	apply = Function.apply;
 	call = Function.call;
@@ -749,13 +749,14 @@ dotcss.formatNumberValue = function(value, unit){
 	}
 };
 
+// TODO: figure out a way to add vMargin, hMargin, vPadding, etc.
 const _allProps = {
 	color: "color|background-Color|border-Bottom-Color|border-Color|border-Left-Color|border-Right-Color|border-Top-Color|text-Decoration-Color|outline-Color|column-Rule-Color",
-	length: "background-Size|block-Size|border-Bottom-Left-Radius|border-Bottom-Right-Radius|border-Bottom-Width|border-Image-Width|border-Left-Width|border-Radius|border-Right-Width|border-Top-Left-Radius|border-Top-Right-Radius|border-Top-Width|border-Width|bottom|gap|height|left|margin|margin-Bottom|margin-Left|margin-Right|margin-Top|max-Height|max-Width|min-Height|min-Width|padding|padding-Bottom|padding-Left|padding-Right|padding-Top|right|top|width|line-Height|flex-Basis|font-Size",
+	length: "background-Size|block-Size|border-Bottom-Left-Radius|border-Bottom-Right-Radius|border-Bottom-Width|border-Image-Width|border-Left-Width|border-Radius|border-Right-Width|border-Top-Left-Radius|border-Top-Right-Radius|border-Top-Width|border-Width|bottom|gap|height|left|margin|margin-Bottom|margin-Left|margin-Right|margin-Top|max-Height|max-Width|min-Height|min-Width|padding|padding-Bottom|padding-Left|padding-Right|padding-Top|right|top|width|line-Height|flex-Basis|font-Size|text-Indent",
 	url: "background-Image|border-Image|list-Style-Image|content|image-Orientation",
 	transformation: "transform",
 	filter: "filter|backdrop-Filter",
-	misc: "appearance|aspect-Ratio|opacity|background|background-Attachment|background-Blend-Mode|background-Position|background-Repeat|background-Clip|background-Origin|border|border-Bottom|border-Bottom-Style|border-Image-Outset|border-Image-Repeat|border-Image-Slice|border-Image-Source|border-Left|border-Left-Style|border-Right|border-Right-Style|border-Style|border-Top|border-Top-Style|box-Decoration-Break|box-Shadow|clear|clip|display|float|overflow|box|overflow-X|overflow-Y|position|visibility|vertical-Align|z-Index|align-Content|align-Items|align-Self|flex|flex-Basis|flex-Direction|flex-Flow|flex-Grow|flex-Shrink|flex-Wrap|grid|grid-Area|grid-Auto-Columns|grid-auto-Rows|grid-Column|grid-Column-End|grid-Column-Gap|grid-Column-Start|grid-Gap|grid-Row|grid-Row-End|grid-Row-Gap|grid-Row-Start|grid-Template|grid-Template-Areas|grid-Template-Columns|grid-Template-Rows|justify-Content|order|hanging-Punctuation|hyphens|letter-Spacing|line-Break|overflow-Wrap|tab-Size|text-Align|text-Align-Last|text-Combine-Upright|text-Indent|text-Justify|text-Transform|white-Space|word-Break|word-Spacing|word-Wrap|text-Decoration|text-Decoration-Line|text-Decoration-Style|text-Shadow|text-Underline-Position|font|font-Family|font-Feature-Settings|font-Kerning|font-Language-Override|font-Size-Adjust|font-Stretch|font-Style|font-Synthesis|font-Variant|font-Variant-Alternates|font-Variant-Caps|font-Variant-East-Asian|font-Variant-Ligatures|font-Variant-Numeric|font-Variant-Position|font-Weight|direction|text-Orientation|text-Combine-Upright|unicode-Bidi|user-Select|writing-Mode|border-Collapse|border-Spacing|caption-Side|empty-Cells|table-Layout|counter-Increment|counter-Reset|list-Style|list-Style-Position|list-Style-Type|animation|animation-Delay|animation-Direction|animation-Duration|animation-Fill-Mode|animation-Iteration-Count|animation-Name|animation-Play-State|animation-Timing-Function|backface-Visibility|perspective2d|perspective-Origin|transform-Origin|transform-Style|transition|transition-Property|transition-Duration|transition-Timing-Function|transition-Delay|box-Sizing|cursor|ime-Mode|nav-Down|nav-Index|nav-Left|nav-Right|nav-Up|outline|outline-Offset|outline-Style|outline-Width|resize|text-Overflow|break-After|break-Before|break-Inside|column-Count|column-Fill|column-Gap|column-Rule|column-Rule-Style|column-Rule-Width|column-Span|column-Width|columns|widows|orphans|page-Break-After|page-Break-Before|page-Break-Inside|marks|quotes|image-Rendering|image-Resolution|object-Fit|object-Position|mask|mask-Type|mark|mark-After|mark-Before|phonemes|rest|rest-After|rest-Before|voice-Balance|voice-Duration|voice-Pitch|voice-Pitch-Range|voice-Rate|voice-Stress|voice-Volume|marquee-Direction|marquee-Play-Count|marquee-Speed|marquee-Style|pointer-Events"
+	misc: "appearance|aspect-Ratio|opacity|background|background-Attachment|background-Blend-Mode|background-Position|background-Repeat|background-Clip|background-Origin|border|border-Bottom|border-Bottom-Style|border-Image-Outset|border-Image-Repeat|border-Image-Slice|border-Image-Source|border-Left|border-Left-Style|border-Right|border-Right-Style|border-Style|border-Top|border-Top-Style|box-Decoration-Break|box-Shadow|clear|clip|display|float|overflow|box|overflow-X|overflow-Y|position|visibility|vertical-Align|z-Index|align-Content|align-Items|align-Self|flex|flex-Basis|flex-Direction|flex-Flow|flex-Grow|flex-Shrink|flex-Wrap|grid|grid-Area|grid-Auto-Columns|grid-auto-Rows|grid-Column|grid-Column-End|grid-Column-Gap|grid-Column-Start|grid-Gap|grid-Row|grid-Row-End|grid-Row-Gap|grid-Row-Start|grid-Template|grid-Template-Areas|grid-Template-Columns|grid-Template-Rows|justify-Content|order|hanging-Punctuation|hyphens|letter-Spacing|line-Break|overflow-Wrap|tab-Size|text-Align|text-Align-Last|text-Combine-Upright|text-Justify|text-Transform|white-Space|word-Break|word-Spacing|word-Wrap|text-Decoration|text-Decoration-Line|text-Decoration-Style|text-Shadow|text-Underline-Position|font|font-Family|font-Feature-Settings|font-Kerning|font-Language-Override|font-Size-Adjust|font-Stretch|font-Style|font-Synthesis|font-Variant|font-Variant-Alternates|font-Variant-Caps|font-Variant-East-Asian|font-Variant-Ligatures|font-Variant-Numeric|font-Variant-Position|font-Weight|direction|text-Orientation|text-Combine-Upright|unicode-Bidi|user-Select|writing-Mode|border-Collapse|border-Spacing|caption-Side|empty-Cells|table-Layout|counter-Increment|counter-Reset|list-Style|list-Style-Position|list-Style-Type|animation|animation-Delay|animation-Direction|animation-Duration|animation-Fill-Mode|animation-Iteration-Count|animation-Name|animation-Play-State|animation-Timing-Function|backface-Visibility|perspective2d|perspective-Origin|transform-Origin|transform-Style|transition|transition-Property|transition-Duration|transition-Timing-Function|transition-Delay|box-Sizing|cursor|ime-Mode|nav-Down|nav-Index|nav-Left|nav-Right|nav-Up|outline|outline-Offset|outline-Style|outline-Width|resize|text-Overflow|break-After|break-Before|break-Inside|column-Count|column-Fill|column-Gap|column-Rule|column-Rule-Style|column-Rule-Width|column-Span|column-Width|columns|widows|orphans|page-Break-After|page-Break-Before|page-Break-Inside|marks|quotes|image-Rendering|image-Resolution|object-Fit|object-Position|mask|mask-Type|mark|mark-After|mark-Before|phonemes|rest|rest-After|rest-Before|voice-Balance|voice-Duration|voice-Pitch|voice-Pitch-Range|voice-Rate|voice-Stress|voice-Volume|marquee-Direction|marquee-Play-Count|marquee-Speed|marquee-Style|pointer-Events"
 }
 
 // const _allTransforms = [
@@ -958,7 +959,7 @@ export default dotcss;
 // 		}
 
 // 		if(isNaN(ref)) throw "Convert the value " + l + " to px for " + prop + " because the value it is relative to is not a number.";
-		
+
 // 		if(l.indexOf("%") != -1) return R(N(l.split("%")[0]) * 0.01 * ref);
 // 		else throw "The units of " + l + " are not recognized by dotcss.";
 // 	}

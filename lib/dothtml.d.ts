@@ -18,6 +18,8 @@ import dot from "./dot";
  * - Fixed some color bugs.
  * - Added a filter builder.
  * - Added flex gap.
+ * - Added "auto" as an accepted value to many length types.
+ * - Made textIndent a numeric prop.
  */
 export default dot;
 export { default as DotComponent } from "./component";
