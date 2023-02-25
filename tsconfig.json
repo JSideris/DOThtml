@@ -72,19 +72,4 @@
 	"include": [
         "src/**/*"
     ],
-    // "references": [
-    //   //{ "path": "../../tsconfig.json" },
-    //   { "path": "../.." },
-    // ]
-    /*"files": [
-        "./src/index.ts",
-        "./src/game-instance.ts",
-        "./src/game-object.ts",
-        "./src/i-draw-engine.ts",
-        "./src/physical-object.ts",
-        "./src/util.ts",
-        "./src/core/fixed-timer.ts",
-        "./src/physics-manager.ts",
-        "./src/game-object-factory.ts",
-    ],*/
 }
