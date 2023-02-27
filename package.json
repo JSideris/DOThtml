@@ -1,13 +1,13 @@
 {
   "name": "dothtml",
-  "version": "5.2.8",
+  "version": "5.2.9",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
   "main": "./lib/dothtml.js",
-  "exports": "./lib/index.js",
-  "typings": "lib/dothtml.d.ts",
+  "exports": "./lib/dothtml.js",
+  "types": "./lib/dothtml.d.ts",
   "scripts": {
     "test": "npm run build & jest",
-    "build": "tsc"
+    "build": "tsc --declaration"
   },
   "files": [
     "lib/**/*"
