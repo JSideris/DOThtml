@@ -1,26 +1,27 @@
 {
   "name": "dothtml",
-  "version": "5.2.7",
+  "version": "5.2.8",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
   "main": "./lib/dothtml.js",
   "exports": "./lib/index.js",
   "typings": "lib/dothtml.d.ts",
   "scripts": {
     "test": "npm run build & jest",
-    "build": "webpack"
+    "build": "tsc"
   },
-  "files": ["lib/**/*"],
+  "files": [
+    "lib/**/*"
+  ],
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
     "@testing-library/jest-dom": "^5.13.0",
+    "@types/node": "^18.14.2",
     "copyfiles": "^2.4.1",
     "esm": "^3.2.25",
     "jest": "^27.0.6",
     "ts-jest": "^27.1.4",
     "ts-loader": "^9.2.8",
-    "typescript": "^4.9.3",
-    "webpack": "^5.49.0",
-    "webpack-cli": "^4.9.2"
+    "typescript": "^4.9.3"
   },
   "repository": {
     "type": "git",

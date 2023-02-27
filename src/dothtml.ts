@@ -2,7 +2,7 @@
 import dot from "./dot";
 import Component from "./component";
 
-dot.version = "5.2.7";
+dot.version = "5.2.8";
 dot.Component = Component;
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
@@ -27,6 +27,7 @@ dot.Component = Component;
  * - Added flex gap.
  * - Added "auto" as an accepted value to many length types.
  * - Made textIndent a numeric prop.
+ * - Removed webpack. Build is now done with tsc.
  */
 
 
