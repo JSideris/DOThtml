@@ -334,10 +334,25 @@ export interface IDotElementDocument<T extends IDotDocument> extends IDotDocumen
 	onLoad(callback: (e: Event)=>void): T; // On specific resources only.
 	onMouseDown(callback: (e: MouseEvent)=>void): T;
 	onMouseEnter(callback: (e: MouseEvent)=>void): T;
+	onMouseLeave(callback: (e: MouseEvent)=>void): T;
 	onMouseMove(callback: (e: MouseEvent)=>void): T;
 	onMouseOut(callback: (e: MouseEvent)=>void): T;
 	onMouseOver(callback: (e: MouseEvent)=>void): T;
 	onMouseUp(callback: (e: MouseEvent)=>void): T;
+	onPointerCancel(callback: (e: PointerEvent)=>void): T;
+	onPointerDown(callback: (e: PointerEvent)=>void): T;
+	onPointerEnter(callback: (e: PointerEvent)=>void): T;
+	onPointerLeave(callback: (e: PointerEvent)=>void): T;
+	onPointerMove(callback: (e: PointerEvent)=>void): T;
+	onPointerOut(callback: (e: PointerEvent)=>void): T;
+	onPointerOver(callback: (e: PointerEvent)=>void): T;
+	onPointerUp(callback: (e: PointerEvent)=>void): T;
+
+	onTouchMove(callback: (e: TouchEvent)=>void): T;
+	onTouchCancel(callback: (e: TouchEvent)=>void): T;
+	onTouchEnd(callback: (e: TouchEvent)=>void): T;
+	onTouchStart(callback: (e: TouchEvent)=>void): T;
+
 	onReset(callback: (e: Event)=>void): T;
 	onScroll(callback: (e: MouseEvent)=>void): T;
 	onSelect(callback: (e: Event)=>void): T;
