@@ -2,7 +2,7 @@
 import dot from "./dot";
 import Component from "./component";
 
-dot.version = "5.2.9";
+dot.version = "5.2.10";
 dot.Component = Component;
 
 /*! DOThtml (c) Joshua Sideris | dothtml.org/license */
@@ -28,11 +28,12 @@ dot.Component = Component;
  * - Added "auto" as an accepted value to many length types.
  * - Made textIndent a numeric prop.
  * - Removed webpack. Build is now done with tsc.
+ * - Remove default export on dothtml.ts, replace with an export for {dot}.
  */
 
 
 
-export default dot;
+export {dot};
 export {default as DotComponent} from "./component";
 export {IDotElement} from "./i-dot";
 export {default as IDotCss} from "./styling/i-dotcss";

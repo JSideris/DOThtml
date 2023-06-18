@@ -1,6 +1,6 @@
 {
   "name": "dothtml",
-  "version": "5.2.9",
+  "version": "5.2.10",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
   "main": "./lib/dothtml.js",
   "exports": "./lib/dothtml.js",
