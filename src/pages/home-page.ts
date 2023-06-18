@@ -1,7 +1,5 @@
 import dot, { IDotElement, IDotCss } from "dothtml";
 
-let d1 = ["a", "b", "c"];
-let d2 = ["1", "2", "3"];
 
 export default class HomePage extends dot.Component{
 	props={
