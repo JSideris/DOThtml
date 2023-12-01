@@ -241,6 +241,8 @@ export interface IDotCore extends IDotDocument
 	css: IDotCss;
 	bus: typeof EventBus;
 	resetScopeClass(): void;
+	setTargetDocument(target: Document): void;
+	unsetTargetDocument(target: Document): void;
 	// component(component: typeof Component): void;
 	// removeComponent = removeComponent;
 
@@ -257,6 +259,10 @@ export interface IDotElement extends IDotElementDocument<IDotGenericElement>{}
 export interface IDotElementDocument<T extends IDotDocument> extends IDotDocument
 {
 	// (document?: Element, classPrefix?: number): IDotElement;
+	// TODO: consider allowing a function that passes in the container for the previous element to allow adding attributes to it.
+	// TODO: I'd really like to enable this. Unfortunately it's not terribly easy to implement.
+	// Might be impossible in ES5 (notwithstanding some possible hackery).
+	//(content?: DotContent): IDotElementDocument<IDotGenericElement>;
 	
 	// TODO: this will erase element context, which could be a bug.
 	// It can be duplicated multiple times below, or find a new solution.

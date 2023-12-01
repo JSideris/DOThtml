@@ -17,7 +17,7 @@ const dot: IDotCore = (function(targetSelector: string|Element|Node|NodeList|Arr
 {
 	//console.log(targetSelector);
 	var targets = targetSelector ? (
-		typeof targetSelector == "string" ? document.querySelectorAll(targetSelector) 
+		typeof targetSelector == "string" ? getDocument().querySelectorAll(targetSelector) 
 		: (targetSelector instanceof Element || targetSelector instanceof Node ? [targetSelector] 
 			: ((targetSelector instanceof NodeList || (targetSelector instanceof Array)  && targetSelector[0] && (targetSelector[0] instanceof Element || targetSelector[0] instanceof Node)) ? targetSelector 
 				: []
@@ -62,8 +62,8 @@ function deleteElement(element: Element){
 }
 
 function _conditionalBlock(T, totalCondition, allConditions, contentCallback){
-	var startTextNode = document.createTextNode("");
-	var endTextNode = document.createTextNode("");
+	var startTextNode = getDocument().createTextNode("");
+	var endTextNode = getDocument().createTextNode("");
 	//var cb = {f:contentCallback,startNode:startTextNode, endNode:endTextNode,condition:totalCondition};
 	var cb = new ConditionalArgCallback(startTextNode, endTextNode, contentCallback, totalCondition);
 	dot["__currentArgCallback"].push(cb);
@@ -102,17 +102,17 @@ export const ATTRIBUTE_MODE = 2;
 // dotReady(dot, _p, _D);
 // Dot document object.
 // Formerly _D
-var DotDocument: IDotDocument = (function(document?: Element, classPrefix?: number) {
-	// Private vars.
+var DotDocument: IDotDocument = (function(dotDocument?: Element, classPrefix?: number) {
+		// Private vars.
 
-	this.__document = document;
-	this.__lastNode = document ? document.lastChild : null;
-	this.__if = null;
-	this.__pendingCalls = []; //Allows you to set parent attributes from children.
-	this.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
-	this.__classPrefix = classPrefix || 0;
-	this.__classedElements = [];
-	this.__selectionMode = SELECTOR_MODE;
+		this.__document = dotDocument;
+		this.__lastNode = dotDocument ? dotDocument.lastChild : null;
+		this.__if = null;
+		this.__pendingCalls = []; //Allows you to set parent attributes from children.
+		this.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
+		this.__classPrefix = classPrefix || 0;
+		this.__classedElements = [];
+		this.__selectionMode = SELECTOR_MODE;
 	
 }) as IDotDocument;
 // Prototype for the dot document object.
@@ -487,7 +487,7 @@ ext("as", function<T extends IDotDocument>(dotElement: (...props: any[])=>T): T{
 });
 
 ext("_getNewDocument", function(){
-	return document.createElement(DOCEL);
+	return getDocument().createElement(DOCEL);
 });
 
 ext("_getAnInstance", function(): IDotDocument{
@@ -665,7 +665,7 @@ ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element,
 
 ext("el", function(tag: string, content?: DotContent): IDotElementDocument<IDotGenericElement>{
 	var T = this;
-	var ne = document.createElement(tag); 
+	var ne = getDocument().createElement(tag); 
 	var nDoc = T.__document || T._getNewDocument();
 	nDoc.appendChild(ne);
 	if(content) T._appendOrCreateDocument(content, ne);
@@ -692,7 +692,7 @@ ext("h", function(content): IDotDocument{
 });
 
 ext("t", function(content): IDotDocument{
-	var textNode = document.createTextNode(content);
+	var textNode = getDocument().createTextNode(content);
 	var nDoc = this.__document || this._getNewDocument();
 	nDoc.appendChild(textNode);
 	return new DotDocument(nDoc, this.__classPrefix);
@@ -759,7 +759,7 @@ ext("attr", function(attr, value, arg3?){
 ext("_appendSetElement", function(targetId: string, appendMode){
 	var T = this;
 	if(!targetId) {ERR("A", targetId); return T;}
-	var destination = document.getElementById(targetId);
+	var destination = getDocument().getElementById(targetId);
 	if(!destination) {ERR("F", targetId); return T;}
 	if(T.__document) {
 		if(!appendMode) destination.innerHTML = "";
@@ -1109,6 +1109,20 @@ _p.bindTo = function(prop: any){
 dot.resetScopeClass = function(){
 	ClassPrefix.reset();
 	return this;
+}
+
+const documentStack = [document];
+dot.setTargetDocument = function(target: Document){
+	documentStack.push(target);
+}
+dot.unsetTargetDocument = function(){
+	documentStack.pop();
+	if(documentStack.length == 0){
+		throw new Error("Too many calls to dot.unsetTargetDocument.");
+	}
+}
+function getDocument(){
+	return documentStack[documentStack.length - 1];
 }
 
 // _p.bindTo = function(binding){
