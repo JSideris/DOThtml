@@ -1,5 +1,5 @@
 import addTest from "../core";
-import dot from "../../src/dothtml";
+import {dot} from "../../src/dothtml";
 import Component from "../../src/component";
 
 // For testing the passing of data into and out of components via properties and events, respectively.

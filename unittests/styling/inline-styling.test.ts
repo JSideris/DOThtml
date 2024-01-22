@@ -1,5 +1,5 @@
 import addTest from "../core";
-import dot from "../../src/dothtml";
+import {dot} from "../../src/dothtml";
 
 addTest("Dotcss returns stringable value.", function(){
 	return dot.div(dot.css.color(0x102030).border("1px solid black").toString());

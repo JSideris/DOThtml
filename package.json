@@ -1,28 +1,17 @@
 {
   "name": "dothtml",
-  "version": "5.2.11",
+  "version": "6.0.0-beta.12",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
-  "main": "./lib/dothtml.js",
-  "exports": "./lib/dothtml.js",
-  "types": "./lib/dothtml.d.ts",
+  "main": "./build_module/index.js",
+  "exports": "./build_module/index.js",
+  "types": "./build_module/index.d.ts",
   "files": [
-    "lib/**/*"
+    "build_module/**/*"
   ],
   "scripts": {
     "test": "npm run build & jest",
-    "build": "tsc --declaration"
-  },
-  "devDependencies": {
-    "@babel/preset-env": "^7.14.5",
-    "@testing-library/jest-dom": "^5.13.0",
-    "@types/node": "^18.14.2",
-    "copyfiles": "^2.4.1",
-    "esm": "^3.2.25",
-    "jest": "^29.5.0",
-    "jest-environment-jsdom": "^29.5.0",
-    "ts-jest": "^29.0.5",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.2"
+    "build": "tsc --declaration",
+    "buildumd": "webpack"
   },
   "repository": {
     "type": "git",
@@ -46,5 +35,23 @@
   "bugs": {
     "url": "https://github.com/JSideris/DOThtml/issues"
   },
-  "homepage": "https://github.com/JSideris/DOThtml#readme"
+  "homepage": "https://dothtml.org/",
+  "devDependencies": {
+    "@babel/preset-env": "^7.14.5",
+    "@testing-library/jest-dom": "^5.13.0",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^18.14.2",
+    "copyfiles": "^2.4.1",
+    "esm": "^3.2.25",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "dothtml-interfaces": "^0.1.34"
+  }
 }

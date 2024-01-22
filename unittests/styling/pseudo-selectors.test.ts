@@ -1,6 +1,6 @@
 
 import addTest from "../core";
-import dot from "../../src/dothtml";
+import {dot} from "../../src/dothtml";
 
 describe("Pseudo Selectors", () => {
     test.todo("pass");

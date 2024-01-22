@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/dothtml";
+import {dot} from "../src/dothtml";
 
 addTest("Iterate.", function(){ return dot.iterate(3, function(i){return dot.h(i)}); }, "012");
 addTest("Iterate w/ friends.", function(){ return dot.h("s").iterate(3, function(i){return dot.h(i)}).h("f"); }, "s012f");

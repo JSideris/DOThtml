@@ -1,0 +1,36 @@
+
+#content{
+	display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.info-section{
+	width: 250px;
+	min-height: 200px;
+    flex-shrink: 0;
+	margin: 10px auto;
+	padding: 15px;
+	border-radius: 20px;
+	background-color: rgb(255 255 255 / 0.2);
+	font-size: 18px;
+}
+
+h3{
+	margin: 0;
+	font-size: 24px;
+}
+
+@media screen and (max-width: 1000px) { /* Adjust breakpoint as needed */
+    #content {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .info-section {
+        margin: 10px auto; /* Maintain vertical margin, auto for horizontal */
+		width: calc(100% - 30px);
+		min-height: 30px;
+    }
+}

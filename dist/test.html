@@ -1,0 +1,24 @@
+<!doctype html>
+
+<html>
+<script src="./dothtml.js"></script>
+<body></body>
+<style>
+
+	span{
+		font-size: 50px;
+	}
+</style>
+<script>
+
+// TODO: get types working in UMD!!!
+
+let C = dot.component(class{
+	build(){
+		return dot.span("Hello, world!");
+	}
+});
+
+dot(document.body).span("test").div(new C())
+</script>
+</html>

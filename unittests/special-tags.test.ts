@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/dothtml";
+import {dot} from "../src/dothtml";
 
 addTest("citeE.", function(){ return dot.cite(); }, "<cite></cite>");
 addTest("dataE.", function(){ return dot.data(); }, "<data></data>"); //Element not supported by most browsers.

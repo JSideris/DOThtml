@@ -1,4 +1,4 @@
-import dot from "../src/dot";
+import {dot} from "../src/dot";
 import addTest from "./core";
 var dotDocuments = [...new Set([
 	"as",

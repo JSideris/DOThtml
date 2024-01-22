@@ -1,5 +1,5 @@
 import addTest from "../core";
-import dot, { DotComponent } from "../../src/dothtml";
+import {dot,  DotComponent } from "../../src/dothtml";
 import Component from "../../src/component";
 
 class comp_legacy extends dot.Component{

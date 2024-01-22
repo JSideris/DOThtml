@@ -6,7 +6,7 @@
  * This resulted in some annoying syntax, such as `dot.div(()=>{return this.props.x})`. And then restyling wouldn't happen at all unless expliticly executed.
 */
 
-import dot, { DotComponent, IDotCss, IDotElement } from "../src/dothtml";
+import {dot,  DotComponent, IDotCss, IDotElement } from "../src/dothtml";
 import addTest from "./core";
 
 class TestComponentA extends DotComponent{

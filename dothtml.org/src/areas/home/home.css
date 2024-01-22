@@ -1,0 +1,25 @@
+/* Styles for the central pane */
+.central-pane {
+    max-width: 1200px; 
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    /* display: flex; */
+}
+
+/* Responsive design for smaller screens (tablets) */
+@media (max-width: 768px) {
+    .central-pane {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}
+
+/* Responsive design for mobile screens */
+@media (max-width: 480px) {
+    .central-pane {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

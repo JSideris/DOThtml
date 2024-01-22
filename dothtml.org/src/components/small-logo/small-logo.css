@@ -1,0 +1,38 @@
+:host{
+	position:absolute;
+	left: 40px;
+}
+
+#container{
+	text-align: center;
+}
+
+#dot{
+	display: inline-block;
+	color: white;
+	background-color: black;
+	border-radius: 50%;
+	height: 80px;
+	width: 80px;
+	text-align: center;
+	font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+#html{
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: 900;
+}
+
+#logo{
+	line-height: 80px;
+	font-size: 40px;
+	white-space: nowrap;
+}
+
+
+@media screen and (max-width: 650px) {
+	
+	#html{
+		display: none;
+	}
+}

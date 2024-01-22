@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/dothtml";
+import {dot} from "../src/dothtml";
 
 addTest("If true else.", function(){ return dot.when(true, ()=>"if").otherwise(()=>"else"); }, "if");
 addTest("If false else.", function(){ return dot.when(false, ()=>"if").otherwise(()=>"else"); }, "else");

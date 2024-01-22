@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/dothtml";
+import {dot} from "../src/dothtml";
 import Component from "../src/component";
 
 // Testing hooks:
@@ -56,10 +56,18 @@ addTest("Deleting hook.", function(){return dot.div(new CompHooksDelete(true, tr
 addTest("Deleted hook.", function(){return dot.div(new CompHooksDelete(true, false, true));}, "<div><b>success</b></div>");
 
 //Ensure deletion happens for inner components when using remove.
-addTest("Nested deleting via remove().", function(){ return dot.h(function(){ var ret = dot.i().div(
-	new CompHooksDelete(false, true, false, true)
-); var del = ret.getLast(); 
-ret = ret.b(); setTimeout(function(){dot(del).remove() }, 0); return ret; }) }, "<i></i><b><p>deleted</p></b>");
+addTest("Nested deleting via remove().", function(){ 
+	return dot.h(function(){ 
+		var ret = dot.i().div(
+			new CompHooksDelete(false, true, false, true)
+		); var del = ret.getLast(); 
+		ret = ret.b(); 
+		setTimeout(function(){
+			dot(del).remove();
+		}, 0); 
+		return ret; 
+	}) 
+}, "<i></i><b><p>deleted</p></b>");
 
 addTest("Nested deleted via remove().", function(){ return dot.h(function(){ var ret = dot.i().div(
 	new CompHooksDelete(false, false, true, true)

@@ -25,42 +25,43 @@ export default function addTest(description: string, testFunc: Function, expecte
 	// catch(e){
 	// 	exception = e;
 	// }
-	test(description, done => {
+	test(description, async () => {
+		let testResultOrPromise = testFunc();
+		
 		let testResult;
-		testResult = testFunc();
+
+		if(testResultOrPromise instanceof Promise){
+			testResult = await testResultOrPromise;
+		}
+		else{
+			testResult = testResultOrPromise;
+		}
 		
 		// Exceptions thrown will fail the test.
 		// if(exception) throw exception;
+		
+		
+		// let resultHtml = testResult.__document ? testResult.__document.innerHTML : "";
+		let resultHtml = testResult.__document ? testResult.__document.innerHTML : testResult instanceof Element ? testResult.innerHTML : "";
 
-		setTimeout(function(){
-			let resultHtml = testResult.__document ? testResult.__document.innerHTML : "";
+		let processedResult = formatHTML(resultHtml);
+		let testExpected = "";
 
-			let processedResult = formatHTML(resultHtml);
-			let testExpected = "";
-			try{
-				if(expected instanceof Array){
-					let i = 0;
-					for(i = 0; i < expected.length; i++){
-						let testExpected = formatHTML(expected[i]);
-						if(testExpected == processedResult) break;
-					}
-					// Not sure how this was supposed to work???
-					// if(!i == expected.length) i = 0;
-					if(i == expected.length) i = 0;
-					expect(processedResult).toBe(formatHTML(expected[i]));
-				}
-				else{
-					testExpected = formatHTML(expected);
-					expect(processedResult).toBe(testExpected);
-				}
+		if(expected instanceof Array){
+			let i = 0;
+			for(i = 0; i < expected.length; i++){
+				let testExpected = formatHTML(expected[i]);
+				if(testExpected == processedResult) break;
 			}
-			catch(e){
-				done(e);
-				return;
-			}
+			// Not sure how this was supposed to work???
+			// if(!i == expected.length) i = 0;
+			if(i == expected.length) i = 0;
+			expect(processedResult).toBe(formatHTML(expected[i]));
+		}
+		else{
+			testExpected = formatHTML(expected);
+			expect(processedResult).toBe(testExpected);
+		}
 
-			done();
-
-		}, testTimeout ?? 0);
 	});
 }

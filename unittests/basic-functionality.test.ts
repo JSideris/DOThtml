@@ -1,9 +1,6 @@
 import addTest from "./core";
-import dot from "../src/dothtml";
+import {dot} from "../src/dothtml";
 
-addTest("Dot object.", function(){ return dot; }, "");
-addTest("Calling dot as a function.", function(){ return dot(); }, "");
-//addTest("Targeting.", function(){ return dot("body"); }, "");
 addTest("Write text.", function(){ return dot.h(1); }, "1");
 addTest("Write 2 texts.", function(){ return dot.h(1).h(2); }, "12");
 addTest("Write HTML.", function(){ return dot.h("<div></div>"); }, "<div></div>");

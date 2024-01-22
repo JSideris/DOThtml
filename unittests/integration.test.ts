@@ -1,4 +1,4 @@
-import dot from "../lib/dothtml.js";
+import {dot} from "../lib/dothtml.js";
 
 test("Integration test.", ()=>{
     dot.div();

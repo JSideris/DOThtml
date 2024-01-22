@@ -1,0 +1,50 @@
+
+#container{
+	text-align: center;
+}
+
+#dot{
+	display: inline-block;
+	color: white;
+	background-color: black;
+	border-radius: 50%;
+	height: 200px;
+	width: 200px;
+	text-align: center;
+	font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+#html{
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: 900;
+}
+
+#logo{
+	line-height: 200px;
+	font-size: 100px;
+	white-space: nowrap;
+}
+
+#tagline{
+	text-align: center;
+	font-size: 36px;
+	font-family: Arial, Helvetica, sans-serif;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+@media screen and (max-width: 1000px) { /* Adjust breakpoint as needed */
+	#dot{
+		height: 100px;
+		width: 100px;
+	}
+	
+	#html{
+		font-weight: 900;
+	}
+	
+	#logo{
+		line-height: 100px;
+		font-size: 50px;
+	}
+}

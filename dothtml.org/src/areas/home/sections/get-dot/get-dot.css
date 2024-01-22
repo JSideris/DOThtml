@@ -1,0 +1,10 @@
+:host{
+	display: block;
+	flex-grow: 2;
+}
+
+div{
+	background-color: red;
+	/* flex-grow: 2; */
+	height: 80px;
+}

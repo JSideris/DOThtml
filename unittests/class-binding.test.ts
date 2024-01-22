@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot from "../src/dothtml";
+import {dot} from "../src/dothtml";
 import Component from "../src/component";
 
 addTest("Basic immutable class binding.", function(){

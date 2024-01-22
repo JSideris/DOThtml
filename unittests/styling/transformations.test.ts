@@ -1,6 +1,6 @@
 
 import addTest from "../core";
-import dot from "../../src/dothtml";
+import {dot} from "../../src/dothtml";
 
 // Test coverage should include:
 // 	perspective: (v: LengthOrDefault)=>ITransformationContext;

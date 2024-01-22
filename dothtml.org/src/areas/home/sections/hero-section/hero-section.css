@@ -1,0 +1,21 @@
+
+
+#content{
+	/* background-color: blue; */
+	/* width: 100%; */
+	/* height: 800px; */
+	background-color: rgb(150 150 150 / 0.5);
+	border-radius: 40px;
+	padding: 20px;
+}
+
+#logo-and-quickstart{
+	display: flex;
+}
+
+#logo-pane{
+	flex-grow: 2;
+}
+#quickstart-pane{
+	flex-grow: 1;
+}

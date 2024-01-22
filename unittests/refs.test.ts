@@ -1,5 +1,5 @@
 import addTest from "./core";
-import dot, { IDotElement } from "../src/dothtml";
+import {dot,  IDotElement } from "../src/dothtml";
 
 class RefComponent1 extends dot.Component{
 	builder(): IDotElement {
