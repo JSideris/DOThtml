@@ -1,5 +1,6 @@
 import { DOT_VDOM_PROP_NAME } from "../constants";
 import Reactive from "../reactive";
+import BaseVStyle from "../v-style-nodes/base-v-style";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType } from "./vdom-types";
@@ -12,6 +13,7 @@ export default class ElementVdom extends Vdom{
 	private attributes: Record<string, AttributeValueType> = {};
 	private events: Array<{name: string, callback: (e: Event)=>void}> = [];
 	private attributeObserverIds: Array<{id: number, observable: Reactive}> = [];
+	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 
 	constructor(tag: string){
 		super();
@@ -46,6 +48,12 @@ export default class ElementVdom extends Vdom{
 		this.element.parentNode?.removeChild(this.element);
 		this.element = null;
 
+		for(let i = 0; i < this.childBuilders.length; i++){
+			this.childBuilders[i]._unrender();
+		}
+
+		this.childBuilders.length = 0;
+
 		for(let i = 0; i < this.attributeObserverIds.length; i++){
 			let item = this.attributeObserverIds[i];
 			item.observable.detachBinding(item.id);
@@ -70,6 +78,7 @@ export default class ElementVdom extends Vdom{
 	}
 
 	private renderAttr(attr: string, value: AttributeValueType, node: HTMLElement){
+
 		if(typeof value === "string" || typeof value === "number"){
 			node.setAttribute(attr, `${value}`);
 		}
@@ -88,6 +97,11 @@ export default class ElementVdom extends Vdom{
 					value.setValue((this.element as HTMLInputElement)[attr]);
 				});
 			}
+		}
+		else if (value instanceof BaseVStyle){
+			// Style building.
+			value._render(this.element);
+			this.childBuilders.push(value);
 		}
 		else{
 			// TODO: 

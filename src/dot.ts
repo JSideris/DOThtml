@@ -8,7 +8,10 @@ import Reactive from "./reactive";
 import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import { useStyles } from "./decoration/use-styles";
+import BaseVStyle from "./v-style-nodes/base-v-style";
 
+// TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
+// Look into it.
 const allTags = [
 	"a",
 	"aside",
@@ -113,183 +116,6 @@ const allTags = [
 	"var",
 	"video",
 	"wbr"
-];
-
-const allAttributes = [
-	"accept",
-	"accessKey",
-	"action",
-	"align",
-	"allow",
-	"allowFullScreen",
-	"aLink",
-	"alt",
-	"archive",
-	"autoCapitalize",
-	"autoComplete",
-	"autoFocus",
-	"autoPlay",
-	"autoSave",
-	"axis",
-	"background",
-	"bgColor",
-	"border",
-	"buffered",
-	"cellPadding",
-	"cellSpacing",
-	"challenge",
-	"char",
-	"charset",
-	"charOff",
-	"checked",
-	// "cite", //*
-	"class",
-	"classId",
-	"clear",
-	"codeBase",
-	"codeType",
-	"color",
-	"cols",
-	"colSpan",
-	"compact",
-	"contentEditable",
-	"contextMenu",
-	"controls",
-	"coords",
-	"crossOrigin",
-	"dateTime",
-	"declare",
-	"decoding",
-	"default",
-	//"data", //*
-	"dir",
-	"dirName",
-	"disabled",
-	"download",
-	"draggable",
-	"dropZone",
-	"encType",
-	"enterKeyHint",
-	"exportParts",
-	"face",
-	"font",
-	"fontFace",
-	"fontFaceFormat",
-	"fontFaceName",
-	"fontFaceSrc",
-	"fontFaceUri",
-	"fontSpecification",
-	"for",
-	"foreignObject",
-	// "form", //*
-	"formAction",
-	"frame",
-	"frameBorder",
-	"headers",
-	"height",
-	"hidden",
-	"high",
-	"hRef",
-	"hRefLang",
-	"hSpace",
-	"icon",
-	"id",
-	"inert",
-	"inputMode",
-	"images",
-	"is",
-	"isMap",
-	"itemId",
-	"itemProp",
-	"itemRef",
-	"itemScope",
-	"itemType",
-	"keyType",
-	"kind",
-	// "label", //*
-	"lang",
-	"list",
-	"loading",
-	"longDesc",
-	"loop",
-	"low",
-	"manifest",
-	"marginHeight",
-	"marginWidth",
-	"max",
-	"maxLength",
-	"media",
-	"metadata",
-	"method",
-	"min",
-	"missingGlyph",
-	"multiple",
-	"muted",
-	"name",
-	"noHRef",
-	"nOnce",
-	"noResize",
-	"noShade",
-	"noValidate",
-	"noWrap",
-	"open",
-	"optimum",
-	"part",
-	"pattern",
-	"ping",
-	"placeholder",
-	"playsInline",
-	"poster",
-	"preload",
-	"prompt",
-	"radioGroup",
-	"readOnly",
-	"referrerPolicy",
-	"rel",
-	"required",
-	"rev",
-	"reversed",
-	"role",
-	"rows",
-	"rowSpan",
-	"rules",
-	"sandbox",
-	"scope",
-	"scrolling",
-	"seamless",
-	"selected",
-	"shape",
-	"size",
-	"sizes",
-	// "span", //*
-	"spellCheck",
-	"src",
-	"srcDoc",
-	"srcLang",
-	"srcSet",
-	"standby",
-	"start",
-	"step",
-	// "summary", //*
-	"style",
-	"tabIndex",
-	"target",
-	"title",
-	"translate",
-	"type",
-	"useMap",
-	"vAlign",
-	// "value", // Special behavior.
-	"valueType",
-	"virtualKeyboardPolicy",
-	"width",
-	"wrap"
-	//"dataA", //Special explicit 
-	//"citeA",
-	//"formA",
-	//"labelA",
-	//"spanA",
-	//"summaryA"
 ];
 
 const specialAttributes = [
@@ -447,14 +273,21 @@ const makeDot = ()=>{
 		return o;
 	}
 
-	_dot.css = ()=>{
-		
-	}
+	_dot.css = new BaseVStyle();
+	((_dot.css as any)._isBase as boolean) = true;
 
 	_dot.component = component;
 	_dot.component["useStyles"] = useStyles;
 
-	_dot.useStyles = (document: Document, styles: string|((css)=>string|IDotCss))=>{
+	_dot.useStyles = (applyToDocument: Document, styles: string|((css)=>string|IDotCss))=>{
+
+		if(applyToDocument && !styles){
+			if(typeof applyToDocument == "string" || (applyToDocument["call"] && applyToDocument["apply"])){
+				styles = applyToDocument as any;
+				applyToDocument = document;
+			}
+		}
+
 		let cssStringContent = "";
 		if(typeof styles == "string"){
 			cssStringContent = styles;
@@ -468,10 +301,10 @@ const makeDot = ()=>{
 				// TODO: need a way to get the string from the framework. Still a WIP.
 			}
 		}
-		const styleSheet = document.createElement("style");
+		const styleSheet = applyToDocument.createElement("style");
 		styleSheet.type = "text/css";
 		styleSheet.textContent = cssStringContent;
-		document.head.appendChild(styleSheet);
+		applyToDocument.head.appendChild(styleSheet);
 	};
 
 	{ // Elements
@@ -518,22 +351,6 @@ const makeDot = ()=>{
 				// return this._addChild(n);
 			};
 			makeCoreWrapper(_dot, E);
-		}
-	}
-
-	{ // Attributes
-		for(let i = 0; i < allAttributes.length; i++){
-			let A = allAttributes[i];
-			ContainerVdom.prototype[A] = function(c){
-				let C = this._children[this._children.length - 1];
-				if(C && C instanceof ElementVdom){
-					C.setAttr(A, c);
-				}
-				else{
-					throw new Error(`Invalid node to set ${A} attribute.`);
-				}
-				return this;
-			};
 		}
 	}
 

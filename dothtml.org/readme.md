@@ -80,9 +80,23 @@ Content:
 
 ### Styling ###
 
-#### Option 1: Exernal Stylesheets ####
+#### Exernal Scoped Stylesheets ####
 
-#### Option 2: Style Builder ####
+- Samples.
+- Suggested Webpack configuration.
+	- CSS
+	- SCSS / other (don't use CSS loader).
+- CSS tips for styling within the Shadow DOM.
+	- Basic concepts.
+		- Shadow Roots
+		- Adopted stylesheets.
+		- Encaplusation & variables.
+	- :host
+	- :root
+	- :host-context
+- Other considerations.
+
+#### Style Builder ####
 
 ### Backend Configuration & Routing ###
 
@@ -91,3 +105,9 @@ Content:
 #### Under the Hood ####
 
 #### Building Extensions & Component Libraries ####
+
+## Examples ##
+
+The examples section will be a list of single-file examples. It would be REALLY cool if we could get typescript working but if not JavaScript would be pretty cool too. If typescript, might want to add a max file length to prevent insanity. Just upload the file you want to compile, build it, and send back the bundle. Should be pretty simple. Client-side building would be even cooler and I think it may be possible.
+
+Examples can be taken from dothtml's test cases. Just dress them up to look better.

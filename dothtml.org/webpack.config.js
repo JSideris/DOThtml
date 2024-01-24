@@ -89,6 +89,7 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			title: "DOThtml",
 			template: "./src/index.html",
+			favicon: "./src/assets/images/icons/favicon.ico",
 			meta: [ 
 				// TODO: update image previews.
 				{'viewport': 'width=device-width, initial-scale=1, user-scalable=no'},

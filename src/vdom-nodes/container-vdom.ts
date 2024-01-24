@@ -1,4 +1,4 @@
-import { IComponent } from "dothtml-interfaces";
+import { IComponent, IDotCss } from "dothtml-interfaces";
 import Reactive from "../reactive";
 import CollectionVdom from "./collection-vdom";
 import { ConditionalVdom } from "./conditional-vdom";
@@ -39,6 +39,16 @@ export class ContainerVdom extends Vdom{
 			this._children[c]._unrender();
 		}
 	}
+
+	attr(A: string, c: any){
+		let C = this._children[this._children.length - 1];
+		if(C && C instanceof ElementVdom){
+			C.setAttr(A, c);
+		}
+		else{
+			throw new Error(`Invalid node to set ${A} attribute.`);
+		}
+	}
 	
 	html(c: string|Reactive){
 		let hn = new HtmlVdom(c);
@@ -49,6 +59,22 @@ export class ContainerVdom extends Vdom{
 		let tn = new TextVdom(c);
 		return this._addChild(tn);
 	}
+
+	md(c: string|Reactive){
+		// TODO: for now, just render as text. 
+		// We can add the md functionality later.
+		return this.text(c);
+	}
+
+	// style(c: string|Reactive|IDotCss){
+	// 	if(c instanceof Reactive || typeof c == "string"){
+	// 		this.attr("style", c);
+	// 	}
+	// 	else{
+	// 		// It's a style builder.
+	// 		if()
+	// 	}
+	// }
 
 	mount(c: IComponent){
 		let cn = new ComponentVdom(c);
@@ -103,5 +129,192 @@ export class ContainerVdom extends Vdom{
 		let collectionVdom = new CollectionVdom(collection, callback);
 		this._addChild(collectionVdom);
 		return this;
+	}
+}
+
+{ // Extending the vdom.
+	const allAttributes = [
+		"accept",
+		"accessKey",
+		"action",
+		"align",
+		"allow",
+		"allowFullScreen",
+		"aLink",
+		"alt",
+		"archive",
+		"autoCapitalize",
+		"autoComplete",
+		"autoFocus",
+		"autoPlay",
+		"autoSave",
+		"axis",
+		"background",
+		"bgColor",
+		"border",
+		"buffered",
+		"cellPadding",
+		"cellSpacing",
+		"challenge",
+		"char",
+		"charset",
+		"charOff",
+		"checked",
+		// "cite", //*
+		"class",
+		"classId",
+		"clear",
+		"codeBase",
+		"codeType",
+		"color",
+		"cols",
+		"colSpan",
+		"compact",
+		"contentEditable",
+		"contextMenu",
+		"controls",
+		"coords",
+		"crossOrigin",
+		"dateTime",
+		"declare",
+		"decoding",
+		"default",
+		//"data", //*
+		"dir",
+		"dirName",
+		"disabled",
+		"download",
+		"draggable",
+		"dropZone",
+		"encType",
+		"enterKeyHint",
+		"exportParts",
+		"face",
+		"font",
+		"fontFace",
+		"fontFaceFormat",
+		"fontFaceName",
+		"fontFaceSrc",
+		"fontFaceUri",
+		"fontSpecification",
+		"for",
+		"foreignObject",
+		// "form", //*
+		"formAction",
+		"frame",
+		"frameBorder",
+		"headers",
+		"height",
+		"hidden",
+		"high",
+		"hRef",
+		"hRefLang",
+		"hSpace",
+		"icon",
+		"id",
+		"inert",
+		"inputMode",
+		"images",
+		"is",
+		"isMap",
+		"itemId",
+		"itemProp",
+		"itemRef",
+		"itemScope",
+		"itemType",
+		"keyType",
+		"kind",
+		// "label", //*
+		"lang",
+		"list",
+		"loading",
+		"longDesc",
+		"loop",
+		"low",
+		"manifest",
+		"marginHeight",
+		"marginWidth",
+		"max",
+		"maxLength",
+		"media",
+		"metadata",
+		"method",
+		"min",
+		"missingGlyph",
+		"multiple",
+		"muted",
+		"name",
+		"noHRef",
+		"nOnce",
+		"noResize",
+		"noShade",
+		"noValidate",
+		"noWrap",
+		"open",
+		"optimum",
+		"part",
+		"pattern",
+		"ping",
+		"placeholder",
+		"playsInline",
+		"poster",
+		"preload",
+		"prompt",
+		"radioGroup",
+		"readOnly",
+		"referrerPolicy",
+		"rel",
+		"required",
+		"rev",
+		"reversed",
+		"role",
+		"rows",
+		"rowSpan",
+		"rules",
+		"sandbox",
+		"scope",
+		"scrolling",
+		"seamless",
+		"selected",
+		"shape",
+		"size",
+		"sizes",
+		// "span", //*
+		"spellCheck",
+		"src",
+		"srcDoc",
+		"srcLang",
+		"srcSet",
+		"standby",
+		"start",
+		"step",
+		// "summary", //*
+		"style", // Special
+		"tabIndex",
+		"target",
+		"title",
+		"translate",
+		"type",
+		"useMap",
+		"vAlign",
+		// "value", // Special behavior.
+		"valueType",
+		"virtualKeyboardPolicy",
+		"width",
+		"wrap"
+		//"dataA", //Special explicit 
+		//"citeA",
+		//"formA",
+		//"labelA",
+		//"spanA",
+		//"summaryA"
+	];
+
+	for(let i = 0; i < allAttributes.length; i++){
+		let A = allAttributes[i];
+		ContainerVdom.prototype[A] = function(c){
+			this.attr(A, c);
+			return this;
+		};
 	}
 }

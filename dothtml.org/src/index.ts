@@ -11,6 +11,8 @@ import Navbar from "./components/navbar/navbar";
 
 dot.useStyles(document, styles);
 
+// console.log(document.querySelectorAll("style")[0]);
+
 // TODO: switch to using the router.
 dot(document.body)
 	.mount(new Navbar())
