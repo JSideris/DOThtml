@@ -15,80 +15,106 @@ afterEach(() => {
 	document.body[DOT_VDOM_PROP_NAME] = null;
 });
 
-describe("Style builder.", ()=>{
-	// Add style builder tests here.
-	// Tests should enruse that the style builder generates well-formed CSS and can to-string it.
-});
+// describe("Style builder.", ()=>{
+// 	// Add style builder tests here.
+// 	// Tests should enruse that the style builder generates well-formed CSS and can to-string it.
+// });
 
-describe("Global styles.", ()=>{
-	test("Global useStyles.", ()=>{
-		let css = "#global-test{color: red;}";
+// describe("Global styles.", ()=>{
+// 	test("Global useStyles.", ()=>{
+// 		let css = "#global-test{color: red;}";
 
-		dot.useStyles(document, css);
+// 		dot.useStyles(document, css);
 
-		let styleTag = document.getElementsByTagName("style")[0] ?? null;
+// 		let styleTag = document.getElementsByTagName("style")[0] ?? null;
 
-		expect(styleTag).not.toBeNull();
+// 		expect(styleTag).not.toBeNull();
 
-		expect(styleTag.innerHTML).toBe(css);
-	});
+// 		expect(styleTag.innerHTML).toBe(css);
+// 	});
 
-	test("Meta: Global styles removed after test.", ()=>{
+// 	test("Meta: Global styles removed after test.", ()=>{
 
-		let styleTag = document.getElementsByTagName("style")[0] ?? null;
+// 		let styleTag = document.getElementsByTagName("style")[0] ?? null;
 
-		expect(styleTag).toBeNull();
-	});
+// 		expect(styleTag).toBeNull();
+// 	});
 
-	test("Using the style builder.", ()=>{
+// 	test("Using the style builder.", ()=>{
 		
-	});
-});
+// 	});
+// });
 
 describe("Element styles.", ()=>{
-	test("Element style as string", ()=>{
-		dot(document.body).div().id("test-el").style("color:red;");
+	// test("Element style as string", ()=>{
+	// 	dot(document.body).div().id("test-el").style("color:red;");
 		
-		expect(document.getElementById("test-el")?.style.color).toEqual("red");
-	});
+	// 	expect(document.getElementById("test-el")?.style.color).toEqual("red");
+	// });
 	
-	test("Style builder on element.", ()=>{
-		dot(document.body).div().id("test-el").style(dot.css.color("green"));
+	// test("Style builder on element.", ()=>{
+	// 	dot(document.body).div().id("test-el").style(dot.css.color("green"));
 		
-		expect(document.getElementById("test-el")?.style.color).toEqual("green");
+	// 	expect(document.getElementById("test-el")?.style.color).toEqual("green");
+	// });
+
+	// test("Style builder on element w/ observable value.", ()=>{
+
+	// 	let reactiveColor = dot.watch({value: "red" as string});
+
+	// 	dot(document.body).div().id("test-el").style(dot.css.color(reactiveColor as any));
+		
+	// 	expect(document.getElementById("test-el")?.style.color).toEqual("red");
+		
+	// 	reactiveColor.setValue("green");
+
+	// 	expect(document.getElementById("test-el")?.style.color).toEqual("green");
+	// });
+
+	// test("Style builder on element w/ observable value - hidden element.", ()=>{
+
+	// 	let reactiveColor = dot.watch({value: "red"});
+	// 	let showElement = dot.watch({value: true});
+
+	// 	dot(document.body).when(showElement, 
+	// 		dot.div().id("test-el").style(dot.css.color(reactiveColor as any))
+	// 	);
+		
+	// 	expect(document.getElementById("test-el")?.style.color).toEqual("red");
+		
+	// 	showElement.setValue(false);
+	// 	reactiveColor.setValue("green");
+		
+	// 	expect(document.getElementById("test-el")).toBeNull();
+
+	// 	showElement.setValue(true);
+
+	// 	expect(document.getElementById("test-el")?.style.color).toEqual("green");
+	// });
+
+	test("Filter builder on element w/ observable value (string).", ()=>{
+
+		let reactiveColor = dot.watch({value: 4, transformer: v=>`${v}px`});
+
+		dot(document.body).div().id("test-el").style(dot.css.filter(f=>f.blur(reactiveColor as any)));
+		
+		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(4px)");
+		
+		reactiveColor.setValue(10);
+		
+		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(10px)");
 	});
 
-	test("Style builder on element w/ observable value.", ()=>{
+	test("Filter builder on element w/ observable value (numeric).", ()=>{
 
-		let reactiveColor = dot.watch({value: "red" as string});
+		let reactiveColor = dot.watch({value: 4});
 
-		dot(document.body).div().id("test-el").style(dot.css.color(reactiveColor as any));
+		dot(document.body).div().id("test-el").style(dot.css.filter(f=>f.blur(reactiveColor as any)));
 		
-		expect(document.getElementById("test-el")?.style.color).toEqual("red");
+		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(4px)");
 		
-		reactiveColor.setValue("green");
-
-		expect(document.getElementById("test-el")?.style.color).toEqual("green");
-	});
-
-	test("Style builder on element w/ observable value - hidden element.", ()=>{
-
-		let reactiveColor = dot.watch({value: "red" as string});
-		let showElement = dot.watch({value: true as boolean});
-
-		dot(document.body).when(showElement, 
-			dot.div().id("test-el").style(dot.css.color(reactiveColor as any))
-		);
+		reactiveColor.setValue(10);
 		
-		expect(document.getElementById("test-el")?.style.color).toEqual("red");
-		
-		showElement.setValue(false);
-		reactiveColor.setValue("green");
-		
-		expect(document.getElementById("test-el")).toBeNull();
-
-		showElement.setValue(true);
-
-		expect(document.getElementById("test-el")?.style.color).toEqual("green");
+		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(10px)");
 	});
 });

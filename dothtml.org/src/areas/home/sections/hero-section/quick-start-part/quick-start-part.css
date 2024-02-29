@@ -6,16 +6,18 @@
 }
 
 #content>pre{
-	display: list-item;
-	list-style-type: "> ";
-	list-style-position: inside;
 	background-color: rgb(0 0 0 / 0.5);
-	color: rgb(20% 90% 20%);
 	padding: 5px;
 	padding-left: 10px;
 	margin: 0;
-	/* border-radius: 20px; */
 }
-#content>pre::marker{
+
+#content>pre.cmd{
+	display: list-item;
+	list-style-type: "> ";
+	list-style-position: inside;
+	color: rgb(20% 90% 20%);
+}
+#content>pre.cmd::marker{
 	color: rgb(10% 60% 10%);
 }

@@ -5,7 +5,7 @@ import { TextVdom } from "./vdom-nodes/text-vdom";
 import { HtmlVdom } from "./vdom-nodes/html-vdom";
 import { ConditionalVdom } from "./vdom-nodes/conditional-vdom";
 import CollectionVdom from "./vdom-nodes/collection-vdom";
-import BaseVStyle from "./v-style-nodes/base-v-style";
+import VStyle from "./v-style-nodes/v-style";
 
 const TEXT_OFFSET = 0;
 const HTML_OFFSET = 1;
@@ -27,7 +27,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 	observingAttributes: Record<number, {element: ElementVdom, attribute: string}> = {};
 	observingCollections: Record<number, {collection: CollectionVdom, key?: string}> = {};
 	observingConditionals: Record<number, ConditionalVdom> = {};
-	observingStyles: Record<number, {prop: string, vStyle: BaseVStyle}> = {};
+	observingStyles: Record<number, {prop: string, vStyle: VStyle}> = {};
 	observingCallbacks: Record<number, (value: To)=>void> = {};
 
 	constructor() {
@@ -104,7 +104,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 		return id;
 	}
 	// Might change this up to support more advanced builder options.
-	subscribeStyle(vStyle: BaseVStyle, propName: string): number {
+	subscribeStyle(vStyle: VStyle, propName: string): number {
 		let id = STYLE_OFFSET + CATEGORIES * this.nextId++;
 		this.observingStyles[id] = {prop: propName, vStyle: vStyle};
 		return id;

@@ -61,3 +61,5 @@ export function deepEqual(obj1: any, obj2: any, visited = new Map()): boolean {
 
     return true;
 }
+
+export var floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");

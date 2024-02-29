@@ -16,7 +16,7 @@ class HeroFeaturesPart implements IComponent{
 				).class("info-section")
 				.div(dot
 					.h3("Nimble")
-					.p("Zero dependencies. ~20kb bundle size. Plays nicely with other frameworks. Designed to be extremely modular - as in the entire framework can be decoupled from your app using DI.")
+					.p("Zero core dependencies. ~20kb bundle size. Plays nicely with other frameworks. Designed to be extremely modular - as in the entire framework can be decoupled from your app using DI.")
 				).class("info-section")
 				.div(dot
 					.h3("Fun")
