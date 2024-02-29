@@ -1,4 +1,4 @@
-import { IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 import renderCss from "../helpers/render-css";
 
 export function useStyles(styleCallback) {
@@ -6,8 +6,12 @@ export function useStyles(styleCallback) {
 	let sharedStyles = renderCss(styleCallback);
 
 	return function(Base: new(...args:Array<any>)=>IComponent){
+
+		
 		return class extends Base{
-	
+			
+			_: FrameworkItems;
+			
 			constructor(...args: any[]){
 				super(...args);
 				if(!this._){

@@ -16,13 +16,13 @@ describe("Text data binding.", () => {
 	});
 
 	test("Render observable string.", ()=>{
-		let binding = dot.watch({value: "hello"});
+		let binding = dot.watch("hello");
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 	});
 
 	test("Render observable modified string.", ()=>{
-		let binding = dot.watch({value: "hello" as string});
+		let binding = dot.watch("hello");
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 		
@@ -31,7 +31,7 @@ describe("Text data binding.", () => {
 	});
 
 	test("Render observable modified HTML.", ()=>{
-		let binding = dot.watch({value: "<p></p>" as string});
+		let binding = dot.watch("<p></p>");
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("<p></p>")));
 		
@@ -40,7 +40,7 @@ describe("Text data binding.", () => {
 	});
 
 	test("Multi render observable modified string.", ()=>{
-		let binding = dot.watch({value: "hello" as string});
+		let binding = dot.watch("hello");
 		dot(document.body).div(binding).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello").div("hello")));
 		
@@ -49,7 +49,7 @@ describe("Text data binding.", () => {
 	});
 
 	test("Render observable delete value.", ()=>{
-		let binding = dot.watch({value: "hello" as any});
+		let binding = dot.watch("hello");
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 		
@@ -58,7 +58,7 @@ describe("Text data binding.", () => {
 	});
 
 	test("Render observable transformed.", ()=>{
-		let binding = dot.watch({value: 3 as number, transformer: (value)=>value*2});
+		let binding = dot.watch(3, {transform: (value)=>value*2});
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(6)));
 
@@ -75,13 +75,13 @@ describe("HTML data binding.", () => {
 	});
 
 	test("Render observable string html.", ()=>{
-		let binding = dot.watch({value: "<p></p>"});
+		let binding = dot.watch("<p></p>");
 		dot(document.body).div(dot.html(binding));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 	});
 
 	test("Render observable modified string html.", ()=>{
-		let binding = dot.watch({value: "<p></p>" as string});
+		let binding = dot.watch("<p></p>");
 		dot(document.body).div(dot.html(binding));
 		// expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 		
@@ -90,7 +90,7 @@ describe("HTML data binding.", () => {
 	});
 
 	test("Render observable delete value html.", ()=>{
-		let binding = dot.watch({value: "<p></p>" as any});
+		let binding = dot.watch("<p></p>");
 		dot(document.body).div(dot.html(binding));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 		
@@ -102,39 +102,39 @@ describe("HTML data binding.", () => {
 
 describe("Attribute data binding.", () => {
 	test("Render empty observable attribute.", ()=>{
-		let binding = dot.watch();
-		dot(document.body).div().class(binding);
+		let binding = dot.watch(undefined as unknown as string);
+		dot(document.body).div({class: binding});
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 
 	test("Render observable string attribute.", ()=>{
-		let binding = dot.watch({value: "hello"});
-		dot(document.body).div().class(binding);
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div().class("hello")));
+		let binding = dot.watch("hello");
+		dot(document.body).div({class: binding});
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 	});
 
 	test("Render observable modified string attribute.", ()=>{
-		let binding = dot.watch({value: "hello" as string});
-		dot(document.body).div().class(binding);
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div().class("hello")));
+		let binding = dot.watch("hello");
+		dot(document.body).div({class: binding});
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 		
 		binding.setValue("world");
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div().class("world")));
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "world"})));
 	});
 
 	test("Multi render observable modified string attribute.", ()=>{
-		let binding = dot.watch({value: "hello" as string});
-		dot(document.body).div(binding).class(binding).div(binding).class(binding);
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello").class("hello").div("hello").class("hello")));
+		let binding = dot.watch("hello");
+		dot(document.body).div(binding, {class: binding}).div(binding,{class: binding});
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello", {class: "hello"}).div("hello", {class: "hello"})));
 		
 		binding.setValue("world");
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world").class("world").div("world").class("world")));
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world", {class: "world"}).div("world", {class: "world"})));
 	});
 
 	test("Render observable delete value attribute.", ()=>{
-		let binding = dot.watch({value: "hello" as any});
-		dot(document.body).div().class(binding);
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div().class("hello")));
+		let binding = dot.watch("hello");
+		dot(document.body).div({class: binding});
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 		
 		binding.setValue(null);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
@@ -143,18 +143,18 @@ describe("Attribute data binding.", () => {
 
 describe("Conditional w/ binding.", () => {
 	test("When binding true.", () => {
-		let binding = dot.watch({value: true});
+		let binding = dot.watch(true);
 		dot(document.body).when(binding, dot.p("yes")).otherwise(dot.p("no"));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("yes")));
 	});
 	test("When binding false.", () => {
-		let binding = dot.watch({value: false});
+		let binding = dot.watch(false);
 		dot(document.body).when(binding, dot.p("yes")).otherwise(dot.p("no"));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("no")));
 	});
 	test("When binding but rendering a binding directly.", () => {
-		let cond = dot.watch({value: true});
-		let val = dot.watch({value: "abc"});
+		let cond = dot.watch(true);
+		let val = dot.watch("abc");
 		dot(document.body).when(cond, val).otherwise(cond);
 		expect(formatHTML(document.body.innerHTML)).toBe("abc");
 
@@ -171,7 +171,7 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("xyz");
 	});
 	test("When binding changes.", () => {
-		let binding = dot.watch({value: true});
+		let binding = dot.watch(true);
 		dot(document.body).when(binding, dot.p("yes")).otherwise(dot.p("no"));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("yes")));
 
@@ -179,10 +179,10 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("no")));
 	});
 	test("When othewise when binding changes.", () => {
-		let binding = dot.watch({value: 1});
-		let binding1 = dot.watch({value: true});
-		let binding2 = dot.watch({value: false});
-		let binding3 = dot.watch({value: false});
+		let binding = dot.watch(1);
+		let binding1 = dot.watch(true);
+		let binding2 = dot.watch(false);
+		let binding3 = dot.watch(false);
 
 		binding.subscribeCallback(v=>{
 			binding1.setValue(v == 1);
@@ -212,8 +212,8 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Nested in conditionals.", () => {
-		let cBinding = dot.watch({value: true});
-		let xValue = dot.watch({value: "abc"});
+		let cBinding = dot.watch(true);
+		let xValue = dot.watch("abc");
 		dot(document.body).when(cBinding, dot.p(xValue)).otherwise(dot.span(xValue));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("abc")));
 
@@ -231,10 +231,10 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Nested attributes in conditionals.", () => {
-		let cBinding = dot.watch({value: true});
-		let xValue = dot.watch({value: "abc"});
+		let cBinding = dot.watch(true);
+		let xValue = dot.watch("abc");
 		
-		dot(document.body).when(cBinding, dot.p().class(xValue)).otherwise(dot.span().class(xValue));
+		dot(document.body).when(cBinding, dot.p({class: xValue})).otherwise(dot.span({class: xValue}));
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=abc></p>");
 
 		xValue.setValue("123");
@@ -251,8 +251,8 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Nested in html.", () => {
-		let cBinding = dot.watch({value: true});
-		let xValue = dot.watch({value: "abc"});
+		let cBinding = dot.watch(true);
+		let xValue = dot.watch("abc");
 		dot(document.body).when(cBinding, dot.html(xValue).div(true)).otherwise(dot.html(xValue).div(false));
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>true</div>");
 
@@ -272,8 +272,8 @@ describe("Conditional w/ binding.", () => {
 	// This is a special test. It should behave the same as the one above, but it doesn't.
 	// There was a very nuanced issue when rendering raw HTML beside text nodes. This test protects against that.
 	test("Nested in html - special (text).", () => {
-		let cBinding = dot.watch({value: true});
-		let xValue = dot.watch({value: "abc"});
+		let cBinding = dot.watch(true);
+		let xValue = dot.watch("abc");
 		dot(document.body).when(cBinding, dot.html(xValue).text(true)).otherwise(dot.html(xValue).text(false));
 		expect(formatHTML(document.body.innerHTML)).toBe("abctrue");
 
@@ -291,8 +291,8 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Nested in text.", () => {
-		let cBinding = dot.watch({value: true});
-		let xValue = dot.watch({value: "abc"});
+		let cBinding = dot.watch(true);
+		let xValue = dot.watch("abc");
 		dot(document.body).when(cBinding, dot.text(xValue).text("-").text(cBinding)).otherwise(dot.text(xValue).text("-").text(cBinding));
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-true");
 
@@ -310,8 +310,8 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Conditional order preserved.", () => {
-		let binding1 = dot.watch({value: true});
-		let binding2 = dot.watch({value: true});
+		let binding1 = dot.watch(true);
+		let binding2 = dot.watch(true);
 		dot(document.body).text("0").when(binding1, "1").otherwise("x").when(binding2, "2").otherwise("y").text("3");
 		// expect(formatHTML(document.body.innerHTML)).toBe("0123");
 		
@@ -332,8 +332,8 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Conditional order preserved w/o placeholders.", () => {
-		let binding1 = dot.watch({value: true});
-		let binding2 = dot.watch({value: true});
+		let binding1 = dot.watch(true);
+		let binding2 = dot.watch(true);
 		dot(document.body).text("0").when(binding1, "1").when(binding2, "2").text("3");
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 		
@@ -354,8 +354,8 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Nested conditionals.", () => {
-		let binding1 = dot.watch({value: true});
-		let binding2 = dot.watch({value: true});
+		let binding1 = dot.watch(true);
+		let binding2 = dot.watch(true);
 		dot(document.body).when(binding1, dot.when(binding2, 0).otherwise(1)).otherwise(dot.when(binding2, 2).otherwise(3));
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 		
@@ -377,14 +377,14 @@ describe("Conditional w/ binding.", () => {
 describe("Iteration w/ binding.", () => {
 	// Bonud arrays.
 	test("Basic bound array.", ()=>{
-		let obs = dot.watch({value: ["a", "b", "c"]});
+		let obs = dot.watch(["a", "b", "c"]);
 		dot(document.body).each(obs, x=>dot.div(x))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a").div("b").div("c")));
 	});
 
 	test("Manipulating the array.", ()=>{
 		let array = ["a", "b", "c"];
-		let obs = dot.watch({value: array});
+		let obs = dot.watch(array);
 		dot(document.body).each(obs, x=>dot.div(x))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a").div("b").div("c")));
 		
@@ -401,12 +401,12 @@ describe("Iteration w/ binding.", () => {
 	// We don't currently update the i observable. 
 	// This indicates that the whole list is being rerendered each time.
 	test("Preserving index.", ()=>{
-		let array = [{value: "a"}, {value: "b"}, {value: "c"}];
-		let obs = dot.watch({value: array, key: "value"});
+		let array = [{value:"a"}, {value:"b"}, {value:"c"}];
+		let obs = dot.watch(array, {key: "value"});
 		dot(document.body).each(obs, (x, i, k)=>dot.div(dot.text(x.value).text("-").text(i)))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a-0").div("b-1").div("c-2")));
 		
-		array.push({value: "d"});
+		array.push({value:"d"});
 		obs.updateObservers();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a-0").div("b-1").div("c-2").div("d-3")));
 
@@ -419,7 +419,7 @@ describe("Iteration w/ binding.", () => {
 	
 	test("Binding an object and manipulating it.", ()=>{
 		let object = {"a":"x", "b":"y", "c":"z"} as Record<string, string>;
-		let obs = dot.watch({value: object});
+		let obs = dot.watch(object);
 		dot(document.body).each(obs, (x, i, k)=>dot.div(dot.text(`${x}, `).text(i).text(`, ${k}`)))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("x, 0, a").div("y, 1, b").div("z, 2, c")));
 		
@@ -438,7 +438,7 @@ describe("Iteration w/ binding.", () => {
 
 	test("Array of objects.", ()=>{
 		let array = [{id: 1, isTrue: false}, {id: 2, isTrue: false}, {id: 3, isTrue: false}];
-		let obs = dot.watch({value: array, key: "id"});
+		let obs = dot.watch(array, {key: "id"});
 		dot(document.body).each(obs, (x, i, k)=>dot.div(x.id).div(k).div(x.isTrue))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("1").div("1").div("false").div("2").div("2").div("false").div("3").div("3").div("false")));
 		
@@ -455,7 +455,7 @@ describe("Iteration w/ binding.", () => {
 
 	test("Get total.", ()=>{
 		let array = [{id: 1, amount: 1}, {id: 2, amount: 2}, {id: 3, amount: 3}];
-		let obs = dot.watch({value: array, key: "id", transformer: v=>v.reduce((a,c)=>a+c.amount, 0)});
+		let obs = dot.watch(array, {key: "id", transform: v=>v.reduce((a,c)=>a+c.amount, 0)});
 		dot(document.body).div(obs)
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("6")));
 		

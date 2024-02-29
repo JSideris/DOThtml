@@ -71,42 +71,42 @@ describe("Basic conditional.", () => {
 	describe("Inline.", () => {
 		test("When true otherwise when false otherwise false inline.", () => {
 			dot(document.body)
-				.span().id("1")
-				.when(true, dot.p("yes").id("2"))
-				.otherwiseWhen(false, dot.p("maybe").id("2"))
-				.otherwise(dot.p("no").id("2"))
-				.span().id("3");
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span().id("1").p("yes").id("2").span().id("3").toString()));
+				.span({id: "1"})
+				.when(true, dot.p("yes", {id: "2"}))
+				.otherwiseWhen(false, dot.p("maybe", {id: "2"}))
+				.otherwise(dot.p("no", {id: "2"}))
+				.span({id: "3"});
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span({id: "1"}).p("yes", {id: "2"}).span({id: "3"}).toString()));
 		});	
 		
 		test("When true otherwise when true otherwise false inline.", () => {
 			dot(document.body)
-				.span().id("1")
-				.when(true, dot.p("yes").id("2"))
-				.otherwiseWhen(true, dot.p("maybe").id("2"))
-				.otherwise(dot.p("no").id("2"))
-				.span().id("3");
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span().id("1").p("yes").id("2").span().id("3").toString()));
+				.span({id: "1"})
+				.when(true, dot.p("yes", {id: "2"}))
+				.otherwiseWhen(true, dot.p("maybe", {id: "2"}))
+				.otherwise(dot.p("no", {id: "2"}))
+				.span({id: "3"});
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span({id: "1"}).p("yes", {id: "2"}).span({id: "3"}).toString()));
 		});
 	
 		test("When false otherwise when true otherwise false inline.", () => {
 			dot(document.body)
-				.span().id("1")
-				.when(false, dot.p("yes").id("2"))
-				.otherwiseWhen(true, dot.p("maybe").id("2"))
-				.otherwise(dot.p("no").id("2"))
-				.span().id("3");
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span().id("1").p("maybe").id("2").span().id("3").toString()));
+				.span({id: "1"})
+				.when(false, dot.p("yes", {id: "2"}))
+				.otherwiseWhen(true, dot.p("maybe", {id: "2"}))
+				.otherwise(dot.p("no", {id: "2"}))
+				.span({id: "3"});
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span({id: "1"}).p("maybe", {id: "2"}).span({id: "3"}).toString()));
 		});
 	
 		test("When false otherwise when false otherwise true inline.", () => {
 			dot(document.body)
-				.span().id("1")
-				.when(false, dot.p("yes").id("2"))
-				.otherwiseWhen(false, dot.p("maybe").id("2"))
-				.otherwise(dot.p("no").id("2"))
-				.span().id("3");
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span().id("1").p("no").id("2").span().id("3").toString()));
+				.span({id: "1"})
+				.when(false, dot.p("yes", {id: "2"}))
+				.otherwiseWhen(false, dot.p("maybe", {id: "2"}))
+				.otherwise(dot.p("no", {id: "2"}))
+				.span({id: "3"});
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span({id: "1"}).p("no", {id: "2"}).span({id: "3"}).toString()));
 		});
 	});
 
@@ -114,45 +114,46 @@ describe("Basic conditional.", () => {
 		test("When true otherwise when false otherwise false nested.", () => {
 			dot(document.body)
 				.div(
-					dot.when(true, dot.p("yes").id("2"))
-					.otherwiseWhen(false, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("yes").id("2").span().id("3")).id("0").toString()));
+					dot.when(true, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(false, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"}),
+					{id: "0"}
+				)
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("yes", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});	
 		
 		test("When true otherwise when true otherwise false nested.", () => {
 			dot(document.body)
 				.div(
-					dot.when(true, dot.p("yes").id("2"))
-					.otherwiseWhen(true, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("yes").id("2").span().id("3")).id("0").toString()));
+					dot.when(true, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("yes", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});
 	
 		test("When false otherwise when true otherwise false nested.", () => {
 			dot(document.body)
 				.div(
-					dot.when(false, dot.p("yes").id("2"))
-					.otherwiseWhen(true, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("maybe").id("2").span().id("3")).id("0").toString()));
+					dot.when(false, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("maybe", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});
 	
 		test("When false otherwise when false otherwise true nested.", () => {
 			dot(document.body)
 				.div(
-					dot.when(false, dot.p("yes").id("2"))
-					.otherwiseWhen(false, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("no").id("2").span().id("3")).id("0").toString()));
+					dot.when(false, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(false, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("no", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});
 	});
 
@@ -160,49 +161,49 @@ describe("Basic conditional.", () => {
 		test("When true otherwise when false otherwise false nested inline.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(true, dot.p("yes").id("2"))
-					.otherwiseWhen(false, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("yes").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(true, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(false, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("yes", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});	
 		
 		test("When true otherwise when true otherwise false nested inline.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(true, dot.p("yes").id("2"))
-					.otherwiseWhen(true, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("yes").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(true, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("yes", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});
 	
 		test("When false otherwise when true otherwise false nested inline.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(false, dot.p("yes").id("2"))
-					.otherwiseWhen(true, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("maybe").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(false, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("maybe", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});
 	
 		test("When false otherwise when false otherwise true nested inline.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(false, dot.p("yes").id("2"))
-					.otherwiseWhen(false, dot.p("maybe").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("no").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(false, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(false, dot.p("maybe", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("no", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});
 	});
 
@@ -210,92 +211,92 @@ describe("Basic conditional.", () => {
 		test("Two otherwise whens not hit.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(true, dot.p("yes").id("2"))
-					.otherwiseWhen(true, dot.p("maybe 1").id("2"))
-					.otherwiseWhen(true, dot.p("maybe 2").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("yes").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(true, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe 1", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe 2", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("yes", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});	
 
 		test("Two otherwise whens first hit.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(false, dot.p("yes").id("2"))
-					.otherwiseWhen(true, dot.p("maybe 1").id("2"))
-					.otherwiseWhen(true, dot.p("maybe 2").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("maybe 1").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(false, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe 1", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe 2", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("maybe 1", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});	
 
 		test("Two otherwise whens second hit.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(false, dot.p("yes").id("2"))
-					.otherwiseWhen(false, dot.p("maybe 1").id("2"))
-					.otherwiseWhen(true, dot.p("maybe 2").id("2"))
-					.otherwise(dot.p("no").id("2"))
-					.span().id("3")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("maybe 2").id("2").span().id("3")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(false, dot.p("yes", {id: "2"}))
+					.otherwiseWhen(false, dot.p("maybe 1", {id: "2"}))
+					.otherwiseWhen(true, dot.p("maybe 2", {id: "2"}))
+					.otherwise(dot.p("no", {id: "2"}))
+					.span({id: "3"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("maybe 2", {id: "2"}).span({id: "3"}), {id: "0"}).toString()));
 		});	
 
 		test("Two whens both true.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(true, dot.p("yes 1").id("2"))
-					.otherwise(dot.p("no 1").id("2"))
-					.when(true, dot.p("yes 2").id("3"))
-					.otherwise(dot.p("no 2").id("3"))
-					.span().id("4")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("yes 1").id("2").p("yes 2").id("3").span().id("4")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(true, dot.p("yes 1", {id: "2"}))
+					.otherwise(dot.p("no 1", {id: "2"}))
+					.when(true, dot.p("yes 2", {id: "3"}))
+					.otherwise(dot.p("no 2", {id: "3"}))
+					.span({id: "4"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("yes 1", {id: "2"}).p("yes 2", {id: "3"}).span({id: "4"}), {id: "0"}).toString()));
 		});	
 
 		test("Two whens both false.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(false, dot.p("yes 1").id("2"))
-					.otherwise(dot.p("no 1").id("2"))
-					.when(false, dot.p("yes 2").id("3"))
-					.otherwise(dot.p("no 2").id("3"))
-					.span().id("4")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("no 1").id("2").p("no 2").id("3").span().id("4")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(false, dot.p("yes 1", {id: "2"}))
+					.otherwise(dot.p("no 1", {id: "2"}))
+					.when(false, dot.p("yes 2", {id: "3"}))
+					.otherwise(dot.p("no 2", {id: "3"}))
+					.span({id: "4"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("no 1", {id: "2"}).p("no 2", {id: "3"}).span({id: "4"}), {id: "0"}).toString()));
 		});	
 
 		test("Two whens first true.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(true, dot.p("yes 1").id("2"))
-					.otherwise(dot.p("no 1").id("2"))
-					.when(false, dot.p("yes 2").id("3"))
-					.otherwise(dot.p("no 2").id("3"))
-					.span().id("4")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("yes 1").id("2").p("no 2").id("3").span().id("4")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(true, dot.p("yes 1", {id: "2"}))
+					.otherwise(dot.p("no 1", {id: "2"}))
+					.when(false, dot.p("yes 2", {id: "3"}))
+					.otherwise(dot.p("no 2", {id: "3"}))
+					.span({id: "4"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("yes 1", {id: "2"}).p("no 2", {id: "3"}).span({id: "4"}), {id: "0"}).toString()));
 		});	
 
 		test("Two whens second true.", () => {
 			dot(document.body)
 				.div(
-					dot.span().id("1")
-					.when(false, dot.p("yes 1").id("2"))
-					.otherwise(dot.p("no 1").id("2"))
-					.when(true, dot.p("yes 2").id("3"))
-					.otherwise(dot.p("no 2").id("3"))
-					.span().id("4")
-				).id("0")
-			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span().id("1").p("no 1").id("2").p("yes 2").id("3").span().id("4")).id("0").toString()));
+					dot.span({id: "1"})
+					.when(false, dot.p("yes 1", {id: "2"}))
+					.otherwise(dot.p("no 1", {id: "2"}))
+					.when(true, dot.p("yes 2", {id: "3"}))
+					.otherwise(dot.p("no 2", {id: "3"}))
+					.span({id: "4"})
+				, {id: "0"})
+			expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span({id: "1"}).p("no 1", {id: "2"}).p("yes 2", {id: "3"}).span({id: "4"}), {id: "0"}).toString()));
 		});	
 	});
 });
@@ -317,13 +318,13 @@ describe("Basic iteration.", () => {
 	});
 
 	test("Iterate inline with attributes.", () => {
-		dot(document.body).div().each(["a", "b", "c"], (x,i,k)=>dot.p(`${i}`).class(x)).div();
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div().p("0").class("a").p("1").class("b").p("2").class("c").div().toString()));
+		dot(document.body).div().each(["a", "b", "c"], (x,i,k)=>dot.p(`${i}`, {class: x})).div();
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div().p("0", {class: "a"}).p("1", {class: "b"}).p("2", {class: "c"}).div().toString()));
 	});
 
 	test("Iterate over misc array nested.", () => {
-		dot(document.body).div(dot.each(["a", "b", "c"], (x,i,k)=>dot.p(`${i}`).class(x)));
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("0").class("a").p("1").class("b").p("2").class("c")).toString()));
+		dot(document.body).div(dot.each(["a", "b", "c"], (x,i,k)=>dot.p(`${i}`, {class: x})));
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("0", {class: "a"}).p("1", {class: "b"}).p("2", {class: "c"})).toString()));
 	});
 
 	test("Iterate over object.", () => {
@@ -332,8 +333,13 @@ describe("Basic iteration.", () => {
 	});
 
 	test("Target and iterate.", () => {
-		dot(document.body).div().id("my-div");
-		dot("#my-div").each(["a", "b", "c"], (x,i,k)=>dot.p(`${i}`).class(x))
-		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("0").class("a").p("1").class("b").p("2").class("c")).id("my-div").toString()));
+		dot(document.body).div({class: "my-div"});
+		dot(".my-div").each(["a", "b", "c"], (x,i,k)=>dot.p(`${i}`, {class: x}))
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(
+			dot.div(
+				dot.p("0", {class: "a"})
+				.p("1", {class: "b"})
+				.p("2", {class: "c"}
+			), {class: "my-div"})).toString());
 	});
 });

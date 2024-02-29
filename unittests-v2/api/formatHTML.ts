@@ -1,6 +1,6 @@
 export default function formatHTML(html){
 	if(!html){
-		throw new Error("HTML can't be null.");
+		html = "";
 	}
 	html = html.toString().toLowerCase();
 	var html2 = "";

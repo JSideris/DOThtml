@@ -15,7 +15,7 @@ export class ComponentVdom extends Vdom{
 
 		
 		this.component.creating && this.component.creating();
-		this.childShadowVdom = this.component.build && this.component.build(...component._._meta.args) as unknown as ContainerVdom;
+		this.childShadowVdom = this.component.build && this.component.build() as unknown as ContainerVdom;
 		this.component.built && this.component.built();
 
 	}
@@ -42,7 +42,6 @@ export class ComponentVdom extends Vdom{
 						let shadow = this.attachShadow({ mode: 'open' });
 						(this._component._._meta as any).shadowRoot = shadow;
 						this.cvdom.childShadowVdom._render(shadow as any);
-						console.log("Shadow INNERHTML???", shadow.innerHTML);
 					}
 					else{
 						throw new Error("Component build function returned invalid object.");

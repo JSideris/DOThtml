@@ -21,6 +21,20 @@ export default abstract class CssFunctionBuilderVStyle extends VStyle{
 	_render(target: HTMLElement) {
 		this.target = target;
 		let result = "";
+
+
+		// Set the bindings.
+		for(let i = 0; i < this.funcs.length; i++){
+			let t = this.funcs[i];
+			for(let k = 0; k < t.args.length; k++){
+				let arg = t.args[k];
+				if(arg.v instanceof Reactive){
+					let subscriptionId = arg.v.subscribeStyle(this, t.func);
+					this.subscriptions[subscriptionId] = arg.v;
+				}
+			}
+		}
+
 		if(this.simpleValue){
 			result = this.simpleValue;
 			target.style[this.propName] = result;
@@ -54,8 +68,6 @@ export default abstract class CssFunctionBuilderVStyle extends VStyle{
 				let argVal = "";
 				if(arg.v instanceof Reactive){
 					argVal = arg.v.getValue();
-					let subscriptionId = arg.v.subscribeStyle(this, t.func);
-					this.subscriptions[subscriptionId] = arg.v;
 					isSimple = false;
 				}
 				else{

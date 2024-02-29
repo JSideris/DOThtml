@@ -1,4 +1,4 @@
-import { IDotCore, IDotCss } from "dothtml-interfaces";
+
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
 import { TextVdom } from "./vdom-nodes/text-vdom";
 import ElementVdom from "./vdom-nodes/element-vdom";
@@ -9,6 +9,7 @@ import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import { useStyles } from "./decoration/use-styles";
 import BaseVStyle from "./v-style-nodes/base-v-style";
+import { IDotCore, IDotCss } from "dothtml-interfaces";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -138,89 +139,90 @@ const specialAttributes = [
 
 const allCoreWrappers = ["each", "html", "mount", "text", "when"];
 
-const allEventAttr = [
-	"onAbort",
-	"onBlur",
-	"onChange",
-	"onInput",
-	"onCanPlay",
-	"onCantPlayThrough",
-	"onClick",
-	"onCopy",
-	"onContextMenu",
-	"onCueChange",
-	"onCut",
-	"onDblClick",
-	"onDrag",
-	"onDragEnd",
-	"onDragEnter",
-	"onDragLeave",
-	"onDragOver",
-	"onDragStart",
-	"onDrop",
-	"onDurationChange",
-	"onEmptied",
-	"onEnded",
-	"onError",
-	"onFocus",
-	"onHashChange",
-	"onInvalid",
-	"onKeyDown",
-	"onKeyPress",
-	"onKeyUp",
-	"onLoad",
-	"onLoadedData",
-	"onLoadedMetadata",
-	"onLoadStart",
-	"onMouseDown",
-	"onMouseEnter",
-	"onMouseLeave",
-	"onMouseMove",
-	"onMouseOut",
-	"onMouseOver",
-	"onMouseUp",
-	"onPointerCancel",
-	"onPointerDown",
-	"onPointerEnter",
-	"onPointerLeave",
-	"onPointerMove",
-	"onPointerOut",
-	"onPointerOver",
-	"onPointerUp",
-	"onTouchStart",
-	"onTouchEnd",
-	"onTouchCancel",
-	"onTouchMove",
-	"onMouseWheel",
-	"onOffline",
-	"onOnline",
-	"onPageHide",
-	"onPagePaste",
-	"onPageShow",
-	"onPause",
-	"onPlay",
-	"onPlaying",
-	"onPopState",
-	"onProgress",
-	"onRateChange",
-	"onReset",
-	"onResize",
-	"onScroll",
-	"onSearch",
-	"onSeeked",
-	"onSeeking",
-	"onSelect",
-	"onStalled",
-	"onStorage",
-	"onSubmit",
-	"onSuspend",
-	"onTimeUpdate",
-	"onToggle",
-	"onUnload",
-	"onVolumeChange",
-	"onWaiting",
-	"onWheel",
-]
+// This could easily be modified so that it adds some rudimentary element checking.
+const allEventAttr = {
+	onAbort: 1,
+	onBlur: 1,
+	onChange: 1,
+	onInput: 1,
+	onCanPlay: 1,
+	onCantPlayThrough: 1,
+	onClick: 1,
+	onCopy: 1,
+	onContextMenu: 1,
+	onCueChange: 1,
+	onCut: 1,
+	onDblClick: 1,
+	onDrag: 1,
+	onDragEnd: 1,
+	onDragEnter: 1,
+	onDragLeave: 1,
+	onDragOver: 1,
+	onDragStart: 1,
+	onDrop: 1,
+	onDurationChange: 1,
+	onEmptied: 1,
+	onEnded: 1,
+	onError: 1,
+	onFocus: 1,
+	onHashChange: 1,
+	onInvalid: 1,
+	onKeyDown: 1,
+	onKeyPress: 1,
+	onKeyUp: 1,
+	onLoad: 1,
+	onLoadedData: 1,
+	onLoadedMetadata: 1,
+	onLoadStart: 1,
+	onMouseDown: 1,
+	onMouseEnter: 1,
+	onMouseLeave: 1,
+	onMouseMove: 1,
+	onMouseOut: 1,
+	onMouseOver: 1,
+	onMouseUp: 1,
+	onPointerCancel: 1,
+	onPointerDown: 1,
+	onPointerEnter: 1,
+	onPointerLeave: 1,
+	onPointerMove: 1,
+	onPointerOut: 1,
+	onPointerOver: 1,
+	onPointerUp: 1,
+	onTouchStart: 1,
+	onTouchEnd: 1,
+	onTouchCancel: 1,
+	onTouchMove: 1,
+	onMouseWheel: 1,
+	onOffline: 1,
+	onOnline: 1,
+	onPageHide: 1,
+	onPagePaste: 1,
+	onPageShow: 1,
+	onPause: 1,
+	onPlay: 1,
+	onPlaying: 1,
+	onPopState: 1,
+	onProgress: 1,
+	onRateChange: 1,
+	onReset: 1,
+	onResize: 1,
+	onScroll: 1,
+	onSearch: 1,
+	onSeeked: 1,
+	onSeeking: 1,
+	onSelect: 1,
+	onStalled: 1,
+	onStorage: 1,
+	onSubmit: 1,
+	onSuspend: 1,
+	onTimeUpdate: 1,
+	onToggle: 1,
+	onUnload: 1,
+	onVolumeChange: 1,
+	onWaiting: 1,
+	onWheel: 1,
+};
 
 // dot(document.body).div(dot.p("123").id("my-p")).id("my-div");
 
@@ -264,12 +266,13 @@ const makeDot = ()=>{
 		}
 	}
 
-	_dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(props: {value: Ti, key?: string, transformer?: (value: Ti)=>To}): Reactive<Ti, To>{
+	// _dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(props: {value: Ti, key?: string, transform?: (value: Ti)=>To}): Reactive<Ti, To>{
+	_dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(value: Ti, options: {key?: string, transform?: (value: Ti)=>To}): Reactive<Ti, To>{
 		let o = new Reactive();
-		o.key = props?.key;
-		o.transformer = props ?.transformer;
+		o.key = options?.key;
+		o.transform = options?.transform;
 		// o._value = props?.value;
-		o.setValue(props?.value);
+		o.setValue(value);
 		return o;
 	}
 
@@ -310,23 +313,67 @@ const makeDot = ()=>{
 	{ // Elements
 		for(let i = 0; i < allTags.length; i++){
 			let E = allTags[i];
-			ContainerVdom.prototype[E] = function(c){
+			ContainerVdom.prototype[E] = function(a, b){
 				let n = new ElementVdom(E);
+
+				let cont;
+				let attrs;
+				{ // Find out which arg is the content and which is the attributes.
+					if(a instanceof ContainerVdom || a instanceof Vdom || (a?._?._meta && a?.build) || a instanceof Reactive || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
+						cont = a;
+						attrs = b;
+					}
+					if(b instanceof ContainerVdom || b instanceof Vdom || (b?._?._meta && b?.build) || b instanceof Reactive || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
+						if(cont) throw new Error("Both element arguments can't be content.");
+						cont = b;
+						attrs = a;
+					}
+
+					if(!cont && (a || b)){
+						attrs = (a || b);
+					}
+
+					// If we didn't find a content, there could have been an invalid value passed in.
+					// The logic to determine if a content was found is a little tricky because we allow null and undefined.
+					// It's actually wrong right now. Not a high priority though.
+					// if(cont === undefined && ((a && b) || ((a || b) && !attr))){
+					// 	throw new Error("Unknown value type.");
+					// }
+				}
+
+				{ // Apply attributes to element.
+					if(attrs){
+						for(let k in attrs) {
+							if(allEventAttr[k]) {
+								if(typeof attrs[k] !== "function") {
+									throw new Error(`Value of event attribute ${k} must be a function.`);
+								}
+
+								n.addEventListener(k.substring(2), attrs[k]);
+							} else {
+								n.setAttr(k, attrs[k]);
+							}
+						}
+					}
+				}
 				
-				if(c instanceof ContainerVdom){
-					// Note that this creates a redundant new ContainerVdom in the ElementVdom that gets overwritten.
-					// Perhaps there's a way to eliminate this inefficiency.
-					n.children = c;
-				}
-				else if(c instanceof Vdom){
-					n.children._addChild(c);
-				}
-				else if(c?._?._meta && c?.build){
-					n.children._addChild(new ComponentVdom(c));
-				}
-				else{
-					if(c !== null && c !== undefined){
-						n.children._addChild(new TextVdom(c));
+				{ // Add children to new element.
+					if(cont instanceof ContainerVdom){
+						// Note that this creates a redundant new ContainerVdom in the ElementVdom that gets overwritten.
+						// Perhaps there's a way to eliminate this inefficiency.
+						n.children = cont;
+					}
+					else if(cont instanceof Vdom){
+						n.children._addChild(cont);
+					}
+					else if(cont?._?._meta && cont?.build){
+						n.children._addChild(new ComponentVdom(cont));
+					}
+					else{
+						// Text or reactives.
+						if(cont !== null && cont !== undefined){
+							n.children._addChild(new TextVdom(cont));
+						}
 					}
 				}
 
@@ -356,16 +403,18 @@ const makeDot = ()=>{
 
 	{ // Special elements and attributes.
 
+		// TODO: special attributes are moot now because we are using JSON objects to set attributes.
 		for(let i = 0; i < specialAttributes.length; i++){
 			let A = specialAttributes[i];
 			ContainerVdom.prototype[A[0]] = function(c){
-				let C = this._children[this._children.length - 1];
-				if(C && C instanceof ElementVdom){
-					C.setAttr(A[1], c);
-				}
-				else{
-					throw new Error(`Invalid node to set ${A[0]} attribute.`);
-				}
+				// let C = this._children[this._children.length - 1];
+				// if(C && C instanceof ElementVdom){
+				// 	// C.setAttr(A[1], c);
+				// }
+				// else{
+				// 	throw new Error(`Invalid node to set ${A[0]} attribute.`);
+				// }
+				throw new Error(`Invalid attempt to set ${A[0]} attribute.`);
 				return this;
 			};
 		}
@@ -376,7 +425,9 @@ const makeDot = ()=>{
 		// 3. radio buttons
 		// 4. selects
 		// 5. editable elements
+		// TODO: this is now moot because `value` is a special attribute which has been refactored and is no longer chainable.
 		ContainerVdom.prototype["value"] = function(c){
+			throw new Error("Setting value like this is now deprecated. Use the `value` attribute instead.");
 			let C = this._children[this._children.length - 1];
 			if(C && C instanceof ElementVdom){
 				switch(C.tag){
@@ -408,24 +459,6 @@ const makeDot = ()=>{
 			}
 			return this;
 		};
-	}
-
-	{ // Events
-		for(let i = 0; i < allEventAttr.length; i++){
-			let E = allEventAttr[i];
-			ContainerVdom.prototype[E] = function(c){
-				let C = this._children[this._children.length - 1];
-				if(C && C instanceof ElementVdom){
-					C.addEventListener(E.substring(2), c);
-					// let el = C.element;
-					// el.addEventListener(E.substring(2), c);
-				}
-				else{
-					throw new Error(`Invalid node to set ${E} attribute.`);
-				}
-				return this;
-			};
-		}
 	}
 
 	{ // Special core functions.

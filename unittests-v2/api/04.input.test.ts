@@ -10,7 +10,7 @@ describe("DOM events.", ()=>{
 	test("Button click.", ()=>{
 		let mockClickHandler = jest.fn();
 
-		dot(document.body).button().id("my-button").onClick(mockClickHandler);
+		dot(document.body).button({ id: "my-button", onClick: mockClickHandler });
 		let button = document.getElementById("my-button");
 		button?.click();
 		
@@ -24,7 +24,12 @@ describe("DOM events.", ()=>{
 		// Only way to test is to manually dispatch the change event.
 		const mockChangeHandler = jest.fn();
 
-		dot(document.body).input().id("my-input").onFocus(mockFocusHandler).onBlur(mockBlurHandler).onChange((mockChangeHandler));
+		dot(document.body).input({ 
+			id: "my-input", 
+			onFocus: mockFocusHandler, 
+			onBlur: mockBlurHandler, 
+			onChange: mockChangeHandler 
+		});
 		let inputElement = document.getElementById("my-input") as HTMLInputElement;
 		
 		// Mock functions to simulate focus and blur event handlers
@@ -53,9 +58,9 @@ describe("Values.", ()=>{
 
 	test("Input gets updated.", ()=>{
 
-		let obs = dot.watch({value: "abc"});
+		let obs = dot.watch("abc");
 		
-		dot(document.body).input().id("my-input").value(obs);
+		dot(document.body).input({ id: "my-input", value: obs });
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		// Writing
@@ -77,9 +82,9 @@ describe("Values.", ()=>{
 	test("Nested input gets updated.", ()=>{
 		// This test is different from above because the value is set before the input is rendered.
 
-		let obs = dot.watch({value: "abc"});
+		let obs = dot.watch("abc");
 		
-		dot(document.body).div(dot.input().id("my-input").value(obs));
+		dot(document.body).div(dot.input({ id: "my-input", value: obs }));
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		expect(input.value).toBe("abc");
@@ -91,9 +96,9 @@ describe("Values.", ()=>{
 
 	test("Check gets updated.", ()=>{
 
-		let obs = dot.watch({value: true});
+		let obs = dot.watch(true);
 
-		dot(document.body).input().id("my-input").type("checkbox").checked(obs);
+		dot(document.body).input({ id: "my-input", type: "checkbox", checked: obs });
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		expect(input.checked).toBe(true);
@@ -110,15 +115,15 @@ describe("Values.", ()=>{
 
 	test("Radio gets updated.", ()=>{
 
-		let obs1 = dot.watch({value: true});
-		let obs2 = dot.watch({value: false});
-		let obs3 = dot.watch({value: false});
+		let obs1 = dot.watch(true);
+		let obs2 = dot.watch(false);
+		let obs3 = dot.watch(false);
 
 		dot(document.body)
-			.input().id("my-input-1").name("group-1").type("radio").checked(obs1)
-			.input().id("my-input-2").name("group-1").type("radio").checked(obs2)
-			.input().id("my-input-3").name("group-1").type("radio").checked(obs3)
-			.input().id("my-input-4").name("group-2").type("radio").checked(true);
+			.input({ id: "my-input-1", name: "group-1", type: "radio", checked: obs1 })
+			.input({ id: "my-input-2", name: "group-1", type: "radio", checked: obs2 })
+			.input({ id: "my-input-3", name: "group-1", type: "radio", checked: obs3 })
+			.input({ id: "my-input-4", name: "group-2", type: "radio", checked: true });
 
 		let input1 = document.getElementById("my-input-1") as HTMLInputElement;
 		let input2 = document.getElementById("my-input-2") as HTMLInputElement;
@@ -165,9 +170,9 @@ describe("Values.", ()=>{
 
 	test("Text area one way binding.", ()=>{
 
-		let obs = dot.watch({value: "abc"});
+		let obs = dot.watch("abc");
 		
-		dot(document.body).textArea(obs).id("my-input");
+		dot(document.body).textArea(obs, { id: "my-input" });
 		let input = document.getElementById("my-input") as HTMLTextAreaElement;
 		
 		// Writing
@@ -188,18 +193,18 @@ describe("Values.", ()=>{
 
 	test("Value attribute should override textarea text.", ()=>{
 
-		let obs = dot.watch({value: "abc"});
+		let obs = dot.watch("abc");
 		
-		dot(document.body).textArea("123").id("my-input").value(obs);
+		dot(document.body).textArea("123", {id: "my-input", value: obs});
 		expect((document.getElementById("my-input") as HTMLTextAreaElement).value).toBe("abc");
 	});
 
 	test("Text area watcher should overwrite value.", ()=>{
 
-		let obs = dot.watch({value: "abc"});
-		let obs2 = dot.watch({value: "123"});
+		let obs = dot.watch("abc");
+		let obs2 = dot.watch("123");
 		
-		dot(document.body).textArea(obs2).id("my-input").value(obs);
+		dot(document.body).textArea(obs2, {id: "my-input", value: obs});
 
 		expect((document.getElementById("my-input") as HTMLTextAreaElement).value).toBe("abc");
 		expect(obs).toBe("abc");
@@ -207,9 +212,9 @@ describe("Values.", ()=>{
 
 	test("Text area gets updated.", ()=>{
 
-		let obs = dot.watch({value: "abc"});
+		let obs = dot.watch("abc");
 		
-		dot(document.body).textArea().id("my-input").value(obs);
+		dot(document.body).textArea({id: "my-input", value: obs});
 		let input = document.getElementById("my-input") as HTMLTextAreaElement;
 		
 		// Writing
@@ -231,20 +236,15 @@ describe("Values.", ()=>{
 	// TODO: test binding on the options themselves.
 	test("Select gets updated.", ()=>{
 
-		let obs = dot.watch({value: "1"});
+		let obs = dot.watch("1");
 		
 		dot(document.body).select(
-			dot.option()
-				.id("option-1")
-				.value("1")
-			.option()
-				.id("option-2")
-				.value("2")
-			.option()
-				.id("option-3")
-				.value("3")
-		).value(obs)
-			.id("my-input");
+			{ value: obs, id: "my-input" },
+			
+			dot.option( { id: "option-1", value: "1" })
+			.option({ id: "option-2", value: "2" })
+			.option({ id: "option-3", value: "3" }),
+		);
 		let input = document.getElementById("my-input") as HTMLSelectElement;
 		let opt1 = document.getElementById("option-1") as HTMLOptionElement;
 		let opt2 = document.getElementById("option-2") as HTMLOptionElement;

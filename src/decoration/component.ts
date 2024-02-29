@@ -1,4 +1,4 @@
-import { IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 import renderCss from "../helpers/render-css";
 
 let tagId = 0x10000;
@@ -45,6 +45,8 @@ export function component(Base: new(...args:Array<any>)=>IComponent, styles: [])
 
 	// Decorator mode.
 	return class extends Base{
+
+		_: FrameworkItems;
 
 		constructor(...args: any[]){
 			super(...args);

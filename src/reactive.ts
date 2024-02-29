@@ -34,7 +34,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 	}
 
 	getValue(): To {
-		return this.transformer ? this.transformer(this._value) : this._value as unknown as To;
+		return this.transform ? this.transform(this._value) : this._value as unknown as To;
 	}
 
 	setValue(v: Ti) {
@@ -84,7 +84,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 		}
 	}
 
-	transformer?: (input: Ti) => To;
+	transform?: (input: Ti) => To;
 
 	nextId = 1;
 
