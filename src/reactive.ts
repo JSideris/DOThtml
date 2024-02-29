@@ -6,14 +6,16 @@ import { HtmlVdom } from "./vdom-nodes/html-vdom";
 import { ConditionalVdom } from "./vdom-nodes/conditional-vdom";
 import CollectionVdom from "./vdom-nodes/collection-vdom";
 import VStyle from "./v-style-nodes/v-style";
+import AttributeVNode from "./v-meta-nodes/attribute-v-node";
 
 const TEXT_OFFSET = 0;
 const HTML_OFFSET = 1;
 const ATTR_OFFSET = 2;
-const STYLE_OFFSET = 3;
-const COND_OFFSET = 4;
-const ARRAY_OFFSET = 5;
-const CB_OFFSET = 6; // Always last. User callbacks happen after the DOM is updated.
+const ATTR_COLLECTION_OFFSET = 3;
+const STYLE_OFFSET = 4;
+const COND_OFFSET = 5;
+const ARRAY_OFFSET = 6;
+const CB_OFFSET = 7; // Always last. User callbacks happen after the DOM is updated.
 
 const CATEGORIES = CB_OFFSET + 1;
 
@@ -25,6 +27,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 	observingTextNodes: Record<number, TextVdom> = {};
 	observingHtmlNodes: Record<number, HtmlVdom> = {};
 	observingAttributes: Record<number, {element: ElementVdom, attribute: string}> = {};
+	observingAttributeCollectionss: Record<number, AttributeVNode> = {};
 	observingCollections: Record<number, {collection: CollectionVdom, key?: string}> = {};
 	observingConditionals: Record<number, ConditionalVdom> = {};
 	observingStyles: Record<number, {prop: string, vStyle: VStyle}> = {};
@@ -60,6 +63,11 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 		for(let o in this.observingAttributes){
 			let a = this.observingAttributes[o];
 			a.element.setAttr(a.attribute, this);
+		}
+
+		for(let o in this.observingAttributeCollectionss){
+			let a = this.observingAttributeCollectionss[o];
+			a.update();
 		}
 
 		for(let o in this.observingStyles){
@@ -103,6 +111,11 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 		this.observingAttributes[id] = {element: node, attribute: attributeName};
 		return id;
 	}
+	subscribeAttrCollection(collection: AttributeVNode): number {
+		let id = ATTR_COLLECTION_OFFSET + CATEGORIES * this.nextId++;
+		this.observingAttributeCollectionss[id] = collection;
+		return id;
+	}
 	// Might change this up to support more advanced builder options.
 	subscribeStyle(vStyle: VStyle, propName: string): number {
 		let id = STYLE_OFFSET + CATEGORIES * this.nextId++;
@@ -134,6 +147,10 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 			}
 			case ATTR_OFFSET: {
 				delete this.observingAttributes[id];
+				break;
+			}
+			case ATTR_COLLECTION_OFFSET: {
+				delete this.observingAttributeCollectionss[id];
 				break;
 			}
 			case STYLE_OFFSET: {

@@ -24,8 +24,8 @@ let TextDisplay = dot.component<["txt"]>(class implements IComponent{
 	}
 });
 
-let YesNoButton = dot.component<["defaultValue"], []>(class implements IComponent{
-	value: IReactive = dot.watch({value: true});
+let YesNoButton = dot.component<["defaultValue", "yesText", "noText"], []>(class implements IComponent{
+	value = dot.watch(true);
 	_: FrameworkItems;
 
 	build(): IDotDocument {
@@ -35,18 +35,21 @@ let YesNoButton = dot.component<["defaultValue"], []>(class implements IComponen
 });
 
 describe("Components", ()=>{
-	test.only("Mount a component.", ()=>{
+	test("Mount a component.", ()=>{
 		
-		dot(document.body).mount(new YesNoButton({ defaultValue: 333}));
+		dot(document.body).mount(new YesNoButton({ defaultValue: true, yesText: "yes" }));
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001><div>yes</div></dothtml-10001>")
+		// expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001><div>yes</div></dothtml-10001>")
+		expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001></dothtml-10001>");
+		expect(formatHTML(document.body.children[0].shadowRoot?.innerHTML)).toBe("<div>yes</div>");
 	});
 	
 	test("Mount a component in a div.", ()=>{
 		
-		dot(document.body).div(new YesNoButton());
+		dot(document.body).div(new YesNoButton({ defaultValue: true, yesText: "yes" }));
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<div><dothtml-10001><div>yes</div></dothtml-10001></div>")
+		expect(formatHTML(document.body.innerHTML)).toBe("<div><dothtml-10001></dothtml-10001></div>")
+		expect(formatHTML(document.body.children[0].children[0].shadowRoot?.innerHTML)).toBe("<div>yes</div>");
 	});
 	
 	test("Try mounting a component twice.", ()=>{
@@ -71,17 +74,41 @@ describe("Components", ()=>{
 
 	test("Nested mount.", ()=>{
 		
-		dot(document.body).div(dot.mount(new YesNoButton()));
+		dot(document.body).div(dot.mount(new YesNoButton({ defaultValue: true, yesText: "yes" })));
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<div><dothtml-10001><div>yes</div></dothtml-10001></div>")
+		expect(formatHTML(document.body.innerHTML)).toBe("<div><dothtml-10001></dothtml-10001></div>");
+		expect(document.body.children[0].children[0].shadowRoot?.innerHTML).toBe("<div>yes</div>");
 	});
 	
 	test("Mount two components.", ()=>{
-		let c1 = new YesNoButton();
-		let c2 = new YesNoButton({defaultValue: false});
+		let c1 = new YesNoButton({defaultValue: true, yesText: "yes", noText: "no"});
+		let c2 = new YesNoButton({defaultValue: false, yesText: "yes", noText: "no"});
 
 		dot(document.body).mount(c1).mount(c2);
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001><div>yes</div></dothtml-10001><dothtml-10001><div>no</div></dothtml-10001>")
+		expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001></dothtml-10001><dothtml-10001></dothtml-10001>")
+		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>yes</div>");
+		expect(document.body.children[1].shadowRoot?.innerHTML).toBe("<div>no</div>");
+	});
+
+	test("Text binding.", ()=>{
+		let txt = dot.watch("abc");
+		let c1 = new TextDisplay({txt: txt});
+		
+		dot(document.body)
+			.mount(c1);
+
+		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>abc</div>");
+		
+		txt.setValue("def");
+
+		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>def</div>");
 	});
 });
+
+// TODO:
+// Test (conditional) deletions.
+// Test hooks.
+// Arrays of components.
+// Test nested components.
+// Test binding a component.

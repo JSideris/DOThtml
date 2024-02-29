@@ -1,5 +1,7 @@
 import { DOT_VDOM_PROP_NAME } from "../constants";
 import Reactive from "../reactive";
+import AttributeVNode from "../v-meta-nodes/attribute-v-node";
+import StyleVNode from "../v-meta-nodes/style-v-node";
 import BaseVStyle from "../v-style-nodes/base-v-style";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
@@ -14,6 +16,8 @@ export default class ElementVdom extends Vdom{
 	private events: Array<{name: string, callback: (e: Event)=>void}> = [];
 	private attributeObserverIds: Array<{id: number, observable: Reactive}> = [];
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
+	private attrVNodes: Array<AttributeVNode> = [];
+	private styleVNodes: Array<StyleVNode> = [];
 
 	constructor(tag: string){
 		super();
@@ -51,8 +55,17 @@ export default class ElementVdom extends Vdom{
 		for(let i = 0; i < this.childBuilders.length; i++){
 			this.childBuilders[i]._unrender();
 		}
-
 		this.childBuilders.length = 0;
+
+		for(let i = 0; i < this.attrVNodes.length; i++){
+			this.attrVNodes[i].unrender();
+		}
+		this.attrVNodes.length = 0;
+
+		for(let i = 0; i < this.styleVNodes.length; i++){
+			this.styleVNodes[i].unrender();
+		}
+		this.styleVNodes.length = 0;
 
 		for(let i = 0; i < this.attributeObserverIds.length; i++){
 			let item = this.attributeObserverIds[i];
@@ -71,6 +84,24 @@ export default class ElementVdom extends Vdom{
 	}
 
 	setAttr(attr, value){
+
+		attr = (attr ?? "").toLowerCase();
+
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Reactive)){
+			// Supports attributes that are space-separated, such as class and aria-*.
+			// Also supports styles.
+			switch(attr){
+				case "style": {
+					value = new StyleVNode(value);
+					break;
+				}
+				default: {
+					value = new AttributeVNode(attr, value);
+					break;
+				}
+			}
+		}
+
 		this.attributes[attr] = value;
 		if(this.element){
 			this.renderAttr(attr, value, this.element);
@@ -86,6 +117,10 @@ export default class ElementVdom extends Vdom{
 			if(value) node.setAttribute(attr, `${value}`);
 			else node.removeAttribute(attr);
 		}
+		else if(value instanceof Array){
+			// Like a space-separated class list.
+			node.setAttribute(attr, value.join(" "));
+		}
 		else if (value instanceof Reactive){
 			this.renderAttr(attr, value.getValue(), node);
 			let id = value.subscribeAttr(this, attr);
@@ -97,11 +132,21 @@ export default class ElementVdom extends Vdom{
 					value.setValue((this.element as HTMLInputElement)[attr]);
 				});
 			}
+
+			// TODO: support reactives of arrays. There's already a test for this.
 		}
-		else if (value instanceof BaseVStyle){
-			// Style building.
-			value._render(this.element);
-			this.childBuilders.push(value);
+		// else if (value instanceof BaseVStyle){
+		// 	// Style building.
+		// 	value._render(this.element);
+		// 	this.childBuilders.push(value);
+		// }
+		else if(value instanceof AttributeVNode){
+			value.render(node);
+
+		}
+		else if(value instanceof StyleVNode){
+
+
 		}
 		else{
 			// TODO: 

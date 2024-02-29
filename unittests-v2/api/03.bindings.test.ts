@@ -466,3 +466,46 @@ describe("Iteration w/ binding.", () => {
 
 	// Bindings nested in the rendered array.
 });
+
+// This may be a stupid feature. Let's leave it out for now.
+// describe.only("Chainable bindings.", ()=>{
+// 	test("Basic chain.", ()=>{
+// 		let obsMaster = dot.watch("a");
+// 		let obsSlave = dot.watch(obsMaster);
+// 		dot(document.body).text(obsMaster).text(obsSlave);
+// 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("aa"));
+// 		// This particular test may not be needed.
+// 		// It's already forbidden by the type system.
+// 		// I'm also not certain what the approriate defined outcome should be (should it change or throw?).
+// 		// obsSlave.setValue("b");
+// 		// expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("aa"));
+// 		obsMaster.setValue("c");
+// 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("cc"));
+// 	});
+// });
+
+describe("Special attributes.", ()=>{
+	test("Class attribute as a JSON object.", () => {
+		let binding = dot.watch(false);
+		dot(document.body).div({ class: { "my-class": true, "your-class": binding } });
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class></div>`);
+		binding.setValue(true);
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class your-class></div>`);
+	});
+
+	test("Class attribute as an array.", () => {
+		let data = ["class-a", "class-b", "class-c"];
+		let bindings = dot.watch(data);
+
+		dot(document.body).div({ class: bindings });
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=class-a class-b class-c></div>`);
+
+		data.splice(1, 1);
+		bindings.updateObservers();
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=class-a class-c></div>`);
+	});
+
+	// TODO: should we allow arrays of bindings?
+
+	// TODO: All this should work with rerendering.
+});

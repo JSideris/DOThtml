@@ -4,6 +4,9 @@ import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
 import { component } from "../../src/decoration/component";
 
+// TODO:
+// - Don't forget styles should be able to be applied to classes that affect multiple elements.
+
 afterEach(() => { 
 	let styles = document.getElementsByTagName("style");
 

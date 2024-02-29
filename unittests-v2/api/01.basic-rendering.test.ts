@@ -149,6 +149,19 @@ describe("Nesting.", ()=>{
 	});	
 });
 
+describe("Special attributes.", ()=>{
+
+	test("Class attribute as a JSON object.", () => {
+		dot(document.body).div({ class: { "my-class": true, "your-class": false } });
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class></div>`);
+	});
+
+	test("Class attribute as an array.", () => {
+		dot(document.body).div({ class: ["my-class", "your-class"] });
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class your-class></div>`);
+	});
+});
+
 // TODO: these may or may not be legitimate. 
 // describe("Updating attributes on the target.", ()=>{
 // 	test("Set class name on target.", ()=>{

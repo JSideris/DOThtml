@@ -49,17 +49,20 @@ export function component(Base: new(...args:Array<any>)=>IComponent, styles: [])
 		_: FrameworkItems;
 
 		constructor(...args: any[]){
-			super(...args);
+			super();
 
 			if(!this._){
 				(this._ as any) = {};
 			}
 			(this._.refs as any) = {};
+			(this._.props as any) = args[0] || {};
 			(this._.restyle as any) = ()=>{restyle(this)};
 			(this._._meta as any) = this._._meta || {};
 			(this._._meta.args as any) = args;
 			(this._._meta.isRendered as any) = false;
 			(this._._meta.tagName as any) = tagName;
+
+
 			if(sharedStyles){
 				if(this._._meta.sharedStyles){
 					(this._._meta.sharedStyles as any) = [...this._._meta.sharedStyles, ...sharedStyles];
