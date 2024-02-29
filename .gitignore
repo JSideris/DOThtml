@@ -1,2 +1,6 @@
 node_modules/
+
 lib/
+build_module/
+build_umd/
+dist
