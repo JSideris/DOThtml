@@ -1,16 +1,15 @@
 import { dot } from "dothtml";
 import styles from "./main-features.css";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 
-@dot.component
-@dot.component.useStyles(styles)
-class MainFeatures implements IComponent{
-	events?: string[];
-	_?: FrameworkItems;
-	build(): IDotGenericElement {
-		return dot.div();
-	}
+const MainFeatures = dot.component(
+	class MainFeatures implements IComponent{
+		_?: FrameworkItems;
+		build() {
+			return dot.div();
+		}
 
-}
+	}, [styles]
+);
 
 export default MainFeatures;

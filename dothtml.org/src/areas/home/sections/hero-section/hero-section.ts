@@ -1,26 +1,28 @@
 import { dot } from "dothtml";
 import styles from "./hero-section.css";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 import LargeLogoPart from "./large-logo-part/large-logo-part";
 import QuickStartPart from "./quick-start-part/quick-start-part";
 import HeroFeaturesPart from "./hero-features-part/hero-features-part";
 
-@dot.component
-@dot.component.useStyles(styles)
-class HeroSection implements IComponent{
-	events?: string[];
-	_?: FrameworkItems;
-	build(): IDotGenericElement {
-		return dot.div(
-			dot.div(
-				dot
-					.div(new LargeLogoPart()).id("logo-pane")
-					.div(new QuickStartPart()).id("quickstart-pane")
-			).id("logo-and-quickstart")
-			.div(new HeroFeaturesPart()).id("info-tags")
-		).id("content");
+const HeroSection = dot.component(
+	class implements IComponent{
+		events?: string[];
+		_?: FrameworkItems;
+		build() {
+			return dot.div(
+				{ id: "content" },
+				dot.div(
+					{id: "logo-and-quickstart"}, 
+					dot
+						.div({id: "logo-pane"}, new LargeLogoPart())
+						.div({id: "quickstart-pane"}, new QuickStartPart())
+				)
+				.div({id: "info-tags"}, new HeroFeaturesPart())
+			);
+		}
 	}
-
-}
+	[styles]
+)
 
 export default HeroSection;

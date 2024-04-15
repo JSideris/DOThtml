@@ -4,6 +4,15 @@ import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
 import { component } from "../../src/decoration/component";
 
+// TODO:
+// Test (conditional) deletions.
+// Test hooks.
+// Arrays of components.
+// Test nested components.
+// Test binding a component.
+// Test events.
+// Test calling a component method.
+
 afterEach(() => { 
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
@@ -106,9 +115,3 @@ describe("Components", ()=>{
 	});
 });
 
-// TODO:
-// Test (conditional) deletions.
-// Test hooks.
-// Arrays of components.
-// Test nested components.
-// Test binding a component.

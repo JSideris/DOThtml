@@ -1,8 +1,7 @@
 import Reactive from "../reactive";
 import VStyle from "./v-style";
 
-
-export default abstract class CssFunctionBuilderVStyle extends VStyle{
+export default abstract class CssFunctionBuilderVStyle{
 
 	simpleValue: string;
 	funcs: Array<{
@@ -14,79 +13,105 @@ export default abstract class CssFunctionBuilderVStyle extends VStyle{
 	target: HTMLElement;
 
 	constructor(propName: string){
-		super();
 		this.propName = propName;
 	}
 
-	_render(target: HTMLElement) {
-		this.target = target;
+	toString(): string {
 		let result = "";
 
-
 		// Set the bindings.
-		for(let i = 0; i < this.funcs.length; i++){
-			let t = this.funcs[i];
-			for(let k = 0; k < t.args.length; k++){
-				let arg = t.args[k];
+		for(let t of this.funcs){
+			// TODO: need to handle units and special types.
+			let argValues = t.args.map(arg => {
 				if(arg.v instanceof Reactive){
-					let subscriptionId = arg.v.subscribeStyle(this, t.func);
-					this.subscriptions[subscriptionId] = arg.v;
-				}
-			}
-		}
-
-		if(this.simpleValue){
-			result = this.simpleValue;
-			target.style[this.propName] = result;
-		}
-		else{
-			this.updateProp(null, null);
-		}
-	}
-
-	_unrender() {
-		for(let s in this.subscriptions){
-			this.subscriptions[s].detachBinding(Number(s));
-		}
-
-		this.subscriptions = {};
-
-		this.target = null;
-	}
-
-	// There's no updating props. All you can do is rerender the whole thing.
-	updateProp(prop: string, value: string) {
-		let isSimple = true;
-		let ret = "";
-
-		for(let i = 0; i < this.funcs.length; i++){
-			let t = this.funcs[i];
-			ret += t.func + "(";
-			for(let k = 0; k < t.args.length; k++){
-				let arg = t.args[k];
-				// let v = arg.f ? arg.f(arg.v) : arg.v;
-				let argVal = "";
-				if(arg.v instanceof Reactive){
-					argVal = arg.v.getValue();
-					isSimple = false;
+					return arg.f(arg.v.getValue());
 				}
 				else{
-					argVal = `${arg.v}`;
+					return arg.f(arg.v).split(" ").join(", ");
 				}
+			}).join(", ");
 
-				if(arg.f) argVal = arg.f(argVal);
-
-				ret += argVal.toString();
-			}
-			ret = ret.trim() + ") ";
+			
+			result += `${t.func}(${argValues}) `;
 		}
-		ret = ret.trim();
-
-		if(isSimple){
-			this.simpleValue = ret;
-		}
-		this.target.style[this.propName] = ret;
+		
+		return result.trim();
 	}
+
+	// _render(target: HTMLElement) {
+	// 	this.target = target;
+	// 	let result = "";
+
+
+	// 	// Set the bindings.
+	// 	for(let i = 0; i < this.funcs.length; i++){
+	// 		let t = this.funcs[i];
+	// 		for(let k = 0; k < t.args.length; k++){
+	// 			let arg = t.args[k];
+	// 			if(arg.v instanceof Reactive){
+	// 				let subscriptionId = arg.v.subscribeStyle(this, t.func);
+	// 				this.subscriptions[subscriptionId] = arg.v;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	// console.log("Setting prop", this.propName);
+	// 	// console.log("Is simple?", this.simpleValue);
+
+	// 	if(this.simpleValue){
+	// 		result = this.simpleValue;
+	// 		target.style[this.propName] = result;
+	// 	}
+	// 	else{
+	// 		this.updateProp(null, null);
+	// 	}
+	// }
+
+	// _unrender() {
+	// 	for(let s in this.subscriptions){
+	// 		this.subscriptions[s].detachBinding(Number(s));
+	// 	}
+
+	// 	this.subscriptions = {};
+
+	// 	this.target = null;
+	// }
+
+	// There's no updating props. All you can do is rerender the whole thing.
+	// updateProp(prop: string, value: string) {
+	// 	throw new Error("Don't call updateProp.");
+	// 	let isSimple = true;
+	// 	let ret = "";
+
+	// 	for(let i = 0; i < this.funcs.length; i++){
+	// 		let t = this.funcs[i];
+	// 		ret += t.func + "(";
+	// 		for(let k = 0; k < t.args.length; k++){
+	// 			let arg = t.args[k];
+	// 			// let v = arg.f ? arg.f(arg.v) : arg.v;
+	// 			let argVal = "";
+	// 			if(arg.v instanceof Reactive){
+	// 				argVal = arg.v.getValue();
+	// 				isSimple = false;
+	// 			}
+	// 			else{
+	// 				argVal = `${arg.v}`;
+	// 			}
+
+	// 			if(arg.f) argVal = arg.f(argVal);
+
+	// 			ret += argVal.toString();
+	// 		}
+	// 		ret = ret.trim() + ") ";
+	// 	}
+	// 	ret = ret.trim();
+
+	// 	if(isSimple){
+	// 		this.simpleValue = ret;
+	// 	}
+	// 	this.target.style[this.propName] = ret;
+	// }
+
 
 	appendFunction(filter: string, args){
 		this.funcs.push({func: filter, args: args});

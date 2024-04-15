@@ -7,10 +7,13 @@ import { ConditionalVdom } from "./vdom-nodes/conditional-vdom";
 import CollectionVdom from "./vdom-nodes/collection-vdom";
 import VStyle from "./v-style-nodes/v-style";
 import AttributeVNode from "./v-meta-nodes/attribute-v-node";
+import VMetaNode from "./v-meta-nodes/v-meta-node";
 
 const TEXT_OFFSET = 0;
 const HTML_OFFSET = 1;
 const ATTR_OFFSET = 2;
+// Note: this specific interface is extremely simple, and it may be possible to generalize it and use it for other places
+// where we need reactive values. All you need is an update function pretty much.
 const ATTR_COLLECTION_OFFSET = 3;
 const STYLE_OFFSET = 4;
 const COND_OFFSET = 5;
@@ -27,7 +30,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 	observingTextNodes: Record<number, TextVdom> = {};
 	observingHtmlNodes: Record<number, HtmlVdom> = {};
 	observingAttributes: Record<number, {element: ElementVdom, attribute: string}> = {};
-	observingAttributeCollectionss: Record<number, AttributeVNode> = {};
+	observingAttributeCollectionss: Record<number, VMetaNode> = {};
 	observingCollections: Record<number, {collection: CollectionVdom, key?: string}> = {};
 	observingConditionals: Record<number, ConditionalVdom> = {};
 	observingStyles: Record<number, {prop: string, vStyle: VStyle}> = {};
@@ -111,7 +114,7 @@ export default class Reactive<Ti = any, To = Ti> implements IReactive<Ti, To>{
 		this.observingAttributes[id] = {element: node, attribute: attributeName};
 		return id;
 	}
-	subscribeAttrCollection(collection: AttributeVNode): number {
+	subscribeAttrCollection(collection: VMetaNode): number {
 		let id = ATTR_COLLECTION_OFFSET + CATEGORIES * this.nextId++;
 		this.observingAttributeCollectionss[id] = collection;
 		return id;

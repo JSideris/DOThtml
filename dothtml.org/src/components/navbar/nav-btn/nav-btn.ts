@@ -1,21 +1,24 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 import styles from "./nav-btn.css";
 
-@dot.component
-@dot.component.useStyles(styles)
-class NavBtn implements IComponent{
+const NavBtn = dot.component<["text"], ["click"]>(
+	class implements IComponent{
 
-	constructor(text: string){}
+		// events?: string[] = ["click"];
+		_?: FrameworkItems;
+		build() {
+			return dot.a(
+				{ 
+					id: "container", 
+					onClick: ()=>this._.emit("click") 
+				},
+				this._.props.text
+			);
+		}
 
-	events?: string[] = ["click"];
-	_?: FrameworkItems;
-	build(text: string): IDotGenericElement {
-		return dot.a(
-			text
-		).id("container").onClick(()=>this._.emit("click"));
-	}
-
-}
+	},
+	[styles]
+);
 
 export default NavBtn;

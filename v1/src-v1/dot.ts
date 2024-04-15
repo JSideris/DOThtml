@@ -1,17 +1,17 @@
 
 import eventBus from "./event-bus";
 import dotcss, { _Builder } from "./styling/style-builder";
-import ERR from "./err";
+// import ERR from "./err";
 import { ClassPrefix, eachK, GlobalComponentStack, isF, sT, str } from "./dot-util";
 import ComponentWrapper, { IWrappedComponent } from "./component-factory";
-import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
-import ObservableArray from "./observable-array";
+// import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
+// import ObservableArray from "./observable-array";
 import { DotContent, FrameworkItems, IComponent, IDotCore, IDotDocument, IDotElementDocument, IDotGenericElement } from "dothtml-interfaces";
-import VdomNode from "./vdom-node";
-import ComponentFactory from "./component-factory";
+// import VdomNode from "./vdom-node";
+// import ComponentFactory from "./component-factory";
 
 // TODO: idieally with the new vdoms we'd be getting rid of this.
-const DOCEL = "DOTHTML-DOCUMENT";
+// const DOCEL = "DOTHTML-DOCUMENT";
 // const DEFEL = "DOTHTML-DEFER";
 
 // This is the targetter function that allows dot to be rendered to a target.
@@ -51,12 +51,12 @@ const dot: IDotCore = (function(targetSelector: string|Element|Node|NodeList|Arr
 
 
 // This is for associating IDs to each anonymous function.
-let _anonFuncCounter = 0;
+// let _anonFuncCounter = 0;
 
 // Extend the dot prototype as well as the singleton.
-function ext(name: string, method: Function){
-	_p[name] = dot[name] = method;
-}
+// function ext(name: string, method: Function){
+// 	_p[name] = dot[name] = method;
+// }
 
 // Deletes one element (and not its children). 
 // Used by _p.empty and _p.remove.
@@ -107,30 +107,30 @@ function deleteElement(element: Element){
 // };
 
 // Selection Mode enum.
-export const SELECTOR_MODE = 1;
-export const ATTRIBUTE_MODE = 2;
+// export const SELECTOR_MODE = 1;
+// export const ATTRIBUTE_MODE = 2;
 
 // TODO: this might need to go in just the right place.
 // dotReady(dot, _p, _D);
 // Dot document object.
 // Formerly _D
-var DotDocument: IDotDocument = (function(dotDocument?: Element, classPrefix?: number, targetWindow: Window&(typeof globalThis) = window) {
-		// Private vars.
+// var DotDocument: IDotDocument = (function(dotDocument?: Element, classPrefix?: number, targetWindow: Window&(typeof globalThis) = window) {
+// 		// Private vars.
 
-		this.__document = dotDocument;
-		this.__lastNode = dotDocument ? dotDocument.lastChild : null;
-		this.__if = null;
-		this.__pendingCalls = []; //Allows you to set parent attributes from children.
-		this.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
-		this.__classPrefix = classPrefix || 0;
-		this.__classedElements = [];
-		this.__selectionMode = SELECTOR_MODE;
-		this.__window = targetWindow;
+// 		this.__document = dotDocument;
+// 		this.__lastNode = dotDocument ? dotDocument.lastChild : null;
+// 		this.__if = null;
+// 		this.__pendingCalls = []; //Allows you to set parent attributes from children.
+// 		this.__anonAttrFuncs = {}; //Only to be used by top-level dot object.
+// 		this.__classPrefix = classPrefix || 0;
+// 		this.__classedElements = [];
+// 		this.__selectionMode = SELECTOR_MODE;
+// 		this.__window = targetWindow;
 	
-}) as IDotDocument;
-// Prototype for the dot document object.
+// }) as IDotDocument;
+// // Prototype for the dot document object.
 
-var _p = (DotDocument as unknown as Function).prototype;
+// var _p = (DotDocument as unknown as Function).prototype;
 
 // var allTags = [];
 
@@ -148,46 +148,46 @@ var _p = (DotDocument as unknown as Function).prototype;
 // }
 // for(i in allEventAttr) createAttribute(allEventAttr[i]);
 
-ext("as", function<T extends IDotDocument>(dotElement: (...props: any[])=>T): T{
-	return this;
-});
+// ext("as", function<T extends IDotDocument>(dotElement: (...props: any[])=>T): T{
+// 	return this;
+// });
 
-ext("_getNewDocument", function(){
-	return getDocument().createElement(DOCEL);
-});
+// ext("_getNewDocument", function(){
+// 	return getDocument().createElement(DOCEL);
+// });
 
-ext("_getAnInstance", function(): IDotDocument{
-	if(this.__document || this.__pendingCalls.length > 0) return this;
-	else {
-		var d = new DotDocument(null, this.__classPrefix);
-		d.__if = this.__if;
-		return d;
-	};
-});
+// ext("_getAnInstance", function(): IDotDocument{
+// 	if(this.__document || this.__pendingCalls.length > 0) return this;
+// 	else {
+// 		var d = new DotDocument(null, this.__classPrefix);
+// 		d.__if = this.__if;
+// 		return d;
+// 	};
+// });
 
-ext("_getLastChildOrNull", function(): ChildNode{
-	if(this.__document && this.__document.lastChild) return this.__document.lastChild;
-	return null;
-});
+// ext("_getLastChildOrNull", function(): ChildNode{
+// 	if(this.__document && this.__document.lastChild) return this.__document.lastChild;
+// 	return null;
+// });
 
 //I'm not sure if this is supported anymore.
-ext("getLast", function(): Node{
-	return this._getLastChildOrNull();
-});
-ext("getCurrent", function(): Node{
-	let last;
-	switch(dot["__selectionMode"]){
-		case SELECTOR_MODE:{
-			last = this.__document;
-			break;
-		}
-		case ATTRIBUTE_MODE:{
-			last = this.getLast() || this.__document;
-			break;
-		}
-	}
-	return last;
-});
+// ext("getLast", function(): Node{
+// 	return this._getLastChildOrNull();
+// });
+// ext("getCurrent", function(): Node{
+// 	let last;
+// 	switch(dot["__selectionMode"]){
+// 		case SELECTOR_MODE:{
+// 			last = this.__document;
+// 			break;
+// 		}
+// 		case ATTRIBUTE_MODE:{
+// 			last = this.getLast() || this.__document;
+// 			break;
+// 		}
+// 	}
+// 	return last;
+// });
 
 // _p.toString = function(){
 // 	if(this.__document) return this.__document.innerHTML;
@@ -205,146 +205,146 @@ _p.ref = function(name){
 }
 
 //before is passed in so that attributes can be associated with before's sibling, instead of inheritingParent, the default.
-ext("_evalContent", function(content: DotContent, pendingCalls?: Array<unknown>){
-	if(content == null || content == undefined) return null;
-	if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
-		let nDot = new DotDocument(this._getNewDocument(), this.__classPrefix);
-		nDot.__document.innerHTML = content;
-		return nDot.__document.childNodes;
-	}
-	else if(content instanceof VdomNode){
-		return content.render(getDocument());
-	}
-	else if(content instanceof getWindow().Node) return content;
-	else if(Object.prototype.toString.call( content ) === '[object Array]') { //Array
-		let nDot = new DotDocument(this._getNewDocument(), this.__classPrefix);
-		for(let i = 0; i < (content as Array<unknown>).length; i++){
-			nDot._appendOrCreateDocument((content as DotContent)[i]);
-		}
-		if(nDot.__document) return nDot.__document.childNodes;
-	}
-	else if(isF(content)) //Function to evaluate
-	{
-		return this._evalContent((content as (()=>DotContent))(), pendingCalls);
-	}
-	else if((typeof content) == "object" && content["$"] && isF(content["build"])){
-		return this._evalContent(ComponentWrapper.build(content as IWrappedComponent));
-	}
-	else if(content instanceof DotDocument) { //DOT
-		for(let i = 0; i < content["__pendingCalls"].length; i++){
-			pendingCalls.push(content["__pendingCalls"][i]);
-		}
+// ext("_evalContent", function(content: DotContent, pendingCalls?: Array<unknown>){
+// 	if(content == null || content == undefined) return null;
+// 	if(typeof content === "string" || typeof content === "number" || typeof content === "boolean") { //Raw data
+// 		let nDot = new DotDocument(this._getNewDocument(), this.__classPrefix);
+// 		nDot.__document.innerHTML = content;
+// 		return nDot.__document.childNodes;
+// 	}
+// 	else if(content instanceof VdomNode){
+// 		return content.render(getDocument());
+// 	}
+// 	else if(content instanceof getWindow().Node) return content;
+// 	else if(Object.prototype.toString.call( content ) === '[object Array]') { //Array
+// 		let nDot = new DotDocument(this._getNewDocument(), this.__classPrefix);
+// 		for(let i = 0; i < (content as Array<unknown>).length; i++){
+// 			nDot._appendOrCreateDocument((content as DotContent)[i]);
+// 		}
+// 		if(nDot.__document) return nDot.__document.childNodes;
+// 	}
+// 	else if(isF(content)) //Function to evaluate
+// 	{
+// 		return this._evalContent((content as (()=>DotContent))(), pendingCalls);
+// 	}
+// 	else if((typeof content) == "object" && content["$"] && isF(content["build"])){
+// 		return this._evalContent(ComponentWrapper.build(content as IWrappedComponent));
+// 	}
+// 	else if(content instanceof DotDocument) { //DOT
+// 		for(let i = 0; i < content["__pendingCalls"].length; i++){
+// 			pendingCalls.push(content["__pendingCalls"][i]);
+// 		}
 		
-		let cp = this.__classPrefix;
-		for(let i in content["__classedElements"]){
-			let el = content["__classedElements"][i];
-			if(!cp){
-				this["__classedElements"].push(el);
-			}
-			else{
-				el.className = "dot-" + str(cp,16) + "-" + el.className;
-			}
-		}
-		if(content["__document"]) return content["__document"].childNodes; //Return all the nodes in here.
-	}
+// 		let cp = this.__classPrefix;
+// 		for(let i in content["__classedElements"]){
+// 			let el = content["__classedElements"][i];
+// 			if(!cp){
+// 				this["__classedElements"].push(el);
+// 			}
+// 			else{
+// 				el.className = "dot-" + str(cp,16) + "-" + el.className;
+// 			}
+// 		}
+// 		if(content["__document"]) return content["__document"].childNodes; //Return all the nodes in here.
+// 	}
 	
-	return null;
-});
+// 	return null;
+// });
 
-ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element, beforeNode?: Node|number){
-	var T = this;
-	// Validation
-;;;	if(parentEl && beforeNode && isNaN(beforeNode as any) && (beforeNode as Node).parentNode != parentEl) throw "beforeNode is not in parentEl.";
+// ext("_appendOrCreateDocument", function(content: DotContent, parentEl?: Element, beforeNode?: Node|number){
+// 	var T = this;
+// 	// Validation
+// ;;;	if(parentEl && beforeNode && isNaN(beforeNode as any) && (beforeNode as Node).parentNode != parentEl) throw "beforeNode is not in parentEl.";
 
-	// Find the parent, or create one.
-	//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. )
-	parentEl = parentEl || (beforeNode && isNaN(beforeNode as any) ? (beforeNode as Node).parentNode : null) || T.__document || T._getNewDocument();
+// 	// Find the parent, or create one.
+// 	//Note: the stuff with setting parentEl to beforeNode's parent is due to a very strange bug where this.__document gets set to some phantom document when the wait function is used inside a div like so: DOT.div(DOT.wait(100, "hello!")); Try it. )
+// 	parentEl = parentEl || (beforeNode && isNaN(beforeNode as any) ? (beforeNode as Node).parentNode : null) || T.__document || T._getNewDocument();
 	
-	if(!isNaN(beforeNode as any)){
-		beforeNode = parentEl.childNodes[beforeNode as number];
-//;;;		if(!beforeNode) throw "beforeNode not found."; // TODO: reenable this and investigate why it breaks.
-	}
+// 	if(!isNaN(beforeNode as any)){
+// 		beforeNode = parentEl.childNodes[beforeNode as number];
+// //;;;		if(!beforeNode) throw "beforeNode not found."; // TODO: reenable this and investigate why it breaks.
+// 	}
 
-	// nd is a dot wrapper for parentEl (allows us to do dot ops on it).
-	var nd = T.__document === parentEl ? T : new DotDocument(parentEl, T.__classPrefix);
-	nd.__if = T.__if;
-	var pendingCalls = []; //This will populate with pending calls.
+// 	// nd is a dot wrapper for parentEl (allows us to do dot ops on it).
+// 	var nd = T.__document === parentEl ? T : new DotDocument(parentEl, T.__classPrefix);
+// 	nd.__if = T.__if;
+// 	var pendingCalls = []; //This will populate with pending calls.
 	
-	// Evaluate the content. This does not add it to the DOM pet.
-	var eContent;
-	var cf = isF(content);
-	// If it's a function, we need to consider 
-	//if(cf) dot.__currentArgCallback.push({f:content,e:parentEl})
-	if(cf) dot["__currentArgCallback"].push(new ContentArgCallback(parentEl, content as ()=>string));
-	try{
-		eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
-	}
-	finally{
-		if(cf) dot["__currentArgCallback"].pop();
-	}
+// 	// Evaluate the content. This does not add it to the DOM pet.
+// 	var eContent;
+// 	var cf = isF(content);
+// 	// If it's a function, we need to consider 
+// 	//if(cf) dot.__currentArgCallback.push({f:content,e:parentEl})
+// 	if(cf) dot["__currentArgCallback"].push(new ContentArgCallback(parentEl, content as ()=>string));
+// 	try{
+// 		eContent = nd._evalContent(content, /*parentEl, beforeNode,*/ pendingCalls);
+// 	}
+// 	finally{
+// 		if(cf) dot["__currentArgCallback"].pop();
+// 	}
 
 
-	// Pending calls are calls included in the dot element which didn't get consumed and must be propagated up.
-	// This usually includes attributes and waits.
-	for(var i = 0; i < pendingCalls.length; i++){
-		var call = pendingCalls[i];
-		//Three possibilities.
-		//1. Use the pending call against the last sibling element, if one exists.
-		//2. Otherwise, use it on the current parent, if it's ready.
-		//3. Otherwise, save it as a pending call right here. // Don't think this ever happens.
-		var pendingCallTarget = (beforeNode ? ((beforeNode as Node).previousSibling || parentEl /*Since lastChild will be a timeout*/) : null /*1*/) || parentEl.lastChild /*2*/ || parentEl; 
-		if(pendingCallTarget && (pendingCallTarget as Element).tagName != "DOCUMENT"){
-			if (call.type == "attr") {
-				if (!isF(call.params[0])) {
-					(pendingCallTarget as Element).setAttribute(call.name, call.params[0]);
-				}
-				else {
-					// TODO: how do we know it's a valid event?
-					let newName:string = call.name;
-					attachEvent((pendingCallTarget as Element), newName, call.params[0], call.arg3);
-				}
-			}
-			else if(call.type == "wait"){
-				call.callback();
-			}
-		}
-		else{
-			nd.__pendingCalls.push(call); /*3*/
-		}
-	}
+// 	// Pending calls are calls included in the dot element which didn't get consumed and must be propagated up.
+// 	// This usually includes attributes and waits.
+// 	for(var i = 0; i < pendingCalls.length; i++){
+// 		var call = pendingCalls[i];
+// 		//Three possibilities.
+// 		//1. Use the pending call against the last sibling element, if one exists.
+// 		//2. Otherwise, use it on the current parent, if it's ready.
+// 		//3. Otherwise, save it as a pending call right here. // Don't think this ever happens.
+// 		var pendingCallTarget = (beforeNode ? ((beforeNode as Node).previousSibling || parentEl /*Since lastChild will be a timeout*/) : null /*1*/) || parentEl.lastChild /*2*/ || parentEl; 
+// 		if(pendingCallTarget && (pendingCallTarget as Element).tagName != "DOCUMENT"){
+// 			if (call.type == "attr") {
+// 				if (!isF(call.params[0])) {
+// 					(pendingCallTarget as Element).setAttribute(call.name, call.params[0]);
+// 				}
+// 				else {
+// 					// TODO: how do we know it's a valid event?
+// 					let newName:string = call.name;
+// 					attachEvent((pendingCallTarget as Element), newName, call.params[0], call.arg3);
+// 				}
+// 			}
+// 			else if(call.type == "wait"){
+// 				call.callback();
+// 			}
+// 		}
+// 		else{
+// 			nd.__pendingCalls.push(call); /*3*/
+// 		}
+// 	}
 
-	// Append content to the current document.
-	if(eContent !== null && eContent !== undefined){
-		if( eContent instanceof getWindow().NodeList ) {
-			//for(var i = 0; i < eContent.length; i++){
-			while(eContent.length > 0){
-				if(beforeNode) parentEl.insertBefore(eContent[0], beforeNode as Node);
-				else parentEl.appendChild(eContent[0]);
-			}
-		}
-		else{
-			if(beforeNode) parentEl.insertBefore(eContent, beforeNode as Node);
-			else parentEl.appendChild(eContent);
-		}
-	}
+// 	// Append content to the current document.
+// 	if(eContent !== null && eContent !== undefined){
+// 		if( eContent instanceof getWindow().NodeList ) {
+// 			//for(var i = 0; i < eContent.length; i++){
+// 			while(eContent.length > 0){
+// 				if(beforeNode) parentEl.insertBefore(eContent[0], beforeNode as Node);
+// 				else parentEl.appendChild(eContent[0]);
+// 			}
+// 		}
+// 		else{
+// 			if(beforeNode) parentEl.insertBefore(eContent, beforeNode as Node);
+// 			else parentEl.appendChild(eContent);
+// 		}
+// 	}
 	
-	return nd;
-	//return this;
-});
+// 	return nd;
+// 	//return this;
+// });
 
-ext("el", function(tag: string, content?: DotContent): IDotElementDocument<IDotGenericElement>{
-	var T = this;
-	var ne = getDocument().createElement(tag); 
-	var nDoc = T.__document || T._getNewDocument();
-	nDoc.appendChild(ne);
-	if(content) T._appendOrCreateDocument(content, ne);
-	var ret = T.__document === nDoc ? T : new DotDocument(nDoc, T.__classPrefix);
-	if(content && content instanceof DotDocument) for(var i in content["__classedElements"]) ret.__classedElements.push(content["__classedElements"][i]);
+// ext("el", function(tag: string, content?: DotContent): IDotElementDocument<IDotGenericElement>{
+// 	var T = this;
+// 	var ne = getDocument().createElement(tag); 
+// 	var nDoc = T.__document || T._getNewDocument();
+// 	nDoc.appendChild(ne);
+// 	if(content) T._appendOrCreateDocument(content, ne);
+// 	var ret = T.__document === nDoc ? T : new DotDocument(nDoc, T.__classPrefix);
+// 	if(content && content instanceof DotDocument) for(var i in content["__classedElements"]) ret.__classedElements.push(content["__classedElements"][i]);
 
-	dot["__selectionMode"] = ATTRIBUTE_MODE;
+// 	dot["__selectionMode"] = ATTRIBUTE_MODE;
 
-	return ret;
-});
+// 	return ret;
+// });
 
 // ext("h", function(content): IDotDocument{
 // 	var T = this;
@@ -367,75 +367,75 @@ ext("el", function(tag: string, content?: DotContent): IDotElementDocument<IDotG
 // 	return new DotDocument(nDoc, this.__classPrefix);
 // });
 
-ext("attr", function(attr, value, arg3?){
-	var T = this;
-	if (isF(value)) { // events.
-		if (attr.indexOf("on") == 0 && allEventAttr.indexOf(attr) != -1) {
-			attr = attr.substring(2).toLowerCase();
-		}
-		else {
-			// Unrecognized event.
-			dot["__anonAttrFuncs"][_anonFuncCounter] = (value);
-			value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
-			// attr = attr.substring(2);
-		}
-	}
+// ext("attr", function(attr, value, arg3?){
+// 	var T = this;
+// 	if (isF(value)) { // events.
+// 		if (attr.indexOf("on") == 0 && allEventAttr.indexOf(attr) != -1) {
+// 			attr = attr.substring(2).toLowerCase();
+// 		}
+// 		else {
+// 			// Unrecognized event.
+// 			dot["__anonAttrFuncs"][_anonFuncCounter] = (value);
+// 			value = "dot.__anonAttrFuncs[" + (_anonFuncCounter++) + "](arguments[0]);"
+// 			// attr = attr.substring(2);
+// 		}
+// 	}
 
-	if(T.__document) {
-		var cn = T.__document.childNodes;
-		var last = cn[cn.length - 1];
-		if(last && last.setAttribute){
-			if (!isF(value)) {
+// 	if(T.__document) {
+// 		var cn = T.__document.childNodes;
+// 		var last = cn[cn.length - 1];
+// 		if(last && last.setAttribute){
+// 			if (!isF(value)) {
 
-				// Objects (except for the css builder :/)
-				if(typeof value == "object" && !(value instanceof _Builder)){
-					var originalValue = value;
-					var valueSetter = function(){
-						var str = "";
-						eachK(originalValue, function(k,v){
-							v = isF(v) ? v() : v;
-							if(!v) return;
-							str += " " + k
-						});
-						return str.substring(1);
-					}
+// 				// Objects (except for the css builder :/)
+// 				if(typeof value == "object" && !(value instanceof _Builder)){
+// 					var originalValue = value;
+// 					var valueSetter = function(){
+// 						var str = "";
+// 						eachK(originalValue, function(k,v){
+// 							v = isF(v) ? v() : v;
+// 							if(!v) return;
+// 							str += " " + k
+// 						});
+// 						return str.substring(1);
+// 					}
 
-					//dot.__currentArgCallback.push({f:valueSetter,e:parentEl,a:attr})
-					dot["__currentArgCallback"].push(new AttrArgCallback(last, attr, valueSetter));
-					value = valueSetter();
-					dot["__currentArgCallback"].pop();
-				}
+// 					//dot.__currentArgCallback.push({f:valueSetter,e:parentEl,a:attr})
+// 					dot["__currentArgCallback"].push(new AttrArgCallback(last, attr, valueSetter));
+// 					value = valueSetter();
+// 					dot["__currentArgCallback"].pop();
+// 				}
 
-				var eValue = last.getAttribute(attr); //Appends the new value to any existing value.
-				if (!eValue) eValue = ""; else eValue += " ";
-				last.setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
-			}
-			else {
-				attachEvent(last, attr, value, arg3);
-			}
-		}
-	}
-	else{
-		// TODO: should probably remove pending calls. This has turned out to be an anti-pattern.
-		var pD = T._getAnInstance();
-		//if(!pD.__pendingCalls.length > 0) pD.__pendingCalls = [];
-		pD.__pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
-		return pD;
-	}
-	return T;
-});
+// 				var eValue = last.getAttribute(attr); //Appends the new value to any existing value.
+// 				if (!eValue) eValue = ""; else eValue += " ";
+// 				last.setAttribute(attr, eValue + (value === undefined ? attr : value)); //||attr is for self-explaining attributes
+// 			}
+// 			else {
+// 				attachEvent(last, attr, value, arg3);
+// 			}
+// 		}
+// 	}
+// 	else{
+// 		// TODO: should probably remove pending calls. This has turned out to be an anti-pattern.
+// 		var pD = T._getAnInstance();
+// 		//if(!pD.__pendingCalls.length > 0) pD.__pendingCalls = [];
+// 		pD.__pendingCalls.push({ type: "attr", name: attr, params: [value], arg3: arg3 });
+// 		return pD;
+// 	}
+// 	return T;
+// });
 
-ext("_appendSetElement", function(targetId: string, appendMode){
-	var T = this;
-	if(!targetId) {ERR("A", targetId); return T;}
-	var destination = getDocument().getElementById(targetId);
-	if(!destination) {ERR("F", targetId); return T;}
-	if(T.__document) {
-		if(!appendMode) destination.innerHTML = "";
-		while(T.__document.childNodes.length > 0) destination.appendChild(T.__document.childNodes[0]);
-	}
-	return T;
-});
+// ext("_appendSetElement", function(targetId: string, appendMode){
+// 	var T = this;
+// 	if(!targetId) {ERR("A", targetId); return T;}
+// 	var destination = getDocument().getElementById(targetId);
+// 	if(!destination) {ERR("F", targetId); return T;}
+// 	if(T.__document) {
+// 		if(!appendMode) destination.innerHTML = "";
+// 		while(T.__document.childNodes.length > 0) destination.appendChild(T.__document.childNodes[0]);
+// 	}
+// 	return T;
+// });
 
 // ext("iterate", function(iterations: number, callback: (i: number)=>DotContent){
 // 	var target = this;
@@ -503,42 +503,42 @@ _p.customData = function(suffix, value){
 	return this.attr("data-" + suffix, value);
 };
 
-_p.class = function(value){
-	var cp = this.__classPrefix;
-	// This handles legitimate class prefixes. If we are dealing with a compted class list, each class list name is prefixed.
-	if(cp){
-		var prefix = "dot-" + str(cp, 16) + "-";
-		if(typeof value == "string") value = prefix + value;
-		else if(typeof value == "object"){
-			var v2 = {};
-			eachK(value, function(k,v){
-				v2[prefix + k] = v;
-			});
-			value = v2;
-		}
-	}
-	else
-	{
-		var el = this.getLast();
-		el && this.__classedElements.push(el);
-	}
-	return this.attr("class", value);
-}
+// _p.class = function(value){
+// 	var cp = this.__classPrefix;
+// 	// This handles legitimate class prefixes. If we are dealing with a compted class list, each class list name is prefixed.
+// 	if(cp){
+// 		var prefix = "dot-" + str(cp, 16) + "-";
+// 		if(typeof value == "string") value = prefix + value;
+// 		else if(typeof value == "object"){
+// 			var v2 = {};
+// 			eachK(value, function(k,v){
+// 				v2[prefix + k] = v;
+// 			});
+// 			value = v2;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		var el = this.getLast();
+// 		el && this.__classedElements.push(el);
+// 	}
+// 	return this.attr("class", value);
+// }
 
-_p.play = function(){
-	let last: HTMLVideoElement|HTMLAudioElement = this.getCurrent();
-	last.play && last.play();
-	return this;
-}
-_p.pause = function(resetTime){
-	let last: HTMLVideoElement|HTMLAudioElement = this.getCurrent();
-	last.pause && last.pause();
-	if(resetTime) last.currentTime = 0;
-	return this;
-}
-_p.stop = function(){
-	return this.pause(true);
-}
+// _p.play = function(){
+// 	let last: HTMLVideoElement|HTMLAudioElement = this.getCurrent();
+// 	last.play && last.play();
+// 	return this;
+// }
+// _p.pause = function(resetTime){
+// 	let last: HTMLVideoElement|HTMLAudioElement = this.getCurrent();
+// 	last.pause && last.pause();
+// 	if(resetTime) last.currentTime = 0;
+// 	return this;
+// }
+// _p.stop = function(){
+// 	return this.pause(true);
+// }
 
 // /**
 //  * Sets the value of an input or texterea.
@@ -732,21 +732,21 @@ ext("remove", function(){
 	deleteElement(this.__document);
 });
 
-ext("scopeClass", function(prefix: number|string|null, content: DotContent){
-	if(prefix == null){
-		prefix = ClassPrefix.next;
-	}
-	var T = this;
+// ext("scopeClass", function(prefix: number|string|null, content: DotContent){
+// 	if(prefix == null){
+// 		prefix = ClassPrefix.next;
+// 	}
+// 	var T = this;
 
-	//T.__classPrefix = prefix || classPrefix.next;
-	//doc.__oldClassPrefix.push(prefix);
-	T.__classPrefix = prefix;
-	var ret = T.h(content);
-	T.__classPrefix = 0;
-	//doc.__oldClassPrefix.pop();
-	//T.__classPrefix = oldCp;
-	return ret;
-});
+// 	//T.__classPrefix = prefix || classPrefix.next;
+// 	//doc.__oldClassPrefix.push(prefix);
+// 	T.__classPrefix = prefix;
+// 	var ret = T.h(content);
+// 	T.__classPrefix = 0;
+// 	//doc.__oldClassPrefix.pop();
+// 	//T.__classPrefix = oldCp;
+// 	return ret;
+// });
 
 // Might replace this and handle it via components.
 // _p.bindTo = function(prop: any){
@@ -832,7 +832,7 @@ dot.resetScopeClass = function(){
 
 
 
-dot.css = dotcss;
+// dot.css = dotcss;
 dot.bus = eventBus;
 
 // dot.component = addComponent;
@@ -842,11 +842,11 @@ dot.bus = eventBus;
 //Fill in all the other fields.
 //if(Object.create) dot.prototype = Object.create(_p);
 // dot.prototype.constructor = dot;
-dot["__currentArgCallback"] = [];
-dot["__document"] = null;
-dot["__if"] = null;
-dot["__pendingCalls"] = [];
-dot["__anonAttrFuncs"] = {};
+// dot["__currentArgCallback"] = [];
+// dot["__document"] = null;
+// dot["__if"] = null;
+// dot["__pendingCalls"] = [];
+// dot["__anonAttrFuncs"] = {};
 
 // TODO: these may already exist?
 //dot.data = DotDocument.prototype.data;

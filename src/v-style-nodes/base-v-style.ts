@@ -3,6 +3,14 @@ import FilterVStyle from "./filter-v-style";
 import TransformVStyle from "./transform-v-style";
 import VStyle from "./v-style";
 
+/*
+	TODO: I'm not sure if this class is still needed.
+	It's used for the css function in dot, but I may have accidentally made it redundant.
+	The list of css functions is now duplicated in css-props.cs.
+	And lots of other functionality has been duplicated into style-v-nodes.ts, which is used for inline styles.
+	It seems that this is a leftover from when we were using function chaining for CSS.
+*/
+
 // What we need to support:
 // 1. Building a stylesheet that will be added to the document <head>.
 // 2. Building a stylesheet that will be added as a CSSStyleSheet object to a shadow root.
@@ -91,12 +99,12 @@ export default class BaseVStyle extends VStyle{
 				let builder: VStyle;
 				switch(propName){
 					case "transform":{
-						builder = new TransformVStyle(propName);
+						// builder = new TransformVStyle(propName);
 						break;
 					}
 					case "filter":
 					case "backdrop-filter":{
-						builder = new FilterVStyle(propName);
+						// builder = new FilterVStyle(propName);
 						break;
 					}
 					default: throw new Error(`${propName} does not have a builder.`);

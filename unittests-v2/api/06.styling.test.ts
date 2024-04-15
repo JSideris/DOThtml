@@ -1,11 +1,10 @@
-import { FrameworkItems, IComponent, IDotCss, IReactive } from "dothtml-interfaces";
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
-import formatHTML from "./formatHTML";
-import { component } from "../../src/decoration/component";
 
 // TODO:
 // - Don't forget styles should be able to be applied to classes that affect multiple elements.
+// - Tests for all the at rules.
+// - Tests for all the complex prop values.
 
 afterEach(() => { 
 	let styles = document.getElementsByTagName("style");
@@ -73,7 +72,7 @@ describe("Element styles.", ()=>{
 		dot(document.body).div({ 
 			id: "test-el", 
 			style: { 
-				color: reactiveColor as any 
+				color: reactiveColor
 			}
 		});
 		
@@ -93,7 +92,7 @@ describe("Element styles.", ()=>{
 			dot.div({ 
 				id: "test-el", 
 				style: { 
-					color: reactiveColor as any 
+					color: reactiveColor 
 				} 
 			})
 		);
@@ -110,15 +109,44 @@ describe("Element styles.", ()=>{
 		expect(document.getElementById("test-el")?.style.color).toEqual("green");
 	});
 
-	test("Filter builder on element w/ observable value (string).", ()=>{
-
-		let reactiveColor = dot.watch(4, {transform: v=>`${v}px`});
+	test("Filter builder on element w/ numeric value.", ()=>{
 
 		dot(document.body).div({ 
 			id: "test-el", 
 			style: {
 				filter: {
-					blur: reactiveColor as any
+					blur: 4
+				}
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(4px)");
+	});
+
+	test("Multi-variat transform.", ()=>{
+		// TODO: add a reactive version of this.
+
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: {
+				transform: {
+					translate: [4, 8]
+				}
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.transform).toEqual("translate(4px, 8px)");
+	});
+
+	test("Filter builder on element w/ observable value (string).", ()=>{
+
+		let reactiveColor = dot.watch(4, {transformer: v=>`${v}px`});
+
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: {
+				filter: {
+					blur: reactiveColor
 				}
 			}
 		});
@@ -137,7 +165,7 @@ describe("Element styles.", ()=>{
 		dot(document.body).div(
 			{ id: "test-el", style: {
 				filter: {
-					blur: reactiveColor as any
+					blur: reactiveColor
 				}
 			}}
 		);
@@ -146,5 +174,71 @@ describe("Element styles.", ()=>{
 		reactiveColor.setValue(10);
 		
 		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(10px)");
+	});
+});
+
+describe("Data types.", ()=>{
+	// Not supported anymore (at least not for now).
+	// test("String length.", ()=>{
+	// 	dot(document.body).div({ 
+	// 		id: "test-el", 
+	// 		style: { 
+	// 			width: "100pt"
+	// 		}
+	// 	});
+		
+	// 	expect(document.getElementById("test-el")?.style.width).toEqual("100pt");
+	// });
+
+	test("Px default.", ()=>{
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: { 
+				width: 100
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.width).toEqual("100px");
+	});	
+
+	test("Cm.", ()=>{
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: { 
+				widthCm: 2
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.width).toEqual("2cm");
+	});	
+
+	// TODO: try to add some additional tests if possible.
+});
+
+describe("Overloads.", ()=>{
+	test("Length overload.", ()=>{
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: { 
+				width: 100,
+				widthIn: 2
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.width).toEqual("2in");
+	});
+	
+	test("Length overload with observable.", ()=>{
+		let cms = dot.watch(5);
+		let inches = dot.watch(2);
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: {
+				widthCm: cms,
+				widthIn: inches
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.width).toEqual("2in");
 	});
 });

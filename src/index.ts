@@ -11,7 +11,7 @@ declare global {
 		dot: typeof dot;
 	}
 }
-  
+
 // Attach dot to the window object
 window.dot = dot;
 

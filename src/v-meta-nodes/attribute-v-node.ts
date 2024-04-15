@@ -1,14 +1,20 @@
 import Reactive from "../reactive";
+import VMetaNode from "./v-meta-node";
 
-export default class AttributeVNode{
+/**
+ * Attribute Virtual Nodes apply to a single attribute, such as class.
+ * They're designed to allow users to set classes (and other attributes) using JSON objects.
+ */
+export default class AttributeVNode extends VMetaNode{
 
 	attr: string;
-	value: any;
+	value: Record<string, string|Reactive>;
 	target: HTMLElement;
 
 	observables: Record<number, Reactive> = {};
 
 	constructor(attrName, attrValue){
+		super();
 		this.attr = attrName;
 		this.value = attrValue;
 	}

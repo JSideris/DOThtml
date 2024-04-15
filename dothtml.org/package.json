@@ -22,8 +22,8 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
-    "dothtml": "^6.0.0-beta.13",
-    "dothtml-interfaces": "^0.1.36",
+    "dothtml": "^6.0.0-beta.19",
+    "dothtml-interfaces": "^0.3.4",
     "webpack-cli": "^5.1.4"
   }
 }

@@ -1,16 +1,14 @@
 import { dot } from "dothtml";
 import styles from "./footer.css";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 
-@dot.component
-@dot.component.useStyles(styles)
-class Footer implements IComponent{
-	events?: string[];
-	_?: FrameworkItems;
-	build(): IDotGenericElement {
-		return dot.div();
-	}
-
-}
+const Footer = dot.component(
+	class Footer implements IComponent{
+		_?: FrameworkItems;
+		build() {
+			return dot.div();
+		}
+	}, [styles]
+);
 
 export default Footer;

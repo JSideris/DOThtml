@@ -1,19 +1,22 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { IComponent } from "dothtml-interfaces";
 import styles from "./small-logo.css";
 
-@dot.component
-@dot.component.useStyles(styles)
-class SmallLogo implements IComponent{
-	build(...args: any[]): IDotGenericElement {
-		return dot.div(
-			dot.div(
-				dot.span("DOT").id("dot")
-				.span("html").id("html")
-			).id("logo")
-		).id("container");
-	}
+const SmallLogo = dot.component(
+	class implements IComponent{
+		build() {
+			return dot.div(
+				{id: "container"},
+				dot.div(
+					{id: "logo"},
+					dot.span({id: "dot"}, "DOT")
+					.span({id: "html"}, "html")
+				)
+			);
+		}
+	},
 
-}
+	[styles]
+);
 
 export default SmallLogo;

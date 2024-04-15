@@ -106,6 +106,15 @@ Content:
 
 #### Building Extensions & Component Libraries ####
 
+## Misc ##
+
+- Thoughts on prop drilling / store.
+
+## Discussions/Blog ##
+
+- Second+ args.
+- Args for component constructors.
+
 ## Examples ##
 
 The examples section will be a list of single-file examples. It would be REALLY cool if we could get typescript working but if not JavaScript would be pretty cool too. If typescript, might want to add a max file length to prevent insanity. Just upload the file you want to compile, build it, and send back the bundle. Should be pretty simple. Client-side building would be even cooler and I think it may be possible.

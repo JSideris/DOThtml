@@ -3,6 +3,8 @@ import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
 
+// TODO: ensure that if an attribute is set twice, the previous one will unsubscibe from any reactives (or unrender).
+
 afterEach(() => { 
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
@@ -58,7 +60,7 @@ describe("Text data binding.", () => {
 	});
 
 	test("Render observable transformed.", ()=>{
-		let binding = dot.watch(3, {transform: (value)=>value*2});
+		let binding = dot.watch(3, {transformer: (value)=>value*2});
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(6)));
 
@@ -437,7 +439,7 @@ describe("Iteration w/ binding.", () => {
 	// TODO: need a more sophisticated way to test with keys.
 
 	test("Array of objects.", ()=>{
-		let array = [{id: 1, isTrue: false}, {id: 2, isTrue: false}, {id: 3, isTrue: false}];
+		let array: Array<{id: number, isTrue: boolean}> = [{id: 1, isTrue: false}, {id: 2, isTrue: false}, {id: 3, isTrue: false}];
 		let obs = dot.watch(array, {key: "id"});
 		dot(document.body).each(obs, (x, i, k)=>dot.div(x.id).div(k).div(x.isTrue))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("1").div("1").div("false").div("2").div("2").div("false").div("3").div("3").div("false")));
@@ -454,8 +456,8 @@ describe("Iteration w/ binding.", () => {
 	// Aggregation.
 
 	test("Get total.", ()=>{
-		let array = [{id: 1, amount: 1}, {id: 2, amount: 2}, {id: 3, amount: 3}];
-		let obs = dot.watch(array, {key: "id", transform: v=>v.reduce((a,c)=>a+c.amount, 0)});
+		let array: Array<{id: number, amount: number}> = [{id: 1, amount: 1}, {id: 2, amount: 2}, {id: 3, amount: 3}];
+		let obs = dot.watch(array, {key: "id", transformer: v=>v.reduce((a,c)=>a+c.amount, 0)});
 		dot(document.body).div(obs)
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("6")));
 		

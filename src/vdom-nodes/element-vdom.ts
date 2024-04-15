@@ -2,7 +2,6 @@ import { DOT_VDOM_PROP_NAME } from "../constants";
 import Reactive from "../reactive";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import StyleVNode from "../v-meta-nodes/style-v-node";
-import BaseVStyle from "../v-style-nodes/base-v-style";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType } from "./vdom-types";
@@ -145,7 +144,7 @@ export default class ElementVdom extends Vdom{
 
 		}
 		else if(value instanceof StyleVNode){
-
+			value.render(node);
 
 		}
 		else{

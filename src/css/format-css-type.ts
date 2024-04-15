@@ -1,18 +1,35 @@
 import { floatRegex } from "../helpers";
-import Reactive from "../reactive";
 
-
-export function formatCssLength(value:string|number){
+export function formatCssLength(value:string|number|Array<string|number>, defaultUnits = "px"){
 	value = value || "0px";
-	if(!isNaN(value as number)) value = Math.round(value as number) + "px";
-	let length = Number((value as string).match(floatRegex)[0]);
-	let units = (value as string).split(floatRegex)[1] || "px";
+	if(value instanceof Array){
+		return value.map(v=>formatCssLength(v, defaultUnits)).join(" ");
+	}
+	if(!isNaN(value as number)) value = Math.round(value as number) + defaultUnits;
+	let tokens = (value as string).trim().split(" ");
+	if(tokens.length > 1){
+		return tokens.map(t=>formatCssLength(t, defaultUnits)).join(" ");
+	}
+	else{
+		let length = Number((value as string).match(floatRegex)[0]);
+		let units = (value as string).split(floatRegex)[1] || defaultUnits;
 
-	return `${length}${units}`;
+		return `${length}${units}`;
+	}
 }
 
-export function formatCssPercentage(value: string|number){
-	return isNaN(value as any) ? value : `${value}%`;
+export function formatCssPercentage(value: string|number|Array<string|number>){
+	value = value || "0%";
+	if(value instanceof Array){
+		return value.map(v=>formatCssPercentage(v)).join(" ");
+	}
+	let tokens = (value as string).trim().split(" ");
+	if(tokens.length > 1){
+		return tokens.map(t=>formatCssPercentage(t)).join(" ");
+	}
+	else{
+		return isNaN(value as any) ? value : `${value}%`;
+	}
 }
 
 export function formatCssColor(value: string|number){
@@ -42,11 +59,20 @@ export function formatCssColor(value: string|number){
 	}
 }
 
-export function formatCssAngle(value: string|number){
+export function formatCssAngle(value: string|number|Array<string|number>){
 	value = value || "0deg";
+	if(value instanceof Array){
+		return value.map(v=>formatCssAngle(v)).join(" ");
+	}
 	if(!isNaN(value as number)) value = `${Math.round(value as number)}deg`;
-	let angle = Number((value as string).match(floatRegex)[0]);
-	let units = (value as string).split(floatRegex)[1] || "deg";
+	let tokens = (value as string).trim().split(" ");
+	if(tokens.length > 1){
+		return tokens.map(t=>formatCssAngle(t)).join(" ");
+	}
+	else{
+		let angle = Number((value as string).match(floatRegex)[0]);
+		let units = (value as string).split(floatRegex)[1] || "deg";
 
-	return `${angle}${units}`;
+		return `${angle}${units}`;
+	}
 }

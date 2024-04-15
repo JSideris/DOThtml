@@ -1,4 +1,3 @@
-import { NumericAngle, NumericLength } from "dothtml-interfaces";
 import CssFunctionBuilderVStyle from "./css-function-builder-v-style";
 import { formatCssAngle, formatCssLength } from "../css/format-css-type";
 
@@ -13,30 +12,30 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 		return this.appendFunction("matrix", arguments);
 	}
 	
-	translate(x:NumericLength,y?:NumericLength){
+	translate(x,y?){
 		return arguments.length == 1 
 			? this.appendFunction("translate", [{f:formatCssLength, v:x}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,0,0,1]*/) 
 			: this.appendFunction("translate", [{f:formatCssLength, v:x}, {f:formatCssLength, v:y}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,y,0,1]*/);
 	}
 	
-	translate3d(x:NumericLength,y:NumericLength,z:NumericLength){
+	translate3d(x,y,z){
 		return this.appendFunction("translate3d", [{f:formatCssLength, v:x}, {f:formatCssLength, v:y}, {f:formatCssLength, v:z}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,y,z,1]*/);
 	}
 	
-	translateX(x:NumericLength){
+	translateX(x){
 		
 		//var x = dotcss.lengthToPx(p[0]);
 		//this.updateValue("translateX", [{f:formatCssLength, v:x + "px")]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,0,0,1]*/);
 		return this.appendFunction("translateX", [{f:formatCssLength, v:x}]);
 	}
 	
-	translateY(y:NumericLength){
+	translateY(y){
 		//var y = dotcss.lengthToPx(p[0]);
 		//this.updateValue("translateY", [{f:formatCssLength, v:y + "px")]/*, [1,0,0,0,0,1,0,0,0,0,1,0,0,y,0,1]*/);
 		return this.appendFunction("translateY", [{f:formatCssLength, v:y}]);
 	}
 	
-	translateZ(z:NumericLength){
+	translateZ(z){
 		
 		//var z = dotcss.lengthToPx(p[0]);
 		//this.updateValue("translateZ", [{f:formatCssLength, v:z + "px")]/*, [1,0,0,0,0,1,0,0,0,0,1,0,0,0,z,1]*/);
@@ -66,12 +65,12 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 		return this.appendFunction("scaleZ", [z]);
 	}
 	
-	rotate(x: NumericAngle){
+	rotate(x){
 		// var a = Util.angleToDeg(x);
 		return this.appendFunction("rotate", [{f:formatCssAngle, v:x}]/*, [Math.cos(a),Math.sin(a),0,0,-Math.sin(axxx),Math.cos(axxx),0,0,0,0,1,0,0,0,0,1]*/);
 	}
 	
-	rotate3d(x: number, y: number, z: number, a: NumericAngle){
+	rotate3d(x: number, y: number, z: number, a){
 		
 		return this.appendFunction("rotate3d", [x, y, z, {f:formatCssAngle, v:a}]/*, 
 			[1+C*(x*x-1),	z*S+x*y*C,		-y*S+x*z*C,		0,
@@ -87,34 +86,34 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 	rotate3dGrad(x: number, y: number, z: number, a: number){return this.rotate3d(x,y,z,`${a}grad`);}
 	rotate3dTurn(x: number, y: number, z: number, a: number){return this.rotate3d(x,y,z,`${a}turn`);}
 	
-	rotateX(x: NumericAngle){
+	rotateX(x){
 		return this.appendFunction("rotateX", [{f:formatCssAngle, v:x}]/*, [1,0,0,0,0,Math.cos(axx),Math.sin(axx),0,0,-Math.sin(axx),Math.cos(axx),0,0,0,0,1]*/);
 	}
 	
-	rotateY(y: NumericAngle){
+	rotateY(y){
 		return this.appendFunction("rotateY", [{f:formatCssAngle, v:y}]);
 	}
 	
-	rotateZ(z: NumericAngle){
+	rotateZ(z){
 		return this.appendFunction("rotateZ", [{f:formatCssAngle, v:z}]);
 	}
 	
-	skew(x: NumericAngle, y?: NumericAngle){
+	skew(x, y?){
 		
 		return arguments.length == 1 
 			? this.appendFunction("skew", [{f:formatCssAngle, v:x}]/*, [1,0,0,0,Math.tan(axxxxx),1,0,0,0,0,1,0,0,0,0,1]*/)
 			: this.appendFunction("skew", [{f:formatCssAngle, v:x}, {f:formatCssAngle, v:y}]/*, [1,Math.tan(axxxy),0,0,Math.tan(axxxx),1,0,0,0,0,1,0,0,0,0,1]*/);
 	}
 	
-	skewX(x: NumericAngle){
+	skewX(x){
 		return this.appendFunction("skewX", [{f:formatCssAngle, v:x}]);
 	}
 	
-	skewY(y: NumericAngle){
+	skewY(y){
 		return this.appendFunction("skewY", [{f:formatCssAngle, v:y}]);
 	}
 	
-	perspective(d: NumericLength){
+	perspective(d){
 		return this.appendFunction("perspective", [{f:formatCssLength, v:d}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,0,0,dotcss.formatNumberValue(-1 / d),1]*/);
 	}
 

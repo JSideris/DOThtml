@@ -19,3 +19,9 @@
 #quickstart-pane{
 	flex-grow: 1;
 }
+
+@media screen and (max-width: 1000px) { 
+	#logo-and-quickstart{
+		display: block;
+	}
+}

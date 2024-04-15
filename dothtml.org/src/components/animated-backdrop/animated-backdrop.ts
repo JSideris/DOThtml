@@ -1,15 +1,16 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { FrameworkItems, IComponent } from "dothtml-interfaces";
 import styles from "./animated-backdrop.css";
 
-@dot.component
-@dot.component.useStyles(styles)
-class AnimatedBackdrop implements IComponent{
-	events?: string[];
-	_?: FrameworkItems;
-	build(): IDotGenericElement {
-		return dot.div();
-	}
-}
+const AnimatedBackdrop = dot.component(
+	class implements IComponent{
+		events?: string[];
+		_?: FrameworkItems;
+		build() {
+			return dot.div();
+		}
+	}, 	
+	[styles]
+);
 
 export default AnimatedBackdrop;
