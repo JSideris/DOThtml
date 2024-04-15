@@ -124,8 +124,6 @@ describe("Element styles.", ()=>{
 	});
 
 	test("Multi-variat transform.", ()=>{
-		// TODO: add a reactive version of this.
-
 		dot(document.body).div({ 
 			id: "test-el", 
 			style: {
@@ -174,6 +172,25 @@ describe("Element styles.", ()=>{
 		reactiveColor.setValue(10);
 		
 		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(10px)");
+	});
+
+	test("Multi-variat transform w/ observables.", ()=>{
+		let x = dot.watch(4);
+
+		dot(document.body).div({ 
+			id: "test-el", 
+			style: {
+				transform: {
+					translate: [x, 8]
+				}
+			}
+		});
+		
+		expect(document.getElementById("test-el")?.style.transform).toEqual("translate(4px, 8px)");
+		
+		x.setValue(12);
+
+		expect(document.getElementById("test-el")?.style.transform).toEqual("translate(12px, 8px)");
 	});
 });
 

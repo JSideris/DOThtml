@@ -1,7 +1,9 @@
 import { floatRegex } from "../helpers";
+import Reactive from "../reactive";
 
-export function formatCssLength(value:string|number|Array<string|number>, defaultUnits = "px"){
+export function formatCssLength(value:string|number|Reactive|Array<string|number|Reactive>, defaultUnits = "px"){
 	value = value || "0px";
+	if(value instanceof Reactive) value = value.getValue();
 	if(value instanceof Array){
 		return value.map(v=>formatCssLength(v, defaultUnits)).join(" ");
 	}
@@ -18,8 +20,9 @@ export function formatCssLength(value:string|number|Array<string|number>, defaul
 	}
 }
 
-export function formatCssPercentage(value: string|number|Array<string|number>){
+export function formatCssPercentage(value: string|number|Reactive|Array<string|number|Reactive>){
 	value = value || "0%";
+	if(value instanceof Reactive) value = value.getValue();
 	if(value instanceof Array){
 		return value.map(v=>formatCssPercentage(v)).join(" ");
 	}
@@ -59,8 +62,9 @@ export function formatCssColor(value: string|number){
 	}
 }
 
-export function formatCssAngle(value: string|number|Array<string|number>){
+export function formatCssAngle(value: string|number|Reactive|Array<string|number|Reactive>){
 	value = value || "0deg";
+	if(value instanceof Reactive) value = value.getValue();
 	if(value instanceof Array){
 		return value.map(v=>formatCssAngle(v)).join(" ");
 	}
