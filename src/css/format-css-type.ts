@@ -41,6 +41,7 @@ export function formatCssColor(value: string|number){
 	// if(Array.isArray(value) && value.length == 1) value = value[0];
 
 	// TODO: should add provisions for more complex types. Either a builder or JSON.
+	// TODO: doesn't currently handle reactive or arrays. Arrays might not be used in CSS (doesn't make sense - you only set one color).
 
 	if(typeof value == "number") {
 

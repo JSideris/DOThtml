@@ -10,6 +10,7 @@ import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import { useStyles } from "./decoration/use-styles";
 import BaseVStyle from "./v-style-nodes/base-v-style";
 import { IDotCore, IDotCss } from "dothtml-interfaces";
+import WindowWrapper from "./window-wrapper";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -298,24 +299,25 @@ const allTags = [
 // 	//"summaryA"
 // ];
 
-const specialAttributes = [
-	["quoteCite","cite"],
-	["objectData","data"],
-	["whichForm","form"],
-	["trackLabel","label"],
-	["colSpan","span"],
-	["tableSummary","summary"],
-	["optionLabel","label"],
-	["acceptCharset","accept-charset"],
-	["areaHidden", "area-hidden"],
-	["areaLabel", "area-label"],
-	["areaDescribedBy", "area-describedby"],
-	["areaControls", "area-controls"],
-	["areaExpanded", "area-expanded"],
-	["areaChecked", "area-checked"],
-	["areaSelected", "area-selected"],
-];
+// const specialAttributes = [
+// 	["quoteCite","cite"],
+// 	["objectData","data"],
+// 	["whichForm","form"],
+// 	["trackLabel","label"],
+// 	["colSpan","span"],
+// 	["tableSummary","summary"],
+// 	["optionLabel","label"],
+// 	["acceptCharset","accept-charset"],
+// 	["areaHidden", "area-hidden"],
+// 	["areaLabel", "area-label"],
+// 	["areaDescribedBy", "area-describedby"],
+// 	["areaControls", "area-controls"],
+// 	["areaExpanded", "area-expanded"],
+// 	["areaChecked", "area-checked"],
+// 	["areaSelected", "area-selected"],
+// ];
 
+// TODO: don't forget to add md.
 const allCoreWrappers = ["each", "html", "mount", "text", "md", "when"];
 
 // This could easily be modified so that it adds some rudimentary element checking.
@@ -489,6 +491,10 @@ const makeDot = ()=>{
 		applyToDocument.head.appendChild(styleSheet);
 	};
 
+	_dot.window = (options) => {
+		return new WindowWrapper(options);
+	}
+
 	{ // Elements
 		for(let i = 0; i < allTags.length; i++){
 			let E = allTags[i];
@@ -578,66 +584,6 @@ const makeDot = ()=>{
 			};
 			makeCoreWrapper(_dot, E);
 		}
-	}
-
-	{ // Special elements and attributes.
-
-		// TODO: special attributes are moot now because we are using JSON objects to set attributes.
-		for(let i = 0; i < specialAttributes.length; i++){
-			let A = specialAttributes[i];
-			ContainerVdom.prototype[A[0]] = function(c){
-				// let C = this._children[this._children.length - 1];
-				// if(C && C instanceof ElementVdom){
-				// 	// C.setAttr(A[1], c);
-				// }
-				// else{
-				// 	throw new Error(`Invalid node to set ${A[0]} attribute.`);
-				// }
-				throw new Error(`Invalid attempt to set ${A[0]} attribute.`);
-				return this;
-			};
-		}
-
-		// Need to handle:
-		// 1. inputs
-		// 2. check boxes
-		// 3. radio buttons
-		// 4. selects
-		// 5. editable elements
-		// TODO: this is now moot because `value` is a special attribute which has been refactored and is no longer chainable.
-		ContainerVdom.prototype["value"] = function(c){
-			throw new Error("Setting value like this is now deprecated. Use the `value` attribute instead.");
-			let C = this._children[this._children.length - 1];
-			if(C && C instanceof ElementVdom){
-				switch(C.tag){
-					case "input": {
-						C.setAttr("value", c);
-						break;
-					}
-
-					// case "textarea": {
-					// 	break;
-					// }
-
-					// case "select": {
-					// 	break;
-					// }
-
-					// case "option": {
-					// 	break;
-					// }
-
-					default: {
-						// Other elements.
-						
-					}
-				}
-			}
-			else{
-				throw new Error(`Invalid node to set value attribute.`);
-			}
-			return this;
-		};
 	}
 
 	{ // Special core functions.

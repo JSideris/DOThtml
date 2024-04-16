@@ -21,7 +21,7 @@ const HeroSection = dot.component(
 				.div({id: "info-tags"}, new HeroFeaturesPart())
 			);
 		}
-	}
+	}, 
 	[styles]
 )
 

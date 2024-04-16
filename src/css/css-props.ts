@@ -11,6 +11,8 @@ const allProps = {
 
 const lengthSuffixes = "Cm|Mm|In|Px|Pt|Pc|Q|Cap|Ch|Em|Ex|Ic|Lh|Rem|Rlh|Vh|Vw|Vmin|Vmax|Vb|Vi|Cqw|Cqh|Cqi|Cqb|Cqmin|Cqmax|P".split("|"); 
 
+// TODO: add other types suffixes here. For instance: time, frequency, angle.
+
 type CssRule = {
 	dotName: string;
 	cssName: string;

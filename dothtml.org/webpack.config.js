@@ -85,7 +85,7 @@ module.exports = {
 		}
 	},
 	plugins: [
-		new webpack.HotModuleReplacementPlugin({}),
+		new webpack.HotModuleReplacementPlugin(),
 		new HtmlWebpackPlugin({
 			title: "DOThtml",
 			template: "./src/index.html",
@@ -108,7 +108,7 @@ module.exports = {
 		}),
 	],
 	devServer: {
-		hot: true
+		static: "./static"
 	},
 	optimization:{
 		splitChunks: {

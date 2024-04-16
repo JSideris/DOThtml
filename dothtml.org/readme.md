@@ -98,7 +98,25 @@ Content:
 
 #### Style Builder ####
 
-### Backend Configuration & Routing ###
+### Misc Functionality ###
+
+#### Popup Windows ####
+
+``` TypeScript
+// Option 1
+let myWindow = dot.window({
+	width: 600, height: 400, title: "My Window"
+	rootComponent: new WindowApp()
+});
+myWindow.open();
+myWindow.close();
+myWindow.window;
+
+// Option 2
+
+```
+
+#### Backend Configuration & Routing ####
 
 ### Advanced Topics ###
 

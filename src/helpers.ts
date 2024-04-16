@@ -13,6 +13,7 @@ export function removeNodesBetween(start: Node, end: Node): void {
 		const next: Node|null = current.nextSibling;
 		// TODO: this condition won't entirely work because of the possibility of deeply-nested children. 
 		// Until a solution is found, this behaviour just won't be fully supported for HTML nodes.
+        // At the very least, a test case should be added to track this.
 		if(current[DOT_VDOM_PROP_NAME]){
 			current[DOT_VDOM_PROP_NAME]._unrender();
 		}
