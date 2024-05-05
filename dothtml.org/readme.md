@@ -74,6 +74,11 @@ Content:
 
 ### Reactivity & Bindings ###
 
+- Include a section explaining how to chain bindings together for advanced props.
+	for instance, color pickers require formatted strings, but users may want to store and display those values as numbers.
+	There should be a strategy to deal with this case, or at least some documentation for it. Another example is when
+	you want to do a dot.when(reactive == value). Not so easy.
+
 ### User Input & Events ###
 
 ### Components ###

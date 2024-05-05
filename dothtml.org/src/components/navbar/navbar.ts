@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import styles from "./navbar.css";
 import NavBtn from "./nav-btn/nav-btn";
 import SmallLogo from "../small-logo/small-logo";
@@ -7,7 +7,7 @@ import SmallLogo from "../small-logo/small-logo";
 // @dot.component
 // @dot.component.useStyles(styles)
 const Navbar = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		_?: FrameworkItems;
 
 		navigate(location){

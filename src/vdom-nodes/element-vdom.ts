@@ -1,10 +1,18 @@
+import { IDotCore } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../constants";
-import Reactive from "../reactive";
+import Reactive from "../reactivity/reactive";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType } from "./vdom-types";
+import BoundReactive from "../reactivity/bound-reactive";
+import ReactiveAttr from "../reactivity/reactive-attr";
+
+export class AttributeItem{
+	elementVDom: ElementVdom;
+	attribute: string;
+}
 
 export default class ElementVdom extends Vdom{
 
@@ -13,15 +21,15 @@ export default class ElementVdom extends Vdom{
 	tag: string = null;
 	private attributes: Record<string, AttributeValueType> = {};
 	private events: Array<{name: string, callback: (e: Event)=>void}> = [];
-	private attributeObserverIds: Array<{id: number, observable: Reactive}> = [];
+	private attributeObserverIds: Array<{id: number, observable: BoundReactive}> = [];
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 	private attrVNodes: Array<AttributeVNode> = [];
 	private styleVNodes: Array<StyleVNode> = [];
 
-	constructor(tag: string){
+	constructor(dot: IDotCore, tag: string){
 		super();
 		this.tag = tag;
-		this.children = new ContainerVdom();
+		this.children = new ContainerVdom(dot);
 		this.children._parent = this;
 	}
 
@@ -68,7 +76,7 @@ export default class ElementVdom extends Vdom{
 
 		for(let i = 0; i < this.attributeObserverIds.length; i++){
 			let item = this.attributeObserverIds[i];
-			item.observable.detachBinding(item.id);
+			item.observable._unsubscribe(item.id);
 		}
 		this.attributeObserverIds.length = 0;
 	}
@@ -86,7 +94,7 @@ export default class ElementVdom extends Vdom{
 
 		attr = (attr ?? "").toLowerCase();
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Reactive)){
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof BoundReactive || value instanceof Reactive)){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){
@@ -120,15 +128,15 @@ export default class ElementVdom extends Vdom{
 			// Like a space-separated class list.
 			node.setAttribute(attr, value.join(" "));
 		}
-		else if (value instanceof Reactive){
-			this.renderAttr(attr, value.getValue(), node);
-			let id = value.subscribeAttr(this, attr);
+		else if (value instanceof BoundReactive){
+			this.renderAttr(attr, value._get(), node);
+			let id = value._subscribe(new ReactiveAttr(this, attr));
 			this.attributeObserverIds.push({id: id, observable: value});
 
 			// If it's a value prop, update the observable on change.
 			if(attr == "value" || attr == "checked"){
 				this.element.addEventListener("input", (e)=>{
-					value.setValue((this.element as HTMLInputElement)[attr]);
+					value._set((this.element as HTMLInputElement)[attr]);
 				});
 			}
 

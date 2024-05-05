@@ -1,4 +1,4 @@
-import { DOT_VDOM_PROP_NAME } from "./constants";
+import { DOT_VDOM_PROP_NAME } from "../constants";
 
 export function removeNodesBetween(start: Node, end: Node): void {
 	// Check if the start and end nodes have the same parent
@@ -63,4 +63,4 @@ export function deepEqual(obj1: any, obj2: any, visited = new Map()): boolean {
     return true;
 }
 
-export var floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
+export const floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");

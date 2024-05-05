@@ -1,9 +1,9 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import styles from "./nav-btn.css";
 
 const NavBtn = dot.component<["text"], ["click"]>(
-	class implements IComponent{
+	class implements IDotComponent{
 
 		// events?: string[] = ["click"];
 		_?: FrameworkItems;

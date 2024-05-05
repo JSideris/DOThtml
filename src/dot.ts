@@ -4,13 +4,14 @@ import { TextVdom } from "./vdom-nodes/text-vdom";
 import ElementVdom from "./vdom-nodes/element-vdom";
 import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
-import Reactive from "./reactive";
-import { component } from "./decoration/component";
+import Reactive from "./reactivity/reactive";
+// import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
-import { useStyles } from "./decoration/use-styles";
+// import { useStyles } from "./decoration/use-styles";
 import BaseVStyle from "./v-style-nodes/base-v-style";
 import { IDotCore, IDotCss } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
+import BoundReactive from "./reactivity/bound-reactive";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -414,7 +415,7 @@ const allEventAttr = {
 
 const makeCoreWrapper = (d, fn)=>{
 	d[fn] = function(){
-		let n = new ContainerVdom();
+		let n = new ContainerVdom(dot);
 		n[fn](...arguments);
 		return n;
 	}
@@ -432,7 +433,7 @@ const makeDot = ()=>{
 				return node.children;
 			}
 			else{
-				node = new ElementVdom(el.tagName.toLocaleLowerCase());
+				node = new ElementVdom(dot, el.tagName.toLocaleLowerCase());
 				node.element = el;
 				node.children._parent = node;
 				el[DOT_VDOM_PROP_NAME] = node;
@@ -448,20 +449,19 @@ const makeDot = ()=>{
 	}
 
 	// _dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(props: {value: Ti, key?: string, transform?: (value: Ti)=>To}): Reactive<Ti, To>{
-	_dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(value: Ti, options: {key?: string, transform?: (value: Ti)=>To}): Reactive<Ti, To>{
+	_dot.watch = function<T extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Reactive<T>{
 		let o = new Reactive();
-		o.key = options?.key;
-		o.transform = options?.transform;
+		o.key = key;
 		// o._value = props?.value;
-		o.setValue(value);
+		o.value = (value);
 		return o;
 	}
 
 	_dot.css = new BaseVStyle();
 	((_dot.css as any)._isBase as boolean) = true;
 
-	_dot.component = component;
-	_dot.component["useStyles"] = useStyles;
+	// _dot.component = component;
+	// _dot.component["useStyles"] = useStyles;
 
 	_dot.useStyles = (applyToDocument: Document, styles: string|((css)=>string|IDotCss))=>{
 
@@ -499,16 +499,16 @@ const makeDot = ()=>{
 		for(let i = 0; i < allTags.length; i++){
 			let E = allTags[i];
 			ContainerVdom.prototype[E] = function(a, b){
-				let n = new ElementVdom(E);
+				let n = new ElementVdom(dot, E);
 
 				let cont;
 				let attrs;
 				{ // Find out which arg is the content and which is the attributes.
-					if(a instanceof ContainerVdom || a instanceof Vdom || (a?._?._meta && a?.build) || a instanceof Reactive || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
+					if(a instanceof ContainerVdom || a instanceof Vdom || (a?._?._meta && a?.build) || a instanceof Reactive || a instanceof BoundReactive || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
 						cont = a;
 						attrs = b;
 					}
-					if(b instanceof ContainerVdom || b instanceof Vdom || (b?._?._meta && b?.build) || b instanceof Reactive || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
+					if(b instanceof ContainerVdom || b instanceof Vdom || (b?._?._meta && b?.build) || b instanceof Reactive || b instanceof BoundReactive || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
 						if(cont) throw new Error("Both element arguments can't be content.");
 						cont = b;
 						attrs = a;
@@ -529,14 +529,16 @@ const makeDot = ()=>{
 				{ // Apply attributes to element.
 					if(attrs){
 						for(let k in attrs) {
+							let attr = attrs[k];
+							if(attr instanceof Reactive) attr = attr.bind();
 							if(allEventAttr[k]) {
 								if(typeof attrs[k] !== "function") {
 									throw new Error(`Value of event attribute ${k} must be a function.`);
 								}
 
-								n.addEventListener(k.substring(2), attrs[k]);
+								n.addEventListener(k.substring(2), attr);
 							} else {
-								n.setAttr(k, attrs[k]);
+								n.setAttr(k, attr);
 							}
 						}
 					}
@@ -552,11 +554,14 @@ const makeDot = ()=>{
 						n.children._addChild(cont);
 					}
 					else if(cont?._?._meta && cont?.build){
-						n.children._addChild(new ComponentVdom(cont));
+						n.children._addChild(new ComponentVdom(dot, cont));
 					}
 					else{
 						// Text or reactives.
 						if(cont !== null && cont !== undefined){
+							if(cont instanceof Reactive){
+								cont = cont.bind();
+							}
 							n.children._addChild(new TextVdom(cont));
 						}
 					}

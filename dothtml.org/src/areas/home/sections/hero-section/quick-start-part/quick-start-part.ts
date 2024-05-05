@@ -1,9 +1,9 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import styles from "./quick-start-part.css";
 
 const QuickStartPart = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		events?: string[];
 		_?: FrameworkItems;
 		build() {
@@ -24,7 +24,7 @@ const QuickStartPart = dot.component(
 					// .a("blah blah blah").hRef("")
 			)
 		}
-	}
+	}, [styles]
 );
 
 export default QuickStartPart;

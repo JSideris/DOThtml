@@ -1,5 +1,6 @@
-import { deepEqual, removeNodesBetween } from "../helpers";
-import Reactive from "../reactive";
+import { deepEqual, removeNodesBetween } from "../helpers/tools";
+import BoundReactive from "../reactivity/bound-reactive";
+import Reactive from "../reactivity/reactive";
 import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
 import { ObservableCollection } from "./vdom-types";
@@ -9,7 +10,7 @@ type DatumMap = {
 	value: any;
 	keyValue: any;
 	afterNode: Node;
-	observableIndex: Reactive<number>
+	observableIndex: BoundReactive<number>
 };
 
 /**
@@ -18,7 +19,7 @@ type DatumMap = {
 export default class CollectionVdom extends Vdom{
 
 	value: ObservableCollection;
-	renderCallback: (x: any, i: number|string|Reactive, k: string)=>Vdom;
+	renderCallback: (x: any, i: number|string|BoundReactive, k: string)=>Vdom;
 	startNode: Node;
 	endNode: Node;
 	observerId = 0;
@@ -33,8 +34,8 @@ export default class CollectionVdom extends Vdom{
 
 	_render(target: HTMLElement) {
 
-		if(this.value instanceof Reactive){
-			this.observerId = this.value.subscribeCollection(this);
+		if(this.value instanceof BoundReactive){
+			this.observerId = this.value._subscribe(this);
 		}
 
 		this.startNode = target.ownerDocument.createTextNode("");
@@ -45,8 +46,8 @@ export default class CollectionVdom extends Vdom{
 	}
 
 	_unrender() {
-		if(this.observerId && this.value instanceof Reactive){
-			this.value.detachBinding(this.observerId);
+		if(this.observerId && this.value instanceof BoundReactive){
+			this.value._unsubscribe(this.observerId);
 			this.observerId = null;
 		}
 
@@ -78,9 +79,9 @@ export default class CollectionVdom extends Vdom{
 		{ // Get the mapped data.
 
 			let unmappedCollection = null as Array<any>|Record<string|number, any>;
-			if(this.value instanceof Reactive){
-				unmappedCollection = this.value.getValue() as any;
-				key = this.value.key ?? null;
+			if(this.value instanceof BoundReactive){
+				unmappedCollection = this.value._get() as any;
+				key = this.value._source.key ?? null;
 			}
 			else{
 				unmappedCollection = this.value;
@@ -89,12 +90,13 @@ export default class CollectionVdom extends Vdom{
 			if(unmappedCollection instanceof Array){
 				mappedData = unmappedCollection.map((v, i) => { 
 					let kv = !!key ? v[key] : null;
+					let reactive = new Reactive();
 					return {
 						vdom: null,
 						value: v,
 						keyValue: kv,
 						afterNode: null,
-						observableIndex: new Reactive()
+						observableIndex: reactive.bind()
 					} as DatumMap; 
 				});
 			}
@@ -103,12 +105,13 @@ export default class CollectionVdom extends Vdom{
 				for(let k in unmappedCollection){
 					let v = unmappedCollection[k];
 					let kv = !!key ? v[key] : k;
+					let reactive = new Reactive();
 					mappedData.push({
 						vdom: null,
 						value: v, 
 						keyValue: kv,
 						afterNode: null,
-						observableIndex: new Reactive()
+						observableIndex: reactive.bind()
 					} as DatumMap);
 				}
 			}
@@ -153,13 +156,13 @@ export default class CollectionVdom extends Vdom{
 
 					if(!deepEqual(existing.value, candidate.value)){
 						existing.vdom._unrender();
-						existing.vdom = this.renderCallback(candidate.value, this.value instanceof Reactive ? existing.observableIndex : ni, candidate.keyValue);
+						existing.vdom = this.renderCallback(candidate.value, this.value instanceof BoundReactive ? existing.observableIndex : ni, candidate.keyValue);
 						existing.value = candidate.value
 						existing.vdom._renderBefore(existing.afterNode);
 					}
 					else{
 						// Update all the indicies anyway.
-						existing.observableIndex.setValue(ni);
+						existing.observableIndex._set(ni);
 					}
 
 					afterTarget = existing.afterNode;
@@ -180,8 +183,8 @@ export default class CollectionVdom extends Vdom{
 					}
 					candidate.afterNode = beforeTarget;
 					
-					candidate.observableIndex._value = ni;
-					let content = this.renderCallback(candidate.value, this.value instanceof Reactive ? candidate.observableIndex : ni, candidate.keyValue);
+					candidate.observableIndex._set(ni);
+					let content = this.renderCallback(candidate.value, this.value instanceof BoundReactive ? candidate.observableIndex : ni, candidate.keyValue);
 
 					if(content instanceof Vdom){
 						candidate.vdom = content;

@@ -1,18 +1,19 @@
-import { IComponent, IDotDocument, IDotWindowWrapper } from "dothtml-interfaces";
+import { IDotComponent, IDotCore, IDotDocument, IDotWindowWrapper } from "dothtml-interfaces";
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
 import dot from "./dot";
 
+let documentId = 1;
 export default class WindowWrapper implements IDotWindowWrapper{
 	window: Window;
 	document: Document;
 	title: string;
-	root: IComponent;
+	root: IDotComponent;
 	_vdom: ContainerVdom;
 	width: number; 
 	height: number;
 	isOpen = false;
 
-	constructor(options: {content: IComponent, width?: number, height?: number, title?: string}){
+	constructor(options: {content: IDotComponent, width?: number, height?: number, title?: string}){
 		this.root = options.content;
 		this.width = options.width || options.height || 600;
 		this.height = options.height || options.width || 400;
@@ -28,9 +29,16 @@ export default class WindowWrapper implements IDotWindowWrapper{
 
 		this.window = window.open("", this.title, `width=${this.width},height=${this.height}`);
 		this.document = this.window.document;
-		this.document.write(`<!DOCTYPE html><html><head><title>${this.title}</title></head><body></body></html>`);
+		this.document["_dotId"] = `${documentId++}`;
 
-		this._vdom = dot(this.document.body).mount(this.root) as unknown as ContainerVdom;
+		let tempElement = document.createElement("div");
+		tempElement.textContent = this.title;
+		let encodedTitle = tempElement.innerHTML;
+		this.document.write(`<!DOCTYPE html><html><head><title>${encodedTitle}</title></head><body></body></html>`);
+
+		// this.document.write(`<!DOCTYPE html><html><body></body></html>`);
+
+		this._vdom = dot(this.document.body, this.window).mount(this.root) as unknown as ContainerVdom;
 
 		if(this.window){
 			this.isOpen = true;

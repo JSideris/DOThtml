@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent, IReactive } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent, IReactive } from "dothtml-interfaces";
 import styles from "./large-logo-part.css";
 
 type Orbiter = {
@@ -10,7 +10,7 @@ type Orbiter = {
 
 // @dot.component.useStyles(styles)
 const LargeLogoPart = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		_?: FrameworkItems;
 		orbiter1: Orbiter = {
 			x: dot.watch(0),
@@ -23,46 +23,47 @@ const LargeLogoPart = dot.component(
 			z: dot.watch(0),
 		};
 
-		// ready(): void {
-		// 	this.animate();
-		// }
+		mounted(): void {
+			console.log("READY");
+			this.animate();
+		}
 
-		// animate(){
-		// 	requestAnimationFrame(()=>this.animate());
-		// 	let t = Date.now();
-		// 	this.calculateOrbitPosition(160, 0.2, 1300, t, this.orbiter1);
-		// 	this.calculateOrbitPosition(160, 0.3, 1400, t, this.orbiter2);
-		// }
+		animate(){
+			requestAnimationFrame(()=>this.animate());
+			let t = Date.now();
+			this.calculateOrbitPosition(160, 0.2, 1300, t, this.orbiter1);
+			this.calculateOrbitPosition(160, 0.3, 1400, t, this.orbiter2);
+		}
 
-		// calculateOrbitPosition(a: number, e: number, T: number, t: number, out: Orbiter) {
-		// 	// Mean motion
-		// 	let n = 2 * Math.PI / T;
+		calculateOrbitPosition(a: number, e: number, T: number, t: number, out: Orbiter) {
+			// Mean motion
+			let n = 2 * Math.PI / T;
 		
-		// 	// Mean anomaly
-		// 	let M = n * t;
+			// Mean anomaly
+			let M = n * t;
 		
-		// 	// Solve Kepler's equation for Eccentric Anomaly (E)
-		// 	let E = M; // Initial approximation
-		// 	for (let i = 0; i < 10; i++) { // Iterate to solve
-		// 		E = E - (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
-		// 	}
+			// Solve Kepler's equation for Eccentric Anomaly (E)
+			let E = M; // Initial approximation
+			for (let i = 0; i < 10; i++) { // Iterate to solve
+				E = E - (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+			}
 		
-		// 	// True anomaly
-		// 	let trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+			// True anomaly
+			let trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
 		
-		// 	// Distance from focus
-		// 	let r = a * (1 - e * e) / (1 + e * Math.cos(trueAnomaly));
+			// Distance from focus
+			let r = a * (1 - e * e) / (1 + e * Math.cos(trueAnomaly));
 		
-		// 	// Convert to Cartesian coordinates
-		// 	let x = r * Math.cos(trueAnomaly);
-		// 	let y = r * Math.sin(trueAnomaly);
+			// Convert to Cartesian coordinates
+			let x = r * Math.cos(trueAnomaly);
+			let y = r * Math.sin(trueAnomaly);
 
-		// 	// console.log(trueAnomaly);
+			// console.log(trueAnomaly);
 		
-		// 	out.x.setValue(x);
-		// 	out.y.setValue(y);
-		// 	out.z.setValue(y > 0 ? 0 : 3);
-		// }
+			out.x.setValue(x);
+			out.y.setValue(y);
+			out.z.setValue(y > 0 ? 0 : 3);
+		}
 
 		build() {
 			return dot.div( {id: "container"},
@@ -130,7 +131,7 @@ const LargeLogoPart = dot.component(
 				.div({id: "tagline"}, "Redefine web development.")
 			);
 		}
-	}, styles
+	}, [styles]
 );
 
 export default LargeLogoPart;

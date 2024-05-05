@@ -1,9 +1,9 @@
 import { dot } from "dothtml";
-import { IComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
 import styles from "./small-logo.css";
 
 const SmallLogo = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		build() {
 			return dot.div(
 				{id: "container"},

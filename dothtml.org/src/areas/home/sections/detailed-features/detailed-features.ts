@@ -1,12 +1,23 @@
 import { dot } from "dothtml";
 import styles from "./detailed-features.css";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import LargeLogoPart from "../hero-section/large-logo-part/large-logo-part";
 
 const DetailedFeatures = dot.component(
-	class DetailedFeatures implements IComponent{
+	class DetailedFeatures implements IDotComponent{
 		_?: FrameworkItems;
 		build() {
-			return dot.div();
+			return dot.div(
+				dot.button({
+					onClick: ()=>{
+						let w = dot.window({
+							content: new LargeLogoPart() as any
+						});
+
+						w.open();
+					}
+				}, "Click me!")
+			);
 		}
 	}
 );

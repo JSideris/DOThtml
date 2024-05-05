@@ -1,10 +1,10 @@
 import { dot } from "dothtml";
 import styles from "./learn-more.css";
-import { FrameworkItems, IComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
 
 @dot.component
 @dot.component.useStyles(styles)
-class LearnMore implements IComponent{
+class LearnMore implements IDotComponent{
 	events?: string[];
 	_?: FrameworkItems;
 	build(): IDotGenericElement {

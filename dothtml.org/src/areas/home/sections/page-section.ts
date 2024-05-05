@@ -2,12 +2,12 @@
 // This one will be abstract!
 
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import styles from "./page-section.css";
 
 // AFTER
 const PageSection = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		events?: string[];
 		_?: FrameworkItems;
 		build(...args: any[]) {

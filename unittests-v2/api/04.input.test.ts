@@ -67,7 +67,7 @@ describe("Values.", ()=>{
 
 		expect(input.value).toBe("abc");
 
-		obs.setValue("123");
+		obs.value = ("123");
 
 		expect(input.value).toBe("123");
 
@@ -76,7 +76,7 @@ describe("Values.", ()=>{
 		input.value = "abc123";
 		input.dispatchEvent(new Event("input"));
 
-		expect(obs.getValue()).toBe("abc123");
+		expect(obs.value).toBe("abc123");
 	});
 
 	test("Nested input gets updated.", ()=>{
@@ -89,7 +89,7 @@ describe("Values.", ()=>{
 		
 		expect(input.value).toBe("abc");
 
-		obs.setValue("123");
+		obs.value = ("123");
 
 		expect(input.value).toBe("123");
 	});
@@ -103,14 +103,14 @@ describe("Values.", ()=>{
 		
 		expect(input.checked).toBe(true);
 
-		obs.setValue(false);
+		obs.value = (false);
 
 		expect(input.checked).toBe(false);
 
 		input.checked = true;
 		input.dispatchEvent(new Event("input"));
 
-		expect(obs.getValue()).toBe(true);
+		expect(obs.value).toBe(true);
 	});
 
 	test("Radio gets updated.", ()=>{
@@ -135,26 +135,26 @@ describe("Values.", ()=>{
 		expect(input3.checked).toBe(false);
 		expect(input4.checked).toBe(true);//
 		
-		obs1.setValue(false);
+		obs1.value = (false);
 		
 		expect(input1.checked).toBe(false);
 		expect(input2.checked).toBe(false);
 		expect(input3.checked).toBe(false);
 		expect(input4.checked).toBe(true);//
 		
-		obs1.setValue(true);
+		obs1.value = (true);
 
 		expect(input1.checked).toBe(true);
 		expect(input2.checked).toBe(false);
 		expect(input3.checked).toBe(false);
 		expect(input4.checked).toBe(true);//
 		
-		obs2.setValue(true);
+		obs2.value = (true);
 
 		expect(input1.checked).toBe(false);
 		expect(input2.checked).toBe(true);
 		expect(input3.checked).toBe(false);
-		expect(obs1._value).toBe(false);
+		expect(obs1.value).toBe(false);
 		expect(input4.checked).toBe(true);//
 		
 		input3.checked = true;
@@ -164,8 +164,63 @@ describe("Values.", ()=>{
 		expect(input2.checked).toBe(false);
 		expect(input3.checked).toBe(true);
 		expect(input4.checked).toBe(true);//
-		expect(obs2._value).toBe(false);
-		expect(obs3._value).toBe(true);
+		expect(obs2.value).toBe(false);
+		expect(obs3.value).toBe(true);
+	});
+
+	test("Radio with special bindings gets updated.", ()=>{
+
+		let obs1 = dot.watch("TRUE");
+		let obs2 = dot.watch("FALSE");
+		let obs3 = dot.watch("FALSE");
+
+		dot(document.body)
+			.input({ id: "my-input-1", name: "group-1", type: "radio", checked: obs1.bindAs({display: v=>v=="TRUE"}) })
+			.input({ id: "my-input-2", name: "group-1", type: "radio", checked: obs2.bindAs({display: v=>v=="TRUE"}) })
+			.input({ id: "my-input-3", name: "group-1", type: "radio", checked: obs3.bindAs({display: v=>v=="TRUE"}) })
+			.input({ id: "my-input-4", name: "group-2", type: "radio", checked: true });
+
+		let input1 = document.getElementById("my-input-1") as HTMLInputElement;
+		let input2 = document.getElementById("my-input-2") as HTMLInputElement;
+		let input3 = document.getElementById("my-input-3") as HTMLInputElement;
+		let input4 = document.getElementById("my-input-4") as HTMLInputElement;
+		
+		expect(input1.checked).toBe(true);
+		expect(input2.checked).toBe(false);
+		expect(input3.checked).toBe(false);
+		expect(input4.checked).toBe(true);//
+		
+		obs1.value = ("FALSE");
+		
+		expect(input1.checked).toBe(false);
+		expect(input2.checked).toBe(false);
+		expect(input3.checked).toBe(false);
+		expect(input4.checked).toBe(true);//
+		
+		obs1.value = ("TRUE");
+
+		expect(input1.checked).toBe(true);
+		expect(input2.checked).toBe(false);
+		expect(input3.checked).toBe(false);
+		expect(input4.checked).toBe(true);//
+		
+		obs2.value = ("TRUE");
+
+		expect(input1.checked).toBe(false);
+		expect(input2.checked).toBe(true);
+		expect(input3.checked).toBe(false);
+		expect(obs1.value).toBe("FALSE");
+		expect(input4.checked).toBe(true);//
+		
+		input3.checked = true;
+		input3.dispatchEvent(new Event("input"));
+		
+		expect(input1.checked).toBe(false);
+		expect(input2.checked).toBe(false);
+		expect(input3.checked).toBe(true);
+		expect(input4.checked).toBe(true);//
+		expect(obs2.value).toBe("FALSE");
+		expect(obs3.value).toBe("TRUE");
 	});
 
 	test("Text area one way binding.", ()=>{
@@ -179,7 +234,7 @@ describe("Values.", ()=>{
 
 		expect(input.value).toBe("abc");
 
-		obs.setValue("123");
+		obs.value = ("123");
 
 		expect(input.value).toBe("123");
 
@@ -188,7 +243,7 @@ describe("Values.", ()=>{
 		input.value = "abc123";
 		input.dispatchEvent(new Event("input"));
 
-		expect(obs.getValue()).toBe("123");
+		expect(obs.value).toBe("123");
 	});
 
 	test("Value attribute should override textarea text.", ()=>{
@@ -221,7 +276,7 @@ describe("Values.", ()=>{
 
 		expect(input.value).toBe("abc");
 
-		obs.setValue("123");
+		obs.value = ("123");
 
 		expect(input.value).toBe("123");
 
@@ -230,7 +285,7 @@ describe("Values.", ()=>{
 		input.value = "abc123";
 		input.dispatchEvent(new Event("input"));
 
-		expect(obs.getValue()).toBe("abc123");
+		expect(obs.value).toBe("abc123");
 	});
 
 	// TODO: test binding on the options themselves.
@@ -257,7 +312,7 @@ describe("Values.", ()=>{
 		expect(opt3.selected).toBe(false);
 		expect(input.value).toBe("1");
 		
-		obs.setValue("2");
+		obs.value = ("2");
 		
 		expect(opt1.selected).toBe(false);
 		expect(opt2.selected).toBe(true);
@@ -272,13 +327,13 @@ describe("Values.", ()=>{
 		expect(opt1.selected).toBe(false);
 		expect(opt2.selected).toBe(false);
 		expect(opt3.selected).toBe(true);
-		expect(obs.getValue()).toBe("3");
+		expect(obs.value).toBe("3");
 		
 		opt1.selected = true;
 		opt1.dispatchEvent(new Event("input"));
 		expect(opt1.selected).toBe(true);
 		expect(opt2.selected).toBe(false);
 		expect(opt3.selected).toBe(false);
-		expect(obs.getValue()).toBe("1");
+		expect(obs.value).toBe("1");
 	});
 });

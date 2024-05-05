@@ -3,7 +3,7 @@ import dot from "./dot";
 import { ClassPrefix, eachK, GlobalComponentStack, isF, sT } from "./dot-util";
 import ERR from "./err";
 import { ArgCallback, ArrayArgCallback, AttrArgCallback } from "./arg-callback-obj";
-import { FrameworkItems, FrameworkItems, IComponent, IDotCss, IDotElement } from "dothtml-interfaces";
+import { FrameworkItems, FrameworkItems, IDotComponent, IDotCss, IDotElement } from "dothtml-interfaces";
 
 interface IPropertyContainer{
 	activePropConstructor: Function;
@@ -49,7 +49,7 @@ class _FrameworkItems implements FrameworkItems{
 
 }
 
-export interface IWrappedComponent extends IComponent{
+export interface IWrappedComponent extends IDotComponent{
 	__initializingStyles: boolean;
 	__initializingBuild: boolean;
 	__rebuildStylesOnPropChange: {[propName: string]: true};
@@ -64,7 +64,7 @@ export interface IWrappedComponent extends IComponent{
 
 class _ComponentFactory{
 
-	make<T extends new (...args: any[]) => IComponent>(Base: T): T & (new (...args: any[]) => { $: FrameworkItems; }){
+	make<T extends new (...args: any[]) => IDotComponent>(Base: T): T & (new (...args: any[]) => { $: FrameworkItems; }){
 		return class ComponentWrapper extends Base implements IWrappedComponent{
 
 			constructor(...args: Array<any>){

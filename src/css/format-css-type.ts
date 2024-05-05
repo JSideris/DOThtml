@@ -1,9 +1,10 @@
-import { floatRegex } from "../helpers";
-import Reactive from "../reactive";
+import { floatRegex } from "../helpers/tools";
+import BoundReactive from "../reactivity/bound-reactive";
+import Reactive from "../reactivity/reactive";
 
-export function formatCssLength(value:string|number|Reactive|Array<string|number|Reactive>, defaultUnits = "px"){
+export function formatCssLength(value:string|number|BoundReactive|Array<string|number|BoundReactive>, defaultUnits = "px"){
 	value = value || "0px";
-	if(value instanceof Reactive) value = value.getValue();
+	if(value instanceof BoundReactive) value = value._get();
 	if(value instanceof Array){
 		return value.map(v=>formatCssLength(v, defaultUnits)).join(" ");
 	}
@@ -20,9 +21,9 @@ export function formatCssLength(value:string|number|Reactive|Array<string|number
 	}
 }
 
-export function formatCssPercentage(value: string|number|Reactive|Array<string|number|Reactive>){
+export function formatCssPercentage(value: string|number|BoundReactive|Array<string|number|BoundReactive>){
 	value = value || "0%";
-	if(value instanceof Reactive) value = value.getValue();
+	if(value instanceof BoundReactive) value = value._get();
 	if(value instanceof Array){
 		return value.map(v=>formatCssPercentage(v)).join(" ");
 	}
@@ -63,9 +64,9 @@ export function formatCssColor(value: string|number){
 	}
 }
 
-export function formatCssAngle(value: string|number|Reactive|Array<string|number|Reactive>){
+export function formatCssAngle(value: string|number|BoundReactive|Array<string|number|BoundReactive>){
 	value = value || "0deg";
-	if(value instanceof Reactive) value = value.getValue();
+	if(value instanceof BoundReactive) value = value._get();
 	if(value instanceof Array){
 		return value.map(v=>formatCssAngle(v)).join(" ");
 	}

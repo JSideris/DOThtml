@@ -1,9 +1,9 @@
 import { dot } from "dothtml";
 import styles from "./main-features.css";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 const MainFeatures = dot.component(
-	class MainFeatures implements IComponent{
+	class MainFeatures implements IDotComponent{
 		_?: FrameworkItems;
 		build() {
 			return dot.div();

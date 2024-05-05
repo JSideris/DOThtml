@@ -1,10 +1,10 @@
 
 
 import { dot } from "dothtml";
-import { IComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
 
 const HelloWorld = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		build() {
 			return dot.div("Hello, World!")
 		}

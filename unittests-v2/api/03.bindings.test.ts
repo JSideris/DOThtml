@@ -23,12 +23,18 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 	});
 
+	test("Render observable string using a bound reactive.", ()=>{
+		let binding = dot.watch("hello");
+		dot(document.body).div(binding.bind());
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
+	});
+
 	test("Render observable modified string.", ()=>{
 		let binding = dot.watch("hello");
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 		
-		binding.setValue("world");
+		binding.value = "world";
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world")));
 	});
 
@@ -37,7 +43,7 @@ describe("Text data binding.", () => {
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("<p></p>")));
 		
-		binding.setValue("<span></span>");
+		binding.value = "<span></span>";
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("<span></span>")));
 	});
 
@@ -46,7 +52,7 @@ describe("Text data binding.", () => {
 		dot(document.body).div(binding).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello").div("hello")));
 		
-		binding.setValue("world");
+		binding.value = "world";
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world").div("world")));
 	});
 
@@ -55,17 +61,39 @@ describe("Text data binding.", () => {
 		dot(document.body).div(binding);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 		
-		binding.setValue(null);
+		binding.value = null;
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 
 	test("Render observable transformed.", ()=>{
-		let binding = dot.watch(3, {transformer: (value)=>value*2});
-		dot(document.body).div(binding);
+		let binding = dot.watch(3);
+		dot(document.body).div(binding.bindAs({display: v=>v*2}));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(6)));
 
-		binding.setValue(5);
+		binding.value = 5;
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(10)));
+	});
+
+	test("Render observable transformed in input display.", ()=>{
+		let binding = dot.watch(3);
+		dot(document.body).input({id: "my-input", value: binding.bindAs({display: v=>`${v*2}`}) });
+		expect(formatHTML((document.getElementById("my-input") as HTMLInputElement).value)).toBe("6");
+
+		binding.value = 5;
+		expect(formatHTML((document.getElementById("my-input") as HTMLInputElement).value)).toBe("10");
+	});
+
+	test("Render observable transformed to a style.", ()=>{
+		let binding = dot.watch(3);
+		dot(document.body).div({id: "my-element", style: {
+			transform: {
+				translateX: binding.bindAs({display: v=>v*2})
+			}
+		}});
+		expect(formatHTML(document.getElementById("my-element")?.style.transform)).toBe("translatex(6px)");
+
+		binding.value = 5;
+		expect(formatHTML(document.getElementById("my-element")?.style.transform)).toBe("translatex(10px)");
 	});
 });
 
@@ -87,7 +115,7 @@ describe("HTML data binding.", () => {
 		dot(document.body).div(dot.html(binding));
 		// expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 		
-		binding.setValue("<span></span>");
+		binding.value = "<span></span>";
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span())));
 	});
 
@@ -96,7 +124,7 @@ describe("HTML data binding.", () => {
 		dot(document.body).div(dot.html(binding));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 		
-		binding.setValue(null);
+		binding.value = null;
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 });
@@ -120,7 +148,7 @@ describe("Attribute data binding.", () => {
 		dot(document.body).div({class: binding});
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 		
-		binding.setValue("world");
+		binding.value = ("world");
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "world"})));
 	});
 
@@ -129,7 +157,7 @@ describe("Attribute data binding.", () => {
 		dot(document.body).div(binding, {class: binding}).div(binding,{class: binding});
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello", {class: "hello"}).div("hello", {class: "hello"})));
 		
-		binding.setValue("world");
+		binding.value = ("world");
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world", {class: "world"}).div("world", {class: "world"})));
 	});
 
@@ -138,7 +166,7 @@ describe("Attribute data binding.", () => {
 		dot(document.body).div({class: binding});
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 		
-		binding.setValue(null);
+		binding.value = (null);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 });
@@ -160,16 +188,16 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(cond, val).otherwise(cond);
 		expect(formatHTML(document.body.innerHTML)).toBe("abc");
 
-		val.setValue("123");
+		val.value = ("123");
 		expect(formatHTML(document.body.innerHTML)).toBe("123");
 
-		cond.setValue(false);
+		cond.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("false");
 
-		val.setValue("xyz");
+		val.value = ("xyz");
 		expect(formatHTML(document.body.innerHTML)).toBe("false");
 
-		cond.setValue(true);
+		cond.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("xyz");
 	});
 	test("When binding changes.", () => {
@@ -177,7 +205,7 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(binding, dot.p("yes")).otherwise(dot.p("no"));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("yes")));
 
-		binding.setValue(false);
+		binding.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("no")));
 	});
 	test("When othewise when binding changes.", () => {
@@ -186,10 +214,10 @@ describe("Conditional w/ binding.", () => {
 		let binding2 = dot.watch(false);
 		let binding3 = dot.watch(false);
 
-		binding.subscribeCallback(v=>{
-			binding1.setValue(v == 1);
-			binding2.setValue(v == 2);
-			binding3.setValue(v == 3);
+		binding.subscribe(v=>{
+			binding1.value = (v == 1);
+			binding2.value = (v == 2);
+			binding3.value = (v == 3);
 		});
 
 		dot(document.body)
@@ -200,16 +228,16 @@ describe("Conditional w/ binding.", () => {
 
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a")));
 
-		binding.setValue(2);
+		binding.value = (2);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("b")));
 
-		binding.setValue(3);
+		binding.value = (3);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("c")));
 
-		binding.setValue(4);
+		binding.value = (4);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("d")));
 
-		binding.setValue(1);
+		binding.value = (1);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a")));
 	});
 
@@ -219,16 +247,16 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(cBinding, dot.p(xValue)).otherwise(dot.span(xValue));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("abc")));
 
-		xValue.setValue("123");
+		xValue.value = ("123");
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("123")));
 		
-		cBinding.setValue(false);
+		cBinding.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span("123")));
 
-		xValue.setValue("abc");
+		xValue.value = ("abc");
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span("abc")));
 
-		cBinding.setValue(true);
+		cBinding.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("abc")));
 	});
 
@@ -236,19 +264,26 @@ describe("Conditional w/ binding.", () => {
 		let cBinding = dot.watch(true);
 		let xValue = dot.watch("abc");
 		
-		dot(document.body).when(cBinding, dot.p({class: xValue})).otherwise(dot.span({class: xValue}));
+		dot(document.body)
+			.when(cBinding, 
+				dot.p({class: xValue})
+			)
+			.otherwise(
+				dot.span({class: xValue})
+			);
+
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=abc></p>");
 
-		xValue.setValue("123");
+		xValue.value = ("123");
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=123></p>");
 		
-		cBinding.setValue(false);
+		cBinding.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("<span class=123></span>");
 		
-		xValue.setValue("abc");
+		xValue.value = ("abc");
 		expect(formatHTML(document.body.innerHTML)).toBe("<span class=abc></span>");
 		
-		cBinding.setValue(true);
+		cBinding.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=abc></p>");
 	});
 
@@ -258,16 +293,16 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(cBinding, dot.html(xValue).div(true)).otherwise(dot.html(xValue).div(false));
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>true</div>");
 
-		xValue.setValue("123");
+		xValue.value = ("123");
 		expect(formatHTML(document.body.innerHTML)).toBe("123<div>true</div>");
 		
-		cBinding.setValue(false);
+		cBinding.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("123<div>false</div>");
 
-		xValue.setValue("abc");
+		xValue.value = ("abc");
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>false</div>");
 
-		cBinding.setValue(true);
+		cBinding.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>true</div>");
 	});
 
@@ -279,16 +314,16 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(cBinding, dot.html(xValue).text(true)).otherwise(dot.html(xValue).text(false));
 		expect(formatHTML(document.body.innerHTML)).toBe("abctrue");
 
-		xValue.setValue("123");
+		xValue.value = ("123");
 		expect(formatHTML(document.body.innerHTML)).toBe("123true");
 		
-		cBinding.setValue(false);
+		cBinding.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("123false");
 
-		xValue.setValue("abc");
+		xValue.value = ("abc");
 		expect(formatHTML(document.body.innerHTML)).toBe("abcfalse");
 
-		cBinding.setValue(true);
+		cBinding.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("abctrue");
 	});
 
@@ -298,16 +333,16 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(cBinding, dot.text(xValue).text("-").text(cBinding)).otherwise(dot.text(xValue).text("-").text(cBinding));
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-true");
 
-		xValue.setValue("123");
+		xValue.value = ("123");
 		expect(formatHTML(document.body.innerHTML)).toBe("123-true");
 		
-		cBinding.setValue(false);
+		cBinding.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("123-false");
 
-		xValue.setValue("abc");
+		xValue.value = ("abc");
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-false");
 
-		cBinding.setValue(true);
+		cBinding.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-true");
 	});
 
@@ -317,18 +352,18 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).text("0").when(binding1, "1").otherwise("x").when(binding2, "2").otherwise("y").text("3");
 		// expect(formatHTML(document.body.innerHTML)).toBe("0123");
 		
-		binding1.setValue(false);
+		binding1.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("0x23");
 
-		binding1.setValue(true);
+		binding1.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
-		binding1.setValue(false);
-		binding2.setValue(false);
+		binding1.value = (false);
+		binding2.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("0xy3");
 
-		binding2.setValue(true);
-		binding1.setValue(true);
+		binding2.value = (true);
+		binding1.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
 	});
@@ -339,18 +374,18 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).text("0").when(binding1, "1").when(binding2, "2").text("3");
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 		
-		binding1.setValue(false);
+		binding1.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("023");
 
-		binding1.setValue(true);
+		binding1.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
-		binding1.setValue(false);
-		binding2.setValue(false);
+		binding1.value = (false);
+		binding2.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("03");
 
-		binding2.setValue(true);
-		binding1.setValue(true);
+		binding2.value = (true);
+		binding1.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
 	});
@@ -361,16 +396,16 @@ describe("Conditional w/ binding.", () => {
 		dot(document.body).when(binding1, dot.when(binding2, 0).otherwise(1)).otherwise(dot.when(binding2, 2).otherwise(3));
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 		
-		binding2.setValue(false);
+		binding2.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("1");
 
-		binding1.setValue(false);
+		binding1.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("3");
 
-		binding2.setValue(true);
+		binding2.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("2");
 
-		binding1.setValue(true);
+		binding1.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 
 	});
@@ -378,9 +413,18 @@ describe("Conditional w/ binding.", () => {
 
 describe("Iteration w/ binding.", () => {
 	// Bonud arrays.
+	// test.only("Basic array.", ()=>{
+	// 	let array = ["a", "b", "c"];
+	// 	dot(document.body).each(array, x=>dot.div(x))
+	// 	expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a").div("b").div("c")));
+	// });
+
 	test("Basic bound array.", ()=>{
 		let obs = dot.watch(["a", "b", "c"]);
-		dot(document.body).each(obs, x=>dot.div(x))
+		dot(document.body).each(obs, x=>{
+			// console.log(x);
+			return dot.div(x)
+		})
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a").div("b").div("c")));
 	});
 
@@ -404,7 +448,7 @@ describe("Iteration w/ binding.", () => {
 	// This indicates that the whole list is being rerendered each time.
 	test("Preserving index.", ()=>{
 		let array = [{value:"a"}, {value:"b"}, {value:"c"}];
-		let obs = dot.watch(array, {key: "value"});
+		let obs = dot.watch(array, "value");
 		dot(document.body).each(obs, (x, i, k)=>dot.div(dot.text(x.value).text("-").text(i)))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a-0").div("b-1").div("c-2")));
 		
@@ -440,7 +484,7 @@ describe("Iteration w/ binding.", () => {
 
 	test("Array of objects.", ()=>{
 		let array: Array<{id: number, isTrue: boolean}> = [{id: 1, isTrue: false}, {id: 2, isTrue: false}, {id: 3, isTrue: false}];
-		let obs = dot.watch(array, {key: "id"});
+		let obs = dot.watch(array, "id");
 		dot(document.body).each(obs, (x, i, k)=>dot.div(x.id).div(k).div(x.isTrue))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("1").div("1").div("false").div("2").div("2").div("false").div("3").div("3").div("false")));
 		
@@ -457,8 +501,8 @@ describe("Iteration w/ binding.", () => {
 
 	test("Get total.", ()=>{
 		let array: Array<{id: number, amount: number}> = [{id: 1, amount: 1}, {id: 2, amount: 2}, {id: 3, amount: 3}];
-		let obs = dot.watch(array, {key: "id", transformer: v=>v.reduce((a,c)=>a+c.amount, 0)});
-		dot(document.body).div(obs)
+		let obs = dot.watch(array, "id");
+		dot(document.body).div(obs.bindAs({display: v=>v.reduce((a,c)=>a+c.amount, 0)}))
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("6")));
 		
 		array[1] = {id: 2, amount: 10};
@@ -479,9 +523,9 @@ describe("Iteration w/ binding.", () => {
 // 		// This particular test may not be needed.
 // 		// It's already forbidden by the type system.
 // 		// I'm also not certain what the approriate defined outcome should be (should it change or throw?).
-// 		// obsSlave.setValue("b");
+// 		// obsSlave.value = ("b");
 // 		// expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("aa"));
-// 		obsMaster.setValue("c");
+// 		obsMaster.value = ("c");
 // 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("cc"));
 // 	});
 // });
@@ -491,7 +535,7 @@ describe("Special attributes.", ()=>{
 		let binding = dot.watch(false);
 		dot(document.body).div({ class: { "my-class": true, "your-class": binding } });
 		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class></div>`);
-		binding.setValue(true);
+		binding.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class your-class></div>`);
 	});
 

@@ -6,7 +6,7 @@ import { ClassPrefix, eachK, GlobalComponentStack, isF, sT, str } from "./dot-ut
 import ComponentWrapper, { IWrappedComponent } from "./component-factory";
 // import { ArrayArgCallback, AttrArgCallback, ConditionalArgCallback, ContentArgCallback } from "./arg-callback-obj";
 // import ObservableArray from "./observable-array";
-import { DotContent, FrameworkItems, IComponent, IDotCore, IDotDocument, IDotElementDocument, IDotGenericElement } from "dothtml-interfaces";
+import { DotContent, FrameworkItems, IDotComponent, IDotCore, IDotDocument, IDotElementDocument, IDotGenericElement } from "dothtml-interfaces";
 // import VdomNode from "./vdom-node";
 // import ComponentFactory from "./component-factory";
 
@@ -797,7 +797,7 @@ dot.resetScopeClass = function(){
 // 	}
 // }
 
-// dot.component = function<T extends new (...args: any[]) => IComponent>(Component: T): T & (new (...args: any[]) => { $: FrameworkItems; }){
+// dot.component = function<T extends new (...args: any[]) => IDotComponent>(Component: T): T & (new (...args: any[]) => { $: FrameworkItems; }){
 // 	return ComponentFactory.make<T>(Component);
 // }
 

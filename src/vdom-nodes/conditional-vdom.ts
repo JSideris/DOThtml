@@ -1,5 +1,5 @@
-import { removeNodesBetween } from "../helpers";
-import Reactive from "../reactive";
+import { removeNodesBetween } from "../helpers/tools";
+import BoundReactive from "../reactivity/bound-reactive";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { ConditionalNodeItem } from "./vdom-types";
@@ -10,7 +10,7 @@ export class ConditionalVdom extends Vdom{
 	private sealed = false;
 	private renderedIndex = -1;
 
-	addCondition(condition:Reactive|boolean, vNode: ContainerVdom, seal = false){
+	addCondition(condition:BoundReactive|boolean, vNode: ContainerVdom, seal = false){
 
 		if(this.sealed){
 			throw new Error("Cannot add additional conditions to a sealed block.");
@@ -32,8 +32,8 @@ export class ConditionalVdom extends Vdom{
 
 			this.addAnchor(C, this.conditions[0].startAnchor.parentElement);
 
-			if(condition instanceof Reactive){
-				C.observerId = condition.subscribeCond(this);
+			if(condition instanceof BoundReactive){
+				C.observerId = condition._subscribe(this);
 			}
 
 			this.updateConditions();
@@ -62,8 +62,8 @@ export class ConditionalVdom extends Vdom{
 			// C.textAnchor = targetDocument.createTextNode(`${c}`); // DEBUGGING
 			this.addAnchor(C, node);
 
-			if(C.condition instanceof Reactive){
-				C.observerId = C.condition.subscribeCond(this);
+			if(C.condition instanceof BoundReactive){
+				C.observerId = C.condition._subscribe(this);
 			}
 		}
 
@@ -85,8 +85,8 @@ export class ConditionalVdom extends Vdom{
 				C.startAnchor = null;
 				C.endAnchor = null;
 
-				if(C.condition instanceof Reactive){
-					C.condition.detachBinding(C.observerId);
+				if(C.condition instanceof BoundReactive){
+					C.condition._unsubscribe(C.observerId);
 					C.observerId = 0;
 				}
 			}
@@ -100,7 +100,7 @@ export class ConditionalVdom extends Vdom{
 		for(let c = 0; c < this.conditions.length; c++){
 			let C = this.conditions[c];
 
-			if(C.condition instanceof Reactive ? C.condition.getValue() : C.condition){
+			if(C.condition instanceof BoundReactive ? C.condition._get() : C.condition){
 				newIndex = c;
 				break;
 			}

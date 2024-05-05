@@ -1,4 +1,4 @@
-import { FrameworkItems, IComponent, IDotCss, IDotDocument, IReactive } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent, IDotCss, IDotDocument, IReactive } from "dothtml-interfaces";
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
@@ -25,7 +25,7 @@ component["_addTimestamp"] = false;
 
 // TODO: typed props and events would be GREAT. But it's not easy to do. Some thought has to go into it.
 
-let TextDisplay = dot.component<["txt"]>(class implements IComponent{
+let TextDisplay = dot.component<["txt"]>(class implements IDotComponent{
 	// constructor(txt: string){}
 	_: FrameworkItems;
 	build(): IDotDocument {
@@ -33,7 +33,7 @@ let TextDisplay = dot.component<["txt"]>(class implements IComponent{
 	}
 });
 
-let YesNoButton = dot.component<["defaultValue", "yesText", "noText"], []>(class implements IComponent{
+let YesNoButton = dot.component<["defaultValue", "yesText", "noText"], []>(class implements IDotComponent{
 	value = dot.watch(true);
 	_: FrameworkItems;
 

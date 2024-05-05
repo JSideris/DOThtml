@@ -1,10 +1,10 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import styles from "./hero-features-part.css";
 
 @dot.component
-// @dot.component.useStyles(styles)
-class HeroFeaturesPart implements IComponent{
+@dot.component.useStyles(styles)
+class HeroFeaturesPart implements IDotComponent{
 	events?: string[];
 	_?: FrameworkItems;
 	build() {

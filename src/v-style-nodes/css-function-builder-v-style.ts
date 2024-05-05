@@ -1,4 +1,5 @@
-import Reactive from "../reactive";
+import BoundReactive from "../reactivity/bound-reactive";
+import Reactive from "../reactivity/reactive";
 import VStyle from "./v-style";
 
 export default abstract class CssFunctionBuilderVStyle{
@@ -6,10 +7,10 @@ export default abstract class CssFunctionBuilderVStyle{
 	simpleValue: string;
 	funcs: Array<{
 		func: string,
-		args: Array<{v: number|boolean|string|Reactive, f: (v:number|boolean|string|Reactive)=>string}>
+		args: Array<{v: number|boolean|string|BoundReactive, f: (v:number|boolean|string|BoundReactive)=>string}>
 	}> = [];
 	readonly propName: string;
-	subscriptions: Record<number, Reactive> = {};
+	subscriptions: Record<number, BoundReactive> = {};
 	target: HTMLElement;
 
 	constructor(propName: string){
@@ -23,8 +24,8 @@ export default abstract class CssFunctionBuilderVStyle{
 		for(let t of this.funcs){
 			// TODO: need to handle units and special types.
 			let argValues = t.args.map(arg => {
-				if(arg.v instanceof Reactive){
-					return arg.f(arg.v.getValue());
+				if(arg.v instanceof BoundReactive){
+					return arg.f(arg.v._get());
 				}
 				else{
 					return arg.f(arg.v).split(" ").join(", ");

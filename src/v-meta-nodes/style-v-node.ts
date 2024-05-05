@@ -1,11 +1,11 @@
 import { IDotCss } from "dothtml-interfaces";
 import cssProps from "../css/css-props";
-import Reactive from "../reactive";
 import VMetaNode from "./v-meta-node";
 import CssFunctionBuilderVStyle from "../v-style-nodes/css-function-builder-v-style";
 import FilterVStyle from "../v-style-nodes/filter-v-style";
 import TransformVStyle from "../v-style-nodes/transform-v-style";
 import { formatCssLength } from "../css/format-css-type";
+import BoundReactive from "../reactivity/bound-reactive";
 
 // TODO: Don't forget that this needs to support both elements and css targets.
 
@@ -28,7 +28,7 @@ export default class StyleVNode extends VMetaNode{
 	shadowRoot: ShadowRoot;
 	styleValue: IDotCss;
 
-	observables: Array<Reactive> = [];
+	observables: Array<BoundReactive> = [];
 	observableIds: Array<number> = [];
 
 	constructor(styleValue: IDotCss){
@@ -38,7 +38,7 @@ export default class StyleVNode extends VMetaNode{
 		{ // Get observables and nested nodes.
 			for(let prop in this.styleValue){
 				let value = this.styleValue[prop];
-				if(value instanceof Reactive){
+				if(value instanceof BoundReactive){
 					this.observables.push(value);
 				}
 				else if(typeof value === "object"){
@@ -56,22 +56,34 @@ export default class StyleVNode extends VMetaNode{
 						}
 					}
 
-					for(let k in value){
-						let v = value[k];
-						if(v instanceof Reactive){
-							this.observables.push(v);
-						}
-						else if(v instanceof Array){
-							for(let j in v){
-								let w = v[j];
-								if(w instanceof Reactive){
-									this.observables.push(w);
+					let funcArray: Array<any>;
+
+					if(value instanceof Array){
+						funcArray = value;
+					}
+					else{
+						funcArray = [value];
+					}
+
+					for(let i = 0; i < funcArray.length; i++){
+						let funcValue = funcArray[i];
+						for(let k in funcValue){
+							let v = funcValue[k];
+							if(v instanceof BoundReactive){
+								this.observables.push(v);
+							}
+							else if(v instanceof Array){
+								for(let j in v){
+									let w = v[j];
+									if(w instanceof BoundReactive){
+										this.observables.push(w);
+									}
 								}
 							}
-						}
 
-						if(builder && builder[k]){
-							builder[k](v);
+							if(builder && builder[k]){
+								builder[k](v);
+							}
 						}
 					}
 
@@ -91,7 +103,7 @@ export default class StyleVNode extends VMetaNode{
 		{ // Subscribe all the observables.
 			for(let i in this.observables){
 				let observable = this.observables[i];
-				let id = observable.subscribeAttrCollection(this);
+				let id = observable._subscribe(this);
 				this.observableIds.push(id);
 			}
 		}
@@ -107,8 +119,8 @@ export default class StyleVNode extends VMetaNode{
 			let cssValue;
 			{ // Get the value.
 				let value = this.styleValue[prop];
-				if(value instanceof Reactive){
-					cssValue = value.getValue();
+				if(value instanceof BoundReactive){
+					cssValue = value._get();
 				}
 				else if(value instanceof CssFunctionBuilderVStyle){
 					cssValue = value.toString();
@@ -174,7 +186,7 @@ export default class StyleVNode extends VMetaNode{
 		for(let i in this.observableIds){
 			let id = this.observableIds[i];
 			let observable = this.observables[i];
-			observable.detachBinding(id);
+			observable._unsubscribe(id);
 		}
 
 		this.observables.length = 0;

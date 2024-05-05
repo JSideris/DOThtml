@@ -1,4 +1,4 @@
-import { deepEqual } from "../../src/helpers";
+import { deepEqual } from "../../src/helpers/tools";
 
 describe('deepEqual', () => {
     test('should return true for equal numbers', () => {

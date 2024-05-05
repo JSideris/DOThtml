@@ -14,6 +14,7 @@ declare global {
 
 // Attach dot to the window object
 window.dot = dot;
+document["_dotId"] = "default";
 
 export { dot };
 

@@ -18,8 +18,8 @@ dot(document.body)
 	.mount(new Navbar())
 	.mount(new Home());
 
-if (module["hot"]) {
-	module["hot"].accept('./index.ts', () => {
-		console.log("MODULE HOT SWAP???");
-	});
-}
+// if (module["hot"]) {
+// 	module["hot"].accept('./index.ts', () => {
+// 		console.log("MODULE HOT SWAP???");
+// 	});
+// }

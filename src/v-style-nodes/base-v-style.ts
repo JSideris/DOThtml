@@ -1,4 +1,6 @@
-import Reactive from "../reactive";
+import BoundReactive from "../reactivity/bound-reactive";
+import Reactive from "../reactivity/reactive";
+import ReactiveStyle from "../reactivity/reactive-style";
 import FilterVStyle from "./filter-v-style";
 import TransformVStyle from "./transform-v-style";
 import VStyle from "./v-style";
@@ -25,8 +27,8 @@ export default class BaseVStyle extends VStyle{
 	// Used internally to indicate that this is the base style builder.
 	// Calling style functions on this object will create (and return) a new BaseVStyle, rather than extend this one.
 	private readonly _isBase = false;
-	private props: Array<{prop: string, value: string|Reactive|VStyle}> = [];
-	private subscriptions: Record<number, Reactive> = {};
+	private props: Array<{prop: string, value: string|BoundReactive|VStyle}> = [];
+	private subscriptions: Record<number, BoundReactive> = {};
 	private renderedSubBuilders: Array<VStyle> = []; // Used for unrendering. Set on render and cleared on unrender.
 
 	// One of these (but not both) should be used.
@@ -56,7 +58,7 @@ export default class BaseVStyle extends VStyle{
 		for(let s in this.subscriptions){
 			let P = this.subscriptions[s];
 
-			P.detachBinding(Number(s));
+			P._unsubscribe(Number(s));
 		}
 
 		this.subscriptions = {};
@@ -65,11 +67,11 @@ export default class BaseVStyle extends VStyle{
 	}
 
 	renderAndSetPropValue(prop, value){
-		if(value instanceof Reactive){
-			let id = value.subscribeStyle(this, prop);
+		if(value instanceof BoundReactive){
+			let id = value._subscribe(new ReactiveStyle(this, prop));
 			this.subscriptions[id] = value;
 
-			this.updateProp(prop, value.getValue());
+			this.updateProp(prop, value._get());
 		}
 		else if(value instanceof VStyle){
 			this.renderedSubBuilders.push(value);

@@ -1,5 +1,5 @@
 import { dot } from "dothtml"
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import homeStyles from "./home.css";
 import HeroSection from "./sections/hero-section/hero-section";
 // import GetDot from "./sections/get-dot/get-dot";
@@ -11,7 +11,7 @@ import Contribute from "./sections/contribute/contribute";
 import Footer from "./sections/footer/footer";
 
 const Home = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		_?: FrameworkItems;
 		build() {
 			return dot.div(
@@ -32,7 +32,7 @@ const Home = dot.component(
 
 
 // const Home = dot.component(
-// 	class implements IComponent{
+// 	class implements IDotComponent{
 // 		_?: FrameworkItems;
 // 		build(...args: any[]): IDotGenericElement {
 // 			return dot.div("HELLO, WORLD!");

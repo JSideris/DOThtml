@@ -1,12 +1,12 @@
 import { dot } from "dothtml";
 import styles from "./hero-section.css";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import LargeLogoPart from "./large-logo-part/large-logo-part";
 import QuickStartPart from "./quick-start-part/quick-start-part";
 import HeroFeaturesPart from "./hero-features-part/hero-features-part";
 
 const HeroSection = dot.component(
-	class implements IComponent{
+	class implements IDotComponent{
 		events?: string[];
 		_?: FrameworkItems;
 		build() {

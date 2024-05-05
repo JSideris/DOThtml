@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 
 let data = [
@@ -10,7 +10,7 @@ let data = [
 
 // Please no cast to any here. Just fix the bug.
 const ScoreCard = dot.component<["teamName"], ["updateRsvp"]>(
-	class implements IComponent{
+	class implements IDotComponent{
 		_: FrameworkItems;
 		build() {
 

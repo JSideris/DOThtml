@@ -1,5 +1,5 @@
-import { IComponent, IDotCss } from "dothtml-interfaces";
-import Reactive from "../reactive";
+import { IDotComponent, IDotCore, IDotCss } from "dothtml-interfaces";
+import Reactive from "../reactivity/reactive";
 import CollectionVdom from "./collection-vdom";
 import { ConditionalVdom } from "./conditional-vdom";
 import ElementVdom from "./element-vdom";
@@ -8,8 +8,14 @@ import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType, ObservableCollection } from "./vdom-types";
 import { ComponentVdom } from "./component-vdom";
+import BoundReactive from "../reactivity/bound-reactive";
 
 type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
+
+function reduceReactive(value: any){
+	if(value instanceof Reactive) return value.bind();
+	else return value;
+}
 
 /**
  * This is the actual document builder.
@@ -17,9 +23,11 @@ type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
 export class ContainerVdom extends Vdom{
 	_children: Array<Vdom> = [];
 	_parent: ParentVdom = null;
+	_dot: IDotCore;
 
-	constructor(){
+	constructor(dot: IDotCore){
 		super();
+		this._dot = dot;
 	}
 
 	_addChild(content: Vdom){
@@ -51,20 +59,20 @@ export class ContainerVdom extends Vdom{
 		}
 	}
 	
-	html(c: string|Reactive){
-		let hn = new HtmlVdom(c);
+	html(c: string|Reactive|BoundReactive){
+		let hn = new HtmlVdom(reduceReactive(c));
 		return this._addChild(hn);
 	}
 
-	text(c: string|Reactive){
-		let tn = new TextVdom(c);
+	text(c: string|Reactive|BoundReactive){
+		let tn = new TextVdom(reduceReactive(c));
 		return this._addChild(tn);
 	}
 
 	md(c: string|Reactive){
 		// TODO: for now, just render as text. 
 		// We can add the md functionality later.
-		return this.text(c);
+		return this.text(reduceReactive(c));
 	}
 
 	// style(c: string|Reactive|IDotCss){
@@ -77,30 +85,30 @@ export class ContainerVdom extends Vdom{
 	// 	}
 	// }
 
-	mount(c: IComponent){
-		let cn = new ComponentVdom(c);
+	mount(c: IDotComponent){
+		let cn = new ComponentVdom(this._dot, c);
 		return this._addChild(cn);
 	}
 
 	// // TODO: need to support immediate rendering.
-	when(condition:Reactive|boolean, then: ContainerVdom|string|boolean|number){
+	when(condition:Reactive|BoundReactive|boolean, then: ContainerVdom|string|boolean|number){
 		let condNode = new ConditionalVdom();
 		let thenContainer: ContainerVdom;
 		if(then instanceof ContainerVdom){
 			thenContainer = then;
 		}
 		else{
-			thenContainer = new ContainerVdom();
-			let textVdom = new TextVdom(then);
+			thenContainer = new ContainerVdom(this._dot);
+			let textVdom = new TextVdom(reduceReactive(then));
 			thenContainer._addChild(textVdom);
 			then = thenContainer;
 		}
-		condNode.addCondition(condition, then);
+		condNode.addCondition(reduceReactive(condition), reduceReactive(then));
 		this._addChild(condNode);
 
 		return this;
 	}
-	otherwiseWhen(condition:Reactive|boolean, then: ContainerVdom|string|boolean|number, seal = false){
+	otherwiseWhen(condition:Reactive|BoundReactive|boolean, then: ContainerVdom|string|boolean|number, seal = false){
 		let condNode = this._children[this._children.length - 1];
 		if(condNode instanceof ConditionalVdom){
 			let thenContainer: ContainerVdom;
@@ -108,12 +116,12 @@ export class ContainerVdom extends Vdom{
 				thenContainer = then;
 			}
 			else{
-				thenContainer = new ContainerVdom();
-				let textVdom = new TextVdom(then);
+				thenContainer = new ContainerVdom(this._dot);
+				let textVdom = new TextVdom(reduceReactive(then));
 				thenContainer._addChild(textVdom);
 				then = thenContainer;
 			}
-			condNode.addCondition(condition, then, seal);
+			condNode.addCondition(reduceReactive(condition), reduceReactive(then), seal);
 			// if(this._isCore){
 			// 	this._renderChildAndAppend(condNode);
 			// }
@@ -127,7 +135,7 @@ export class ContainerVdom extends Vdom{
 	otherwise(then: ContainerVdom|string|boolean|number){ return this.otherwiseWhen(true, then, true) }
 
 	each(collection: ObservableCollection, callback: ()=>Vdom){
-		let collectionVdom = new CollectionVdom(collection, callback);
+		let collectionVdom = new CollectionVdom(reduceReactive(collection), callback);
 		this._addChild(collectionVdom);
 		return this;
 	}

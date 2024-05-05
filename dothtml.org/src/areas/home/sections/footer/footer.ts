@@ -1,9 +1,9 @@
 import { dot } from "dothtml";
 import styles from "./footer.css";
-import { FrameworkItems, IComponent } from "dothtml-interfaces";
+import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 const Footer = dot.component(
-	class Footer implements IComponent{
+	class Footer implements IDotComponent{
 		_?: FrameworkItems;
 		build() {
 			return dot.div();

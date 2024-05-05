@@ -1,23 +1,24 @@
-import Reactive from "../reactive";
+import BoundReactive from "../reactivity/bound-reactive";
+import Reactive from "../reactivity/reactive";
 import { Vdom } from "./vdom";
 
 // TODO: experiment with turning all text into an observable to see if it improves render performance.
 
 export class TextVdom extends Vdom{
 
-	text: string|boolean|number|Reactive;
+	text: string|boolean|number|BoundReactive;
 	textNode: Node = null;
 	observerId = 0;
 
-	constructor(text: string|boolean|number|Reactive){
+	constructor(text: string|boolean|number|BoundReactive){
 		super();
 		this.text = text;
 	}
 
 	_render(node: HTMLElement) {
-		if(this.text instanceof Reactive){
-			this.textNode = node.ownerDocument.createTextNode(this.text.getValue() ?? "");
-			this.observerId = this.text.subscribeText(this);
+		if(this.text instanceof BoundReactive){
+			this.textNode = node.ownerDocument.createTextNode(this.text._get() ?? "");
+			this.observerId = this.text._subscribe(this);
 		}
 		else{
 			this.textNode = node.ownerDocument.createTextNode(`${this.text ?? ""}`);
@@ -33,14 +34,14 @@ export class TextVdom extends Vdom{
 			this.textNode = null;
 		}
 
-		if(this.observerId && this.text instanceof Reactive){
-			this.text.detachBinding(this.observerId);
+		if(this.observerId && this.text instanceof BoundReactive){
+			this.text._unsubscribe(this.observerId);
 			this.observerId = 0;
 		}
 	}
 
 	toString(){
-		let temp = document.createTextNode((this.text instanceof Reactive ? this.text.getValue() : this.text) ?? "");
+		let temp = document.createTextNode((this.text instanceof BoundReactive ? this.text._get() : this.text) ?? "");
 		let div = document.createElement("div");
 		div.appendChild(temp);
 		return div.innerHTML;

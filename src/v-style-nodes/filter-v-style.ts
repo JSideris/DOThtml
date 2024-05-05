@@ -1,5 +1,3 @@
-import VStyle from "./v-style";
-import Reactive from "../reactive";
 import { formatCssColor, formatCssLength, formatCssPercentage } from "../css/format-css-type";
 import CssFunctionBuilderVStyle from "./css-function-builder-v-style";
 

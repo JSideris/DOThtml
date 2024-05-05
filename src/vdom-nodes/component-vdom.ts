@@ -1,35 +1,79 @@
-import { IComponent } from "dothtml-interfaces";
+import { IDotComponent, IDotCore } from "dothtml-interfaces";
 import { Vdom } from "./vdom";
 import { ContainerVdom } from "./container-vdom";
+import renderStylesheet from "../helpers/render-stylesheet";
+
+let tagId = 0x10000;
+
+// dot["_addTimestamp"] = true; // Turn off for testing.
 
 export class ComponentVdom extends Vdom{
 
-	component: IComponent;
+	component: IDotComponent;
 	shadowEl: HTMLElement;
 	childShadowVdom: ContainerVdom;
-	sharedStyles: CSSStyleSheet;
 
-	constructor(component: IComponent){
+	constructor(dot: IDotCore, component: IDotComponent){
 		super();
 		this.component = component;
 
-		
-		this.component.creating && this.component.creating();
-		this.childShadowVdom = this.component.build && this.component.build() as unknown as ContainerVdom;
+		if(component._?._meta){
+			throw new Error("Component has already been added to the VDOM.");
+		}
+
+		if(!component.constructor["_dotHtmlComponent"]){
+			component.constructor["_dotHtmlComponent"] = {};
+			// set up the global component properties (if they haven't been set yet).
+			let ts = (Math.floor(performance.now()*10000000000000)).toString(16);
+			let tId = (tagId++).toString(16);
+			component.constructor["_dotHtmlComponent"].tagName = `dothtml-${tId}${dot["_addTimestamp"] ? `-${ts}` : ""}`;
+		}
+
+		if(!component._){
+			(component._ as any) = {};
+		}
+		(component._.refs as any) = {};
+		// (component._.props as any) = args[0] || {}; // TODO
+		// (component._.restyle as any) = ()=>{restyle(this)}; // TODO (not sure if this is needed - we don't have a separate builder (for now)).
+		(component._._meta as any) = component._._meta || {};
+		// (component._._meta.args as any) = args; // TODO: can't get this anymore. Consider trying to obtain mount args.
+		(component._._meta.isRendered as any) = false;
+		(component._._meta.tagName as any) = component.constructor["_dotHtmlComponent"].tagName;
+		// (component._._meta.styles as any) = styles;
+
+		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
+		this.childShadowVdom = this.component.build(dot) as unknown as ContainerVdom;
 		this.component.built && this.component.built();
 
 	}
 
-	private setupCustomElement(component: IComponent, document: Document){
-
-		let customElementConstructor = document.defaultView.customElements.get(component._._meta.tagName);
-
-		if(customElementConstructor == undefined){
-
+	// Sets up the custom element for the component.
+	private setupCustomElement(document: Document){
+		let CustomElementConstructor = document.defaultView.customElements.get(this.component._._meta.tagName);
+		if(CustomElementConstructor == undefined){
 			
-			customElementConstructor = class extends HTMLElement{
-				private _component: IComponent;
-				set component(value: IComponent){
+			// Constructed stylesheets.
+			let styles: Array<string>|string = this.component.stylize && this.component.stylize() || [];
+			if(typeof styles == "string") styles = [styles];
+			let sharedStylesheets = [];
+			let styleTags = [];
+			if(styles){
+				for(let i = 0; i < styles.length; i++){
+					let styleItem = renderStylesheet(styles[i], document);
+					if(styleItem instanceof document.defaultView.CSSStyleSheet){
+						sharedStylesheets.push(styleItem);
+					}
+					else{
+						styleTags.push(styleItem);
+					}
+				}
+			}
+
+			let DocSpecificHtmlEl = document.defaultView.HTMLElement;
+			
+			CustomElementConstructor = class extends DocSpecificHtmlEl{
+				private _component: IDotComponent;
+				set component(value: IDotComponent){
 					this._component = value;
 					this._renderComponent();
 				}
@@ -37,35 +81,40 @@ export class ComponentVdom extends Vdom{
 				cvdom: ComponentVdom;
 
 				_renderComponent(){
-					// let vdom = this._component.build(...this._component._._meta.args);
 					if(this.cvdom instanceof Vdom){
 						let shadow = this.attachShadow({ mode: 'open' });
+						shadow.adoptedStyleSheets = sharedStylesheets;
+						for(let i = 0; i < styleTags.length; i++){
+							shadow.appendChild(styleTags[i]);
+						}
 						(this._component._._meta as any).shadowRoot = shadow;
 						this.cvdom.childShadowVdom._render(shadow as any);
 					}
 					else{
 						throw new Error("Component build function returned invalid object.");
 					}
-
 				}
 			}
 
-			document.defaultView.customElements.define(component._._meta.tagName, customElementConstructor);
-		}
+			document.defaultView.customElements.define(this.component._._meta.tagName, CustomElementConstructor);
 
-		// return customElementConstructor;
+			// return customElementConstructor;
+		}
 	}
 
 	_render(node: HTMLElement) {
 		if(!this.component._) throw new Error("Invalid component. Ensure components are created through the component factory or through decoration.");
 		if((this.component._ as any)?._meta?.isRendered) throw new Error("Individual component instances cannot be rendered twice at once.");
 		if(!(this.component._ as any)._meta) (this.component._ as any)._meta = {};
+		
+		this.component.mounting && this.component.mounting();
+		
 		(this.component._._meta as any).isRendered = true;
 
 		let document = node.ownerDocument;
 
 		// Needs to be run once per component per document.
-		this.setupCustomElement(this.component, document);
+		this.setupCustomElement(document);
 
 		this.shadowEl = document.createElement(this.component._._meta.tagName);
 		this.shadowEl["cvdom"] = this;
@@ -74,10 +123,12 @@ export class ComponentVdom extends Vdom{
 		this.component._.restyle && this.component._.restyle();
 		
 		node.appendChild(this.shadowEl);
+
+		this.component.mounted && this.component.mounted();
 	}
 
 	_unrender() {
-		this.component.deleting && this.component.deleting();
+		this.component.unmounting && this.component.unmounting();
 
 		this.childShadowVdom._unrender();
 		this.childShadowVdom = null;
@@ -85,7 +136,7 @@ export class ComponentVdom extends Vdom{
 		this.shadowEl = null;
 
 		(this.component._._meta as any).isRendered = false;
-		this.component.deleted && this.component.deleted();
+		this.component.unmounted && this.component.unmounted();
 	}
 
 	toString(){
