@@ -1,6 +1,6 @@
 import { removeNodesBetween } from "../helpers/tools";
-import BoundReactive from "../reactivity/bound-reactive";
-import Reactive from "../reactivity/reactive";
+import Binding from "../reactivity/binding";
+import Watcher from "../reactivity/watcher";
 import { Vdom } from "./vdom";
 
 export class HtmlVdom extends Vdom{
@@ -8,10 +8,10 @@ export class HtmlVdom extends Vdom{
 	beforeNode: Node;
 	afterNode: Node;
 
-	html: string|BoundReactive;
+	html: string|Binding;
 	observerId: number = 0;
 
-	constructor(html: string|BoundReactive){
+	constructor(html: string|Binding){
 		super();
 		this.html = html;
 	}
@@ -32,7 +32,7 @@ export class HtmlVdom extends Vdom{
 
 	_render(target: HTMLElement) {
 		let html = "";
-		if(this.html instanceof BoundReactive){
+		if(this.html instanceof Binding){
 			html = this.html._get() ?? "";
 			this.observerId = this.html._subscribe(this);
 		}
@@ -60,13 +60,13 @@ export class HtmlVdom extends Vdom{
 			this.afterNode = null;
 		}
 
-		if(this.observerId && this.html instanceof BoundReactive){
+		if(this.observerId && this.html instanceof Binding){
 			this.html._unsubscribe(this.observerId);
 			this.observerId = 0;
 		}
 	}
 
 	toString(){
-		return this.html instanceof BoundReactive ? this.html._get() : this.html;
+		return this.html instanceof Binding ? this.html._get() : this.html;
 	}
 }

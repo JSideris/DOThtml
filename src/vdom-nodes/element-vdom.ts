@@ -1,18 +1,20 @@
 import { IDotCore } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../constants";
-import Reactive from "../reactivity/reactive";
+import Watcher from "../reactivity/watcher";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType } from "./vdom-types";
-import BoundReactive from "../reactivity/bound-reactive";
+import Binding from "../reactivity/binding";
 import ReactiveAttr from "../reactivity/reactive-attr";
 
 export class AttributeItem{
 	elementVDom: ElementVdom;
 	attribute: string;
 }
+
+let manualInputAllowed = true;
 
 export default class ElementVdom extends Vdom{
 
@@ -21,10 +23,11 @@ export default class ElementVdom extends Vdom{
 	tag: string = null;
 	private attributes: Record<string, AttributeValueType> = {};
 	private events: Array<{name: string, callback: (e: Event)=>void}> = [];
-	private attributeObserverIds: Array<{id: number, observable: BoundReactive}> = [];
+	private attributeObserverIds: Array<{id: number, observable: Binding}> = [];
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 	private attrVNodes: Array<AttributeVNode> = [];
 	private styleVNodes: Array<StyleVNode> = [];
+	inputListener: (e: any) => void;
 
 	constructor(dot: IDotCore, tag: string){
 		super();
@@ -58,6 +61,11 @@ export default class ElementVdom extends Vdom{
 		this.children._unrender();
 		this.element.parentNode?.removeChild(this.element);
 		this.element = null;
+
+		if(this.inputListener){
+			this.element.removeEventListener("input", this.inputListener);
+			this.inputListener = null;
+		}
 
 		for(let i = 0; i < this.childBuilders.length; i++){
 			this.childBuilders[i]._unrender();
@@ -94,7 +102,7 @@ export default class ElementVdom extends Vdom{
 
 		attr = (attr ?? "").toLowerCase();
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof BoundReactive || value instanceof Reactive)){
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Watcher)){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){
@@ -128,16 +136,28 @@ export default class ElementVdom extends Vdom{
 			// Like a space-separated class list.
 			node.setAttribute(attr, value.join(" "));
 		}
-		else if (value instanceof BoundReactive){
+		else if (value instanceof Binding){
 			this.renderAttr(attr, value._get(), node);
 			let id = value._subscribe(new ReactiveAttr(this, attr));
 			this.attributeObserverIds.push({id: id, observable: value});
 
 			// If it's a value prop, update the observable on change.
 			if(attr == "value" || attr == "checked"){
-				this.element.addEventListener("input", (e)=>{
-					value._set((this.element as HTMLInputElement)[attr]);
-				});
+				let timeout = null;
+				if(!this.inputListener){
+					this.inputListener = (e)=>{
+						if(!manualInputAllowed)	return;
+						if(timeout) clearTimeout(timeout);
+						timeout = setTimeout(()=>{
+							manualInputAllowed = false;
+							value._set((this.element as HTMLInputElement)[attr]);
+							manualInputAllowed = true;
+							timeout = null;
+						}, 200);
+					}
+
+					(this.element as HTMLInputElement).addEventListener("input", this.inputListener);
+				}
 			}
 
 			// TODO: support reactives of arrays. There's already a test for this.

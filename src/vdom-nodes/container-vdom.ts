@@ -1,5 +1,5 @@
 import { IDotComponent, IDotCore, IDotCss } from "dothtml-interfaces";
-import Reactive from "../reactivity/reactive";
+import Watcher from "../reactivity/watcher";
 import CollectionVdom from "./collection-vdom";
 import { ConditionalVdom } from "./conditional-vdom";
 import ElementVdom from "./element-vdom";
@@ -8,12 +8,12 @@ import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType, ObservableCollection } from "./vdom-types";
 import { ComponentVdom } from "./component-vdom";
-import BoundReactive from "../reactivity/bound-reactive";
+import Binding from "../reactivity/binding";
 
 type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
 
 function reduceReactive(value: any){
-	if(value instanceof Reactive) return value.bind();
+	if(value instanceof Watcher) return value.bind();
 	else return value;
 }
 
@@ -37,12 +37,15 @@ export class ContainerVdom extends Vdom{
 	}
 
 	_render(node: HTMLElement){	
+		this._isRendered = true;
 		for(let c = 0; c < this._children.length; c++){
 			this._children[c]._render(node);
 		}
 	}
 
 	_unrender() {
+		if(!this._isRendered) return;
+		this._isRendered = false;
 		for(let c = 0; c < this._children.length; c++){
 			this._children[c]._unrender();
 		}
@@ -59,17 +62,17 @@ export class ContainerVdom extends Vdom{
 		}
 	}
 	
-	html(c: string|Reactive|BoundReactive){
+	html(c: string|Watcher|Binding){
 		let hn = new HtmlVdom(reduceReactive(c));
 		return this._addChild(hn);
 	}
 
-	text(c: string|Reactive|BoundReactive){
+	text(c: string|Watcher|Binding){
 		let tn = new TextVdom(reduceReactive(c));
 		return this._addChild(tn);
 	}
 
-	md(c: string|Reactive){
+	md(c: string|Watcher){
 		// TODO: for now, just render as text. 
 		// We can add the md functionality later.
 		return this.text(reduceReactive(c));
@@ -91,7 +94,7 @@ export class ContainerVdom extends Vdom{
 	}
 
 	// // TODO: need to support immediate rendering.
-	when(condition:Reactive|BoundReactive|boolean, then: ContainerVdom|string|boolean|number){
+	when(condition:Watcher|Binding|boolean, then: ContainerVdom|string|boolean|number){
 		let condNode = new ConditionalVdom();
 		let thenContainer: ContainerVdom;
 		if(then instanceof ContainerVdom){
@@ -108,7 +111,7 @@ export class ContainerVdom extends Vdom{
 
 		return this;
 	}
-	otherwiseWhen(condition:Reactive|BoundReactive|boolean, then: ContainerVdom|string|boolean|number, seal = false){
+	otherwiseWhen(condition:Watcher|Binding|boolean, then: ContainerVdom|string|boolean|number, seal = false){
 		let condNode = this._children[this._children.length - 1];
 		if(condNode instanceof ConditionalVdom){
 			let thenContainer: ContainerVdom;

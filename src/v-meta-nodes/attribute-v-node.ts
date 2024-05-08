@@ -1,5 +1,5 @@
-import BoundReactive from "../reactivity/bound-reactive";
-import Reactive from "../reactivity/reactive";
+import Binding from "../reactivity/binding";
+import Watcher from "../reactivity/watcher";
 import VMetaNode from "./v-meta-node";
 
 /**
@@ -9,10 +9,10 @@ import VMetaNode from "./v-meta-node";
 export default class AttributeVNode extends VMetaNode{
 
 	attr: string;
-	value: Record<string, string|BoundReactive>;
+	value: Record<string, string|Binding>;
 	target: HTMLElement;
 
-	observables: Record<number, BoundReactive> = {};
+	observables: Record<number, Binding> = {};
 
 	constructor(attrName, attrValue){
 		super();
@@ -27,9 +27,9 @@ export default class AttributeVNode extends VMetaNode{
 			for(let k in this.value){
 				let v = (this.value as any)[k];
 
-				if(v instanceof Reactive) v = v.bind(); // TODO: this probably isn't the right place for this.
+				if(v instanceof Watcher) v = v.bind(); // TODO: this probably isn't the right place for this.
 
-				if(v && v instanceof BoundReactive){
+				if(v && v instanceof Binding){
 					let id = v._subscribe(this);
 					this.observables[id] = v;
 				}
@@ -48,8 +48,8 @@ export default class AttributeVNode extends VMetaNode{
 		for(let k in this.value){
 			let v = (this.value as any)[k];
 			if(v){
-				if(v instanceof Reactive) v = v.bind();
-				if(!(v instanceof BoundReactive) || v._get()){	
+				if(v instanceof Watcher) v = v.bind();
+				if(!(v instanceof Binding) || v._get()){	
 					tokens.push(k);
 				}
 			}

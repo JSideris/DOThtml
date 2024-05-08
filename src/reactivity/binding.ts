@@ -1,56 +1,35 @@
-import { IBoundReactive } from "dothtml-interfaces";
-import VMetaNode from "../v-meta-nodes/v-meta-node";
-import CollectionVdom from "../vdom-nodes/collection-vdom";
-import { ConditionalVdom } from "../vdom-nodes/conditional-vdom";
-import { HtmlVdom } from "../vdom-nodes/html-vdom";
-import { TextVdom } from "../vdom-nodes/text-vdom";
-import BoundReactive from "./bound-reactive";
-import ReactiveAttr from "./reactive-attr";
-import ReactiveStyle from "./reactive-style";
+import { IBinding, IWatcher } from "dothtml-interfaces";
+import Watcher from "./watcher";
 
+export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
+	_source: IWatcher<T>;
 
-/**
- * Bindings link a reactive to a vdom node or other item using a bound reactive.
- */
-export default class Binding{
-	boundReactive: IBoundReactive;
-	item: any;
-
-	constructor(boundReactive: IBoundReactive, item: any){
-		this.boundReactive = boundReactive;
-		this.item = item;
+	_transform: {
+		display?: (v: T)=>Td;
+		read?: (v: string)=>T;
 	}
 
-	// TODO: would be more efficient to compute the _get first then pass it into this function.
-	update(){
-		let value = this.boundReactive._get();
+	_get(): Td{
+		
+		let v = this._transform?.display ? this._transform.display(this._source.value) : this._source.value as unknown as Td;
 
-		if(this.item instanceof TextVdom){
-			this.item.textNode.textContent = value as string ?? "";
-		}
-		else if(this.item instanceof HtmlVdom){
-			this.item.updateHtml(value);
-		}
-		else if(this.item instanceof ReactiveAttr){
-			console.log("UPDATING REACTIVE ATTR", this.item.attribute, value);
-			this.item.elementVdom.setAttr(this.item.attribute, this.boundReactive);
-		}
-		else if(this.item instanceof VMetaNode){
-			this.item.update();
-		}
-		else if(this.item instanceof ReactiveStyle){
-			this.item.vStyle.updateProp(this.item.prop, value);
-		}
-		else if(this.item instanceof CollectionVdom){
-			// TODO: shouldn't I pass the value in here???
-			this.item.updateList();
-		}
-		else if(this.item instanceof ConditionalVdom){
-			// TODO: shouldn't I pass the value in here???
-			this.item.updateConditions();
-		}
-		else if(this.item instanceof Function){
-			this.item(value);
-		}
+		return v;
+	}
+
+	_set(v: string|number|boolean){
+		let value = this._transform?.read ? this._transform.read(v as string) : v as unknown as T;
+		this._source.value = value;
+	}
+
+	_subscribe(subscriber: any): number{
+		return this._source._subscribe(this, subscriber);
+	}
+
+	_unsubscribe(id: number){
+		this._source._detachBinding(id);
+	}
+
+	constructor(source: IWatcher<T>){
+		this._source = source;
 	}
 }

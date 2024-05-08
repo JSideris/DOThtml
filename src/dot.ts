@@ -4,14 +4,14 @@ import { TextVdom } from "./vdom-nodes/text-vdom";
 import ElementVdom from "./vdom-nodes/element-vdom";
 import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
-import Reactive from "./reactivity/reactive";
+import Watcher from "./reactivity/watcher";
 // import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 // import { useStyles } from "./decoration/use-styles";
 import BaseVStyle from "./v-style-nodes/base-v-style";
 import { IDotCore, IDotCss } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
-import BoundReactive from "./reactivity/bound-reactive";
+import Binding from "./reactivity/binding";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -449,8 +449,8 @@ const makeDot = ()=>{
 	}
 
 	// _dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(props: {value: Ti, key?: string, transform?: (value: Ti)=>To}): Reactive<Ti, To>{
-	_dot.watch = function<T extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Reactive<T>{
-		let o = new Reactive();
+	_dot.watch = function<T extends Watcher|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Watcher<T>{
+		let o = new Watcher();
 		o.key = key;
 		// o._value = props?.value;
 		o.value = (value);
@@ -504,11 +504,11 @@ const makeDot = ()=>{
 				let cont;
 				let attrs;
 				{ // Find out which arg is the content and which is the attributes.
-					if(a instanceof ContainerVdom || a instanceof Vdom || (a?._?._meta && a?.build) || a instanceof Reactive || a instanceof BoundReactive || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
+					if(a instanceof ContainerVdom || a instanceof Vdom || (a?._?._meta && a?.build) || a instanceof Watcher || a instanceof Binding || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
 						cont = a;
 						attrs = b;
 					}
-					if(b instanceof ContainerVdom || b instanceof Vdom || (b?._?._meta && b?.build) || b instanceof Reactive || b instanceof BoundReactive || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
+					if(b instanceof ContainerVdom || b instanceof Vdom || (b?._?._meta && b?.build) || b instanceof Watcher || b instanceof Binding || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
 						if(cont) throw new Error("Both element arguments can't be content.");
 						cont = b;
 						attrs = a;
@@ -530,7 +530,7 @@ const makeDot = ()=>{
 					if(attrs){
 						for(let k in attrs) {
 							let attr = attrs[k];
-							if(attr instanceof Reactive) attr = attr.bind();
+							if(attr instanceof Watcher) attr = attr.bind();
 							if(allEventAttr[k]) {
 								if(typeof attrs[k] !== "function") {
 									throw new Error(`Value of event attribute ${k} must be a function.`);
@@ -559,7 +559,7 @@ const makeDot = ()=>{
 					else{
 						// Text or reactives.
 						if(cont !== null && cont !== undefined){
-							if(cont instanceof Reactive){
+							if(cont instanceof Watcher){
 								cont = cont.bind();
 							}
 							n.children._addChild(new TextVdom(cont));

@@ -1,5 +1,5 @@
 import { removeNodesBetween } from "../helpers/tools";
-import BoundReactive from "../reactivity/bound-reactive";
+import Binding from "../reactivity/binding";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { ConditionalNodeItem } from "./vdom-types";
@@ -10,7 +10,7 @@ export class ConditionalVdom extends Vdom{
 	private sealed = false;
 	private renderedIndex = -1;
 
-	addCondition(condition:BoundReactive|boolean, vNode: ContainerVdom, seal = false){
+	addCondition(condition:Binding|boolean, vNode: ContainerVdom, seal = false){
 
 		if(this.sealed){
 			throw new Error("Cannot add additional conditions to a sealed block.");
@@ -27,80 +27,84 @@ export class ConditionalVdom extends Vdom{
 
 		this.conditions.push(C);
 
-		if(this.conditions[0].startAnchor){
+		// If we're rendered
+		if(this._isRendered){
 			// This means it's rendered.
 
-			this.addAnchor(C, this.conditions[0].startAnchor.parentElement);
+			this.renderClause(C, this.conditions[0].startAnchor.parentElement);
 
-			if(condition instanceof BoundReactive){
-				C.observerId = condition._subscribe(this);
+			// If we're rendered but none of the previous conditions were true.
+			if(this.renderedIndex == -1){
+				this.updateConditions();
 			}
-
-			this.updateConditions();
 		}
 	}
 
-	addAnchor(C: ConditionalNodeItem, node: HTMLElement){
+	private renderClause(C: ConditionalNodeItem, node: HTMLElement){
+		// Add the anchors.
+		if(C.startAnchor) throw new Error("Item is already rendered.");
 		C.startAnchor = node.ownerDocument.createTextNode("");
 		C.endAnchor = node.ownerDocument.createTextNode("");
 		node.appendChild(C.startAnchor);
 		node.appendChild(C.endAnchor);
+
+		// Subscribe if necessary.
+		if(C.condition instanceof Binding){
+			C.observerId = C.condition._subscribe(this);
+		}
 	}
 
 	_render(node: HTMLElement) {
 		// this._node = targetDocument.createTextNode(this._textContent);
 		// return this._node;
+		this._isRendered = true;
 
 		// First render all of the text nodes.
 
+		// Need to readd all the conditions.
 		for(let c = 0; c < this.conditions.length; c++){
-			let C = this.conditions[c];
-			if(C.startAnchor){
-				throw new Error("Item is already rendered.");
-			}
-
-			// C.textAnchor = targetDocument.createTextNode(`${c}`); // DEBUGGING
-			this.addAnchor(C, node);
-
-			if(C.condition instanceof BoundReactive){
-				C.observerId = C.condition._subscribe(this);
-			}
+			this.renderClause(this.conditions[c], node);
 		}
 
 		// Now render the first node with a positive conidion (if any)
-		if(this.conditions.length)
 		this.updateConditions();
 	}
 
+	removeCNode(C: ConditionalNodeItem){
+
+		if(C.condition instanceof Binding){
+			C.condition._unsubscribe(C.observerId);
+			C.observerId = 0;
+		}
+
+		let start = C.startAnchor;
+		let end = C.endAnchor;
+		start.parentElement.removeChild(start);
+		end.parentElement.removeChild(end);
+		C.startAnchor = null;
+		C.endAnchor = null;
+		C.vNode._unrender();
+	}
+
 	_unrender() {
-		if(this.conditions[0].startAnchor){
-			for(let i = 0; i < this.conditions.length; i++){
-				let C = this.conditions[i]
-				let start = C.startAnchor;
-				let end = C.endAnchor;
+		if(!this._isRendered) return;
+		this._isRendered = false;
+		this.renderedIndex = -1;
 
-				C.vNode._unrender();
-				start.parentElement.removeChild(start);
-				end.parentElement.removeChild(end);
-				C.startAnchor = null;
-				C.endAnchor = null;
-
-				if(C.condition instanceof BoundReactive){
-					C.condition._unsubscribe(C.observerId);
-					C.observerId = 0;
-				}
-			}
-			this.renderedIndex = -1;
+		for(let i = 0; i < this.conditions.length; i++){
+			let C = this.conditions[i]
+			this.removeCNode(C);
 		}
 	}
 
 	updateConditions(){
+
 		let node = this.conditions[0].startAnchor.parentElement as HTMLElement;
 		let newIndex = -1;
 		for(let c = 0; c < this.conditions.length; c++){
 			let C = this.conditions[c];
 
-			if(C.condition instanceof BoundReactive ? C.condition._get() : C.condition){
+			if(C.condition instanceof Binding ? C.condition._get() : C.condition){
 				newIndex = c;
 				break;
 			}
@@ -110,6 +114,8 @@ export class ConditionalVdom extends Vdom{
 			{ // Remove old render.
 				if(this.renderedIndex != -1){
 					let C = this.conditions[this.renderedIndex];
+					// We don't want to remove the anchors here, just the content between them.
+					// So we call the unrender method on the vNode.
 					C.vNode._unrender();
 				}
 			}

@@ -74,6 +74,15 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(10)));
 	});
 
+	test("Render observable transformed - simplified.", ()=>{
+		let binding = dot.watch(3);
+		dot(document.body).div(binding.bindAs(v=>v*2));
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(6)));
+
+		binding.value = 5;
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(10)));
+	});
+
 	test("Render observable transformed in input display.", ()=>{
 		let binding = dot.watch(3);
 		dot(document.body).input({id: "my-input", value: binding.bindAs({display: v=>`${v*2}`}) });
@@ -391,21 +400,27 @@ describe("Conditional w/ binding.", () => {
 	});
 
 	test("Nested conditionals.", () => {
-		let binding1 = dot.watch(true);
-		let binding2 = dot.watch(true);
-		dot(document.body).when(binding1, dot.when(binding2, 0).otherwise(1)).otherwise(dot.when(binding2, 2).otherwise(3));
+		let watchOuter = dot.watch(true);
+		let watchInner = dot.watch(true);
+		dot(document.body).when(watchOuter, 
+			dot.when(watchInner, 0)
+			.otherwise(1)
+		).otherwise(
+			dot.when(watchInner, 2)
+			.otherwise(3)
+		);
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 		
-		binding2.value = (false);
+		watchInner.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("1");
 
-		binding1.value = (false);
+		watchOuter.value = (false);
 		expect(formatHTML(document.body.innerHTML)).toBe("3");
 
-		binding2.value = (true);
+		watchInner.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("2");
 
-		binding1.value = (true);
+		watchOuter.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 
 	});

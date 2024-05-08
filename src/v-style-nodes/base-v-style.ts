@@ -1,5 +1,5 @@
-import BoundReactive from "../reactivity/bound-reactive";
-import Reactive from "../reactivity/reactive";
+import Binding from "../reactivity/binding";
+import Watcher from "../reactivity/watcher";
 import ReactiveStyle from "../reactivity/reactive-style";
 import FilterVStyle from "./filter-v-style";
 import TransformVStyle from "./transform-v-style";
@@ -27,8 +27,8 @@ export default class BaseVStyle extends VStyle{
 	// Used internally to indicate that this is the base style builder.
 	// Calling style functions on this object will create (and return) a new BaseVStyle, rather than extend this one.
 	private readonly _isBase = false;
-	private props: Array<{prop: string, value: string|BoundReactive|VStyle}> = [];
-	private subscriptions: Record<number, BoundReactive> = {};
+	private props: Array<{prop: string, value: string|Binding|VStyle}> = [];
+	private subscriptions: Record<number, Binding> = {};
 	private renderedSubBuilders: Array<VStyle> = []; // Used for unrendering. Set on render and cleared on unrender.
 
 	// One of these (but not both) should be used.
@@ -67,7 +67,7 @@ export default class BaseVStyle extends VStyle{
 	}
 
 	renderAndSetPropValue(prop, value){
-		if(value instanceof BoundReactive){
+		if(value instanceof Binding){
 			let id = value._subscribe(new ReactiveStyle(this, prop));
 			this.subscriptions[id] = value;
 

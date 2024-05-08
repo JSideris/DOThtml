@@ -5,7 +5,7 @@ import CssFunctionBuilderVStyle from "../v-style-nodes/css-function-builder-v-st
 import FilterVStyle from "../v-style-nodes/filter-v-style";
 import TransformVStyle from "../v-style-nodes/transform-v-style";
 import { formatCssLength } from "../css/format-css-type";
-import BoundReactive from "../reactivity/bound-reactive";
+import Binding from "../reactivity/binding";
 
 // TODO: Don't forget that this needs to support both elements and css targets.
 
@@ -28,7 +28,7 @@ export default class StyleVNode extends VMetaNode{
 	shadowRoot: ShadowRoot;
 	styleValue: IDotCss;
 
-	observables: Array<BoundReactive> = [];
+	observables: Array<Binding> = [];
 	observableIds: Array<number> = [];
 
 	constructor(styleValue: IDotCss){
@@ -38,7 +38,7 @@ export default class StyleVNode extends VMetaNode{
 		{ // Get observables and nested nodes.
 			for(let prop in this.styleValue){
 				let value = this.styleValue[prop];
-				if(value instanceof BoundReactive){
+				if(value instanceof Binding){
 					this.observables.push(value);
 				}
 				else if(typeof value === "object"){
@@ -69,13 +69,13 @@ export default class StyleVNode extends VMetaNode{
 						let funcValue = funcArray[i];
 						for(let k in funcValue){
 							let v = funcValue[k];
-							if(v instanceof BoundReactive){
+							if(v instanceof Binding){
 								this.observables.push(v);
 							}
 							else if(v instanceof Array){
 								for(let j in v){
 									let w = v[j];
-									if(w instanceof BoundReactive){
+									if(w instanceof Binding){
 										this.observables.push(w);
 									}
 								}
@@ -119,7 +119,7 @@ export default class StyleVNode extends VMetaNode{
 			let cssValue;
 			{ // Get the value.
 				let value = this.styleValue[prop];
-				if(value instanceof BoundReactive){
+				if(value instanceof Binding){
 					cssValue = value._get();
 				}
 				else if(value instanceof CssFunctionBuilderVStyle){

@@ -4,6 +4,16 @@ export abstract class Vdom{
 
 	abstract _render(target: HTMLElement);
 	abstract _unrender();
+	__isRendered = false;
+	get _isRendered(){
+		return this.__isRendered
+	}
+	set _isRendered(value: boolean){
+		if(value && this.__isRendered) throw new Error("Internal Error: Node is already rendered.");
+		if(!value && !this.__isRendered) throw new Error("Internal Error: Node is not rendered.");
+		this.__isRendered = value;
+	}
+	
 	toString(): string {
 		let el = document.createElement("div");
 		this._render(el);

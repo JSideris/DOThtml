@@ -1,6 +1,6 @@
 import { deepEqual, removeNodesBetween } from "../helpers/tools";
-import BoundReactive from "../reactivity/bound-reactive";
-import Reactive from "../reactivity/reactive";
+import Binding from "../reactivity/binding";
+import Watcher from "../reactivity/watcher";
 import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
 import { ObservableCollection } from "./vdom-types";
@@ -10,7 +10,7 @@ type DatumMap = {
 	value: any;
 	keyValue: any;
 	afterNode: Node;
-	observableIndex: BoundReactive<number>
+	observableIndex: Binding<number>
 };
 
 /**
@@ -19,7 +19,7 @@ type DatumMap = {
 export default class CollectionVdom extends Vdom{
 
 	value: ObservableCollection;
-	renderCallback: (x: any, i: number|string|BoundReactive, k: string)=>Vdom;
+	renderCallback: (x: any, i: number|string|Binding, k: string)=>Vdom;
 	startNode: Node;
 	endNode: Node;
 	observerId = 0;
@@ -34,7 +34,7 @@ export default class CollectionVdom extends Vdom{
 
 	_render(target: HTMLElement) {
 
-		if(this.value instanceof BoundReactive){
+		if(this.value instanceof Binding){
 			this.observerId = this.value._subscribe(this);
 		}
 
@@ -46,7 +46,7 @@ export default class CollectionVdom extends Vdom{
 	}
 
 	_unrender() {
-		if(this.observerId && this.value instanceof BoundReactive){
+		if(this.observerId && this.value instanceof Binding){
 			this.value._unsubscribe(this.observerId);
 			this.observerId = null;
 		}
@@ -79,7 +79,7 @@ export default class CollectionVdom extends Vdom{
 		{ // Get the mapped data.
 
 			let unmappedCollection = null as Array<any>|Record<string|number, any>;
-			if(this.value instanceof BoundReactive){
+			if(this.value instanceof Binding){
 				unmappedCollection = this.value._get() as any;
 				key = this.value._source.key ?? null;
 			}
@@ -90,7 +90,7 @@ export default class CollectionVdom extends Vdom{
 			if(unmappedCollection instanceof Array){
 				mappedData = unmappedCollection.map((v, i) => { 
 					let kv = !!key ? v[key] : null;
-					let reactive = new Reactive();
+					let reactive = new Watcher();
 					return {
 						vdom: null,
 						value: v,
@@ -105,7 +105,7 @@ export default class CollectionVdom extends Vdom{
 				for(let k in unmappedCollection){
 					let v = unmappedCollection[k];
 					let kv = !!key ? v[key] : k;
-					let reactive = new Reactive();
+					let reactive = new Watcher();
 					mappedData.push({
 						vdom: null,
 						value: v, 
@@ -156,7 +156,7 @@ export default class CollectionVdom extends Vdom{
 
 					if(!deepEqual(existing.value, candidate.value)){
 						existing.vdom._unrender();
-						existing.vdom = this.renderCallback(candidate.value, this.value instanceof BoundReactive ? existing.observableIndex : ni, candidate.keyValue);
+						existing.vdom = this.renderCallback(candidate.value, this.value instanceof Binding ? existing.observableIndex : ni, candidate.keyValue);
 						existing.value = candidate.value
 						existing.vdom._renderBefore(existing.afterNode);
 					}
@@ -184,7 +184,7 @@ export default class CollectionVdom extends Vdom{
 					candidate.afterNode = beforeTarget;
 					
 					candidate.observableIndex._set(ni);
-					let content = this.renderCallback(candidate.value, this.value instanceof BoundReactive ? candidate.observableIndex : ni, candidate.keyValue);
+					let content = this.renderCallback(candidate.value, this.value instanceof Binding ? candidate.observableIndex : ni, candidate.keyValue);
 
 					if(content instanceof Vdom){
 						candidate.vdom = content;

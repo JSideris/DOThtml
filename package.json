@@ -1,6 +1,6 @@
 {
   "name": "dothtml",
-  "version": "6.0.0-beta.33",
+  "version": "6.0.0-beta.40",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
   "main": "./build_module/index.js",
   "exports": "./build_module/index.js",
@@ -53,6 +53,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "dothtml-interfaces": "^0.4.2"
+    "dothtml-interfaces": "^0.4.4"
   }
 }

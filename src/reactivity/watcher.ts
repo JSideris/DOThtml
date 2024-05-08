@@ -1,4 +1,4 @@
-import { IBoundReactive, IDotDocument, IReactive } from "dothtml-interfaces";
+import { IBinding, IDotDocument, IReactive, IWatcher } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../constants";
 import ElementVdom from "../vdom-nodes/element-vdom";
 import { TextVdom } from "../vdom-nodes/text-vdom";
@@ -8,8 +8,8 @@ import CollectionVdom from "../vdom-nodes/collection-vdom";
 import VStyle from "../v-style-nodes/v-style";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import VMetaNode from "../v-meta-nodes/v-meta-node";
-import BoundReactive from "./bound-reactive";
 import Binding from "./binding";
+import Subscription from "./subscription";
 
 const TEXT_OFFSET = 0;
 const HTML_OFFSET = 1;
@@ -24,27 +24,34 @@ const CB_OFFSET = 7; // Always last. User callbacks happen after the DOM is upda
 
 const CATEGORIES = CB_OFFSET + 1;
 
-export default class Reactive<T = any> implements IReactive<T>{
+export default class Watcher<T = any> implements IWatcher<T>{
 
-	bindAs<Td>(transform: {
+	bindAs<Td>(transform: ((v:T)=>Td)|{
 		display?: (v: T)=>Td;
 		read?: (v: string)=>T;
-	}): IBoundReactive<T, Td> {
-		let br = new BoundReactive<T, Td>(this) as IBoundReactive<T, Td>;
+	}): IBinding<T, Td> {
+		let br = new Binding<T, Td>(this) as IBinding<T, Td>;
 
-		br._transform = transform;
+		if(transform["call"] && transform["apply"]){
+			br._transform = {
+				display: transform as (v: T)=>Td
+			};
+		}
+		else{
+			br._transform = transform as any;
+		}
 
 		return br;
 	}
 
-	bind(): BoundReactive<T, T> {
-		return new BoundReactive<T, T>(this);
+	bind(): Binding<T, T> {
+		return new Binding<T, T>(this);
 	}
 
 	_value: T;
 	key: string;
 
-	allBindings: Record<number, Binding> = {};
+	allBindings: Record<number, Subscription> = {};
 
 	constructor() {
 	}
@@ -71,13 +78,13 @@ export default class Reactive<T = any> implements IReactive<T>{
 	nextId = 1;
 
 	subscribe(callback: Function) {
-		let br = new BoundReactive(this);
+		let br = new Binding(this);
 		return br._subscribe(callback);
 	}
 
-	_subscribe(boundReactive: IBoundReactive, item: any){
+	_subscribe(boundReactive: IBinding, item: any){
 		let id = this.nextId++;
-		this.allBindings[id] = new Binding(boundReactive, item);
+		this.allBindings[id] = new Subscription(boundReactive, item);
 
 		return id;
 	}
