@@ -59,13 +59,14 @@ export default class ElementVdom extends Vdom{
 
 	_unrender() {
 		this.children._unrender();
-		this.element.parentNode?.removeChild(this.element);
-		this.element = null;
 
 		if(this.inputListener){
 			this.element.removeEventListener("input", this.inputListener);
 			this.inputListener = null;
 		}
+		
+		this.element.parentNode?.removeChild(this.element);
+		this.element = null;
 
 		for(let i = 0; i < this.childBuilders.length; i++){
 			this.childBuilders[i]._unrender();
