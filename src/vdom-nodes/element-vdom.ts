@@ -8,6 +8,8 @@ import { Vdom } from "./vdom";
 import { AttributeValueType } from "./vdom-types";
 import Binding from "../reactivity/binding";
 import ReactiveAttr from "../reactivity/reactive-attr";
+import { IRef } from "dothtml-interfaces/src/bindings/i-ref";
+import Ref from "../reactivity/ref";
 
 export class AttributeItem{
 	elementVDom: ElementVdom;
@@ -27,6 +29,7 @@ export default class ElementVdom extends Vdom{
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 	private attrVNodes: Array<AttributeVNode> = [];
 	private styleVNodes: Array<StyleVNode> = [];
+	private ref: Ref;
 	inputListener: (e: any) => void;
 
 	constructor(dot: IDotCore, tag: string){
@@ -40,6 +43,9 @@ export default class ElementVdom extends Vdom{
 
 		this.element = node.ownerDocument.createElement(this.tag);
 		this.element[DOT_VDOM_PROP_NAME] = this;
+		if(this.ref){
+			(this.ref as any)["_element"] = this.element;
+		}
 
 		for(let a in this.attributes){
 			this.renderAttr(a, this.attributes[a], this.element);
@@ -58,13 +64,17 @@ export default class ElementVdom extends Vdom{
 	}
 
 	_unrender() {
+		if(this.ref){
+			(this.ref as any)["_element"] = null;
+		}
+
 		this.children._unrender();
 
 		if(this.inputListener){
 			this.element.removeEventListener("input", this.inputListener);
 			this.inputListener = null;
 		}
-		
+
 		this.element.parentNode?.removeChild(this.element);
 		this.element = null;
 
@@ -111,7 +121,12 @@ export default class ElementVdom extends Vdom{
 					value = new StyleVNode(value);
 					break;
 				}
+				case "ref": {
+					// Just a ref nothing to do.
+					break;
+				}
 				default: {
+					// Other attributes.
 					value = new AttributeVNode(attr, value);
 					break;
 				}
@@ -126,7 +141,13 @@ export default class ElementVdom extends Vdom{
 
 	private renderAttr(attr: string, value: AttributeValueType, node: HTMLElement){
 
-		if(typeof value === "string" || typeof value === "number"){
+		if(attr == "ref"){
+			this.ref = value as Ref;
+			if(this.element) {
+				(this.ref as any)["_element"] = this.element;
+			}
+		}
+		else if(typeof value === "string" || typeof value === "number"){
 			node.setAttribute(attr, `${value}`);
 		}
 		else if (typeof value === "boolean" || value == null || value == undefined){

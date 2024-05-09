@@ -11,6 +11,7 @@ import formatHTML from "./formatHTML";
 // Test binding a component.
 // Test events.
 // Test calling a component method.
+// Test refs.
 
 afterEach(() => { 
 	document.body.innerHTML = ''; 

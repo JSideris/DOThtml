@@ -12,6 +12,7 @@ import BaseVStyle from "./v-style-nodes/base-v-style";
 import { IDotCore, IDotCss } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
+import Ref from "./reactivity/ref";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -456,6 +457,10 @@ const makeDot = ()=>{
 		// o._value = props?.value;
 		o.value = (value);
 		return o;
+	}
+
+	_dot.ref = function(){
+		return new Ref();
 	}
 
 	_dot.css = new BaseVStyle();

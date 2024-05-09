@@ -589,3 +589,30 @@ describe("Special attributes.", ()=>{
 
 	// TODO: All this should work with rerendering.
 });
+
+describe("Refs.", ()=>{
+	test("Basic ref example.", ()=>{
+		let ref = dot.ref();
+		dot(document.body).div({ref: ref}, "test");
+		expect(ref.element).toBeTruthy();
+		expect(ref.element.innerHTML).toBe("test");
+	});
+
+	test("Conditional refs.", ()=>{
+		let ref = dot.ref();
+		let condition = dot.watch(true);
+		dot(document.body).when(condition, dot.div({ref: ref}, "test"));
+		
+		expect(ref.element).toBeTruthy();
+		expect(ref.element.innerHTML).toBe("test");
+		
+		condition.value = false;
+		
+		expect(ref.element).not.toBeTruthy();
+		
+		condition.value = true;
+
+		expect(ref.element).toBeTruthy();
+		expect(ref.element.innerHTML).toBe("test");
+	});
+})
