@@ -319,6 +319,7 @@ const allTags = [
 // ];
 
 // TODO: don't forget to add md.
+// To find the definitions of these, check container-vdom.ts
 const allCoreWrappers = ["each", "html", "mount", "text", "md", "when"];
 
 // This could easily be modified so that it adds some rudimentary element checking.
@@ -504,11 +505,11 @@ const makeDot = ()=>{
 				let cont;
 				let attrs;
 				{ // Find out which arg is the content and which is the attributes.
-					if(a instanceof ContainerVdom || a instanceof Vdom || (a?._?._meta && a?.build) || a instanceof Watcher || a instanceof Binding || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
+					if(a instanceof ContainerVdom || a instanceof Vdom || (typeof a == "object" && a?.build) || a instanceof Watcher || a instanceof Binding || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
 						cont = a;
 						attrs = b;
 					}
-					if(b instanceof ContainerVdom || b instanceof Vdom || (b?._?._meta && b?.build) || b instanceof Watcher || b instanceof Binding || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
+					if(b instanceof ContainerVdom || b instanceof Vdom || (typeof b == "object" && b?.build) || b instanceof Watcher || b instanceof Binding || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
 						if(cont) throw new Error("Both element arguments can't be content.");
 						cont = b;
 						attrs = a;
@@ -553,8 +554,10 @@ const makeDot = ()=>{
 					else if(cont instanceof Vdom){
 						n.children._addChild(cont);
 					}
-					else if(cont?._?._meta && cont?.build){
-						n.children._addChild(new ComponentVdom(dot, cont));
+					else if(typeof cont == "object" && cont?.build){
+						// n.children._addChild(new ComponentVdom(dot, cont));
+						n.children.mount(cont);
+						
 					}
 					else{
 						// Text or reactives.

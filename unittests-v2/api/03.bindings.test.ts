@@ -1,4 +1,5 @@
 
+import { IDotComponent, IDotCore, IDotDocument } from "dothtml-interfaces";
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
@@ -423,6 +424,24 @@ describe("Conditional w/ binding.", () => {
 		watchOuter.value = (true);
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 
+	});
+
+	test("Conditionals with components", ()=>{
+		// Tests for a specific edge case / exception that was found in the wild.
+		class C implements IDotComponent{
+			build(): IDotDocument {
+				return dot.span();
+			}
+		}
+
+		let watcher = dot.watch(false);
+
+		// dot(document.body).when(watcher, dot.div(dot.mount(new C()))); // Originally only this didn't work.
+		dot(document.body).when(watcher, dot.div(new C())); // This worked - which was technically another bug as it should match the behavior of above.
+
+		watcher.value = true;
+		watcher.value = false;
+		watcher.value = true;
 	});
 });
 

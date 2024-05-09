@@ -42,6 +42,7 @@ export class ComponentVdom extends Vdom{
 		// (component._._meta.styles as any) = styles;
 
 		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
+		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
 		this.childShadowVdom = this.component.build(dot) as unknown as ContainerVdom;
 		this.component.built && this.component.built();
 
@@ -131,7 +132,7 @@ export class ComponentVdom extends Vdom{
 		this.component.unmounting && this.component.unmounting();
 
 		this.childShadowVdom._unrender();
-		this.childShadowVdom = null;
+		// this.childShadowVdom = null; // This makes sense only if shadow dom creation happens inside the render function (which it probably should?).
 		this.shadowEl.remove();
 		this.shadowEl = null;
 

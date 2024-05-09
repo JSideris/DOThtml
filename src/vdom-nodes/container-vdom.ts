@@ -90,7 +90,8 @@ export class ContainerVdom extends Vdom{
 
 	mount(c: IDotComponent){
 		let cn = new ComponentVdom(this._dot, c);
-		return this._addChild(cn);
+		let ret = this._addChild(cn);
+		return ret;
 	}
 
 	// // TODO: need to support immediate rendering.

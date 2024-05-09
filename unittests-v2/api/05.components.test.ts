@@ -2,7 +2,6 @@ import { FrameworkItems, IDotComponent, IDotCss, IDotDocument, IReactive } from 
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
-import { component } from "../../src/decoration/component";
 
 // TODO:
 // Test (conditional) deletions.
@@ -21,27 +20,42 @@ afterEach(() => {
 // Test components
 
 // Need to turn this off first!!!
-component["_addTimestamp"] = false;
+// component["_addTimestamp"] = false;
 
 // TODO: typed props and events would be GREAT. But it's not easy to do. Some thought has to go into it.
 
-let TextDisplay = dot.component<["txt"]>(class implements IDotComponent{
-	// constructor(txt: string){}
+class TextDisplay implements IDotComponent{
+	args: any;
+
+	constructor(txt: any){
+		// TODO: this isn't the final version of this.
+		// Ever since we moved to a full DI implementation, this is up in the air.
+		this.args = txt;
+	}
 	_: FrameworkItems;
 	build(): IDotDocument {
-		return dot.div(this._.props.txt);
+		return dot.div(this.args.txt);
 	}
-});
+}
 
-let YesNoButton = dot.component<["defaultValue", "yesText", "noText"], []>(class implements IDotComponent{
+class YesNoButton implements IDotComponent{
 	value = dot.watch(true);
 	_: FrameworkItems;
+	defaultValue: boolean | undefined;
+	yesText: string;
+	noText: string;
+
+	constructor(props?: {defaultValue?: boolean, yesText?: string, noText?: string}){
+		this.defaultValue = props?.defaultValue;
+		this.yesText = props?.yesText || "";
+		this.noText = props?.noText || "";
+	}
 
 	build(): IDotDocument {
-		this.value.setValue(this._.props.defaultValue);
-		return dot.div(dot.when(this.value, this._.props.yesText).otherwise(this._.props.noText))
+		this.value.value = (this.defaultValue);
+		return dot.div(dot.when(this.value, this.yesText).otherwise(this.noText))
 	}
-});
+}
 
 describe("Components", ()=>{
 	test("Mount a component.", ()=>{
@@ -109,7 +123,7 @@ describe("Components", ()=>{
 
 		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>abc</div>");
 		
-		txt.setValue("def");
+		txt.value = ("def");
 
 		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>def</div>");
 	});
