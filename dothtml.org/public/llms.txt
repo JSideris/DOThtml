@@ -1,0 +1,15 @@
+# DOThtml
+> A lightweight, reactive UI engine and framework for building modern web applications with zero dependencies.
+
+## Core Documentation
+- [Quick Start](https://dothtml.org/docs/quick-start.md): Get up and running with DOThtml in minutes.
+- [Installation](https://dothtml.org/docs/get-dot.md): Guide on how to add DOThtml to your project.
+- [Main Features](https://dothtml.org/docs/main-features.md): Overview of components, reactivity, and event handling.
+
+## Deep Dives
+- [Detailed Features](https://dothtml.org/docs/detailed-features.md): Comprehensive breakdown of the framework's capabilities.
+- [Hero Features](https://dothtml.org/docs/hero-features.md): Key highlights and unique selling points.
+- [Learn More](https://dothtml.org/docs/learn-more.md): Additional resources for mastering DOThtml.
+
+## Community
+- [Contribute](https://dothtml.org/docs/contribute.md): Information on how to report bugs and contribute to the project.
