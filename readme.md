@@ -1,4 +1,10 @@
-[https://dothtml.org/](https://dothtml.org/) for documentation (currently somewhat out of date since DOTcss was merged in and library was ported to TypeScript and put on NPM).
+[https://dothtml.org/](https://dothtml.org/) for documentation.
+
+## The DOThtml Paradigm
+
+Most modern web frameworks are "all or nothing." DOThtml is different. It is a **UI Engine** designed to provide a component-based, reactive workflow to projects that have their own primary architecture. 
+
+Whether you are building a high-performance game, a browser extension, or modernizing a legacy enterprise app, DOThtml stays out of your way while giving you the power of modern web components. Of course, it also works perfectly as a full-scale framework for building entire web applications from scratch.
 
 # Project Status
 
