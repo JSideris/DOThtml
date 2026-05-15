@@ -88,8 +88,29 @@ export class ContainerVdom extends Vdom{
 	// 	}
 	// }
 
-	mount(c: IDotComponent){
+	mount(c: IDotComponent, attrs?: Record<string, any>){
 		let cn = new ComponentVdom(this._dot, c);
+		if(attrs){
+			for(let k in attrs){
+				let val = attrs[k];
+				if(k.startsWith("on") && typeof val === "function"){
+					let eventName = k;
+					let modifiers = [];
+					if(k.includes(".")){
+						const parts = k.split(".");
+						eventName = parts[0];
+						modifiers = parts.slice(1);
+					}
+					cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
+				}
+				else{
+					// For now, just set as a prop if we can. 
+					// Components in DOThtml usually get their props via constructor, but we can support this too.
+					if(!c["props"]) (c as any).props = {};
+					(c as any).props[k] = val;
+				}
+			}
+		}
 		let ret = this._addChild(cn);
 		return ret;
 	}
@@ -137,6 +158,17 @@ export class ContainerVdom extends Vdom{
 		return this;
 	}
 	otherwise(then: ContainerVdom|string|boolean|number){ return this.otherwiseWhen(true, then, true) }
+
+	on(event: string, callback: (e: any)=>void){
+		let C = this._children[this._children.length - 1];
+		if(C && (C instanceof ElementVdom || C instanceof ComponentVdom)){
+			C.addEventListener(event, callback);
+		}
+		else{
+			throw new Error(`Invalid node to set ${event} listener.`);
+		}
+		return this;
+	}
 
 	each(collection: ObservableCollection, callback: ()=>Vdom){
 		let collectionVdom = new CollectionVdom(reduceReactive(collection), callback);

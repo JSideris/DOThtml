@@ -321,7 +321,7 @@ const allTags = [
 
 // TODO: don't forget to add md.
 // To find the definitions of these, check container-vdom.ts
-const allCoreWrappers = ["each", "html", "mount", "text", "md", "when"];
+const allCoreWrappers = ["each", "html", "mount", "text", "md", "when", "on"];
 
 // This could easily be modified so that it adds some rudimentary element checking.
 const allEventAttr = {
@@ -545,12 +545,14 @@ const makeDot = ()=>{
 								modifiers = parts.slice(1);
 							}
 
-							if(allEventAttr[eventName]) {
+							const isEvent = allEventAttr[eventName] || (eventName.startsWith("on") && eventName[2] && eventName[2] === eventName[2].toUpperCase());
+
+							if(isEvent) {
 								if(typeof attrs[k] !== "function") {
 									throw new Error(`Value of event attribute ${k} must be a function.`);
 								}
 
-								(n as any).addEventListener(eventName.substring(2), attr, modifiers);
+								(n as any).addEventListener(eventName.substring(2).toLowerCase(), attr, modifiers);
 							} else {
 								n.setAttr(k, attr);
 							}

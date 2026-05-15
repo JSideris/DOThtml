@@ -2,6 +2,7 @@ import { IDotComponent, IDotCore } from "dothtml-interfaces";
 import { Vdom } from "./vdom";
 import { ContainerVdom } from "./container-vdom";
 import renderStylesheet from "../helpers/render-stylesheet";
+import { EventManager } from "../events/event-manager";
 
 let tagId = 0x10000;
 
@@ -12,6 +13,7 @@ export class ComponentVdom extends Vdom{
 	component: IDotComponent;
 	shadowEl: HTMLElement;
 	childShadowVdom: ContainerVdom;
+	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 
 	constructor(dot: IDotCore, component: IDotComponent){
 		super();
@@ -40,6 +42,16 @@ export class ComponentVdom extends Vdom{
 		(component._._meta.isRendered as any) = false;
 		(component._._meta.tagName as any) = component.constructor["_dotHtmlComponent"].tagName;
 		// (component._._meta.styles as any) = styles;
+
+		(component as any).emit = (name: string, detail?: any) => {
+			if (this.shadowEl) {
+				this.shadowEl.dispatchEvent(new CustomEvent(name.toLowerCase(), {
+					detail,
+					bubbles: true,
+					composed: true
+				}));
+			}
+		};
 
 		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
 		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
@@ -125,6 +137,11 @@ export class ComponentVdom extends Vdom{
 		
 		node.appendChild(this.shadowEl);
 
+		for(let i = 0; i < this.events.length; i++){
+			let e = this.events[i];
+			this.renderEvent(e.name, e.callback, e.modifiers);
+		}
+
 		this.component.mounted && this.component.mounted();
 	}
 
@@ -132,12 +149,33 @@ export class ComponentVdom extends Vdom{
 		this.component.unmounting && this.component.unmounting();
 
 		this.childShadowVdom._unrender();
+
+		const eventManager = EventManager.getForDocument(this.shadowEl.ownerDocument);
+		for(let i = 0; i < this.events.length; i++){
+			let e = this.events[i];
+			eventManager.removeListener(this.shadowEl, e.name.toLowerCase(), e.callback);
+		}
+
 		// this.childShadowVdom = null; // This makes sense only if shadow dom creation happens inside the render function (which it probably should?).
 		this.shadowEl.remove();
 		this.shadowEl = null;
 
 		(this.component._._meta as any).isRendered = false;
 		this.component.unmounted && this.component.unmounted();
+	}
+
+	addEventListener(event: string, callback: (e: any)=>void, modifiers: string[] = []){
+		this.events.push({name: event, callback: callback, modifiers: modifiers});
+		if(this.shadowEl) this.renderEvent(event, callback, modifiers);
+	}
+
+	private renderEvent(e: string, callback: (e: any)=>void, modifiers: string[] = []){
+		EventManager.getForDocument(this.shadowEl.ownerDocument).addListener(this.shadowEl, e.toLowerCase(), callback, modifiers);
+	}
+
+	on(event: string, callback: (e: any)=>void){
+		this.addEventListener(event, callback);
+		return this;
 	}
 
 	toString(){

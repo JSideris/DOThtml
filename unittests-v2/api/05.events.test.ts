@@ -47,7 +47,7 @@ describe("Event system.", ()=>{
 		dot(document.body).a({ id: "my-link", hRef: "#", "onClick.prevent": handler } as any);
 
 		let link = document.getElementById("my-link");
-		link?.dispatchEvent(new MouseEvent("click", { cancelable: true }));
+		link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
 
 		expect(handler).toHaveBeenCalled();
 	});

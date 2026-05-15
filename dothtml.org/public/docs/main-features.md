@@ -23,8 +23,23 @@ DOThtml provides a modern event system inspired by leading frameworks, offering 
     *   `.once`: Ensures the event handler only runs once.
     *   `.self`: Only triggers if the event was dispatched by the element itself, not a child.
 *   **Event Delegation**: For maximum performance, DOThtml uses a single event listener at the document root for each event type. This reduces memory overhead and improves performance when rendering large lists of interactive elements.
+*   **Custom Component Events**: Components can emit custom events that parents can listen to using declarative attributes or fluent syntax.
 
 Example:
+```javascript
+// Inside a component
+this.emit("myEvent", { data: 123 });
+
+// Parent listening via mount
+dot.mount(new MyComponent(), { 
+    onMyEvent: (e) => console.log(e.detail.data) 
+});
+
+// Parent listening via fluent API
+dot.mount(new MyComponent()).on("myEvent", (e) => ...);
+```
+
+Example of modifiers:
 ```javascript
 dot.button({ 
     "onClick.stop.prevent": (e) => console.log("Clicked!") 

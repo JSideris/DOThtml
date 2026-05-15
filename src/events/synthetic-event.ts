@@ -6,6 +6,7 @@ export default class SyntheticEvent {
 	public type: string;
 	public timeStamp: number;
 	public defaultPrevented: boolean;
+	public detail: any;
 	private _propagationStopped = false;
 	private _immediatePropagationStopped = false;
 
@@ -16,6 +17,7 @@ export default class SyntheticEvent {
 		this.type = e.type;
 		this.timeStamp = e.timeStamp;
 		this.defaultPrevented = e.defaultPrevented;
+		this.detail = (e as any).detail;
 	}
 
 	preventDefault() {

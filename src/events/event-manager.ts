@@ -75,7 +75,16 @@ export class EventManager {
 	}
 
 	private dispatchEvent(eventType: string, nativeEvent: Event) {
-		const path = nativeEvent.composedPath() as Element[];
+		let path = nativeEvent.composedPath() as Element[];
+		if (!path || path.length === 0) {
+			// Fallback for environments where composedPath is not available or empty
+			path = [];
+			let current = nativeEvent.target as any;
+			while (current) {
+				path.push(current);
+				current = current.parentNode || current.host;
+			}
+		}
 		const syntheticEvent = new SyntheticEvent(nativeEvent);
 
 		for (const element of path) {
