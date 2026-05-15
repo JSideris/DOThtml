@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
-import styles from "./small-logo.css";
+import styles from "./small-logo.css?inline";
 
 const SmallLogo = dot.component(
 	class implements IDotComponent{

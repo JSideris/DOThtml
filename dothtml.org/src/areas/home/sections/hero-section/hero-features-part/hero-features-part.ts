@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./hero-features-part.css";
+import styles from "./hero-features-part.css?inline";
 
 @dot.component
 @dot.component.useStyles(styles)

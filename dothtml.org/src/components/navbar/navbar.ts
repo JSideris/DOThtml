@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./navbar.css";
+import styles from "./navbar.css?inline";
 import NavBtn from "./nav-btn/nav-btn";
 import SmallLogo from "../small-logo/small-logo";
 

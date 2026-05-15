@@ -3,7 +3,7 @@
 
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./page-section.css";
+import styles from "./page-section.css?inline";
 
 // AFTER
 const PageSection = dot.component(

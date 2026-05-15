@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent, IReactive } from "dothtml-interfaces";
-import styles from "./large-logo-part.css";
+import styles from "./large-logo-part.css?inline";
 
 type Orbiter = {
 	x: IReactive<number>

@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import styles from "./learn-more.css";
+import styles from "./learn-more.css?inline";
 import { FrameworkItems, IDotComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
 
 @dot.component

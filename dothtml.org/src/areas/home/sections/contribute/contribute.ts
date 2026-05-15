@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import styles from "./contribute.css";
+import styles from "./contribute.css?inline";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 const Contribute = dot.component(

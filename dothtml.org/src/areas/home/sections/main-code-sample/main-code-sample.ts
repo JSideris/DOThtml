@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import styles from "./main-code-sample.css";
+import styles from "./main-code-sample.css?inline";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 const MainCodeSample = dot.component(

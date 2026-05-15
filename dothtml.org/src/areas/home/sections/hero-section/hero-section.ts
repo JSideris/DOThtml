@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import styles from "./hero-section.css";
+import styles from "./hero-section.css?inline";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 import LargeLogoPart from "./large-logo-part/large-logo-part";
 import QuickStartPart from "./quick-start-part/quick-start-part";

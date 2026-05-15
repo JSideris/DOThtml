@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./nav-btn.css";
+import styles from "./nav-btn.css?inline";
 
 const NavBtn = dot.component<["text"], ["click"]>(
 	class implements IDotComponent{

@@ -6,7 +6,7 @@
 
 import { dot } from "dothtml";
 import Home from "./areas/home/home";
-import styles from "./index.css";
+import styles from "./index.css?inline";
 import Navbar from "./components/navbar/navbar";
 
 dot.useStyles(document, styles);

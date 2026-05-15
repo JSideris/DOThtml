@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import styles from "./footer.css";
+import styles from "./footer.css?inline";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 const Footer = dot.component(

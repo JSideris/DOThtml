@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./animated-backdrop.css";
+import styles from "./animated-backdrop.css?inline";
 
 const AnimatedBackdrop = dot.component(
 	class implements IDotComponent{

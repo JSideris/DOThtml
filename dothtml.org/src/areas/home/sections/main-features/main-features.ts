@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import styles from "./main-features.css";
+import styles from "./main-features.css?inline";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
 const MainFeatures = dot.component(

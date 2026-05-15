@@ -1,6 +1,6 @@
 import { dot } from "dothtml"
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import homeStyles from "./home.css";
+import homeStyles from "./home.css?inline";
 import HeroSection from "./sections/hero-section/hero-section";
 // import GetDot from "./sections/get-dot/get-dot";
 import MainCodeSample from "./sections/main-code-sample/main-code-sample";

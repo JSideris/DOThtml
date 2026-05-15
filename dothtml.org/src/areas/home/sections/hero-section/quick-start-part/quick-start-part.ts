@@ -1,6 +1,6 @@
 import { dot } from "dothtml";
 import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./quick-start-part.css";
+import styles from "./quick-start-part.css?inline";
 
 const QuickStartPart = dot.component(
 	class implements IDotComponent{

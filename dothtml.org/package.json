@@ -5,25 +5,19 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack serve"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "css-loader": "^6.9.1",
-    "html-webpack-plugin": "^5.6.0",
-    "raw-loader": "^4.0.2",
-    "sass": "^1.70.0",
-    "sass-loader": "^14.0.0",
-    "style-loader": "^3.3.4",
-    "ts-loader": "^9.5.1",
+    "sass": "^1.99.0",
     "typescript": "^5.3.3",
-    "webpack": "^5.89.0",
-    "webpack-dev-server": "^4.15.1"
+    "vite": "^8.0.13"
   },
   "dependencies": {
     "dothtml": "^6.0.0-beta.31",
-    "dothtml-interfaces": "^0.3.4",
-    "webpack-cli": "^5.1.4"
+    "dothtml-interfaces": "^0.3.4"
   }
 }
