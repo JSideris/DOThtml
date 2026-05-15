@@ -537,12 +537,20 @@ const makeDot = ()=>{
 						for(let k in attrs) {
 							let attr = attrs[k];
 							if(attr instanceof Watcher) attr = attr.bind();
-							if(allEventAttr[k]) {
+							let eventName = k;
+							let modifiers = [];
+							if(k.includes(".")){
+								const parts = k.split(".");
+								eventName = parts[0];
+								modifiers = parts.slice(1);
+							}
+
+							if(allEventAttr[eventName]) {
 								if(typeof attrs[k] !== "function") {
 									throw new Error(`Value of event attribute ${k} must be a function.`);
 								}
 
-								n.addEventListener(k.substring(2), attr);
+								(n as any).addEventListener(eventName.substring(2), attr, modifiers);
 							} else {
 								n.setAttr(k, attr);
 							}

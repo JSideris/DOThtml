@@ -10,6 +10,8 @@ import Binding from "../reactivity/binding";
 import ReactiveAttr from "../reactivity/reactive-attr";
 import { IRef } from "dothtml-interfaces/src/bindings/i-ref";
 import Ref from "../reactivity/ref";
+import SyntheticEvent from "../events/synthetic-event";
+import { EventManager } from "../events/event-manager";
 
 export class AttributeItem{
 	elementVDom: ElementVdom;
@@ -24,7 +26,7 @@ export default class ElementVdom extends Vdom{
 	element: HTMLElement;
 	tag: string = null;
 	private attributes: Record<string, AttributeValueType> = {};
-	private events: Array<{name: string, callback: (e: Event)=>void}> = [];
+	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 	private attributeObserverIds: Array<{id: number, observable: Binding}> = [];
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 	private attrVNodes: Array<AttributeVNode> = [];
@@ -55,7 +57,7 @@ export default class ElementVdom extends Vdom{
 
 		for(let i = 0; i < this.events.length; i++){
 			let e = this.events[i];
-			this.renderEvent(e.name, e.callback);
+			this.renderEvent(e.name, e.callback, e.modifiers);
 		}
 	
 		if(this.children){
@@ -73,6 +75,12 @@ export default class ElementVdom extends Vdom{
 		if(this.inputListener){
 			this.element.removeEventListener("input", this.inputListener);
 			this.inputListener = null;
+		}
+
+		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
+		for(let i = 0; i < this.events.length; i++){
+			let e = this.events[i];
+			eventManager.removeListener(this.element, e.name.toLowerCase(), e.callback);
 		}
 
 		this.element.parentNode?.removeChild(this.element);
@@ -203,12 +211,12 @@ export default class ElementVdom extends Vdom{
 		}
 	}
 
-	addEventListener(event: string, callback: (e: Event)=>void){
-		this.events.push({name: event, callback: callback});
-		if(this.element) this.renderEvent(event, callback);
+	addEventListener(event: string, callback: (e: any)=>void, modifiers: string[] = []){
+		this.events.push({name: event, callback: callback, modifiers: modifiers});
+		if(this.element) this.renderEvent(event, callback, modifiers);
 	}
 
-	private renderEvent(e: string, callback: (e: Event)=>void){
-		this.element.addEventListener(e.toLowerCase(), callback);
+	private renderEvent(e: string, callback: (e: any)=>void, modifiers: string[] = []){
+		EventManager.getForDocument(this.element.ownerDocument).addListener(this.element, e.toLowerCase(), callback, modifiers);
 	}
 }
