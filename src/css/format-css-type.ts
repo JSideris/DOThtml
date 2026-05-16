@@ -9,7 +9,7 @@ export function formatCssLength(value:string|number|Binding|Watcher|Array<string
 	if(value instanceof Array){
 		return value.map(v=>formatCssLength(v, defaultUnits)).join(" ");
 	}
-	if(!isNaN(value as number)) value = Math.round(value as number) + defaultUnits;
+	if(!isNaN(value as number)) value = (value as number) + defaultUnits;
 	let tokens = (value as string).trim().split(" ");
 	if(tokens.length > 1){
 		return tokens.map(t=>formatCssLength(t, defaultUnits)).join(" ");
@@ -73,7 +73,7 @@ export function formatCssAngle(value: string|number|Binding|Watcher|Array<string
 	if(value instanceof Array){
 		return value.map(v=>formatCssAngle(v)).join(" ");
 	}
-	if(!isNaN(value as number)) value = `${Math.round(value as number)}deg`;
+	if(!isNaN(value as number)) value = `${value as number}deg`;
 	let tokens = (value as string).trim().split(" ");
 	if(tokens.length > 1){
 		return tokens.map(t=>formatCssAngle(t)).join(" ");

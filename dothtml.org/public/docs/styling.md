@@ -6,24 +6,37 @@ DOThtml provides a powerful, fluent, and reactive styling system that leverages 
 
 Instead of using string-based styles or plain object literals, DOThtml uses a fluent builder pattern. This provides type safety, IDE autocompletion, and automatic unit formatting.
 
-You can apply styles to any element using the `.style()` method.
+You can apply styles to any element using the `.style()` method. When passing a raw number to a length-based property (like `width`, `height`, `padding`, etc.), DOThtml defaults the unit to `px`.
 
 ```javascript
 dot.div("Hello World")
   .style(s => s
     .color("red")
     .fontWeight("bold")
-    .fontSizePx(20) // Automatically appends 'px'
+    .fontSize(20) // Defaults to 'px'
   );
 ```
 
 ### Automatic Unit Formatting
 
-DOThtml automatically generates methods for common CSS units, so you don't have to manually concatenate strings.
+DOThtml automatically generates methods for common CSS units, so you don't have to manually concatenate strings. **We recommend using these explicit unit methods** to ensure your code is clear and to avoid ambiguity.
 
 - **Lengths**: `.widthPx(100)`, `.heightRem(2)`, `.paddingTopP(10)` (P for percent).
 - **Time**: `.animationDurationMs(500)`, `.transitionDelayS(1)`.
 - **Angles**: `.rotateDeg(45)`, `.skewRad(0.1)`.
+
+### Hybrid and Unitless Properties
+
+Some CSS properties are unitless or can behave as hybrids:
+
+- **Unitless**: Properties like `opacity`, `zIndex`, `flexGrow`, and `flexShrink` accept raw numbers as-is.
+- **Hybrids**: `lineHeight` is a special case. It can take a physical length (like `px`) or a unitless multiplier (recommended). 
+
+To ensure the correct behavior for `lineHeight`, use an explicit unit method like `.lineHeightPx(24)` or pass a string for a multiplier: `.lineHeight("1.5")`.
+
+### Technical Note on Precision
+
+Unlike some frameworks that round values to the nearest integer, DOThtml preserves full decimal precision in numeric values. If you set a width to `10.5`, it will be rendered as `10.5px`.
 
 ### Nested Style Objects
 
