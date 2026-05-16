@@ -57,33 +57,39 @@ export default class LargeLogoPart implements IDotComponent {
 					rotateX: this.mouseY.bindAs(y => `${-y}deg`)
 				})
 			},
-				dot.span({ class: "dot-text" }, "DOT"),
-				dot.div({
-					class: "orbiter",
-					style: s => s
-						.zIndex(this.orbiter1.z)
-						.transform({
-							rotateX: "60deg",
-							rotateY: "60deg",
-							translateX: this.orbiter1.x.bindAs(x => `${x}px`),
-							translateY: this.orbiter1.y.bindAs(y => `${y}px`),
-							rotateY_2: "-60deg",
-							rotateX_2: "-60deg"
+				dot.span({ class: "dot-text" }, 
+					"D",
+					dot.span({ class: "o-wrapper" }, 
+						"O",
+						dot.div({
+							class: "orbiter",
+							style: s => s
+								.zIndex(this.orbiter1.z)
+								.transform({
+									rotateX: "60deg",
+									rotateY: "60deg",
+									translateX: this.orbiter1.x.bindAs(x => `${x}px`),
+									translateY: this.orbiter1.y.bindAs(y => `${y}px`),
+									rotateY_2: "-60deg",
+									rotateX_2: "-60deg"
+								})
+						}),
+						dot.div({
+							class: "orbiter",
+							style: s => s
+								.zIndex(this.orbiter2.z)
+								.transform({
+									rotateX: "-60deg",
+									rotateY: "50deg",
+									translateX: this.orbiter2.x.bindAs(x => `${x}px`),
+									translateY: this.orbiter2.y.bindAs(y => `${y}px`),
+									rotateY_2: "-50deg",
+									rotateX_2: "60deg"
+								})
 						})
-				}),
-				dot.div({
-					class: "orbiter",
-					style: s => s
-						.zIndex(this.orbiter2.z)
-						.transform({
-							rotateX: "-60deg",
-							rotateY: "50deg",
-							translateX: this.orbiter2.x.bindAs(x => `${x}px`),
-							translateY: this.orbiter2.y.bindAs(y => `${y}px`),
-							rotateY_2: "-50deg",
-							rotateX_2: "60deg"
-						})
-				}),
+					),
+					"T"
+				),
 				dot.span({ class: "html-text" }, "html")
 			),
 			dot.div({ class: "tagline" }, "Redefine web development.")

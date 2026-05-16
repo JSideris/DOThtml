@@ -5,6 +5,7 @@
 	justify-content: center;
 	min-height: 600px;
 	width: 100%;
+	overflow: visible;
 }
 
 .hero-main {
@@ -13,10 +14,12 @@
 	justify-content: space-between;
 	width: 100%;
 	gap: 40px;
+	overflow: visible;
 }
 
 .logo-pane {
 	flex: 2;
+	overflow: visible;
 }
 
 .quickstart-pane {

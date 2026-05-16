@@ -86,11 +86,12 @@ export default class StyleVNode extends VMetaNode {
 								}
 							}
 
-							if (typeof builder[k] === "function") {
+							let methodKey = k.replace(/_\d+$/, "");
+							if (typeof builder[methodKey] === "function") {
 								if (Array.isArray(v)) {
-									builder[k](...v);
+									builder[methodKey](...v);
 								} else {
-									builder[k](v);
+									builder[methodKey](v);
 								}
 							}
 						}

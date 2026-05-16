@@ -166,6 +166,12 @@ export default class ElementVdom extends Vdom{
 			}
 		}
 
+		if (typeof value === "function" && attr === "style") {
+			const builder = new BaseVStyle();
+			value(builder);
+			value = new StyleVNode(builder);
+		}
+
 		if (value instanceof BaseVStyle && attr === "style") {
 			value = new StyleVNode(value);
 		}

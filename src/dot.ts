@@ -316,7 +316,7 @@ const makeDot = ()=>{
 
 		const styleItem = renderStylesheet(styles as any, applyToDocument);
 		if (styleItem instanceof (applyToDocument.defaultView as any)?.CSSStyleSheet) {
-			applyToDocument.adoptedStyleSheets = [...applyToDocument.adoptedStyleSheets, styleItem];
+			applyToDocument.adoptedStyleSheets = [...applyToDocument.adoptedStyleSheets, styleItem as CSSStyleSheet];
 		} else if (styleItem instanceof HTMLElement) {
 			applyToDocument.head.appendChild(styleItem);
 		}

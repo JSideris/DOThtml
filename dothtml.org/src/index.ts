@@ -46,7 +46,6 @@ dot.useGlobalStyles(`
 		color: var(--text);
 		font-family: 'Inter', sans-serif;
 		line-height: 1.6;
-		overflow-x: hidden;
 	}
 
 	code, pre {

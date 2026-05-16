@@ -7,13 +7,13 @@ export default function renderStylesheet(styleCallback: string|CSSStyleSheet|((c
 	let finalStylesheet = "";
 
 	if (styleCallback instanceof (document.defaultView as any)?.CSSStyleSheet) {
-		return styleCallback;
+		return styleCallback as CSSStyleSheet;
 	}
 
 	if (typeof styleCallback == "string") {
 		finalStylesheet = styleCallback;
 	}
-	else {
+	else if (typeof styleCallback == "function") {
 		let css = null;
 		let styles = styleCallback(css);
 

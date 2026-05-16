@@ -1,3 +1,8 @@
+:host {
+	display: block;
+	overflow: visible;
+}
+
 .logo-container {
 	display: flex;
 	flex-direction: column;
@@ -26,8 +31,17 @@
 	color: var(--text);
 }
 
+.o-wrapper {
+	position: relative;
+	display: inline-block;
+}
+
 .orbiter {
 	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -6px;
+	margin-left: -6px;
 	width: 12px;
 	height: 12px;
 	background-color: var(--secondary);
