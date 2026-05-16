@@ -1,11 +1,40 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
-import styles from "./animated-backdrop.css?inline";
 
 @dot.component
 export default class AnimatedBackdrop implements IDotComponent {
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("backdrop", b => b
+			.position("fixed")
+			.topPx(0)
+			.leftPx(0)
+			.widthP(100)
+			.heightP(100)
+			.zIndex(-1)
+			.backgroundColor(s.v("bg"))
+			.overflow("hidden")
+		).class("grid", g => g
+			.position("absolute")
+			.topP(-50)
+			.leftP(-50)
+			.widthP(200)
+			.heightP(200)
+			.backgroundImage(`linear-gradient(rgba(255, 152, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 152, 0, 0.05) 1px, transparent 1px)`)
+			.backgroundSize("50px 50px")
+			.transform("perspective(500px) rotateX(60deg)")
+			.animation("move-grid 20s linear infinite")
+		).class("glow", gl => gl
+			.position("absolute")
+			.topP(50)
+			.leftP(50)
+			.widthPx(600)
+			.heightPx(600)
+			.background(`radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%)`)
+			.borderRadiusP(50)
+			.transform("translate(-50%, -50%)")
+			.filter("blur(80px)")
+			.animation("pulse-glow 10s ease-in-out infinite")
+		);
 	}
 
 	build() {

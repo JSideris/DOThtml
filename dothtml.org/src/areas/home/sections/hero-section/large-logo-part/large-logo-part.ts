@@ -1,6 +1,5 @@
 import { dot } from "dothtml";
 import { IDotComponent, IReactive } from "dothtml-interfaces";
-import styles from "./large-logo-part.css?inline";
 
 type Orbiter = {
 	x: IReactive<number>
@@ -44,8 +43,58 @@ export default class LargeLogoPart implements IDotComponent {
 		out.z.setValue(out.y.value > 0 ? 0 : 3);
 	}
 
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("logo-container", c => c
+			.display("flex")
+			.flexDirection("column")
+			.alignItems("center")
+			.justifyContent("center")
+			.paddingPx(40)
+			.perspective(1000)
+		).class("logo-main", m => m
+			.display("flex")
+			.alignItems("center")
+			.fontSizePx(120)
+			.fontWeight(900)
+			.letterSpacingPx(-5)
+			.position("relative")
+			.userSelect("none")
+		).class("dot-text", d => d
+			.color(s.v("primary"))
+			.textShadow(`0 0 30px rgba(255, 152, 0, 0.3)`)
+			.display("flex")
+			.alignItems("center")
+		).class("o-wrapper", o => o
+			.position("relative")
+			.display("inline-flex")
+			.alignItems("center")
+			.justifyContent("center")
+		).class("html-text", h => h
+			.color(s.v("text"))
+		).class("orbiter", o => o
+			.position("absolute")
+			.widthPx(12)
+			.heightPx(12)
+			.backgroundColor(s.v("secondary"))
+			.borderRadiusP(50)
+			.boxShadow(`0 0 15px ${s.v("secondary")}`)
+			.display("flex")
+			.alignItems("center")
+			.justifyContent("center")
+			.color("transparent")
+		).class("tagline", t => t
+			.fontSizePx(24)
+			.color(s.v("text-dim"))
+			.marginTopPx(20)
+			.fontWeight(300)
+			.letterSpacingPx(2)
+		).media("screen and (max-width: 1000px)", m => m
+			.class("logo-main", lm => lm
+				.fontSizePx(80)
+			).class("tagline", tl => tl
+				.fontSizePx(18)
+			)
+		);
 	}
 
 	build() {

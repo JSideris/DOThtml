@@ -1,9 +1,0 @@
-.home-container {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding: 100px 20px 40px 20px;
-	display: flex;
-	flex-direction: column;
-	gap: 100px;
-	overflow: visible;
-}

@@ -1,12 +1,36 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
 import MarkdownViewer from "../../../../../components/MarkdownViewer/MarkdownViewer";
-import styles from "./quick-start-part.css?inline";
 
 @dot.component
 export default class QuickStartPart implements IDotComponent {
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("terminal-container", t => t
+			.backgroundColor("rgba(0, 0, 0, 0.4)")
+			.backdropFilter("blur(10px)")
+			.border("1px solid rgba(255, 255, 255, 0.1)")
+			.borderRadiusPx(12)
+			.paddingPx(20)
+			.widthPx(450)
+			.boxShadow("0 20px 50px rgba(0, 0, 0, 0.5)")
+		).class("terminal-header", h => h
+			.display("flex")
+			.gapPx(8)
+			.marginBottomPx(15)
+		).class("dot", d => d
+			.widthPx(12)
+			.heightPx(12)
+			.borderRadiusP(50)
+		).class("dot-red", r => r.backgroundColor("#ff5f56")
+		).class("dot-yellow", y => y.backgroundColor("#ffbd2e")
+		).class("dot-green", g => g.backgroundColor("#27c93f")
+		).media("screen and (max-width: 600px)", m => m
+			.class("terminal-container", t => t
+				.widthP(100)
+				.maxWidthPx(450)
+				.paddingPx(15)
+			)
+		);
 	}
 
 	build() {

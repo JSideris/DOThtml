@@ -1,6 +1,5 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
-import styles from "./nav-btn.css?inline";
 
 @dot.component
 export default class NavBtn implements IDotComponent {
@@ -9,8 +8,31 @@ export default class NavBtn implements IDotComponent {
 		active: { type: Boolean, default: false }
 	};
 
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("nav-btn", b => b
+			.paddingPx(8, 16)
+			.borderRadiusPx(8)
+			.color(s.v("text-dim"))
+			.fontSizePx(15)
+			.fontWeight(500)
+			.cursor("pointer")
+			.transition("all 0.2s")
+			.display("flex")
+			.alignItems("center")
+			.justifyContent("center")
+		).class("nav-btn:hover", bh => bh
+			.color(s.v("text"))
+			.backgroundColor("rgba(255, 255, 255, 0.05)")
+		).class("nav-btn.active", ba => ba
+			.color(s.v("primary"))
+			.backgroundColor("rgba(255, 152, 0, 0.1)")
+			.fontWeight(600)
+		).media("screen and (max-width: 600px)", m => m
+			.class("nav-btn", b => b
+				.paddingPx(6, 10)
+				.fontSizePx(13)
+			)
+		);
 	}
 
 	build() {

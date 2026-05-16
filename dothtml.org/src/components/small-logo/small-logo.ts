@@ -1,11 +1,22 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
-import styles from "./small-logo.css?inline";
 
 @dot.component
 export default class SmallLogo implements IDotComponent {
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("logo-container", c => c
+			.cursor("pointer")
+			.display("flex")
+			.alignItems("center")
+		).class("logo-text", t => t
+			.fontSizePx(24)
+			.fontWeight(800)
+			.letterSpacingPx(-1)
+		).class("dot", d => d
+			.color(s.v("primary"))
+		).class("html", h => h
+			.color(s.v("text"))
+		);
 	}
 
 	build() {

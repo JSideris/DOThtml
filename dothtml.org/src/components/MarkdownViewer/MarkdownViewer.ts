@@ -9,9 +9,13 @@ export default class MarkdownViewer implements IDotComponent {
 	};
 
 	private content = dot.watch("");
+	private lastSrc = "";
 
-	mounted() {
-		this.load();
+	built() {
+		if (this.props.src !== this.lastSrc) {
+			this.lastSrc = this.props.src;
+			this.load();
+		}
 	}
 
 	async load() {

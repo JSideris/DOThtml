@@ -1,7 +1,6 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
 import MarkdownViewer from "../../components/MarkdownViewer/MarkdownViewer";
-import styles from "./docs.css?inline";
 
 @dot.component
 export default class Docs implements IDotComponent {
@@ -26,8 +25,61 @@ export default class Docs implements IDotComponent {
 		{ id: "contribute", label: "Contribute" }
 	];
 
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("docs-container", c => c
+			.display("flex")
+			.minHeightPx(800)
+			.paddingPx(100, 40, 40, 40)
+			.maxWidthPx(1400)
+			.marginPx(0, "auto")
+			.gapPx(40)
+		).class("sidebar", si => si
+			.widthPx(280)
+			.position("sticky")
+			.topPx(100)
+			.height("fit-content")
+			.paddingPx(20)
+			.backgroundColor("rgba(255, 255, 255, 0.02)")
+			.borderRadiusPx(12)
+			.border("1px solid rgba(255, 255, 255, 0.05)")
+		).class("sidebar h3", h => h
+			.fontSizePx(18)
+			.marginBottomPx(20)
+			.color(s.v("primary"))
+			.textTransform("uppercase")
+			.letterSpacingPx(1)
+		).class("sidebar ul", u => u
+			.listStyle("none")
+		).class("sidebar li", l => l
+			.marginBottomPx(5)
+		).class("sidebar a", a => a
+			.display("block")
+			.paddingPx(8, 12)
+			.borderRadiusPx(6)
+			.color(s.v("text-dim"))
+			.transition("all 0.2s")
+		).class("sidebar a:hover", a => a
+			.color(s.v("text"))
+			.backgroundColor("rgba(255, 255, 255, 0.05)")
+		).class("sidebar a.active", a => a
+			.color(s.v("primary"))
+			.backgroundColor("rgba(255, 152, 0, 0.1)")
+			.fontWeight(600)
+		).class("docs-content", co => co
+			.flex(1)
+			.backgroundColor("rgba(255, 255, 255, 0.01)")
+			.paddingPx(40)
+			.borderRadiusPx(12)
+			.border("1px solid rgba(255, 255, 255, 0.03)")
+		).media("screen and (max-width: 800px)", m => m
+			.class("docs-container", dc => dc
+				.flexDirection("column")
+				.paddingPx(80, 20, 20, 20)
+			).class("sidebar", si => si
+				.widthP(100)
+				.position("static")
+			)
+		);
 	}
 
 	build() {

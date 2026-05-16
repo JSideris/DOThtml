@@ -5,16 +5,24 @@ import GetDot from "./sections/get-dot/get-dot";
 import MainCodeSample from "./sections/main-code-sample/main-code-sample";
 import MainFeatures from "./sections/main-features/main-features";
 import UseCases from "./sections/use-cases/use-cases";
-import DetailedFeatures from "./sections/detailed-features/detailed-features";
-import LearnMore from "./sections/learn-more/learn-more";
-import Contribute from "./sections/contribute/contribute";
 import Footer from "./sections/footer/footer";
-import styles from "./home.css?inline";
 
 @dot.component
 export default class Home implements IDotComponent {
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("home-container", h => h
+			.maxWidthPx(1200)
+			.marginPx(0, "auto")
+			.paddingPx(100, 20, 40, 20)
+			.display("flex")
+			.flexDirection("column")
+			.gapPx(100)
+		).media("screen and (max-width: 800px)", m => m
+			.class("home-container", h => h
+				.paddingPx(60, 15, 20, 15)
+				.gapPx(60)
+			)
+		);
 	}
 
 	build() {
@@ -24,9 +32,6 @@ export default class Home implements IDotComponent {
 			dot.mount(new MainCodeSample()),
 			dot.mount(new MainFeatures()),
 			dot.mount(new UseCases()),
-			dot.mount(new DetailedFeatures()),
-			dot.mount(new LearnMore()),
-			dot.mount(new Contribute()),
 			dot.mount(new Footer())
 		);
 	}

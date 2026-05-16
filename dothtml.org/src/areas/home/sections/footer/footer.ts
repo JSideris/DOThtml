@@ -1,11 +1,17 @@
 import { dot } from "dothtml";
 import { IDotComponent } from "dothtml-interfaces";
-import styles from "./footer.css?inline";
 
 @dot.component
 export default class Footer implements IDotComponent {
-	stylize() {
-		return styles;
+	stylize(s: any) {
+		return s.class("footer", f => f
+			.paddingPx(60, 20)
+			.textAlign("center")
+			.color(s.v("text-dim"))
+			.fontSizePx(14)
+			.borderTop("1px solid rgba(255, 255, 255, 0.05)")
+			.marginTopPx(100)
+		);
 	}
 
 	build() {

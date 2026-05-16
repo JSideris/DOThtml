@@ -207,8 +207,8 @@ export default class MarkdownParser {
 		html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
 			// Convert relative .md links to hashes for our docs viewer
 			if (url.endsWith(".md") && !url.startsWith("http") && !url.startsWith("//") && !url.startsWith("/")) {
-				const hash = url.replace(".md", "");
-				return `<a href="#${hash}">${text}</a>`;
+				const hash = url.replace(".md", "").replace("./", "");
+				return `<a href="#/docs/${hash}">${text}</a>`;
 			}
 			return `<a href="${url}">${text}</a>`;
 		});

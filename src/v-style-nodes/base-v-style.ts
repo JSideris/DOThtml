@@ -3,6 +3,7 @@ import Watcher from "../reactivity/watcher";
 import cssProps from "../css/css-props";
 
 export default class BaseVStyle {
+	[key: string]: any;
 
 	// Used internally to indicate that this is the base style builder.
 	// Calling style functions on this object will create (and return) a new BaseVStyle, rather than extend this one.

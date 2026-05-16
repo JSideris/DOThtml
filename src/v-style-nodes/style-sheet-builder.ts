@@ -4,8 +4,13 @@ import { formatCssLength } from "../css/format-css-type";
 import Watcher from "../reactivity/watcher";
 import Binding from "../reactivity/binding";
 
+
+type StyleRule = 
+	| { type: "rule", selector: string, style: BaseVStyle }
+	| { type: "media", condition: string, builder: StyleSheetBuilder };
+
 export default class StyleSheetBuilder {
-	private rules: Array<{ selector: string, style: BaseVStyle }> = [];
+	private rules: Array<StyleRule> = [];
 
 	class(name: string, callback: (s: BaseVStyle) => void) {
 		return this.rule(`.${name}`, callback);
@@ -14,7 +19,14 @@ export default class StyleSheetBuilder {
 	rule(selector: string, callback: (s: BaseVStyle) => void) {
 		const style = new BaseVStyle();
 		callback(style);
-		this.rules.push({ selector, style });
+		this.rules.push({ type: "rule", selector, style });
+		return this;
+	}
+
+	media(condition: string, callback: (s: StyleSheetBuilder) => void) {
+		const builder = new StyleSheetBuilder();
+		callback(builder);
+		this.rules.push({ type: "media", condition, builder });
 		return this;
 	}
 
@@ -28,8 +40,12 @@ export default class StyleSheetBuilder {
 		return `var(${name})`;
 	}
 
-	toString() {
+	toString(indent: string = "") {
 		return this.rules.map(r => {
+			if (r.type === "media") {
+				return `${indent}@media ${r.condition} {\n${r.builder.toString(indent + "  ")}\n${indent}}`;
+			}
+
 			const props = r.style.getProps().map(p => {
 				const registered = cssProps[p.prop];
 				let cssProp = p.prop;
@@ -53,7 +69,7 @@ export default class StyleSheetBuilder {
 				}
 				return `${cssProp}: ${cssValue};`;
 			}).join(" ");
-			return `${r.selector} { ${props} }`;
+			return `${indent}${r.selector} { ${props} }`;
 		}).join("\n");
 	}
 

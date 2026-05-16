@@ -27,6 +27,6 @@ The Style builder is powerful and useful, but still not fully developed. Conside
 - Animations kind of broke when merging DOTcss in, and don't support the increased complexity which is now allowed.
 - All length properties take a single value. Two and four argument lengths (for things like margin) are not yet supported. 
 - A lot of CSS properties don't enforce proper typing and will allow any string. This is a WIP and will naturally get better over time.
-- CSS @ rules like @keyframes, @media, @font-face, etc are currently not supported because they are currently not configurable in JavaScript. A workaround that generates dynamic CSS is planned.
+- CSS @ rules like @keyframes, @font-face, etc are currently not supported because they are currently not configurable in JavaScript. A workaround that generates dynamic CSS is planned.
 
 - Support for header elements (including stylesheets) is planned.

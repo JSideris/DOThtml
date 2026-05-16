@@ -98,6 +98,40 @@ The `.v()` method is a convenient shortcut for referencing CSS variables within 
 
 This makes your style definitions cleaner and less error-prone.
 
+## Media Queries
+
+DOThtml supports native CSS media queries within the `stylize()` method using the `.media()` builder. This allows you to define responsive styles that are scoped to your component.
+
+```javascript
+class ResponsiveNavbar extends IDotComponent {
+  stylize(s) {
+    return s.class("navbar", n => n
+      .display("flex")
+      .heightPx(70)
+    ).media("screen and (max-width: 600px)", m => m
+      .class("navbar", n => n
+        .heightPx(50)
+        .padding("0px 20px")
+      )
+      .class("nav-links", l => l
+        .display("none")
+      )
+    );
+  }
+
+  build() {
+    return dot.nav({ class: "navbar" },
+      dot.div({ class: "nav-links" }, "...")
+    );
+  }
+}
+```
+
+Media queries in DOThtml are:
+- **Native**: They generate real CSS `@media` rules, so they are handled efficiently by the browser.
+- **Scoped**: Just like other styles in `stylize()`, they are scoped to the component's shadow root.
+- **Nested**: You can even nest media queries if needed.
+
 ## Global Reactive Variables
 
 DOThtml provides a global `dot.css` builder that is automatically bound to the document root (`<html>`). This is the recommended way to handle application-wide theming.
