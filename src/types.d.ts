@@ -5,6 +5,12 @@ declare module "dothtml-interfaces" {
 		computed<T>(getter: () => T): IWatcher<T>;
 		flushSync(): void;
 		mount(component: IDotComponent, props?: Record<string, any>): any;
+		currentPath: IWatcher<string>;
+		currentSearch: IWatcher<string>;
+		currentHash: IWatcher<string>;
+		navigate(path: string, replace?: boolean): void;
+		Router: any;
+		Link: any;
 	}
 
 	interface IDotDocument {
