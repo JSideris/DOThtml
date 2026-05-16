@@ -24,6 +24,27 @@ DOThtml's reactivity system goes beyond simple value tracking, offering powerful
 *   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Watcher or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
 *   **Runtime Prop Validation**: Define clear contracts for your components using static prop schemas. DOThtml validates types, required fields, and applies default values at runtime, helping you catch bugs early.
 
+### Component Prop Validation
+DOThtml allows you to define a contract for your components using a static `props` schema. This provides runtime safety and automatic default values.
+
+```javascript
+class MyComponent implements IDotComponent {
+    static props = {
+        title: { type: String, required: true },
+        count: { type: Number, default: 0 },
+        tags: { type: Array, default: () => ["new"] },
+        onAction: { type: Function }
+    };
+
+    build() {
+        return dot.h1(this.props.title)
+                  .p(`Count: ${this.props.count}`);
+    }
+}
+```
+
+When a parent passes a `Watcher` or `Binding` as a prop, DOThtml automatically unwraps the value for validation and re-validates whenever the reactive value changes.
+
 ### Advanced Event Handling
 DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.
 

@@ -9,6 +9,10 @@ export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
 		read?: (v: string)=>T;
 	}
 
+	get value(): Td {
+		return this._get();
+	}
+
 	_get(): Td{
 		
 		let v = this._transform?.display ? this._transform.display(this._source.value) : this._source.value as unknown as Td;

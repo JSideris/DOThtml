@@ -123,6 +123,8 @@ export class ComponentVdom extends Vdom{
 		// Unrender old children
 		this.childShadowVdom._unrender();
 
+		this.validateProps();
+
 		// Re-build
 		pushComponent(this);
 		try {
@@ -151,7 +153,11 @@ export class ComponentVdom extends Vdom{
 
 			// Apply default
 			if (value === undefined && rule.default !== undefined) {
-				value = typeof rule.default === "function" ? rule.default() : rule.default;
+				if (typeof rule.default === "function" && (rule.type === Object || rule.type === Array)) {
+					value = rule.default();
+				} else {
+					value = rule.default;
+				}
 				props[key] = value;
 			}
 
@@ -162,31 +168,25 @@ export class ComponentVdom extends Vdom{
 
 			// Extract value for validation if it's a Watcher or Binding
 			let valueToValidate = value;
-			if (value instanceof Watcher) {
+			if (value instanceof Watcher || value instanceof Binding) {
 				valueToValidate = value.value;
-			} else if (value instanceof Binding) {
-				valueToValidate = (value as any)._get();
 			}
 
-			// Check type (rudimentary)
-			if (valueToValidate !== undefined && rule.type) {
+			// Check type
+			if (valueToValidate !== undefined && valueToValidate !== null && rule.type) {
 				const actualType = typeof valueToValidate;
-				let expectedType: string;
-				if (rule.type === String) expectedType = "string";
-				else if (rule.type === Number) expectedType = "number";
-				else if (rule.type === Boolean) expectedType = "boolean";
-				else if (rule.type === Object) expectedType = "object";
-				else if (rule.type === Array) expectedType = "object"; // typeof [] is object
-				else expectedType = "unknown";
-
-				if (expectedType !== "unknown" && actualType !== expectedType) {
-					// Special check for Array
-					if (rule.type === Array && !Array.isArray(valueToValidate)) {
-						throw new Error(`[${componentName}] Prop "${key}" expected Array, but got ${actualType}.`);
-					}
-					if (rule.type !== Array) {
-						throw new Error(`[${componentName}] Prop "${key}" expected ${expectedType}, but got ${actualType}.`);
-					}
+				if (rule.type === String && actualType !== "string") {
+					throw new Error(`[${componentName}] Prop "${key}" expected String, but got ${actualType}.`);
+				} else if (rule.type === Number && actualType !== "number") {
+					throw new Error(`[${componentName}] Prop "${key}" expected Number, but got ${actualType}.`);
+				} else if (rule.type === Boolean && actualType !== "boolean") {
+					throw new Error(`[${componentName}] Prop "${key}" expected Boolean, but got ${actualType}.`);
+				} else if (rule.type === Function && actualType !== "function") {
+					throw new Error(`[${componentName}] Prop "${key}" expected Function, but got ${actualType}.`);
+				} else if (rule.type === Array && !Array.isArray(valueToValidate)) {
+					throw new Error(`[${componentName}] Prop "${key}" expected Array, but got ${actualType}.`);
+				} else if (rule.type === Object && (actualType !== "object" || Array.isArray(valueToValidate))) {
+					throw new Error(`[${componentName}] Prop "${key}" expected Object, but got ${Array.isArray(valueToValidate) ? "Array" : actualType}.`);
 				}
 			}
 
