@@ -141,4 +141,4 @@ class ThemeableComponent {
 }
 ```
 
-For more advanced styling options, including global styles and performance optimizations, see the [Styling](./styling.md) documentation.
+For more advanced styling options, including global styles, performance optimizations, and **testing tips**, see the [Styling](./styling.md) documentation.

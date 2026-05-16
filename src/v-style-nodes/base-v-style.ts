@@ -48,10 +48,9 @@ export default class BaseVStyle extends VStyle {
 
 // Generate fluent methods from cssProps.
 for (let key in cssProps) {
-	const prop = cssProps[key];
 	BaseVStyle.prototype[key] = function (value: any) {
 		// If it's a length property with a unit, we might want to handle it specially later.
 		// For now, just pass it through.
-		return this.setProp(prop.cssName, value);
+		return this.setProp(key, value);
 	};
 }

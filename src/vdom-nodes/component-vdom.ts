@@ -11,6 +11,7 @@ import Computed from "../reactivity/computed";
 import { pushComponent, popComponent } from "./component-context";
 import BaseVStyle from "../v-style-nodes/base-v-style";
 import StyleVNode from "../v-meta-nodes/style-v-node";
+import StyleSheetBuilder from "../v-style-nodes/style-sheet-builder";
 
 let tagId = 0x10000;
 
@@ -218,7 +219,12 @@ export class ComponentVdom extends Vdom{
 				styleTags = cachedStyles.styleTags;
 			} else {
 				// Constructed stylesheets.
-				let styles: Array<string>|string = this.component.stylize && this.component.stylize() || [];
+				const builder = new StyleSheetBuilder();
+				let styles: any = this.component.stylize && (this.component.stylize as any)(builder) || [];
+				if (styles === builder || (!styles && builder.hasRules())) {
+					styles = builder.toString();
+				}
+
 				if(typeof styles == "string") styles = [styles];
 				
 				if(styles){

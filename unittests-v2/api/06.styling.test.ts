@@ -141,6 +141,41 @@ describe("Component styles.", ()=>{
 		dot.flushSync();
 		expect(customEl.style.getPropertyValue("--host-color")).toBe("rgb(255, 255, 0)");
 	});
+
+	test("Fluent stylize builder.", ()=>{
+		class MyComp {
+			_?: FrameworkItems | undefined;
+			stylize(s: any): any { 
+				return s.class("inner", c => c
+					.color("rgb(255, 0, 0)")
+					.fontSizePx(20)
+				);
+			}
+			build(): IDotDocument {
+				return dot.div({class: "inner", id: "fluent-test"});
+			}
+		}
+
+		dot(document.body).mount(new MyComp() as any);
+		dot.flushSync();
+
+		let customEl = document.body.children[0];
+		let shadowRoot = customEl.shadowRoot;
+		expect(shadowRoot).not.toBeNull();
+
+		let stylesApplied = false;
+		if (shadowRoot!.adoptedStyleSheets && shadowRoot!.adoptedStyleSheets.length > 0) {
+			stylesApplied = true;
+		}
+		if (!stylesApplied) {
+			let styleTag = shadowRoot!.querySelector("style");
+			if (styleTag) {
+				stylesApplied = styleTag.innerHTML.includes(".inner") && styleTag.innerHTML.includes("color: rgb(255, 0, 0)");
+			}
+		}
+
+		expect(stylesApplied).toBe(true);
+	});
 });
 
 describe("Element styles.", ()=>{

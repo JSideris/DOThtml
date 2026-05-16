@@ -6,4 +6,9 @@ declare module "dothtml-interfaces" {
 		flushSync(): void;
 		mount(component: IDotComponent, props?: Record<string, any>): any;
 	}
+
+	interface IDotComponent {
+		stylize?(s?: any): string | string[] | any;
+		hostStyle?(s: any): void;
+	}
 }

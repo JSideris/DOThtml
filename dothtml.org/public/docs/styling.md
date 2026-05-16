@@ -158,3 +158,35 @@ DOThtml's styling system is built for performance:
 - **Deduplication**: `CSSStyleSheet` instances are cached based on their content. If multiple components or global registrations use the same CSS string, they will share the same underlying stylesheet object.
 - **Component Caching**: Component-level styles (from `stylize()`) are cached on the component's constructor, so they are only generated once.
 - **Reactive Batching**: Style updates via `Watchers` are batched by the scheduler to prevent layout thrashing.
+
+## Testing Styling
+
+When testing styling in environments like JSDOM, you may need to ensure that reactive updates are processed before making assertions.
+
+By default, DOThtml batches updates asynchronously. In your tests, you can use `dot.flushSync()` to force all pending updates to be applied immediately.
+
+```javascript
+test("reactive style update", () => {
+  const color = dot.watch("red");
+  dot(document.body).div().style(s => s.color(color));
+
+  color.value = "blue";
+  
+  // Force the style update to apply synchronously.
+  dot.flushSync();
+
+  expect(document.querySelector("div").style.color).toBe("blue");
+});
+```
+
+If you want all updates in a test suite to be synchronous by default, you can use `dot.setSync(true)`.
+
+```javascript
+beforeEach(() => {
+  dot.setSync(true);
+});
+
+afterEach(() => {
+  dot.setSync(false);
+});
+```
