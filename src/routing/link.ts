@@ -29,7 +29,7 @@ export const Link = dot.component(
 			const resolvedPath = dot.computed(() => this.getResolvedPath());
 
 			return dot.a({
-				href: resolvedPath,
+				hRef: resolvedPath,
 				class: dot.computed(() => {
 					const path = currentPath.value;
 					const target = resolvedPath.value;
@@ -42,7 +42,7 @@ export const Link = dot.component(
 				onClick: (e: MouseEvent) => {
 					// Only handle left clicks without modifier keys.
 					if (
-						e.button === 0 &&
+						(e.button === 0 || e.button === undefined) &&
 						!e.ctrlKey &&
 						!e.shiftKey &&
 						!e.altKey &&
@@ -51,7 +51,10 @@ export const Link = dot.component(
 						e.preventDefault();
 						navigate(resolvedPath.value);
 					}
+
+
 				}
+
 			}, this.props.label || this.slots?.default);
 		}
 	}

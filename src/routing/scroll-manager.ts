@@ -20,7 +20,7 @@ export function initScrollManager() {
 		});
 	}, { passive: true });
 
-	currentPath.watch((newPath) => {
+	currentPath.subscribe((newPath) => {
 		// Wait for the DOM to update
 		setTimeout(() => {
 			const hash = currentHash.value;

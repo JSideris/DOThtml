@@ -1,6 +1,8 @@
 import dot from "../dot";
 import { currentPath, previousPath, navigate } from "./state";
 import { IDotComponent } from "dothtml-interfaces";
+import { Vdom } from "../vdom-nodes/vdom";
+import { ContainerVdom } from "../vdom-nodes/container-vdom";
 
 export interface RouteDefinition {
 	path: string;
@@ -16,14 +18,14 @@ type AfterNavigationHook = (to: string, from: string) => void;
 
 const beforeHooks: NavigationGuard[] = [];
 const afterHooks: AfterNavigationHook[] = [];
-let globalRoutes: RouteDefinition[] = [];
+const globalRoutes = dot.watch<RouteDefinition[]>([]);
 
 export function setGlobalRoutes(routes: RouteDefinition[]) {
-	globalRoutes = routes;
+	globalRoutes.value = routes;
 }
 
 export function getGlobalRoutes() {
-	return globalRoutes;
+	return globalRoutes.value;
 }
 
 /**
@@ -112,46 +114,63 @@ export const Router = dot.component(
 		props: any;
 		private resolvedComponent = dot.watch<any>(null);
 		private lastPath = "";
+		private subId: number = -1;
+		private loaderCache = new Map<any, any>();
+
+		mounting() {
+			this.subId = currentPath.subscribe(() => {
+				(this as any)._?.cvdom.requestUpdate();
+			});
+		}
+
+		unmounting() {
+			currentPath._detachBinding(this.subId);
+		}
 
 		build(dot: any) {
 			setGlobalRoutes(this.props.routes);
-			return dot.div(dot.computed(() => {
-				const path = currentPath.value;
-				if (path === this.lastPath) return this.resolvedComponent.value;
-				this.lastPath = path;
-
-				const match = matchRoute(this.props.routes, path, this.props.basePath);
-				
-				if (!match) {
-					this.resolvedComponent.value = this.props.notFound || dot.div("404 - Not Found");
-					return this.resolvedComponent.value;
+			const path = currentPath.value;
+			
+			const proceed = (comp: any) => {
+				let title = match.route.title;
+				if (typeof title === "function") {
+					title = title(match.params);
+				}
+				if (title) {
+					document.title = title;
 				}
 
-				const proceed = (comp: any) => {
-					let title = match.route.title;
-					if (typeof title === "function") {
-						title = title(match.params);
-					}
-					if (title) {
-						document.title = title;
+				if (typeof comp === "function" && !comp.prototype?.build) {
+					// Potential lazy loader
+					if (this.loaderCache.has(comp)) {
+						this.resolvedComponent.value = this.loaderCache.get(comp);
+						afterHooks.forEach(h => h(path, previousPath.value));
+						return;
 					}
 
-					if (typeof comp === "function" && !comp.prototype?.build) {
-						// Potential lazy loader
-						const result = comp();
-						if (result instanceof Promise) {
-							result.then(m => {
-								this.resolvedComponent.value = m.default || m;
-								afterHooks.forEach(h => h(path, previousPath.value));
-							});
-							this.resolvedComponent.value = this.props.loading || dot.div("Loading...");
-							return;
-						}
-					}
-					this.resolvedComponent.value = comp;
-					afterHooks.forEach(h => h(path, previousPath.value));
-				};
+					const result = comp();
+					if (result instanceof Promise) {
+						result.then(m => {
+							const resolved = m.default || m;
+							this.loaderCache.set(comp, resolved);
+							this.resolvedComponent.value = resolved;
+							(this as any)._?.cvdom.requestUpdate();
+							afterHooks.forEach(h => h(path, previousPath.value));
+						});
 
+						this.resolvedComponent.value = this.props.loading || dot.div("Loading...");
+						return;
+					}
+				}
+				this.resolvedComponent.value = comp;
+				afterHooks.forEach(h => h(path, previousPath.value));
+			};
+
+			const match = matchRoute(this.props.routes, path, this.props.basePath);
+			
+			if (!match) {
+				this.resolvedComponent.value = this.props.notFound || dot.div("404 - Not Found");
+			} else {
 				const guards = [...beforeHooks];
 				if (match.route.beforeEnter) {
 					guards.push(match.route.beforeEnter);
@@ -174,25 +193,31 @@ export const Router = dot.component(
 					});
 				};
 
-				this.resolvedComponent.value = this.props.loading || dot.div("Loading...");
 				runGuards(0);
+			}
 
-				return this.resolvedComponent.value;
-			}).bindAs((C: any) => {
-				if (!C) return null;
-				
-				// Re-match to get params for the current path
-				const match = matchRoute(this.props.routes, currentPath.value, this.props.basePath);
-				
-				if (typeof C === "function" && C.prototype?.build) {
-					return dot.mount(new C(), { 
-						routeParams: match?.params,
-						basePath: match?.matchedPath 
-					});
-				}
-				
-				return C;
-			}));
+			const C = this.resolvedComponent.value;
+			if (!C) return dot.div();
+			
+			// Re-match to get params for the current path
+			const currentMatch = matchRoute(this.props.routes, currentPath.value, this.props.basePath);
+			
+			if (typeof C === "function" && C.prototype?.build) {
+				return dot.mount(new C(), { 
+					routeParams: currentMatch?.params,
+					basePath: currentMatch?.matchedPath 
+				});
+			}
+
+			if (typeof C === "object" && C.build) {
+				return dot.mount(C, {
+					routeParams: currentMatch?.params,
+					basePath: currentMatch?.matchedPath 
+				});
+			}
+			
+			if (C instanceof Vdom) return C;
+			return dot.div(C);
 		}
 	}
 );
@@ -203,4 +228,9 @@ export const Router = dot.component(
 
 (Router as any).afterEach = (hook: AfterNavigationHook) => {
 	afterHooks.push(hook);
+};
+
+(Router as any).clearHooks = () => {
+	beforeHooks.length = 0;
+	afterHooks.length = 0;
 };

@@ -55,6 +55,7 @@ export class ComponentVdom extends Vdom{
 		if(!component._){
 			(component._ as any) = {};
 		}
+		(component._ as any).cvdom = this;
 		(component._.refs as any) = {};
 		// (component._.props as any) = args[0] || {}; // TODO
 		// (component._.restyle as any) = ()=>{restyle(this)}; // TODO (not sure if this is needed - we don't have a separate builder (for now)).
