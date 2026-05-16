@@ -49,8 +49,8 @@ export default class MainCodeSample implements IDotComponent {
 		).media("screen and (max-width: 900px)", m => m
 			.class("code-sample-container", c => c
 				.flexDirection("column")
-				.paddingPx(30)
-				.gapPx(20)
+				.paddingPx(20)
+				.gapPx(15)
 			).class("counter-display", d => d
 				.fontSizePx(36)
 			)

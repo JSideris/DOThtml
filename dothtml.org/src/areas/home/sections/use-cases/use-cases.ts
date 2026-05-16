@@ -37,6 +37,14 @@ export default class UseCases implements IDotComponent {
 			.fontWeight(600)
 			.marginBottomPx(10)
 			.color(s.v("secondary"))
+		).media("screen and (max-width: 600px)", m => m
+			.class("use-cases-section", u => u
+				.gapPx(20)
+			).class("title", t => t
+				.fontSizePx(24)
+			).class("case-tile", c => c
+				.paddingPx(20)
+			)
 		);
 	}
 

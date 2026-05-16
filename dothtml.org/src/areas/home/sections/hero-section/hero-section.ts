@@ -49,8 +49,11 @@ export default class HeroSection implements IDotComponent {
 			.transform("translateY(-2px)")
 			.boxShadow(`0 5px 15px rgba(255, 152, 0, 0.3)`)
 		).media("screen and (max-width: 1000px)", m => m
-			.class("hero-main", hm => hm
+			.class("hero-section", h => h
+				.minHeightPx(400)
+			).class("hero-main", hm => hm
 				.flexDirection("column")
+				.gapPx(20)
 			).class("quickstart-pane", qp => qp
 				.widthP(100)
 			)

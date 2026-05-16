@@ -11,7 +11,8 @@ export default class QuickStartPart implements IDotComponent {
 			.border("1px solid rgba(255, 255, 255, 0.1)")
 			.borderRadiusPx(12)
 			.paddingPx(20)
-			.widthPx(450)
+			.widthP(100)
+			.maxWidthPx(450)
 			.boxShadow("0 20px 50px rgba(0, 0, 0, 0.5)")
 		).class("terminal-header", h => h
 			.display("flex")
@@ -28,7 +29,7 @@ export default class QuickStartPart implements IDotComponent {
 			.class("terminal-container", t => t
 				.widthP(100)
 				.maxWidthPx(450)
-				.paddingPx(15)
+				.paddingPx(10)
 			)
 		);
 	}

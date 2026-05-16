@@ -74,7 +74,7 @@ export default class Docs implements IDotComponent {
 		).media("screen and (max-width: 800px)", m => m
 			.class("docs-container", dc => dc
 				.flexDirection("column")
-				.paddingPx(80, 20, 20, 20)
+				.paddingPx(60, 10, 10, 10)
 			).class("sidebar", si => si
 				.widthP(100)
 				.position("static")

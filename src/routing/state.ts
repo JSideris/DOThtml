@@ -1,9 +1,44 @@
 import dot from "../dot";
 
-export const currentPath = dot.state(typeof window !== "undefined" ? window.location.pathname : "/");
-export const previousPath = dot.state(typeof window !== "undefined" ? window.location.pathname : "/");
-export const currentSearch = dot.state(typeof window !== "undefined" ? window.location.search : "");
-export const currentHash = dot.state(typeof window !== "undefined" ? window.location.hash : "");
+const getRouteInfo = () => {
+	if (typeof window === "undefined") return { path: "/", search: "", hash: "" };
+	
+	let path = window.location.pathname;
+	let search = window.location.search;
+	let hash = window.location.hash;
+
+	if (hash.startsWith("#/")) {
+		const hashContent = hash.substring(1); // e.g., "/docs?id=123#section1"
+		
+		// Find where the path ends
+		const firstMark = hashContent.search(/[?#]/);
+		if (firstMark === -1) {
+			path = hashContent;
+			search = "";
+			hash = "";
+		} else {
+			path = hashContent.substring(0, firstMark);
+			const remainder = hashContent.substring(firstMark);
+			
+			const hashMark = remainder.indexOf("#");
+			if (hashMark === -1) {
+				search = remainder;
+				hash = "";
+			} else {
+				search = remainder.substring(0, hashMark);
+				hash = remainder.substring(hashMark);
+			}
+		}
+	}
+
+	return { path, search, hash };
+};
+
+const initialRoute = getRouteInfo();
+export const currentPath = dot.state(initialRoute.path);
+export const previousPath = dot.state(initialRoute.path);
+export const currentSearch = dot.state(initialRoute.search);
+export const currentHash = dot.state(initialRoute.hash);
 
 /**
  * Navigates to a new path programmatically.
@@ -13,7 +48,7 @@ export const currentHash = dot.state(typeof window !== "undefined" ? window.loca
 export function navigate(path: string, replace: boolean = false) {
 	if (typeof window === "undefined") return;
 	
-	previousPath.value = window.location.pathname;
+	previousPath.value = currentPath.value;
 	
 	if (replace) {
 		window.history.replaceState({}, "", path);
@@ -21,9 +56,10 @@ export function navigate(path: string, replace: boolean = false) {
 		window.history.pushState({}, "", path);
 	}
 	
-	currentPath.value = window.location.pathname;
-	currentSearch.value = window.location.search;
-	currentHash.value = window.location.hash;
+	const info = getRouteInfo();
+	currentPath.value = info.path;
+	currentSearch.value = info.search;
+	currentHash.value = info.hash;
 }
 
 /**
@@ -53,10 +89,14 @@ export function useHash() {
 
 // Keep the reactive state in sync with browser back/forward buttons.
 if (typeof window !== "undefined") {
-	window.addEventListener("popstate", () => {
+	const updateState = () => {
+		const info = getRouteInfo();
 		previousPath.value = currentPath.value;
-		currentPath.value = window.location.pathname;
-		currentSearch.value = window.location.search;
-		currentHash.value = window.location.hash;
-	});
+		currentPath.value = info.path;
+		currentSearch.value = info.search;
+		currentHash.value = info.hash;
+	};
+
+	window.addEventListener("popstate", updateState);
+	window.addEventListener("hashchange", updateState);
 }

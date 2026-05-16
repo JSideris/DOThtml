@@ -89,7 +89,9 @@ export default class LargeLogoPart implements IDotComponent {
 			.fontWeight(300)
 			.letterSpacingPx(2)
 		).media("screen and (max-width: 1000px)", m => m
-			.class("logo-main", lm => lm
+			.class("logo-container", c => c
+				.paddingPx(20)
+			).class("logo-main", lm => lm
 				.fontSizePx(80)
 			).class("tagline", tl => tl
 				.fontSizePx(18)

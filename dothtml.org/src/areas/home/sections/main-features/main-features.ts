@@ -44,9 +44,9 @@ export default class MainFeatures implements IDotComponent {
 		).media("screen and (max-width: 600px)", m => m
 			.class("features-grid", g => g
 				.gridTemplateColumns("1fr")
-				.gapPx(20)
+				.gapPx(15)
 			).class("feature-card", c => c
-				.paddingPx(30)
+				.paddingPx(20)
 			)
 		);
 	}

@@ -32,7 +32,12 @@ export const Link = dot.component(
 				hRef: resolvedPath,
 				class: dot.computed(() => {
 					const path = currentPath.value;
-					const target = resolvedPath.value;
+					let target = resolvedPath.value;
+					if (target.startsWith("#/")) {
+						target = target.substring(1).split(/[?#]/)[0];
+					} else {
+						target = target.split(/[?#]/)[0];
+					}
 					const isActive = this.props.exact 
 						? path === target 
 						: path.startsWith(target);

@@ -23,8 +23,8 @@ export default class GetDot implements IDotComponent {
 			.color(s.v("primary"))
 		).media("screen and (max-width: 600px)", m => m
 			.class("get-dot-section", g => g
-				.paddingPx(40, 20)
-				.gapPx(20)
+				.paddingPx(30, 15)
+				.gapPx(15)
 			).class("title", t => t
 				.fontSizePx(24)
 			)

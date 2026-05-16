@@ -24,15 +24,15 @@ dot.css.variable("bg", theme.background)
 
 dot.useGlobalStyles(`
 	:host {
-		--bg: ${dot.css.v("bg")};
-		--surface: ${dot.css.v("surface")};
-		--surface-light: ${dot.css.v("surface-light")};
-		--primary: ${dot.css.v("primary")};
-		--secondary: ${dot.css.v("secondary")};
-		--text: ${dot.css.v("text")};
-		--text-dim: ${dot.css.v("text-dim")};
-		--glass-bg: ${dot.css.v("glass-bg")};
-		--glass-border: ${dot.css.v("glass-border")};
+		--bg: ${theme.background.value};
+		--surface: ${theme.surface.value};
+		--surface-light: ${theme.surfaceLight.value};
+		--primary: ${theme.primary.value};
+		--secondary: ${theme.secondary.value};
+		--text: ${theme.text.value};
+		--text-dim: ${theme.textDim.value};
+		--glass-bg: ${theme.glassBackground.value};
+		--glass-border: ${theme.glassBorder.value};
 	}
 
 	* {

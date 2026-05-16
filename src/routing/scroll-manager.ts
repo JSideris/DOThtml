@@ -14,7 +14,7 @@ export function initScrollManager() {
 	// of the *previous* page.
 	
 	window.addEventListener("scroll", () => {
-		scrollPositions.set(window.location.pathname, {
+		scrollPositions.set(currentPath.value, {
 			x: window.pageXOffset,
 			y: window.pageYOffset
 		});
