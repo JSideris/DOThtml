@@ -1,4 +1,4 @@
-import dot from "./dot";
+import dot from "../dot";
 
 export const currentPath = dot.watch(typeof window !== "undefined" ? window.location.pathname : "/");
 export const previousPath = dot.watch(typeof window !== "undefined" ? window.location.pathname : "/");

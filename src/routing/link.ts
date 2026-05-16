@@ -1,8 +1,8 @@
-import dot from "./dot";
-import { currentPath, navigate } from "./routing";
+import dot from "../dot";
+import { currentPath, navigate } from "./state";
 import { IDotComponent } from "dothtml-interfaces";
 import { getGlobalRoutes } from "./router";
-import { generatePath } from "./routing-helpers";
+import { generatePath } from "./helpers";
 
 export const Link = dot.component(
 	class implements IDotComponent {

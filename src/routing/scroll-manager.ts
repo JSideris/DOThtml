@@ -1,4 +1,4 @@
-import { currentPath, currentHash } from "./routing";
+import { currentPath, currentHash } from "./state";
 
 const scrollPositions = new Map<string, { x: number, y: number }>();
 

@@ -3,10 +3,17 @@
 // export * from "dothtml-interfaces";
 
 import dot from "./dot";
-import * as routing from "./routing";
-import { Router } from "./router";
-import { Link } from "./link";
-import { initScrollManager } from "./scroll-manager";
+import { 
+	currentPath, 
+	currentSearch, 
+	currentHash, 
+	navigate, 
+	useQueryParams, 
+	useHash, 
+	Router, 
+	Link 
+} from "./routing";
+import { initScrollManager } from "./routing/scroll-manager";
 
 dot.version = "6.0.0";
 
@@ -14,14 +21,15 @@ dot.version = "6.0.0";
 initScrollManager();
 
 // Attach routing features to dot.
-(dot as any).currentPath = routing.currentPath;
-(dot as any).currentSearch = routing.currentSearch;
-(dot as any).currentHash = routing.currentHash;
-(dot as any).navigate = routing.navigate;
-(dot as any).useQueryParams = routing.useQueryParams;
-(dot as any).useHash = routing.useHash;
+(dot as any).currentPath = currentPath;
+(dot as any).currentSearch = currentSearch;
+(dot as any).currentHash = currentHash;
+(dot as any).navigate = navigate;
+(dot as any).useQueryParams = useQueryParams;
+(dot as any).useHash = useHash;
 (dot as any).Router = Router;
 (dot as any).Link = Link;
+
 
 // Extend the Window interface to include your dot property
 declare global {
@@ -34,5 +42,7 @@ declare global {
 window.dot = dot;
 document["_dotId"] = "default";
 
-export { dot, Router, Link };
+export { dot };
+export * from "./routing";
+
 

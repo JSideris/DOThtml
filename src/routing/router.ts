@@ -1,5 +1,5 @@
-import dot from "./dot";
-import { currentPath, previousPath, navigate } from "./routing";
+import dot from "../dot";
+import { currentPath, previousPath, navigate } from "./state";
 import { IDotComponent } from "dothtml-interfaces";
 
 export interface RouteDefinition {
