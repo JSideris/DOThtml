@@ -1,156 +1,31 @@
-### A Library, Not a Framework
+# Main Features & Overview
+
+DOThtml is a lightweight, reactive UI engine designed for both simple drop-in widgets and full-scale web applications. This page provides a high-level overview of the framework's core capabilities.
+
+## A Library, Not a Framework
 Unlike other tools that demand you build your entire app around them, DOThtml is designed to be dropped into **any** project. 
 
 *   **Zero Core Dependencies**: A ~20kb footprint that won't bloat your project.
 *   **Architectural Freedom**: Use it for your entire UI, or just for a single complex widget in a legacy app.
 *   **Shadow DOM Native**: Built-in encapsulation ensures your components work perfectly regardless of the host environment.
 
-### A Full-Scale Framework
-While it excels as a drop-in library, DOThtml is also a powerful, full-featured framework for building entire web applications from scratch.
+## Core Capabilities
 
-*   **Component-Based**: Build complex UIs from small, reusable pieces.
-*   **Reactive State**: Data-driven updates that just work.
-*   **Strongly Typed**: Built with TypeScript for maximum developer productivity.
-*   **Built-in Routing**: Everything you need for a modern SPA.
-*   **Update Batching**: High-performance rendering that groups multiple state changes into a single DOM update cycle.
-*   **Reactive Ref System**: Direct access to DOM elements and component instances with built-in reactivity and method proxying.
-*   **Computed State**: Automatically derive values from other reactive sources.
-*   **Reactive Props**: Components that automatically re-render when their inputs change.
-*   **Centralized Stores**: Manage shared application state with a structured, reactive API that eliminates prop drilling.
-*   **Fluent & Reactive Styling**: A type-safe, batched styling system that integrates directly with reactivity.
+### [Component-Based Architecture](./components.md)
+Build complex UIs from small, reusable, and encapsulated pieces. DOThtml components support props, validation, and lifecycle hooks.
 
-### Advanced Reactivity: Computed State, Reactive Props & Stores
-DOThtml's reactivity system goes beyond simple value tracking, offering powerful tools for managing complex state dependencies.
+### [Reactivity & Signals](./reactivity.md)
+DOThtml uses a powerful, low-salt reactivity system based on **Signals**. Data-driven updates happen automatically and efficiently without a virtual DOM.
 
-*   **Computed Signals**: Create signals that automatically derive their value from other signals. They track their own dependencies and only re-evaluate when necessary.
-*   **Centralized Stores**: Use `dot.store` to create global or local state containers. Stores provide a clean way to organize state, getters, and actions, making it easy to share data across your entire application.
-*   **Automatic Resource Management**: Derived state and local stores created within components are automatically disposed of when the component is unmounted, ensuring zero memory leaks.
-*   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Signal or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
-*   **Runtime Prop Validation**: Define clear contracts for your components using static prop schemas. DOThtml validates types, required fields, and applies default values at runtime, helping you catch bugs early.
-
-### State Management with Stores
+### [State Management with Stores](./stores.md)
 For larger applications, DOThtml provides a built-in state management solution called **Stores**. Stores are centralized containers for state, logic, and mutations.
 
-```javascript
-const useUserStore = dot.store({
-    id: "user",
-    state: () => ({
-        name: "Guest",
-        isLoggedIn: false
-    }),
-    actions: {
-        login(name) {
-            this.name.value = name;
-            this.isLoggedIn.value = true;
-        }
-    }
-});
-```
+### [Fluent & Reactive Styling](./styling.md)
+A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables and media queries.
 
-By using stores, you can avoid passing state through multiple layers of components and keep your application logic organized and testable. See the [Stores Documentation](./stores.md) for more details.
+### [Performance & Advanced Features](./detailed-features.md)
+DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.
 
-### Component Prop Validation
-DOThtml allows you to define a contract for your components using a static `props` schema. This provides runtime safety and automatic default values.
+## Next Steps
 
-```javascript
-class MyComponent implements IDotComponent {
-    static props = {
-        title: { type: String, required: true },
-        count: { type: Number, default: 0 },
-        tags: { type: Array, default: () => ["new"] },
-        onAction: { type: Function }
-    };
-
-    build() {
-        return dot.h1(this.props.title)
-                  .p(`Count: ${this.props.count}`);
-    }
-}
-```
-
-When a parent passes a `Signal` or `Binding` as a prop, DOThtml automatically unwraps the value for validation and re-validates whenever the reactive value changes.
-
-### Advanced Event Handling
-DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.
-
-*   **Synthetic Events**: All event handlers receive a `SyntheticEvent` object, ensuring consistent behavior across different browsers.
-*   **Event Modifiers**: Use dot-notation to apply common event patterns fluently:
-    *   `.stop`: Calls `event.stopPropagation()`.
-    *   `.prevent`: Calls `event.preventDefault()`.
-    *   `.once`: Ensures the event handler only runs once.
-    *   `.self`: Only triggers if the event was dispatched by the element itself, not a child.
-*   **Event Delegation**: For maximum performance, DOThtml uses a single event listener at the document root for each event type. This reduces memory overhead and improves performance when rendering large lists of interactive elements.
-*   **Custom Component Events**: Components can emit custom events that parents can listen to using declarative attributes or fluent syntax.
-
-Example:
-```javascript
-// Inside a component
-this.emit("myEvent", { data: 123 });
-
-// Parent listening via mount
-dot.mount(new MyComponent(), { 
-    onMyEvent: (e) => console.log(e.detail.data) 
-});
-
-// Parent listening via fluent API
-dot.mount(new MyComponent()).on("myEvent", (e) => ...);
-```
-
-Example of modifiers:
-```javascript
-dot.button({ 
-    "onClick.stop.prevent": (e) => console.log("Clicked!") 
-}, "Click Me")
-```
-
-### Fluent & Reactive Styling
-DOThtml's styling system is built for both developer productivity and high performance.
-
-*   **Fluent Builder**: Use a type-safe API to build styles. No more string concatenation or magic object keys.
-*   **Native Reactivity**: Pass `Signal` objects directly to style methods. The UI updates automatically when the data changes.
-*   **Automatic Batching**: Style updates are batched by the scheduler, ensuring that multiple property changes result in a single DOM write.
-*   **CSS Variables**: Built-in support for custom properties, allowing for high-performance theme updates and complex component styling.
-
-Example:
-```javascript
-const size = dot.state(20);
-dot.div("Growing Text")
-  .style(s => s.fontSizePx(size).color("blue"));
-```
-
-### Performance: Update Batching, Keyed Diffing & Concurrent Rendering
-DOThtml features an intelligent update scheduler, a sophisticated keyed diffing algorithm, and concurrent rendering capabilities to ensure maximum performance and responsiveness.
-
-#### Update Batching
-Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
-
-#### Keyed Diffing
-When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. By providing a `key` property in your data, DOThtml can:
-*   **Reuse DOM Nodes**: Instead of re-rendering an entire item, DOThtml reuses the existing DOM nodes and only updates the content that changed.
-*   **Efficient Reordering**: If items in your list move, DOThtml moves the corresponding DOM nodes using `insertBefore` instead of unrendering and re-rendering them.
-*   **Minimal DOM Operations**: The reconciliation algorithm ensures that the minimum number of DOM operations are performed to reach the desired state.
-
-#### Concurrent Rendering
-For large updates (like rendering long lists), DOThtml uses concurrent rendering to keep the UI responsive. It breaks down large rendering tasks into small chunks and yields control back to the browser every 5ms. This allows the browser to process high-priority events like typing or clicks even while a large update is in progress.
-
-You can also specify the priority of an update using the `setValue` method:
-
-```javascript
-import { Priority } from "dothtml";
-
-const list = dot.state([]);
-// This update will be treated as low priority and will yield to user input.
-list.setValue(largeDataSet, Priority.Background);
-```
-
-If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
-
-```javascript
-const name = dot.state("Josh");
-dot.div(name);
-
-name.value = "Joshua";
-// DOM is not updated yet.
-dot.flushSync();
-// DOM is now updated.
-```
+Now that you have an overview of what DOThtml can do, we recommend diving into the **[Components](./components.md)** guide to start building your first UI.

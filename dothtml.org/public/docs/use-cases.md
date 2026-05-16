@@ -1,4 +1,4 @@
-### When to choose DOThtml?
+# Use Cases
 
 DOThtml is uniquely suited for scenarios where you need modern UI capabilities without the overhead or architectural constraints of a traditional framework.
 

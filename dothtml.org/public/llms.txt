@@ -3,11 +3,11 @@
 
 ## Core Documentation
 - [Quick Start & Installation](https://dothtml.org/docs/quick-start.md): Get up and running with DOThtml in minutes.
-- [Main Features](https://dothtml.org/docs/main-features.md): Overview of components, reactivity, and event handling.
+- [Main Features](https://dothtml.org/docs/main-features.md): High-level overview of DOThtml's core capabilities and philosophy.
 - [Use Cases](https://dothtml.org/docs/use-cases.md): When to choose DOThtml for your project.
 
 ## API & Features
-- [Components](https://dothtml.org/docs/components.md): Building blocks, props, validation, and lifecycle hooks.
+- [Components](https://dothtml.org/docs/components.md): Building blocks, props, validation, lifecycle hooks, and advanced event handling.
 - [Reactivity](https://dothtml.org/docs/reactivity.md): Signals, computed state, and reactive bindings.
 - [Stores](https://dothtml.org/docs/stores.md): Centralized state management for enterprise-scale applications.
 - [Refs](https://dothtml.org/docs/refs.md): Direct access to DOM elements and component instances.
@@ -15,9 +15,8 @@
 - [Routing](https://dothtml.org/docs/routing.md): Reactive routing with navigation guards and lazy loading.
 
 ## Deep Dives
-- [Detailed Features](https://dothtml.org/docs/detailed-features.md): Comprehensive breakdown of the framework's capabilities.
+- [Detailed Features](https://dothtml.org/docs/detailed-features.md): Technical deep-dive into performance internals, update batching, and advanced APIs.
 - [Hero Features](https://dothtml.org/docs/hero-features.md): Key highlights and unique selling points.
-- [Learn More](https://dothtml.org/docs/learn-more.md): Additional resources for mastering DOThtml.
 
 ## Community
-- [Contribute](https://dothtml.org/docs/contribute.md): Information on how to report bugs and contribute to the project.
+- [Learn More & Contribute](https://dothtml.org/docs/learn-more.md): Additional resources and information on how to contribute to the project.

@@ -17,6 +17,8 @@ export default class Home implements IDotComponent {
 			.display("flex")
 			.flexDirection("column")
 			.gapPx(100)
+			.position("relative")
+			.zIndex(1)
 		).media("screen and (max-width: 800px)", m => m
 			.class("home-container", h => h
 				.paddingPx(60, 10, 20, 10)

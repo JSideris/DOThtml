@@ -1,6 +1,6 @@
-# Quick Start
+# Quick Start & Installation
 
-### Start Something New in TypeScript
+## Start Something New in TypeScript
 
 ```bash
 npm i -g create-dothtml-app
@@ -9,7 +9,7 @@ cd MyApp
 npm start
 ```
 
-### Add DOThtml to an existing Node.js Project
+## Add DOThtml to an existing Node.js Project
 
 DOThtml is available via NPM.
 

@@ -23,30 +23,10 @@ dot.css.variable("bg", theme.background)
 	.variable("glass-border", theme.glassBorder);
 
 dot.useGlobalStyles(`
-	:host {
-		--bg: ${theme.background.value};
-		--surface: ${theme.surface.value};
-		--surface-light: ${theme.surfaceLight.value};
-		--primary: ${theme.primary.value};
-		--secondary: ${theme.secondary.value};
-		--text: ${theme.text.value};
-		--text-dim: ${theme.textDim.value};
-		--glass-bg: ${theme.glassBackground.value};
-		--glass-border: ${theme.glassBorder.value};
-	}
-
 	* {
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
-	}
-
-	body {
-		background-color: var(--bg);
-		color: var(--text);
-		font-family: 'Inter', sans-serif;
-		line-height: 1.6;
-		overflow-x: hidden;
 	}
 
 	code, pre {
@@ -68,6 +48,21 @@ dot.useGlobalStyles(`
 		backdrop-filter: blur(12px);
 		border: 1px solid var(--glass-border);
 		border-radius: 12px;
+	}
+`);
+
+dot.useStyles(document, `
+	html {
+		background-color: ${theme.background.value};
+	}
+	body {
+		background-color: transparent;
+		color: var(--text);
+		font-family: 'Inter', sans-serif;
+		line-height: 1.6;
+		overflow-x: hidden;
+		margin: 0;
+		padding: 0;
 	}
 `);
 

@@ -20,8 +20,7 @@ export default class Docs implements IDotComponent {
 		{ id: "routing", label: "Routing" },
 		{ id: "detailed-features", label: "Detailed Features" },
 		{ id: "hero-features", label: "Hero Features" },
-		{ id: "learn-more", label: "Learn More" },
-		{ id: "contribute", label: "Contribute" }
+		{ id: "learn-more", label: "Learn More & Contribute" }
 	];
 
 	stylize(s: any) {
@@ -32,6 +31,8 @@ export default class Docs implements IDotComponent {
 			.maxWidthPx(1400)
 			.marginPx(0, "auto")
 			.gapPx(40)
+			.position("relative")
+			.zIndex(1)
 		).class("sidebar", si => si
 			.widthPx(280)
 			.flexShrink(0)
