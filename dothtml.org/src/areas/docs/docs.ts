@@ -10,7 +10,6 @@ export default class Docs implements IDotComponent {
 
 	private docs = [
 		{ id: "quick-start", label: "Quick Start" },
-		{ id: "get-dot", label: "Installation" },
 		{ id: "main-features", label: "Main Features" },
 		{ id: "use-cases", label: "Use Cases" },
 		{ id: "components", label: "Components" },
@@ -35,6 +34,7 @@ export default class Docs implements IDotComponent {
 			.gapPx(40)
 		).class("sidebar", si => si
 			.widthPx(280)
+			.flexShrink(0)
 			.position("sticky")
 			.topPx(100)
 			.height("fit-content")
@@ -67,6 +67,7 @@ export default class Docs implements IDotComponent {
 			.fontWeight(600)
 		).class("docs-content", co => co
 			.flex(1)
+			.minWidth(0)
 			.backgroundColor("rgba(255, 255, 255, 0.01)")
 			.paddingPx(40)
 			.borderRadiusPx(12)

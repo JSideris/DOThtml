@@ -51,6 +51,14 @@ export default class MarkdownViewer implements IDotComponent {
 			.paddingBottomPx(10)
 		).class("markdown-body p", p => p
 			.marginBottomPx(15)
+		).class("markdown-body ul", l => l
+			.paddingLeftPx(25)
+			.marginBottomPx(15)
+		).class("markdown-body ol", l => l
+			.paddingLeftPx(25)
+			.marginBottomPx(15)
+		).class("markdown-body li", l => l
+			.marginBottomPx(5)
 		).class("markdown-body pre", p => p
 			.backgroundColor("#0d0d0d")
 			.paddingPx(20)

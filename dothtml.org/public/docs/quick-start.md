@@ -1,3 +1,5 @@
+# Quick Start
+
 ### Start Something New in TypeScript
 
 ```bash
@@ -8,6 +10,8 @@ npm start
 ```
 
 ### Add DOThtml to an existing Node.js Project
+
+DOThtml is available via NPM.
 
 ```bash
 npm i dothtml

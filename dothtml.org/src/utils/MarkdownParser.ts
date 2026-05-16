@@ -145,6 +145,7 @@ export default class MarkdownParser {
 		const lines = html.split("\n");
 		const processedLines: string[] = [];
 		const listStack: { indent: number; type: string }[] = [];
+		let liOpen = false;
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
@@ -155,41 +156,68 @@ export default class MarkdownParser {
 				const type = liMatch[2];
 				const content = liMatch[3];
 
-				// Close nested lists that have higher indentation
-				while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
-					const closed = listStack.pop()!;
-					processedLines.push(`${" ".repeat(closed.indent)}</${closed.type}>`);
-				}
-
-				// Open new nested list or switch type
-				if (listStack.length === 0 || listStack[listStack.length - 1].indent < indent) {
+				if (listStack.length > 0 && indent > listStack[listStack.length - 1].indent) {
+					// Nesting: Open new list inside the current LI
 					listStack.push({ indent, type });
 					processedLines.push(`${" ".repeat(indent)}<${type}>`);
-				} else if (listStack[listStack.length - 1].type !== type) {
-					// Switch type at same indent level
-					const closed = listStack.pop()!;
-					processedLines.push(`${" ".repeat(closed.indent)}</${closed.type}>`);
-					listStack.push({ indent, type });
-					processedLines.push(`${" ".repeat(indent)}<${type}>`);
-				}
+					processedLines.push(`${" ".repeat(indent)}<li>${content}`);
+					liOpen = true;
+				} else {
+					// Not nesting: Close previous items/lists
+					if (liOpen) {
+						processedLines.push(`${" ".repeat(listStack[listStack.length - 1].indent)}</li>`);
+						liOpen = false;
+					}
 
-				processedLines.push(`${" ".repeat(indent)}<li>${content}</li>`);
+					while (listStack.length > 0 && indent < listStack[listStack.length - 1].indent) {
+						const closed = listStack.pop()!;
+						processedLines.push(`${" ".repeat(closed.indent)}</${closed.type}>`);
+						if (listStack.length > 0) {
+							processedLines.push(`${" ".repeat(listStack[listStack.length - 1].indent)}</li>`);
+						}
+					}
+
+					if (listStack.length === 0 || listStack[listStack.length - 1].type !== type || indent !== listStack[listStack.length - 1].indent) {
+						// New list level or type change
+						if (listStack.length > 0 && indent === listStack[listStack.length - 1].indent) {
+							const closed = listStack.pop()!;
+							processedLines.push(`${" ".repeat(closed.indent)}</${closed.type}>`);
+						}
+						listStack.push({ indent, type });
+						processedLines.push(`${" ".repeat(indent)}<${type}>`);
+					}
+
+					processedLines.push(`${" ".repeat(indent)}<li>${content}`);
+					liOpen = true;
+				}
 			} else if (line.trim() === "" && listStack.length > 0) {
-				// Keep empty lines between list items without closing the list
 				processedLines.push(line);
 			} else {
-				// Not a list item, close all open lists
+				// Not a list item, close everything
+				if (liOpen) {
+					processedLines.push(`${" ".repeat(listStack[listStack.length - 1].indent)}</li>`);
+					liOpen = false;
+				}
 				while (listStack.length > 0) {
 					const closed = listStack.pop()!;
 					processedLines.push(`${" ".repeat(closed.indent)}</${closed.type}>`);
+					if (listStack.length > 0) {
+						processedLines.push(`${" ".repeat(listStack[listStack.length - 1].indent)}</li>`);
+					}
 				}
 				processedLines.push(line);
 			}
 		}
-		// Close any remaining lists
+
+		if (liOpen) {
+			processedLines.push(`${" ".repeat(listStack[listStack.length - 1].indent)}</li>`);
+		}
 		while (listStack.length > 0) {
 			const closed = listStack.pop()!;
 			processedLines.push(`${" ".repeat(closed.indent)}</${closed.type}>`);
+			if (listStack.length > 0) {
+				processedLines.push(`${" ".repeat(listStack[listStack.length - 1].indent)}</li>`);
+			}
 		}
 		html = processedLines.join("\n");
 
