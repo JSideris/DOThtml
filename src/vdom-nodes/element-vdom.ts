@@ -8,6 +8,7 @@ import { Vdom } from "./vdom";
 import { AttributeValueType } from "./vdom-types";
 import Binding from "../reactivity/binding";
 import ReactiveAttr from "../reactivity/reactive-attr";
+import BaseVStyle from "../v-style-nodes/base-v-style";
 import { IRef } from "dothtml-interfaces/src/bindings/i-ref";
 import Ref from "../reactivity/ref";
 import SyntheticEvent from "../events/synthetic-event";
@@ -125,12 +126,24 @@ export default class ElementVdom extends Vdom{
 
 		attr = (attr ?? "").toLowerCase();
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Watcher)){
+		const oldVal = this.attributes[attr];
+		if (oldVal instanceof StyleVNode) {
+			oldVal.unrender();
+			const idx = this.styleVNodes.indexOf(oldVal);
+			if (idx !== -1) this.styleVNodes.splice(idx, 1);
+		}
+		if (oldVal instanceof AttributeVNode) {
+			oldVal.unrender();
+			const idx = this.attrVNodes.indexOf(oldVal);
+			if (idx !== -1) this.attrVNodes.splice(idx, 1);
+		}
+
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Watcher || value instanceof BaseVStyle)){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){
 				case "style": {
-					value = new StyleVNode(value);
+					value = new StyleVNode(value as IDotCss);
 					break;
 				}
 				case "ref": {
@@ -143,6 +156,10 @@ export default class ElementVdom extends Vdom{
 					break;
 				}
 			}
+		}
+
+		if (value instanceof BaseVStyle && attr === "style") {
+			value = new StyleVNode(value);
 		}
 
 		this.attributes[attr] = value;
@@ -203,11 +220,11 @@ export default class ElementVdom extends Vdom{
 		// }
 		else if(value instanceof AttributeVNode){
 			value.render(node);
-
+			this.attrVNodes.push(value);
 		}
 		else if(value instanceof StyleVNode){
 			value.render(node);
-
+			this.styleVNodes.push(value);
 		}
 		else{
 			// TODO: 

@@ -74,3 +74,18 @@ dot.mount(new MyComponent(), { title: title });
 
 title.value = "New Title"; // MyComponent re-renders automatically.
 ```
+
+## Reactive Styles
+
+Reactivity in DOThtml extends to styling. You can pass `Watcher` or `Binding` objects directly to the fluent style builder. This allows for high-performance, granular updates to an element's appearance without re-rendering the entire component.
+
+```javascript
+const opacity = dot.watch(1);
+dot.div("I can fade")
+  .style(s => s.opacity(opacity));
+
+// Later...
+opacity.value = 0.5; // Updates the element's opacity in the DOM.
+```
+
+For more details on reactive styling, including batching and CSS variables, see the [Styling](./styling.md) documentation.

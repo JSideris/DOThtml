@@ -15,6 +15,7 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 *   **Update Batching**: High-performance rendering that groups multiple state changes into a single DOM update cycle.
 *   **Computed State**: Automatically derive values from other reactive sources.
 *   **Reactive Props**: Components that automatically re-render when their inputs change.
+*   **Fluent & Reactive Styling**: A type-safe, batched styling system that integrates directly with reactivity.
 
 ### Advanced Reactivity: Computed State & Reactive Props
 DOThtml's reactivity system goes beyond simple value tracking, offering powerful tools for managing complex state dependencies.
@@ -76,6 +77,21 @@ Example of modifiers:
 dot.button({ 
     "onClick.stop.prevent": (e) => console.log("Clicked!") 
 }, "Click Me")
+```
+
+### Fluent & Reactive Styling
+DOThtml's styling system is built for both developer productivity and high performance.
+
+*   **Fluent Builder**: Use a type-safe API to build styles. No more string concatenation or magic object keys.
+*   **Native Reactivity**: Pass `Watcher` objects directly to style methods. The UI updates automatically when the data changes.
+*   **Automatic Batching**: Style updates are batched by the scheduler, ensuring that multiple property changes result in a single DOM write.
+*   **CSS Variables**: Built-in support for custom properties, allowing for high-performance theme updates and complex component styling.
+
+Example:
+```javascript
+const size = dot.watch(20);
+dot.div("Growing Text")
+  .style(s => s.fontSizePx(size).color("blue"));
 ```
 
 ### Performance: Update Batching, Keyed Diffing & Concurrent Rendering

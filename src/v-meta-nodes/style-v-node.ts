@@ -6,46 +6,56 @@ import FilterVStyle from "../v-style-nodes/filter-v-style";
 import TransformVStyle from "../v-style-nodes/transform-v-style";
 import { formatCssLength } from "../css/format-css-type";
 import Binding from "../reactivity/binding";
+import BaseVStyle from "../v-style-nodes/base-v-style";
+import { scheduler } from "../reactivity/scheduler";
+import { Priority } from "../reactivity/priority";
 
-// TODO: Don't forget that this needs to support both elements and css targets.
-
-/**
- * Plan: 
- * 1. DONE - Build a style bulider to apply inline styles to HTML elements.
- * 2. DONE - Support reactive styles.
- * 3. CANCELLED - Support unrendering. // Is this just the same as reactive styles? Should be.
- * 4. Support toString().
- * 5. DONE - Support sub-builders (filter, transform, etc).
- * 6. Support adding to the document head or to the shadow root.
- * 7. Component-scoped variables (may require looking into how shared styles (and otherwise) are applied to shadow roots).
- */
-
-
-
-export default class StyleVNode extends VMetaNode{
-	target: NodeListOf<Element>|HTMLElement|string;
+export default class StyleVNode extends VMetaNode {
+	target: HTMLElement;
 	document: Document;
 	shadowRoot: ShadowRoot;
-	styleValue: IDotCss;
+	styleSource: IDotCss | BaseVStyle;
 
-	observables: Array<Binding> = [];
-	observableIds: Array<number> = [];
+	private observables: Array<Binding> = [];
+	private observableIds: Array<number> = [];
+	private isQueued = false;
+	private updateSubscription = {
+		active: true,
+		update: () => {
+			this.isQueued = false;
+			this.applyStyles();
+		}
+	};
 
-	constructor(styleValue: IDotCss){
+	constructor(styleSource: IDotCss | BaseVStyle) {
 		super();
-		this.styleValue = styleValue;
+		this.styleSource = styleSource;
 
-		{ // Get observables and nested nodes.
-			for(let prop in this.styleValue){
-				let value = this.styleValue[prop];
-				if(value instanceof Binding){
+		this.extractObservables();
+	}
+
+	private extractObservables() {
+		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+
+		if (Array.isArray(source)) {
+			// It's from BaseVStyle.getProps()
+			for (const p of source) {
+				if (p.value instanceof Binding) {
+					this.observables.push(p.value);
+				}
+				// TODO: handle nested builders in BaseVStyle if they are ever added.
+			}
+		} else {
+			// It's a plain IDotCss object.
+			for (let prop in source) {
+				let value = source[prop];
+				if (value instanceof Binding) {
 					this.observables.push(value);
 				}
-				else if(typeof value === "object"){
-					// For example: { blur: 5 }
-
+				else if (typeof value === "object" && value !== null && !(value instanceof Binding)) {
+					// Handle nested builders like filter: { blur: 5 }
 					let builder: CssFunctionBuilderVStyle;
-					switch(prop){
+					switch (prop) {
 						case "filter": {
 							builder = new FilterVStyle(prop);
 							break;
@@ -56,141 +66,113 @@ export default class StyleVNode extends VMetaNode{
 						}
 					}
 
-					let funcArray: Array<any>;
-
-					if(value instanceof Array){
-						funcArray = value;
-					}
-					else{
-						funcArray = [value];
-					}
-
-					for(let i = 0; i < funcArray.length; i++){
-						let funcValue = funcArray[i];
-						for(let k in funcValue){
-							let v = funcValue[k];
-							if(v instanceof Binding){
-								this.observables.push(v);
-							}
-							else if(v instanceof Array){
-								for(let j in v){
-									let w = v[j];
-									if(w instanceof Binding){
-										this.observables.push(w);
+					if (builder) {
+						let funcArray = Array.isArray(value) ? value : [value];
+						for (let funcValue of funcArray) {
+							for (let k in funcValue) {
+								let v = funcValue[k];
+								if (v instanceof Binding) {
+									this.observables.push(v);
+								}
+								else if (Array.isArray(v)) {
+									for (let w of v) {
+										if (w instanceof Binding) this.observables.push(w);
 									}
 								}
-							}
 
-							if(builder && builder[k]){
-								builder[k](v);
+								if (builder[k]) builder[k](v);
 							}
 						}
-					}
-
-					if(builder){
-						this.styleValue[prop] = builder;
+						source[prop] = builder;
 					}
 				}
 			}
 		}
 	}
 
-	render(target: HTMLElement|string, document: Document = window.document, shadowRoot?: ShadowRoot){
+	render(target: HTMLElement | string, document: Document = window.document, shadowRoot?: ShadowRoot) {
+		if (typeof target === "string") {
+			// TODO: Support string targets (selectors) in Phase 2/3.
+			return;
+		}
 		this.target = target;
 		this.document = document;
 		this.shadowRoot = shadowRoot;
 
-		{ // Subscribe all the observables.
-			for(let i in this.observables){
-				let observable = this.observables[i];
-				let id = observable._subscribe(this);
-				this.observableIds.push(id);
-			}
+		for (let observable of this.observables) {
+			let id = observable._subscribe(this);
+			this.observableIds.push(id);
 		}
 
-		this.update();
+		this.applyStyles();
 	}
 
-	update(){
-
-		let allStylesToApply: Array<{cssProp: string, cssValue: string}> = [];
-		for(let prop in this.styleValue){
-			// this.target.style[prop] = this.styleValue[prop];
-			let cssValue;
-			{ // Get the value.
-				let value = this.styleValue[prop];
-				if(value instanceof Binding){
-					cssValue = value._get();
-				}
-				else if(value instanceof CssFunctionBuilderVStyle){
-					cssValue = value.toString();
-				}
-				else{
-					cssValue = `${value}`;
-				}
-			}
-			
-			let cssType, cssProp, cssUnit;
-			{ // Get the prop.
-				let registeredProp = cssProps[prop];
-				// console.log("Registered prop??", prop, registeredProp);
-				if(registeredProp){
-					cssType = cssProps[prop].type;
-					cssProp = cssProps[prop].cssName;
-					cssUnit = cssProps[prop].unit;
-					// switch(cssProp.type){
-					// 	default:
-					// 	{
-					// 		this.target.style[cssProp.cssName] = cssValue;
-					// 		break;
-					// 	}
-					// }
-				}
-				else{
-					cssType = "custom";
-					cssProp = prop;
-				}
-			}
-
-			// Apply them to the list.
-			let formattedValue = cssValue;
-			// TODO: do other types.
-			switch(cssType){
-				case "length":
-					formattedValue = formatCssLength(cssValue, cssUnit);
-					break;
-			}
-			
-			allStylesToApply.push({cssProp, cssValue: formattedValue});
-		}
-
-		if(this.target instanceof HTMLElement){
-			// Apply the styles directly to the element.
-			for(let i in allStylesToApply){
-				let assignment = allStylesToApply[i];
-				this.target.style[assignment.cssProp] = assignment.cssValue;
-			}
-		}
-		else if(typeof this.target === "string"){
-			// TODO:
-			// This needs to support several things.
-			// If a document was provided but not a shadow root, we should add the style to the document head.
-			// If a shadow root was provided, we should add the style to the shadow root.
-			// The string may also be a pseudo selector or an at rule.
-			
+	update() {
+		if (!this.isQueued) {
+			this.isQueued = true;
+			scheduler.enqueue(this.updateSubscription as any, Priority.Normal);
 		}
 	}
 
-	unrender(){
-		// TODO: need to deregister from the observable (if applicable).
-		for(let i in this.observableIds){
-			let id = this.observableIds[i];
-			let observable = this.observables[i];
-			observable._unsubscribe(id);
-		}
+	private applyStyles() {
+		if (!this.target) return;
 
-		this.observables.length = 0;
+		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+
+		if (Array.isArray(source)) {
+			for (const p of source) {
+				const value = p.value instanceof Binding ? p.value._get() : p.value;
+				this.applySingleStyle(p.prop, value);
+			}
+		} else {
+			for (let prop in source) {
+				const value = source[prop] instanceof Binding ? source[prop]._get() : source[prop];
+				this.applySingleStyle(prop, value);
+			}
+		}
 	}
 
-	toString(){}
+	private applySingleStyle(prop: string, value: any) {
+		let cssValue;
+		if (value instanceof CssFunctionBuilderVStyle) {
+			cssValue = value.toString();
+		} else {
+			cssValue = value;
+		}
+
+		let cssProp = prop;
+		let cssUnit = undefined;
+
+		// Check if it's a registered property to get the correct CSS name and unit.
+		const registeredProp = cssProps[prop];
+		if (registeredProp) {
+			cssProp = registeredProp.cssName;
+			cssUnit = registeredProp.unit;
+			if (registeredProp.type === "length" && typeof cssValue === "number") {
+				cssValue = formatCssLength(cssValue, cssUnit);
+			}
+		}
+
+		if (cssProp.startsWith("--")) {
+			this.target.style.setProperty(cssProp, `${cssValue}`);
+		} else {
+			// Use setProperty for consistency, even for standard props.
+			this.target.style.setProperty(cssProp, `${cssValue}`);
+		}
+	}
+
+	unrender() {
+		for (let i = 0; i < this.observableIds.length; i++) {
+			this.observables[i]._unsubscribe(this.observableIds[i]);
+		}
+		this.observableIds = [];
+		this.observables = [];
+		this.target = null;
+		this.updateSubscription.active = false;
+	}
+
+	toString() {
+		// TODO: Implement toString for SSR or debugging.
+		return "";
+	}
 }

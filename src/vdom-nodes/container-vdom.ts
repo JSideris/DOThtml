@@ -9,6 +9,7 @@ import { Vdom } from "./vdom";
 import { AttributeValueType, ObservableCollection } from "./vdom-types";
 import { ComponentVdom } from "./component-vdom";
 import Binding from "../reactivity/binding";
+import BaseVStyle from "../v-style-nodes/base-v-style";
 
 type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
 
@@ -86,15 +87,16 @@ export class ContainerVdom extends Vdom{
 		return this.text(reduceReactive(c));
 	}
 
-	// style(c: string|Reactive|IDotCss){
-	// 	if(c instanceof Reactive || typeof c == "string"){
-	// 		this.attr("style", c);
-	// 	}
-	// 	else{
-	// 		// It's a style builder.
-	// 		if()
-	// 	}
-	// }
+	style(c: string | Watcher | Binding | IDotCss | ((s: BaseVStyle) => void)) {
+		if (typeof c === "function") {
+			const builder = new BaseVStyle();
+			c(builder);
+			this.attr("style", builder);
+		} else {
+			this.attr("style", c);
+		}
+		return this;
+	}
 
 	mount(c: IDotComponent, attrs?: Record<string, any>){
 		let cn = new ComponentVdom(this._dot, c);

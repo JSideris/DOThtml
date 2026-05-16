@@ -74,3 +74,26 @@ class MyButton {
     }
 }
 ```
+
+## Component Styling
+
+You can apply styles to elements within your component's `build()` method using the fluent `.style()` API. This is ideal for instance-specific styling driven by props or internal state.
+
+```javascript
+class StyledBox {
+    static props = {
+        color: { type: String, default: "gray" }
+    };
+
+    build(dot) {
+        return dot.div("I am a styled box")
+            .style(s => s
+                .backgroundColor(this.props.color)
+                .paddingPx(10)
+                .border("1px solid black")
+            );
+    }
+}
+```
+
+For more advanced styling options, including reactive styles and CSS variables, see the [Styling](./styling.md) documentation.
