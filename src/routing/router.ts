@@ -4,16 +4,23 @@ import { IDotComponent } from "dothtml-interfaces";
 import { Vdom } from "../vdom-nodes/vdom";
 import { ContainerVdom } from "../vdom-nodes/container-vdom";
 
+export type DotComponentSource = any | { new (...args: any[]): IDotComponent } | Vdom;
+
 export interface RouteDefinition {
 	path: string;
-	component: any | (() => Promise<any>);
+	component?: DotComponentSource | (() => Promise<any>);
+	redirect?: string | ((params: Record<string, string>) => string);
 	name?: string;
-	title?: string | ((params: any) => string);
+	title?: string | ((params: Record<string, string>) => string);
 	children?: RouteDefinition[];
-	beforeEnter?: (to: string, from: string, next: (path?: string | boolean) => void) => void;
+	beforeEnter?: NavigationGuard;
 }
 
-type NavigationGuard = (to: string, from: string, next: (path?: string | boolean) => void) => void;
+export type NavigationGuard = (
+	to: string, 
+	from: string, 
+	next: (path?: string | boolean) => void
+) => void | string | boolean | Promise<void | string | boolean>;
 type AfterNavigationHook = (to: string, from: string) => void;
 
 const beforeHooks: NavigationGuard[] = [];
@@ -113,6 +120,7 @@ export const Router = dot.component(
 
 		props: any;
 		private resolvedComponent = dot.watch<any>(null);
+		private currentMatch: { route: RouteDefinition, params: Record<string, string>, matchedPath: string } | null = null;
 		private lastPath = "";
 		private subId: number = -1;
 		private loaderCache = new Map<any, any>();
@@ -131,7 +139,12 @@ export const Router = dot.component(
 			setGlobalRoutes(this.props.routes);
 			const path = currentPath.value;
 			
+			const match = matchRoute(this.props.routes, path, this.props.basePath);
+			this.currentMatch = match;
+
 			const proceed = (comp: any) => {
+				if (!match) return;
+
 				let title = match.route.title;
 				if (typeof title === "function") {
 					title = title(match.params);
@@ -166,23 +179,33 @@ export const Router = dot.component(
 				afterHooks.forEach(h => h(path, previousPath.value));
 			};
 
-			const match = matchRoute(this.props.routes, path, this.props.basePath);
-			
 			if (!match) {
 				this.resolvedComponent.value = this.props.notFound || dot.div("404 - Not Found");
+			} else if (match.route.redirect) {
+				const target = typeof match.route.redirect === "function" 
+					? match.route.redirect(match.params) 
+					: match.route.redirect;
+				navigate(target, true);
+				return dot.div();
 			} else {
 				const guards = [...beforeHooks];
 				if (match.route.beforeEnter) {
 					guards.push(match.route.beforeEnter);
 				}
 
-				const runGuards = (index: number) => {
+				const runGuards = async (index: number) => {
 					if (index >= guards.length) {
 						proceed(match.route.component);
 						return;
 					}
 
-					guards[index](path, previousPath.value, (nextVal) => {
+					const guard = guards[index];
+					let nextCalled = false;
+
+					const handleNext = (nextVal?: string | boolean) => {
+						if (nextCalled) return;
+						nextCalled = true;
+
 						if (nextVal === false) {
 							navigate(previousPath.value, true);
 						} else if (typeof nextVal === "string") {
@@ -190,7 +213,22 @@ export const Router = dot.component(
 						} else {
 							runGuards(index + 1);
 						}
-					});
+					};
+
+					const result = guard(path, previousPath.value, handleNext);
+					
+					if (result instanceof Promise) {
+						const asyncResult = await result;
+						if (!nextCalled) {
+							if (asyncResult === false || typeof asyncResult === "string") {
+								handleNext(asyncResult);
+							} else {
+								handleNext();
+							}
+						}
+					} else if (result !== undefined && !nextCalled) {
+						handleNext(result as string | boolean);
+					}
 				};
 
 				runGuards(0);
@@ -199,8 +237,7 @@ export const Router = dot.component(
 			const C = this.resolvedComponent.value;
 			if (!C) return dot.div();
 			
-			// Re-match to get params for the current path
-			const currentMatch = matchRoute(this.props.routes, currentPath.value, this.props.basePath);
+			const currentMatch = this.currentMatch;
 			
 			if (typeof C === "function" && C.prototype?.build) {
 				return dot.mount(new C(), { 

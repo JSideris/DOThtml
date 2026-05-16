@@ -13,10 +13,26 @@ import About from "./About";
 
 const routes = [
     { path: "/", component: Home, title: "Home Page" },
-    { path: "/about", component: About, title: "About Us" }
+    { path: "/about", component: About, title: "About Us" },
+    // Declarative redirect
+    { path: "/old-about", redirect: "/about" }
 ];
 
 dot(document.body).mount(new Router(), { routes });
+```
+
+## Redirects
+
+Routes can specify a `redirect` property to automatically forward users to another path. This can be a static string or a function that returns a path.
+
+```javascript
+const routes = [
+    { path: "/old-profile", redirect: "/profile" },
+    { 
+        path: "/user/:id", 
+        redirect: (params) => `/profile/${params.id}` 
+    }
+];
 ```
 
 ## Navigation with Link
@@ -79,30 +95,52 @@ const routes = [
 
 ## Navigation Guards
 
-You can protect routes using `beforeEnter` on individual routes or global `beforeEach` guards.
+You can protect routes using `beforeEnter` on individual routes or global `beforeEach` guards. Guards support synchronous return values, asynchronous promises, and the traditional `next()` callback.
+
+### Return-based API (Recommended)
+
+Guards can return a `boolean` to allow/cancel navigation, or a `string` to redirect.
 
 ```javascript
 // Global guard
-dot.Router.beforeEach((to, from, next) => {
+dot.Router.beforeEach((to, from) => {
     if (to === "/admin" && !isLoggedIn()) {
-        next("/login");
-    } else {
-        next();
+        return "/login"; // Redirect
+    }
+    if (to === "/forbidden") {
+        return false; // Cancel
+    }
+    return true; // Allow
+});
+```
+
+### Async Guards
+
+Guards can be `async` functions, allowing you to perform checks against an API or database.
+
+```javascript
+dot.Router.beforeEach(async (to) => {
+    const user = await auth.getUser();
+    if (to.startsWith("/admin") && !user?.isAdmin) {
+        return "/unauthorized";
     }
 });
-
-// Route-specific guard
-const routes = [
-    {
-        path: "/secret",
-        component: SecretPage,
-        beforeEnter: (to, from, next) => {
-            if (hasAccess()) next();
-            else next(false); // Cancel navigation
-        }
-    }
-];
 ```
+
+### Callback-based API
+
+The traditional `next()` callback is still supported for compatibility.
+
+```javascript
+dot.Router.beforeEach((to, from, next) => {
+    if (hasAccess()) next();
+    else next(false);
+});
+```
+
+## Performance
+
+The DOThtml router is highly optimized for performance. It caches route matching results during the build phase, ensuring that nested components and parameter resolution are extremely fast even in large applications with complex routing tables.
 
 ## Scroll Restoration
 
