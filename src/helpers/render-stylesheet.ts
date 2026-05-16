@@ -2,9 +2,13 @@ import { IDotCss } from "dothtml-interfaces";
 
 const stylesheetCache = new Map<string, CSSStyleSheet>();
 
-export default function renderStylesheet(styleCallback: string|((css: any)=>(string|IDotCss)), document: Document): CSSStyleSheet|HTMLStyleElement {
+export default function renderStylesheet(styleCallback: string|CSSStyleSheet|((css: any)=>(string|IDotCss)), document: Document): CSSStyleSheet|HTMLStyleElement {
 
 	let finalStylesheet = "";
+
+	if (styleCallback instanceof (document.defaultView as any)?.CSSStyleSheet) {
+		return styleCallback;
+	}
 
 	if (typeof styleCallback == "string") {
 		finalStylesheet = styleCallback;

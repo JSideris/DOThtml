@@ -269,7 +269,9 @@ export class ComponentVdom extends Vdom{
 				if (gs instanceof (document.defaultView as any).CSSStyleSheet) {
 					allSharedStylesheets.push(gs);
 				} else if (typeof gs === "string") {
-					let styleItem = renderStylesheet(gs, document);
+					// Transform html/body to :host for shadow dom.
+					const transformedGs = gs.replace(/\b(html|body)(?=[\s,{.#[:]|$)/g, ':host');
+					let styleItem = renderStylesheet(transformedGs, document);
 					if (styleItem instanceof (document.defaultView as any).CSSStyleSheet) {
 						allSharedStylesheets.push(styleItem);
 					} else {

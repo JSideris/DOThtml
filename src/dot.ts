@@ -295,16 +295,18 @@ const makeDot = ()=>{
 
 	_dot.globalStyles = [];
 	_dot.useGlobalStyles = (styles: string | CSSStyleSheet | Array<string | CSSStyleSheet>) => {
-		if (Array.isArray(styles)) {
-			_dot.globalStyles.push(...styles);
-		} else {
-			_dot.globalStyles.push(styles);
+		const stylesArray = Array.isArray(styles) ? styles : [styles];
+		for (const s of stylesArray) {
+			_dot.globalStyles.push(s);
+			if (typeof document !== "undefined") {
+				_dot.useStyles(document, s);
+			}
 		}
 	};
 
 	_dot.css = new BaseVStyle();
 
-	_dot.useStyles = (applyToDocument: Document, styles: string | ((css: any) => string | IDotCss)) => {
+	_dot.useStyles = (applyToDocument: Document, styles: string | CSSStyleSheet | ((css: any) => string | IDotCss)) => {
 		if (applyToDocument && !styles) {
 			if (typeof applyToDocument == "string" || (applyToDocument["call"] && applyToDocument["apply"])) {
 				styles = applyToDocument as any;
@@ -312,8 +314,10 @@ const makeDot = ()=>{
 			}
 		}
 
-		const styleItem = renderStylesheet(styles, applyToDocument);
-		if (styleItem instanceof HTMLElement) {
+		const styleItem = renderStylesheet(styles as any, applyToDocument);
+		if (styleItem instanceof (applyToDocument.defaultView as any)?.CSSStyleSheet) {
+			applyToDocument.adoptedStyleSheets = [...applyToDocument.adoptedStyleSheets, styleItem];
+		} else if (styleItem instanceof HTMLElement) {
 			applyToDocument.head.appendChild(styleItem);
 		}
 	};
