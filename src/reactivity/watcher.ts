@@ -10,6 +10,7 @@ import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import VMetaNode from "../v-meta-nodes/v-meta-node";
 import Binding from "./binding";
 import Subscription from "./subscription";
+import { scheduler } from "./scheduler";
 
 const TEXT_OFFSET = 0;
 const HTML_OFFSET = 1;
@@ -71,7 +72,7 @@ export default class Watcher<T = any> implements IWatcher<T>{
 
 	private updater(value: T){
 		for(let b in this.allBindings){
-			this.allBindings[b].update();
+			scheduler.enqueue(this.allBindings[b]);
 		}
 	}
 
@@ -90,7 +91,10 @@ export default class Watcher<T = any> implements IWatcher<T>{
 	}
 
 	_detachBinding(id: number) {
-		delete this.allBindings[id];
+		if(this.allBindings[id]){
+			this.allBindings[id].active = false;
+			delete this.allBindings[id];
+		}
 	}
 
 	// Called manually by the user to trigger an update.

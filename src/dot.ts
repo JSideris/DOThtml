@@ -13,6 +13,7 @@ import { IDotCore, IDotCss } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
 import Ref from "./reactivity/ref";
+import { scheduler } from "./reactivity/scheduler";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -499,6 +500,10 @@ const makeDot = ()=>{
 
 	_dot.window = (options) => {
 		return new WindowWrapper(options);
+	}
+
+	_dot.flushSync = () => {
+		scheduler.flush();
 	}
 
 	{ // Elements

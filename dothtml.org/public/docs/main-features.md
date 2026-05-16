@@ -12,6 +12,7 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 *   **Reactive State**: Data-driven updates that just work.
 *   **Strongly Typed**: Built with TypeScript for maximum developer productivity.
 *   **Built-in Routing**: Everything you need for a modern SPA.
+*   **Update Batching**: High-performance rendering that groups multiple state changes into a single DOM update cycle.
 
 ### Advanced Event Handling
 DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.
@@ -44,4 +45,21 @@ Example of modifiers:
 dot.button({ 
     "onClick.stop.prevent": (e) => console.log("Clicked!") 
 }, "Click Me")
+```
+
+### Performance: Update Batching
+DOThtml features an intelligent update scheduler that batches multiple state changes into a single DOM update cycle. 
+
+When you update multiple `Watcher` values in a single function or task, DOThtml doesn't update the DOM for each change. Instead, it enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves the overall responsiveness of your application.
+
+If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
+
+```javascript
+const name = dot.watch("Josh");
+dot.div(name);
+
+name.value = "Joshua";
+// DOM is not updated yet.
+dot.flushSync();
+// DOM is now updated.
 ```

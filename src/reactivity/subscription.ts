@@ -15,6 +15,7 @@ import ReactiveStyle from "./reactive-style";
 export default class Subscription{
 	boundReactive: IBinding;
 	item: any;
+	active: boolean = true;
 
 	constructor(boundReactive: IBinding, item: any){
 		this.boundReactive = boundReactive;
@@ -23,6 +24,7 @@ export default class Subscription{
 
 	// TODO: would be more efficient to compute the _get first then pass it into this function.
 	update(){
+		if(!this.active) return;
 		let value = this.boundReactive._get();
 
 		if(this.item instanceof TextVdom){
