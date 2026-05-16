@@ -70,13 +70,22 @@ export default class Computed<T> extends Watcher<T> {
 		this.error = null;
 		this.newDependencies.clear();
 		dependencyStack.push(this);
+
+		let newValue: T;
+		let hasError = false;
+
 		try {
-			this.setValue(this.getter());
+			newValue = this.getter();
 		} catch (e) {
 			this.error = e;
+			hasError = true;
 		} finally {
 			dependencyStack.pop();
 			this.isEvaluating = false;
+		}
+
+		if (!hasError) {
+			this.setValue(newValue);
 		}
 
 		// Update dependencies

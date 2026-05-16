@@ -16,6 +16,7 @@ class Scheduler {
 	private startTime: number = 0;
 	private frameYieldMs: number = 5; // Yield after 5ms of work.
 	private isSync: boolean = typeof process !== "undefined" && process.env.NODE_ENV === "test";
+	private isSyncing: boolean = false;
 
 	private channel = typeof MessageChannel !== "undefined" ? new MessageChannel() : null;
 
@@ -29,19 +30,13 @@ class Scheduler {
 	 * Adds a subscription to the next batch with a specific priority.
 	 */
 	enqueue(subscription: Subscription, priority: Priority = Priority.Normal) {
-		if (priority === Priority.Immediate || this.isSync) {
-			const originalShouldYield = this.shouldYield;
-			this.shouldYield = () => false;
-			try {
-				subscription.update();
-			} finally {
-				this.shouldYield = originalShouldYield;
-			}
-			return;
-		}
-
 		this.queues[priority].add(subscription);
-		this.scheduleFlush();
+
+		if (priority === Priority.Immediate || this.isSync) {
+			this.flushSync();
+		} else {
+			this.scheduleFlush();
+		}
 	}
 
 	private scheduleFlush() {
@@ -82,7 +77,7 @@ class Scheduler {
 	 * Returns true if there is still work remaining (due to yielding).
 	 */
 	private flushQueues(): boolean {
-		for (let p = Priority.UserBlocking; p <= Priority.Background; p++) {
+		for (let p = Priority.Immediate; p <= Priority.Background; p++) {
 			const queue = this.queues[p];
 			if (queue.size === 0) continue;
 
@@ -111,7 +106,7 @@ class Scheduler {
 		}
 
 		// Check if any new work was added to higher priority queues while processing lower ones.
-		for (let p = Priority.UserBlocking; p <= Priority.Background; p++) {
+		for (let p = Priority.Immediate; p <= Priority.Background; p++) {
 			if (this.queues[p].size > 0) return true;
 		}
 
@@ -122,6 +117,9 @@ class Scheduler {
 	 * Synchronously flushes all pending updates.
 	 */
 	flushSync() {
+		if (this.isSyncing) return;
+
+		this.isSyncing = true;
 		// We don't want the work loop to trigger while we're doing a sync flush.
 		this.isPending = true; 
 		
@@ -133,7 +131,7 @@ class Scheduler {
 			let hasMoreWork = true;
 			while (hasMoreWork) {
 				hasMoreWork = false;
-				for (let p = Priority.UserBlocking; p <= Priority.Background; p++) {
+				for (let p = Priority.Immediate; p <= Priority.Background; p++) {
 					const queue = this.queues[p];
 					if (queue.size === 0) continue;
 
@@ -155,6 +153,7 @@ class Scheduler {
 		} finally {
 			this.shouldYield = originalShouldYield;
 			this.isPending = false;
+			this.isSyncing = false;
 		}
 	}
 
