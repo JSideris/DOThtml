@@ -8,4 +8,5 @@
 - Reactivity.
 - **Keyed Diffing**: High-performance list reconciliation that reuses and moves DOM nodes.
 - **Update Batching**: Automatic grouping of state changes to minimize DOM writes.
+- **Enhanced Ref System**: Reactive references to elements and components with method proxying and keyed collections.
 

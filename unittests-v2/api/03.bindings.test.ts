@@ -686,4 +686,61 @@ describe("Refs.", ()=>{
 		expect(ref.element).toBeTruthy();
 		expect(ref.element.innerHTML).toBe("test");
 	});
+
+	test("Reactive refs.", ()=>{
+		let ref = dot.ref();
+		let condition = dot.watch(true);
+		let callCount = 0;
+		let lastVal = null;
+		
+		dot.computed(() => {
+			callCount++;
+			lastVal = ref.element;
+		});
+
+		expect(callCount).toBe(1);
+		expect(lastVal).toBe(null);
+
+		dot(document.body).when(condition, dot.div({ref: ref}, "test"));
+		(dot as any).flushSync();
+		
+		expect(callCount).toBe(2);
+		expect(lastVal).toBeTruthy();
+		expect(lastVal.innerHTML).toBe("test");
+		
+		condition.value = false;
+		(dot as any).flushSync();
+		
+		expect(callCount).toBe(3);
+		expect(lastVal).toBe(null);
+		
+		condition.value = true;
+		(dot as any).flushSync();
+
+		expect(callCount).toBe(4);
+		expect(lastVal).toBeTruthy();
+		expect(lastVal.innerHTML).toBe("test");
+	});
+
+	test("Component refs.", ()=>{
+		class MyComponent implements IDotComponent {
+			build() { return dot.div("component content"); }
+		}
+		let ref = (dot as any).ref() as any;
+		let condition = dot.watch(true);
+		
+		dot(document.body).when(condition, dot.mount(new MyComponent(), {ref: ref}));
+		
+		expect(ref.value).toBeInstanceOf(MyComponent);
+		
+		condition.value = false;
+		(dot as any).flushSync();
+		
+		expect(ref.value).toBeNull();
+		
+		condition.value = true;
+		(dot as any).flushSync();
+		
+		expect(ref.value).toBeInstanceOf(MyComponent);
+	});
 })

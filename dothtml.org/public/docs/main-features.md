@@ -13,6 +13,7 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 *   **Strongly Typed**: Built with TypeScript for maximum developer productivity.
 *   **Built-in Routing**: Everything you need for a modern SPA.
 *   **Update Batching**: High-performance rendering that groups multiple state changes into a single DOM update cycle.
+*   **Reactive Ref System**: Direct access to DOM elements and component instances with built-in reactivity and method proxying.
 *   **Computed State**: Automatically derive values from other reactive sources.
 *   **Reactive Props**: Components that automatically re-render when their inputs change.
 *   **Fluent & Reactive Styling**: A type-safe, batched styling system that integrates directly with reactivity.

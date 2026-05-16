@@ -58,6 +58,10 @@ const count = dot.watch(5);
 dot.div(count.bindAs(v => `The count is ${v}`));
 ```
 
+## Refs
+
+Refs are specialized reactive watchers used to obtain direct access to DOM elements or component instances. See the [Refs Documentation](./refs.md) for more details.
+
 ## Reactive Props
 
 When you pass a `Watcher` or a `Binding` as a prop to a component, the component automatically subscribes to it. If the value changes, the component's `build()` function is re-called, and the component re-renders.

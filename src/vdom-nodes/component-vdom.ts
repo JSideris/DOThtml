@@ -12,6 +12,7 @@ import { pushComponent, popComponent } from "./component-context";
 import BaseVStyle from "../v-style-nodes/base-v-style";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import StyleSheetBuilder from "../v-style-nodes/style-sheet-builder";
+import Ref from "../reactivity/ref";
 
 let tagId = 0x10000;
 
@@ -27,6 +28,7 @@ export class ComponentVdom extends Vdom{
 	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;
 	private computedWatchers: Computed<any>[] = [];
+	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private updateSubscription = {
 		active: true,
 		update: () => {
@@ -85,6 +87,10 @@ export class ComponentVdom extends Vdom{
 
 	registerComputed(watcher: Computed<any>) {
 		this.computedWatchers.push(watcher);
+	}
+
+	setRef(ref: Ref<any> | ((comp: IDotComponent | null) => void)) {
+		this.ref = ref;
 	}
 
 	init() {
@@ -311,6 +317,14 @@ export class ComponentVdom extends Vdom{
 		this.shadowEl["cvdom"] = this;
 		this.shadowEl["component"] = this.component;
 		
+		if(this.ref){
+			if (typeof this.ref === "function") {
+				this.ref(this.component);
+			} else {
+				this.ref.value = this.component;
+			}
+		}
+
 		// Apply host styles if defined.
 		if ((this.component as any).hostStyle) {
 			const hostStyleBuilder = new BaseVStyle();
@@ -359,6 +373,14 @@ export class ComponentVdom extends Vdom{
 
 		(this.component._._meta as any).isRendered = false;
 		this.component.unmounted && this.component.unmounted();
+
+		if(this.ref){
+			if (typeof this.ref === "function") {
+				this.ref(null);
+			} else {
+				this.ref.value = null;
+			}
+		}
 	}
 
 	_getNodes(): Node[] {

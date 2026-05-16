@@ -15,6 +15,7 @@ import { IDotCore, IDotCss, IDotComponent } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
 import Ref from "./reactivity/ref";
+import RefCollection from "./reactivity/ref-collection";
 import { scheduler } from "./reactivity/scheduler";
 import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
 
@@ -278,8 +279,12 @@ const makeDot = ()=>{
 		return instance;
 	}
 
-	_dot.ref = function(){
-		return new Ref();
+	_dot.ref = function<T extends HTMLElement | IDotComponent = HTMLElement>(){
+		return new Ref<T>();
+	}
+
+	_dot.refCollection = function<T extends HTMLElement | IDotComponent = HTMLElement>(){
+		return new RefCollection<T>();
 	}
 
 	_dot.globalStyles = [];
@@ -352,7 +357,7 @@ const makeDot = ()=>{
 					if(attrs){
 						for(let k in attrs) {
 							let attr = attrs[k];
-							if(attr instanceof Watcher) attr = attr.bind();
+							if(attr instanceof Watcher && !(attr instanceof Ref)) attr = attr.bind();
 							let eventName = k;
 							let modifiers = [];
 							if(k.includes(".")){

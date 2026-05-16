@@ -103,7 +103,10 @@ export class ContainerVdom extends Vdom{
 		if(attrs){
 			for(let k in attrs){
 				let val = attrs[k];
-				if(k.startsWith("on") && typeof val === "function"){
+				if(k === "ref"){
+					cn.setRef(val);
+				}
+				else if(k.startsWith("on") && typeof val === "function"){
 					let eventName = k;
 					let modifiers = [];
 					if(k.includes(".")){

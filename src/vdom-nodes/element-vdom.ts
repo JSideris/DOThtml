@@ -32,7 +32,7 @@ export default class ElementVdom extends Vdom{
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 	private attrVNodes: Array<AttributeVNode> = [];
 	private styleVNodes: Array<StyleVNode> = [];
-	private ref: Ref;
+	private ref: Ref | ((el: HTMLElement | null) => void);
 	inputListener: (e: any) => void;
 
 	constructor(dot: IDotCore, tag: string){
@@ -47,7 +47,11 @@ export default class ElementVdom extends Vdom{
 		this.element = node.ownerDocument.createElement(this.tag);
 		this.element[DOT_VDOM_PROP_NAME] = this;
 		if(this.ref){
-			(this.ref as any)["_element"] = this.element;
+			if (typeof this.ref === "function") {
+				this.ref(this.element);
+			} else {
+				this.ref.value = this.element;
+			}
 		}
 
 		node.appendChild(this.element);
@@ -67,10 +71,6 @@ export default class ElementVdom extends Vdom{
 	}
 
 	_unrender() {
-		if(this.ref){
-			(this.ref as any)["_element"] = null;
-		}
-
 		this.children._unrender();
 
 		if(this.inputListener){
@@ -85,7 +85,6 @@ export default class ElementVdom extends Vdom{
 		}
 
 		this.element.parentNode?.removeChild(this.element);
-		this.element = null;
 
 		for(let i = 0; i < this.childBuilders.length; i++){
 			this.childBuilders[i]._unrender();
@@ -107,6 +106,15 @@ export default class ElementVdom extends Vdom{
 			item.observable._unsubscribe(item.id);
 		}
 		this.attributeObserverIds.length = 0;
+
+		if(this.ref){
+			if (typeof this.ref === "function") {
+				this.ref(null);
+			} else {
+				this.ref.value = null;
+			}
+		}
+		this.element = null;
 	}
 
 	_getNodes(): Node[] {
@@ -171,9 +179,13 @@ export default class ElementVdom extends Vdom{
 	private renderAttr(attr: string, value: AttributeValueType, node: HTMLElement){
 
 		if(attr == "ref"){
-			this.ref = value as Ref;
+			this.ref = value as any;
 			if(this.element) {
-				(this.ref as any)["_element"] = this.element;
+				if (typeof this.ref === "function") {
+					this.ref(this.element);
+				} else {
+					this.ref.value = this.element;
+				}
 			}
 		}
 		else if(typeof value === "string" || typeof value === "number"){
