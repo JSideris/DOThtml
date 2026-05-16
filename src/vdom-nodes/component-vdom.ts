@@ -7,6 +7,8 @@ import Watcher from "../reactivity/watcher";
 import Binding from "../reactivity/binding";
 import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
+import Computed from "../reactivity/computed";
+import { pushComponent, popComponent } from "./component-context";
 
 let tagId = 0x10000;
 
@@ -20,6 +22,7 @@ export class ComponentVdom extends Vdom{
 	private dot: IDotCore;
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 	private isQueued = false;
+	private computedWatchers: Computed<any>[] = [];
 	private updateSubscription = {
 		active: true,
 		update: () => {
@@ -68,12 +71,22 @@ export class ComponentVdom extends Vdom{
 		};
 	}
 
+	registerComputed(watcher: Computed<any>) {
+		this.computedWatchers.push(watcher);
+	}
+
 	init() {
 		this.validateProps();
 
 		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
 		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
-		this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+		pushComponent(this);
+		try {
+			this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+		} finally {
+			popComponent();
+		}
+		
 		this.component.built && this.component.built();
 
 		this.subscribeToProps();
@@ -104,7 +117,12 @@ export class ComponentVdom extends Vdom{
 		this.childShadowVdom._unrender();
 
 		// Re-build
-		this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+		pushComponent(this);
+		try {
+			this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+		} finally {
+			popComponent();
+		}
 
 		// Render new children into the existing shadow root
 		const shadow = (this.component._._meta as any).shadowRoot;
@@ -118,6 +136,7 @@ export class ComponentVdom extends Vdom{
 		if (!schema) return;
 
 		const props = (this.component as any).props || {};
+		const componentName = this.component.constructor.name;
 
 		for (const key in schema) {
 			const rule = schema[key];
@@ -125,13 +144,13 @@ export class ComponentVdom extends Vdom{
 
 			// Apply default
 			if (value === undefined && rule.default !== undefined) {
-				value = rule.default;
+				value = typeof rule.default === "function" ? rule.default() : rule.default;
 				props[key] = value;
 			}
 
 			// Check required
 			if (rule.required && value === undefined) {
-				throw new Error(`Prop "${key}" is required for component ${this.component.constructor.name}.`);
+				throw new Error(`[${componentName}] Prop "${key}" is required.`);
 			}
 
 			// Check type (rudimentary)
@@ -148,11 +167,18 @@ export class ComponentVdom extends Vdom{
 				if (expectedType !== "unknown" && actualType !== expectedType) {
 					// Special check for Array
 					if (rule.type === Array && !Array.isArray(value)) {
-						throw new Error(`Prop "${key}" expected Array, but got ${actualType}.`);
+						throw new Error(`[${componentName}] Prop "${key}" expected Array, but got ${actualType}.`);
 					}
 					if (rule.type !== Array) {
-						throw new Error(`Prop "${key}" expected ${expectedType}, but got ${actualType}.`);
+						throw new Error(`[${componentName}] Prop "${key}" expected ${expectedType}, but got ${actualType}.`);
 					}
+				}
+			}
+
+			// Custom validator
+			if (value !== undefined && typeof rule.validator === "function") {
+				if (!rule.validator(value)) {
+					throw new Error(`[${componentName}] Prop "${key}" failed custom validation.`);
 				}
 			}
 		}
@@ -258,6 +284,11 @@ export class ComponentVdom extends Vdom{
 		// this.childShadowVdom = null; // This makes sense only if shadow dom creation happens inside the render function (which it probably should?).
 		this.shadowEl.remove();
 		this.shadowEl = null;
+
+		for (const watcher of this.computedWatchers) {
+			watcher.dispose();
+		}
+		this.computedWatchers = [];
 
 		(this.component._._meta as any).isRendered = false;
 		this.component.unmounted && this.component.unmounted();

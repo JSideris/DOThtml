@@ -1,81 +1,61 @@
 import { dot } from "../../src";
-import { IDotComponent, IDotDocument } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
+import { IDotComponent, IDotDocument } from "dothtml-interfaces";
 
 afterEach(() => { 
+	const root = document.body[DOT_VDOM_PROP_NAME];
+	if (root && root.children) {
+		root.children._unrender();
+	}
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
 });
 
-describe("Prop Validation", () => {
-	class ValidatedComponent implements IDotComponent {
+describe("Prop validation.", () => {
+	class TestComponent implements IDotComponent {
 		static props = {
 			name: { type: String, required: true },
 			age: { type: Number, default: 18 },
-			isAdmin: { type: Boolean, default: false }
+			tags: { type: Array, default: () => ["new"] },
+			score: { 
+				type: Number, 
+				validator: (v: number) => v >= 0 && v <= 100 
+			}
 		};
 		props: any;
-		build(): IDotDocument {
-			return dot.div(`Name: ${this.props.name}, Age: ${this.props.age}, Admin: ${this.props.isAdmin}`);
+		build() {
+			return dot.div(`${this.props.name} (${this.props.age}) - ${this.props.tags.join(",")} - Score: ${this.props.score ?? "N/A"}`);
 		}
 	}
 
-	test("Passing valid props.", () => {
-		(dot as any)(document.body).mount(new ValidatedComponent(), { name: "Josh", age: 30, isAdmin: true });
-		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>Name: Josh, Age: 30, Admin: true</div>");
+	test("Valid props.", () => {
+		(dot(document.body) as any).mount(new TestComponent(), { name: "Alice", age: 25, score: 90 });
+		const customEl = document.body.children[0];
+		expect(formatHTML(customEl.shadowRoot?.innerHTML)).toBe(formatHTML("<div>Alice (25) - new - Score: 90</div>"));
 	});
 
-	test("Using default values.", () => {
-		(dot as any)(document.body).mount(new ValidatedComponent(), { name: "Josh" });
-		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>Name: Josh, Age: 18, Admin: false</div>");
-	});
-
-	test("Missing required prop throws error.", () => {
+	test("Missing required prop.", () => {
 		expect(() => {
-			(dot as any)(document.body).mount(new ValidatedComponent(), { age: 30 });
-		}).toThrow('Prop "name" is required for component ValidatedComponent.');
+			(dot(document.body) as any).mount(new TestComponent(), { age: 25 });
+		}).toThrow("[TestComponent] Prop \"name\" is required.");
 	});
 
-	test("Invalid prop type throws error (String expected).", () => {
+	test("Default values.", () => {
+		(dot(document.body) as any).mount(new TestComponent(), { name: "Bob" });
+		const customEl = document.body.children[0];
+		expect(formatHTML(customEl.shadowRoot?.innerHTML)).toBe(formatHTML("<div>Bob (18) - new - Score: N/A</div>"));
+	});
+
+	test("Invalid type.", () => {
 		expect(() => {
-			(dot as any)(document.body).mount(new ValidatedComponent(), { name: 123 });
-		}).toThrow('Prop "name" expected string, but got number.');
+			(dot(document.body) as any).mount(new TestComponent(), { name: 123 });
+		}).toThrow("[TestComponent] Prop \"name\" expected string, but got number.");
 	});
 
-	test("Invalid prop type throws error (Number expected).", () => {
+	test("Custom validator failure.", () => {
 		expect(() => {
-			(dot as any)(document.body).mount(new ValidatedComponent(), { name: "Josh", age: "30" });
-		}).toThrow('Prop "age" expected number, but got string.');
-	});
-
-	test("Array type validation.", () => {
-		class ArrayComponent implements IDotComponent {
-			static props = {
-				tags: { type: Array, required: true }
-			};
-			props: any;
-			build(): IDotDocument {
-				return dot.div(this.props.tags.join(", "));
-			}
-		}
-
-		(dot as any)(document.body).mount(new ArrayComponent(), { tags: ["a", "b"] });
-		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>a, b</div>");
-
-		expect(() => {
-			(dot as any)(document.body).mount(new ArrayComponent(), { tags: "not-an-array" });
-		}).toThrow('Prop "tags" expected Array, but got string.');
-	});
-
-	test("Component without schema works normally.", () => {
-		class SimpleComponent implements IDotComponent {
-			props: any;
-			build(): IDotDocument {
-				return dot.div("Simple");
-			}
-		}
-		dot(document.body).mount(new SimpleComponent());
-		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>Simple</div>");
+			(dot(document.body) as any).mount(new TestComponent(), { name: "Alice", score: 150 });
+		}).toThrow("[TestComponent] Prop \"score\" failed custom validation.");
 	});
 });

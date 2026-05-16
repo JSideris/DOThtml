@@ -15,6 +15,7 @@ import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
 import Ref from "./reactivity/ref";
 import { scheduler } from "./reactivity/scheduler";
+import { getCurrentComponent } from "./vdom-nodes/component-context";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -440,6 +441,7 @@ const makeDot = ()=>{
 				node = new ElementVdom(dot, el.tagName.toLocaleLowerCase());
 				node.element = el;
 				node.children._parent = node;
+				node.children._isRendered = true;
 				el[DOT_VDOM_PROP_NAME] = node;
 				return node.children;
 			}
@@ -462,7 +464,12 @@ const makeDot = ()=>{
 	}
 
 	_dot.computed = function<T>(getter: () => T): Watcher<T>{
-		return new Computed(getter);
+		const c = new Computed(getter);
+		const currentComponent = getCurrentComponent();
+		if (currentComponent) {
+			currentComponent.registerComputed(c);
+		}
+		return c;
 	}
 
 	_dot.ref = function(){

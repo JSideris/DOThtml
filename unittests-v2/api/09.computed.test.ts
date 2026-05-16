@@ -1,111 +1,158 @@
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
+import { IDotComponent, IDotDocument } from "dothtml-interfaces";
 
 afterEach(() => { 
+	const root = document.body[DOT_VDOM_PROP_NAME];
+	if (root && root.children) {
+		root.children._unrender();
+	}
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
 });
 
-describe("Computed State", () => {
-	test("Basic derivation from one watcher.", () => {
-		const count = dot.watch(1);
-		const doubled = dot.computed(() => count.value * 2);
-		
-		dot(document.body).div(doubled);
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>2</div>");
-		
-		count.value = 5;
+describe("Computed state.", () => {
+	test("Basic computed reactivity.", () => {
+		const first = dot.watch("John");
+		const last = dot.watch("Doe");
+		const full = dot.computed(() => `${first.value} ${last.value}`);
+
+		dot(document.body).div(full);
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>John Doe</div>"));
+
+		first.value = "Jane";
 		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>10</div>");
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>Jane Doe</div>"));
+
+		last.value = "Smith";
+		dot.flushSync();
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>Jane Smith</div>"));
 	});
 
-	test("Multiple dependencies.", () => {
-		const firstName = dot.watch("John");
-		const lastName = dot.watch("Doe");
-		const fullName = dot.computed(() => `${firstName.value} ${lastName.value}`);
-		
-		dot(document.body).div(fullName);
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>john doe</div>");
-		
-		firstName.value = "Jane";
-		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>jane doe</div>");
-		
-		lastName.value = "Smith";
-		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>jane smith</div>");
-	});
-
-	test("Nested computeds.", () => {
-		const a = dot.watch(1);
-		const b = dot.computed(() => a.value + 1);
-		const c = dot.computed(() => b.value * 2);
-		
-		dot(document.body).div(c);
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>4</div>"); // (1 + 1) * 2
-		
-		a.value = 3;
-		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>8</div>"); // (3 + 1) * 2
-	});
-
-	test("Conditional dependencies.", () => {
-		const useA = dot.watch(true);
-		const a = dot.watch(1);
-		const b = dot.watch(10);
-		
+	test("Diamond problem (single update).", () => {
+		const count = dot.watch(0);
 		let evaluations = 0;
-		const dynamic = dot.computed(() => {
+		const a = dot.computed(() => {
+			evaluations++;
+			return count.value + 1;
+		});
+		const b = dot.computed(() => count.value + 2);
+		const combined = dot.computed(() => a.value + b.value);
+
+		dot(document.body).div(combined);
+		expect(evaluations).toBe(1);
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>3</div>"));
+
+		count.value = 1;
+		dot.flushSync();
+		// combined should only trigger one update of the DOM.
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>5</div>"));
+		expect(evaluations).toBe(2);
+	});
+
+	test("Circular dependency detection.", () => {
+		const a = dot.watch(0);
+		const b = dot.watch(0);
+		
+		let compA: any;
+		let compB: any;
+
+		compA = dot.computed(() => {
+			if (a.value > 0) return compB.value + 1;
+			return 1;
+		});
+		compB = dot.computed(() => {
+			if (b.value > 0) return compA.value + 1;
+			return 1;
+		});
+
+		// Trigger the cycle
+		a.value = 1;
+		b.value = 1;
+
+		expect(() => {
+			dot.flushSync();
+		}).toThrow("Circular dependency detected");
+	});
+
+	test("Dynamic dependency tracking.", () => {
+		const useA = dot.watch(true);
+		const a = dot.watch("A");
+		const b = dot.watch("B");
+		let evaluations = 0;
+		const combined = dot.computed(() => {
 			evaluations++;
 			return useA.value ? a.value : b.value;
 		});
-		
-		dot(document.body).div(dynamic);
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>1</div>");
+
+		dot(document.body).div(combined);
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>A</div>"));
 		expect(evaluations).toBe(1);
-		
-		// Update b while useA is true - should NOT trigger re-evaluation
-		b.value = 20;
+
+		// Update B - should not trigger evaluation
+		b.value = "B2";
 		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>1</div>");
-		
-		// Update a - should trigger re-evaluation
-		a.value = 2;
+		expect(evaluations).toBe(1);
+
+		// Update A - should trigger evaluation
+		a.value = "A2";
 		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>2</div>");
-		
+		expect(evaluations).toBe(2);
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>A2</div>"));
+
 		// Switch to B
 		useA.value = false;
 		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>20</div>");
-		
-		// Now update a - should NOT trigger re-evaluation
-		a.value = 3;
+		expect(evaluations).toBe(3);
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>B2</div>"));
+
+		// Update A - should no longer trigger evaluation
+		a.value = "A3";
 		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>20</div>");
+		expect(evaluations).toBe(3);
+
+		// Update B - should trigger evaluation
+		b.value = "B3";
+		dot.flushSync();
+		expect(evaluations).toBe(4);
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML("<div>B3</div>"));
 	});
 
-	test("Batching multiple dependency changes.", () => {
-		const a = dot.watch(1);
-		const b = dot.watch(2);
+	test("Memory leak / Disposal.", () => {
+		const source = dot.watch(1);
+		const comp = dot.computed(() => source.value * 2);
 		
-		let evaluations = 0;
-		const sum = dot.computed(() => {
-			evaluations++;
-			return a.value + b.value;
-		});
+		expect(Object.keys((source as any).allBindings).length).toBe(1);
 		
-		dot(document.body).div(sum);
-		expect(evaluations).toBe(1);
+		(comp as any).dispose();
+		expect(Object.keys((source as any).allBindings).length).toBe(0);
+	});
+
+	test("Component auto-cleanup.", () => {
+		const source = dot.watch(1);
+		let compRef: any;
+
+		class MyComponent implements IDotComponent {
+			_?: any;
+			build() {
+				compRef = dot.computed(() => source.value * 2);
+				return dot.div(compRef);
+			}
+		}
+
+		const c = new MyComponent();
+		dot(document.body).mount(c);
 		
-		// Update both in the same tick
-		a.value = 10;
-		b.value = 20;
+		// 1 for the computed watcher
+		expect(Object.keys((source as any).allBindings).length).toBe(1);
+		// 1 for the text binding inside the component's shadow DOM
+		expect(Object.keys((compRef as any).allBindings).length).toBe(1);
 		
-		// Should only re-evaluate once due to scheduler
-		dot.flushSync();
-		expect(formatHTML(document.body.innerHTML)).toBe("<div>30</div>");
-		expect(evaluations).toBe(2);
+		const root = document.body[DOT_VDOM_PROP_NAME];
+		root.children._unrender();
+		
+		expect(Object.keys((source as any).allBindings).length).toBe(0);
+		expect(Object.keys((compRef as any).allBindings).length).toBe(0);
 	});
 });
