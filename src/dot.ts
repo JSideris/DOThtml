@@ -5,6 +5,7 @@ import ElementVdom from "./vdom-nodes/element-vdom";
 import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
 import Watcher from "./reactivity/watcher";
+import Computed from "./reactivity/computed";
 // import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 // import { useStyles } from "./decoration/use-styles";
@@ -458,6 +459,10 @@ const makeDot = ()=>{
 		// o._value = props?.value;
 		o.value = (value);
 		return o;
+	}
+
+	_dot.computed = function<T>(getter: () => T): Watcher<T>{
+		return new Computed(getter);
 	}
 
 	_dot.ref = function(){

@@ -119,6 +119,7 @@ export class ContainerVdom extends Vdom{
 				}
 			}
 		}
+		cn.init();
 		let ret = this._addChild(cn);
 		return ret;
 	}

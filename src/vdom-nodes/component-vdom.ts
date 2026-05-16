@@ -3,6 +3,10 @@ import { Vdom } from "./vdom";
 import { ContainerVdom } from "./container-vdom";
 import renderStylesheet from "../helpers/render-stylesheet";
 import { EventManager } from "../events/event-manager";
+import Watcher from "../reactivity/watcher";
+import Binding from "../reactivity/binding";
+import { scheduler } from "../reactivity/scheduler";
+import { Priority } from "../reactivity/priority";
 
 let tagId = 0x10000;
 
@@ -13,10 +17,20 @@ export class ComponentVdom extends Vdom{
 	component: IDotComponent;
 	shadowEl: HTMLElement;
 	childShadowVdom: ContainerVdom;
+	private dot: IDotCore;
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
+	private isQueued = false;
+	private updateSubscription = {
+		active: true,
+		update: () => {
+			this.isQueued = false;
+			this.rebuild();
+		}
+	};
 
 	constructor(dot: IDotCore, component: IDotComponent){
 		super();
+		this.dot = dot;
 		this.component = component;
 
 		if(component._?._meta){
@@ -52,12 +66,97 @@ export class ComponentVdom extends Vdom{
 				}));
 			}
 		};
+	}
+
+	init() {
+		this.validateProps();
 
 		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
 		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
-		this.childShadowVdom = this.component.build(dot) as unknown as ContainerVdom;
+		this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
 		this.component.built && this.component.built();
 
+		this.subscribeToProps();
+	}
+
+	private subscribeToProps() {
+		const props = (this.component as any).props;
+		if (!props) return;
+		for (const key in props) {
+			const prop = props[key];
+			if (prop instanceof Watcher || prop instanceof Binding) {
+				prop.subscribe(() => this.requestUpdate());
+			}
+		}
+	}
+
+	private requestUpdate() {
+		if (!this.isQueued) {
+			this.isQueued = true;
+			scheduler.enqueue(this.updateSubscription as any, Priority.Normal);
+		}
+	}
+
+	private rebuild() {
+		if (!this.shadowEl) return;
+
+		// Unrender old children
+		this.childShadowVdom._unrender();
+
+		// Re-build
+		this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+
+		// Render new children into the existing shadow root
+		const shadow = (this.component._._meta as any).shadowRoot;
+		this.childShadowVdom._render(shadow);
+
+		this.component.built && this.component.built();
+	}
+
+	private validateProps() {
+		const schema = (this.component.constructor as any).props;
+		if (!schema) return;
+
+		const props = (this.component as any).props || {};
+
+		for (const key in schema) {
+			const rule = schema[key];
+			let value = props[key];
+
+			// Apply default
+			if (value === undefined && rule.default !== undefined) {
+				value = rule.default;
+				props[key] = value;
+			}
+
+			// Check required
+			if (rule.required && value === undefined) {
+				throw new Error(`Prop "${key}" is required for component ${this.component.constructor.name}.`);
+			}
+
+			// Check type (rudimentary)
+			if (value !== undefined && rule.type) {
+				const actualType = typeof value;
+				let expectedType: string;
+				if (rule.type === String) expectedType = "string";
+				else if (rule.type === Number) expectedType = "number";
+				else if (rule.type === Boolean) expectedType = "boolean";
+				else if (rule.type === Object) expectedType = "object";
+				else if (rule.type === Array) expectedType = "object"; // typeof [] is object
+				else expectedType = "unknown";
+
+				if (expectedType !== "unknown" && actualType !== expectedType) {
+					// Special check for Array
+					if (rule.type === Array && !Array.isArray(value)) {
+						throw new Error(`Prop "${key}" expected Array, but got ${actualType}.`);
+					}
+					if (rule.type !== Array) {
+						throw new Error(`Prop "${key}" expected ${expectedType}, but got ${actualType}.`);
+					}
+				}
+			}
+		}
+		(this.component as any).props = props;
 	}
 
 	// Sets up the custom element for the component.

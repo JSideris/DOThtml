@@ -13,6 +13,15 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 *   **Strongly Typed**: Built with TypeScript for maximum developer productivity.
 *   **Built-in Routing**: Everything you need for a modern SPA.
 *   **Update Batching**: High-performance rendering that groups multiple state changes into a single DOM update cycle.
+*   **Computed State**: Automatically derive values from other reactive sources.
+*   **Reactive Props**: Components that automatically re-render when their inputs change.
+
+### Advanced Reactivity: Computed State & Reactive Props
+DOThtml's reactivity system goes beyond simple value tracking, offering powerful tools for managing complex state dependencies.
+
+*   **Computed Watchers**: Create watchers that automatically derive their value from other watchers. They track their own dependencies and only re-evaluate when necessary.
+*   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Watcher or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
+*   **Runtime Prop Validation**: Define clear contracts for your components using static prop schemas. DOThtml validates types, required fields, and applies default values at runtime, helping you catch bugs early.
 
 ### Advanced Event Handling
 DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.

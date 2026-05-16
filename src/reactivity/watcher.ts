@@ -13,6 +13,8 @@ import Subscription from "./subscription";
 import { Priority } from "./priority";
 import { scheduler } from "./scheduler";
 
+export const dependencyStack: Array<any> = [];
+
 const TEXT_OFFSET = 0;
 const HTML_OFFSET = 1;
 const ATTR_OFFSET = 2;
@@ -59,6 +61,10 @@ export default class Watcher<T = any> implements IWatcher<T>{
 	}
 
 	get value(): T {
+		const active = dependencyStack[dependencyStack.length - 1];
+		if (active && active.addDependency) {
+			active.addDependency(this);
+		}
 		return this._value;
 	}
 

@@ -25,6 +25,10 @@ export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
 		return this._source._subscribe(this, subscriber);
 	}
 
+	subscribe(callback: Function): number {
+		return this._subscribe(callback);
+	}
+
 	_unsubscribe(id: number){
 		this._source._detachBinding(id);
 	}
