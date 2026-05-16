@@ -4,19 +4,21 @@
 // 	}
 // }
 
-import { dot } from "dothtml";
+import { dot, Router } from "dothtml";
 import Home from "./areas/home/home";
 import styles from "./index.css?inline";
 import Navbar from "./components/navbar/navbar";
 
 dot.useStyles(document, styles);
 
-// console.log(document.querySelectorAll("style")[0]);
+const routes = [
+	{ path: "/", component: Home, title: "DOThtml - The Modern Web Framework" },
+	{ path: "/docs", component: dot.div("Documentation coming soon..."), title: "DOThtml Documentation" }
+];
 
-// TODO: switch to using the router.
 dot(document.body)
 	.mount(new Navbar())
-	.mount(new Home());
+	.mount(new Router(), { routes });
 
 // if (module["hot"]) {
 // 	module["hot"].accept('./index.ts', () => {

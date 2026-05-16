@@ -5,9 +5,25 @@ import { IDotComponent } from "dothtml-interfaces";
 export interface RouteDefinition {
 	path: string;
 	component: any | (() => Promise<any>);
-	title?: string;
+	name?: string;
+	title?: string | ((params: any) => string);
 	children?: RouteDefinition[];
 	beforeEnter?: (to: string, from: string, next: (path?: string | boolean) => void) => void;
+}
+
+type NavigationGuard = (to: string, from: string, next: (path?: string | boolean) => void) => void;
+type AfterNavigationHook = (to: string, from: string) => void;
+
+const beforeHooks: NavigationGuard[] = [];
+const afterHooks: AfterNavigationHook[] = [];
+let globalRoutes: RouteDefinition[] = [];
+
+export function setGlobalRoutes(routes: RouteDefinition[]) {
+	globalRoutes = routes;
+}
+
+export function getGlobalRoutes() {
+	return globalRoutes;
 }
 
 /**
@@ -98,6 +114,7 @@ export const Router = dot.component(
 		private lastPath = "";
 
 		build(dot: any) {
+			setGlobalRoutes(this.props.routes);
 			return dot.div(dot.computed(() => {
 				const path = currentPath.value;
 				if (path === this.lastPath) return this.resolvedComponent.value;
@@ -111,8 +128,12 @@ export const Router = dot.component(
 				}
 
 				const proceed = (comp: any) => {
-					if (match.route.title) {
-						document.title = match.route.title;
+					let title = match.route.title;
+					if (typeof title === "function") {
+						title = title(match.params);
+					}
+					if (title) {
+						document.title = title;
 					}
 
 					if (typeof comp === "function" && !comp.prototype?.build) {
@@ -121,28 +142,40 @@ export const Router = dot.component(
 						if (result instanceof Promise) {
 							result.then(m => {
 								this.resolvedComponent.value = m.default || m;
+								afterHooks.forEach(h => h(path, previousPath.value));
 							});
 							this.resolvedComponent.value = this.props.loading || dot.div("Loading...");
 							return;
 						}
 					}
 					this.resolvedComponent.value = comp;
+					afterHooks.forEach(h => h(path, previousPath.value));
 				};
 
+				const guards = [...beforeHooks];
 				if (match.route.beforeEnter) {
-					match.route.beforeEnter(path, previousPath.value, (nextVal) => {
+					guards.push(match.route.beforeEnter);
+				}
+
+				const runGuards = (index: number) => {
+					if (index >= guards.length) {
+						proceed(match.route.component);
+						return;
+					}
+
+					guards[index](path, previousPath.value, (nextVal) => {
 						if (nextVal === false) {
 							navigate(previousPath.value, true);
 						} else if (typeof nextVal === "string") {
 							navigate(nextVal, true);
 						} else {
-							proceed(match.route.component);
+							runGuards(index + 1);
 						}
 					});
-					this.resolvedComponent.value = this.props.loading || dot.div("Loading...");
-				} else {
-					proceed(match.route.component);
-				}
+				};
+
+				this.resolvedComponent.value = this.props.loading || dot.div("Loading...");
+				runGuards(0);
 
 				return this.resolvedComponent.value;
 			}).bindAs((C: any) => {
@@ -163,3 +196,11 @@ export const Router = dot.component(
 		}
 	}
 );
+
+(Router as any).beforeEach = (guard: NavigationGuard) => {
+	beforeHooks.push(guard);
+};
+
+(Router as any).afterEach = (hook: AfterNavigationHook) => {
+	afterHooks.push(hook);
+};

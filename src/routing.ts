@@ -26,6 +26,31 @@ export function navigate(path: string, replace: boolean = false) {
 	currentHash.value = window.location.hash;
 }
 
+/**
+ * Returns a reactive object containing the current query parameters.
+ */
+export function useQueryParams() {
+	return dot.computed(() => {
+		const search = currentSearch.value;
+		const params = new URLSearchParams(search);
+		const result: Record<string, string> = {};
+		params.forEach((value, key) => {
+			result[key] = value;
+		});
+		return result;
+	});
+}
+
+/**
+ * Returns a reactive string containing the current hash (without the #).
+ */
+export function useHash() {
+	return dot.computed(() => {
+		const hash = currentHash.value;
+		return hash.startsWith("#") ? hash.substring(1) : hash;
+	});
+}
+
 // Keep the reactive state in sync with browser back/forward buttons.
 if (typeof window !== "undefined") {
 	window.addEventListener("popstate", () => {
