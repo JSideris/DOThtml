@@ -186,8 +186,12 @@ export default class StyleVNode extends VMetaNode {
 		if (registeredProp) {
 			cssProp = registeredProp.cssName;
 			cssUnit = registeredProp.unit;
-			if (registeredProp.type === "length" && typeof cssValue === "number") {
-				cssValue = formatCssLength(cssValue, cssUnit);
+			if ((registeredProp.type === "length" || registeredProp.type === "hybrid") && typeof cssValue === "number") {
+				if (registeredProp.type === "hybrid" && cssUnit === undefined) {
+					// Leave as unitless number
+				} else {
+					cssValue = formatCssLength(cssValue, cssUnit);
+				}
 			}
 		}
 
@@ -225,8 +229,12 @@ export default class StyleVNode extends VMetaNode {
 		if (registeredProp) {
 			cssProp = registeredProp.cssName;
 			cssUnit = registeredProp.unit;
-			if (registeredProp.type === "length" && typeof cssValue === "number") {
-				cssValue = formatCssLength(cssValue, cssUnit);
+			if ((registeredProp.type === "length" || registeredProp.type === "hybrid") && typeof cssValue === "number") {
+				if (registeredProp.type === "hybrid" && cssUnit === undefined) {
+					// Leave as unitless number
+				} else {
+					cssValue = formatCssLength(cssValue, cssUnit);
+				}
 			}
 		}
 		return `${cssProp}: ${cssValue}; `;

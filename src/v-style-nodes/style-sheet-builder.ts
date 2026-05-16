@@ -41,8 +41,12 @@ export default class StyleSheetBuilder {
 
 				if (registered) {
 					cssProp = registered.cssName;
-					if (registered.type === "length" && typeof p.value === "number") {
-						cssValue = formatCssLength(p.value, registered.unit);
+					if ((registered.type === "length" || registered.type === "hybrid") && typeof p.value === "number") {
+						if (registered.type === "hybrid" && registered.unit === undefined) {
+							// Leave as unitless number
+						} else {
+							cssValue = formatCssLength(p.value, registered.unit);
+						}
 					} else if (registered.unit && typeof p.value === "number") {
 						cssValue = `${p.value}${registered.unit}`;
 					}
