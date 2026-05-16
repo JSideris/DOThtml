@@ -22,72 +22,85 @@ export function createStore<
 		return () => storeRegistry.get(id);
 	}
 
-	const store: any = {
-		$id: id,
-		_state: {} as Record<string, Watcher>,
-		_getters: {} as Record<string, Computed<any>>
-	};
+	const createInstance = () => {
+		const store: any = {
+			$id: id,
+			_state: {} as Record<string, Watcher>,
+			_getters: {} as Record<string, Computed<any>>
+		};
 
-	// Initialize state
-	if (stateFn) {
-		const rawState = stateFn();
-		for (const key in rawState) {
-			const watcher = new Watcher();
-			watcher.value = rawState[key];
-			store._state[key] = watcher;
-			
-			Object.defineProperty(store, key, {
-				get: () => store._state[key],
-				enumerable: true,
-				configurable: true
-			});
+		// Initialize state
+		if (stateFn) {
+			const rawState = stateFn();
+			for (const key in rawState) {
+				const watcher = new Watcher();
+				watcher.value = rawState[key];
+				store._state[key] = watcher;
+				
+				Object.defineProperty(store, key, {
+					get: () => store._state[key],
+					enumerable: true,
+					configurable: true
+				});
+			}
 		}
-	}
 
-	// Initialize getters
-	if (getters) {
-		for (const key in getters) {
-			const computed = new Computed(() => getters[key].call(store, store));
-			store._getters[key] = computed;
+		// Initialize getters - first define them as undefined so they can be accessed
+		if (getters) {
+			for (const key in getters) {
+				Object.defineProperty(store, key, {
+					get: () => store._getters[key],
+					enumerable: true,
+					configurable: true
+				});
+			}
 
-			Object.defineProperty(store, key, {
-				get: () => store._getters[key],
-				enumerable: true,
-				configurable: true
-			});
+			for (const key in getters) {
+				const computed = new Computed(() => getters[key].call(store, store));
+				store._getters[key] = computed;
+			}
 		}
-	}
 
-	// Bind actions
-	if (actions) {
-		for (const key in actions) {
-			store[key] = actions[key].bind(store);
+		// Bind actions
+		if (actions) {
+			for (const key in actions) {
+				store[key] = actions[key].bind(store);
+			}
 		}
-	}
 
-	store.$dispose = () => {
-		for (const key in store._getters) {
-			store._getters[key].dispose();
-		}
+		store.$dispose = () => {
+			for (const key in store._getters) {
+				store._getters[key].dispose();
+			}
+			if (id) {
+				storeRegistry.delete(id);
+			}
+			store._state = {};
+			store._getters = {};
+		};
+
 		if (id) {
-			storeRegistry.delete(id);
+			storeRegistry.set(id, store);
 		}
-		store._state = {};
-		store._getters = {};
+
+		return store;
 	};
 
+	let singletonStore: any;
 	if (id) {
-		storeRegistry.set(id, store);
+		singletonStore = createInstance();
 	}
 
 	return () => {
+		let currentStore = id ? singletonStore : createInstance();
+		
 		if (!id) {
 			const currentComponent = getCurrentComponent();
 			if (currentComponent && (currentComponent as any).registerDisposable) {
-				(currentComponent as any).registerDisposable(() => store.$dispose());
+				(currentComponent as any).registerDisposable(() => currentStore.$dispose());
 			}
 		}
-		return store;
+		return currentStore;
 	};
 }
 

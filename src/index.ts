@@ -3,6 +3,7 @@
 // export * from "dothtml-interfaces";
 
 import dot from "./dot";
+import { Priority } from "./reactivity/priority";
 import { 
 	currentPath, 
 	currentSearch, 
@@ -42,7 +43,7 @@ declare global {
 window.dot = dot;
 document["_dotId"] = "default";
 
-export { dot };
+export { dot, Priority };
 export * from "./routing";
 
 

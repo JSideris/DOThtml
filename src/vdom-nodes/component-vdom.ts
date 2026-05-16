@@ -84,6 +84,13 @@ export class ComponentVdom extends Vdom{
 			}
 			delete (component as any)._trackedComputeds;
 		}
+
+		if ((component as any)._trackedDisposables) {
+			for (const d of (component as any)._trackedDisposables) {
+				this.registerDisposable(d);
+			}
+			delete (component as any)._trackedDisposables;
+		}
 	}
 
 	registerComputed(watcher: Computed<any>) {

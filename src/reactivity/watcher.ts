@@ -78,20 +78,27 @@ export default class Watcher<T = any> implements IWatcher<T>{
 
 	private updater(value: T, priority: Priority = Priority.Normal){
 		for(let b in this.allBindings){
-			scheduler.enqueue(this.allBindings[b], priority);
+			const sub = this.allBindings[b];
+			if ((sub as any).sync) {
+				sub.update();
+			} else {
+				scheduler.enqueue(sub, priority);
+			}
 		}
 	}
 
 	nextId = 1;
 
-	subscribe(callback: Function) {
+	subscribe(callback: Function, sync: boolean = false) {
 		let br = new Binding(this);
-		return br._subscribe(callback);
+		return br._subscribe(callback, sync);
 	}
 
-	_subscribe(boundReactive: IBinding, item: any){
+	_subscribe(boundReactive: IBinding, item: any, sync: boolean = false){
 		let id = this.nextId++;
-		this.allBindings[id] = new Subscription(boundReactive, item);
+		const sub = new Subscription(boundReactive, item);
+		(sub as any).sync = sync;
+		this.allBindings[id] = sub;
 
 		return id;
 	}

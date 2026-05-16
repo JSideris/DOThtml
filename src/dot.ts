@@ -336,74 +336,80 @@ const makeDot = ()=>{
 	}
 
 	{ // Elements
+		const isContent = (arg: any) => {
+			return arg instanceof ContainerVdom || 
+				arg instanceof Vdom || 
+				(typeof arg == "object" && arg?.build) || 
+				arg instanceof Watcher || 
+				arg instanceof Binding || 
+				typeof arg === "string" || 
+				typeof arg === "number" || 
+				typeof arg === "boolean" || 
+				Array.isArray(arg);
+		};
+
+		const applyContent = (n: ElementVdom, cont: any) => {
+			if(Array.isArray(cont)){
+				for(let i = 0; i < cont.length; i++) applyContent(n, cont[i]);
+			}
+			else if(cont instanceof ContainerVdom){
+				for(let i = 0; i < cont._children.length; i++) n.children._addChild(cont._children[i]);
+			}
+			else if(cont instanceof Vdom){
+				n.children._addChild(cont);
+			}
+			else if(typeof cont == "object" && cont?.build){
+				n.children.mount(cont);
+			}
+			else{
+				if(cont !== null && cont !== undefined){
+					let val = cont;
+					if(val instanceof Watcher){
+						val = val.bind();
+					}
+					n.children._addChild(new TextVdom(val));
+				}
+			}
+		};
+
+		const applyAttributes = (n: ElementVdom, attrs: any) => {
+			for(let k in attrs) {
+				let attr = attrs[k];
+				if(attr instanceof Watcher && !(attr instanceof Ref)) attr = attr.bind();
+				let eventName = k;
+				let modifiers = [];
+				if(k.includes(".")){
+					const parts = k.split(".");
+					eventName = parts[0];
+					modifiers = parts.slice(1);
+				}
+
+				const isEvent = allEventAttr[eventName] || (eventName.startsWith("on") && eventName[2] && eventName[2] === eventName[2].toUpperCase());
+
+				if(isEvent) {
+					if(typeof attrs[k] !== "function") {
+						throw new Error(`Value of event attribute ${k} must be a function.`);
+					}
+
+					(n as any).addEventListener(eventName.substring(2).toLowerCase(), attr, modifiers);
+				} else {
+					n.setAttr(k, attr);
+				}
+			}
+		};
+
 		for(let i = 0; i < allTags.length; i++){
 			let E = allTags[i];
-			ContainerVdom.prototype[E] = function(a, b){
+			ContainerVdom.prototype[E] = function(...args: any[]){
 				let n = new ElementVdom(dot, E);
 
-				let cont;
-				let attrs;
-				{ // Find out which arg is the content and which is the attributes.
-					if(a instanceof ContainerVdom || a instanceof Vdom || (typeof a == "object" && a?.build) || a instanceof Watcher || a instanceof Binding || typeof a === "string" || typeof a === "number" || typeof a === "boolean" || Array.isArray(a)){
-						cont = a;
-						attrs = b;
+				for(let j = 0; j < args.length; j++){
+					let arg = args[j];
+					if(isContent(arg)){
+						applyContent(n, arg);
 					}
-					if(b instanceof ContainerVdom || b instanceof Vdom || (typeof b == "object" && b?.build) || b instanceof Watcher || b instanceof Binding || typeof b === "string" || typeof b === "number" || typeof b === "boolean" || Array.isArray(b)){
-						if(cont) throw new Error("Both element arguments can't be content.");
-						cont = b;
-						attrs = a;
-					}
-
-					if(!cont && (a || b)){
-						attrs = (a || b);
-					}
-				}
-
-				{ // Apply attributes to element.
-					if(attrs){
-						for(let k in attrs) {
-							let attr = attrs[k];
-							if(attr instanceof Watcher && !(attr instanceof Ref)) attr = attr.bind();
-							let eventName = k;
-							let modifiers = [];
-							if(k.includes(".")){
-								const parts = k.split(".");
-								eventName = parts[0];
-								modifiers = parts.slice(1);
-							}
-
-							const isEvent = allEventAttr[eventName] || (eventName.startsWith("on") && eventName[2] && eventName[2] === eventName[2].toUpperCase());
-
-							if(isEvent) {
-								if(typeof attrs[k] !== "function") {
-									throw new Error(`Value of event attribute ${k} must be a function.`);
-								}
-
-								(n as any).addEventListener(eventName.substring(2).toLowerCase(), attr, modifiers);
-							} else {
-								n.setAttr(k, attr);
-							}
-						}
-					}
-				}
-				
-				{ // Add children to new element.
-					if(cont instanceof ContainerVdom){
-						n.children = cont;
-					}
-					else if(cont instanceof Vdom){
-						n.children._addChild(cont);
-					}
-					else if(typeof cont == "object" && cont?.build){
-						n.children.mount(cont);
-					}
-					else{
-						if(cont !== null && cont !== undefined){
-							if(cont instanceof Watcher){
-								cont = cont.bind();
-							}
-							n.children._addChild(new TextVdom(cont));
-						}
+					else if(arg && typeof arg === "object"){
+						applyAttributes(n, arg);
 					}
 				}
 

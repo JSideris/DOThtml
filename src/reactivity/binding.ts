@@ -25,12 +25,12 @@ export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
 		this._source.value = value;
 	}
 
-	_subscribe(subscriber: any): number{
-		return this._source._subscribe(this, subscriber);
+	_subscribe(subscriber: any, sync: boolean = false): number{
+		return (this._source as any)._subscribe(this, subscriber, sync);
 	}
 
-	subscribe(callback: Function): number {
-		return this._subscribe(callback);
+	subscribe(callback: Function, sync: boolean = false): number {
+		return this._subscribe(callback, sync);
 	}
 
 	_unsubscribe(id: number){

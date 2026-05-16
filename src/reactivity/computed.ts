@@ -102,7 +102,7 @@ export default class Computed<T> extends Watcher<T> {
 
 		for (const watcher of this.newDependencies) {
 			if (!this.dependencies.has(watcher)) {
-				const subId = watcher.subscribe(() => this.requestUpdate());
+				const subId = watcher.subscribe(() => this.requestUpdate(), true);
 				this.dependencies.set(watcher, subId);
 			}
 		}

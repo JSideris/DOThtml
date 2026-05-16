@@ -1,6 +1,6 @@
 {
   "name": "dothtml",
-  "version": "6.0.0-beta.43",
+  "version": "6.0.0-beta.46",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
   "main": "./build_module/index.js",
   "exports": "./build_module/index.js",
@@ -9,10 +9,10 @@
     "build_module/**/*"
   ],
   "scripts": {
-    "test": "npm run build & jest",
+    "test": "npm run build && jest",
     "build": "tsc --declaration",
     "buildumd": "webpack",
-    "publish-beta": "npm run build & npm publish --tag beta"
+    "publish-beta": "npm run build && npm publish --tag beta"
   },
   "repository": {
     "type": "git",

@@ -6,7 +6,9 @@ export function component<T extends { new(...args: any[]): IDotComponent }>(Ctor
 		constructor(...args: any[]) {
 			const tracker = {
 				computedWatchers: [],
-				registerComputed(w: any) { this.computedWatchers.push(w); }
+				disposables: [],
+				registerComputed(w: any) { this.computedWatchers.push(w); },
+				registerDisposable(d: any) { this.disposables.push(d); }
 			};
 			pushComponent(tracker as any);
 			try {
@@ -14,10 +16,21 @@ export function component<T extends { new(...args: any[]): IDotComponent }>(Ctor
 			} finally {
 				popComponent();
 			}
-			// Store the tracked watchers on the instance so ComponentVdom can pick them up
+
+			// Support passing props via constructor: new MyComponent({ prop1: 'val' })
+			if (args[0] && typeof args[0] === "object" && !args[0].build && (Ctor as any).props) {
+				if (!this.props) this.props = {};
+				Object.assign(this.props, args[0]);
+			}
+
+			// Store the tracked items on the instance so ComponentVdom can pick them up
 			(this as any)._trackedComputeds = tracker.computedWatchers;
+			(this as any)._trackedDisposables = tracker.disposables;
 		}
 	};
+
+	// Preserve the original class name for better debugging and error messages
+	Object.defineProperty(decorated, 'name', { value: Ctor.name });
 	
 	// Copy static properties (like props schema)
 	for (const key of Object.getOwnPropertyNames(Ctor)) {
