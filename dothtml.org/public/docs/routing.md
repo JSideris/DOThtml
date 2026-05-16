@@ -1,6 +1,6 @@
 # Routing in DOThtml
 
-DOThtml provides a powerful, reactive routing system that integrates seamlessly with its virtual DOM and watcher-based reactivity.
+DOThtml provides a powerful, reactive routing system that integrates seamlessly with its virtual DOM and signal-based reactivity.
 
 ## Basic Usage
 

@@ -1,6 +1,6 @@
 import Binding from "../reactivity/binding";
 import Ref from "../reactivity/ref";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import { ContainerVdom } from "./container-vdom";
 
 export type PrimativeAttributeValueType = string|number|boolean;

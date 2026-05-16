@@ -1,7 +1,7 @@
 import dot from "../../src/dot";
 import { IDotComponent, IDotCore } from "dothtml-interfaces";
 import formatHTML from "./formatHTML";
-import Watcher from "../../src/reactivity/watcher";
+import Signal from "../../src/reactivity/signal";
 
 describe("Advanced Reactivity and Edge Cases", () => {
 	beforeEach(() => {
@@ -9,7 +9,7 @@ describe("Advanced Reactivity and Edge Cases", () => {
 	});
 
 	test("Constructor Cleanup: computeds in class properties are disposed", () => {
-		const source = dot.watch(1);
+		const source = dot.state(1);
 
 		@(dot.component as any)
 		class MyComponent implements IDotComponent {
@@ -31,46 +31,46 @@ describe("Advanced Reactivity and Edge Cases", () => {
 		const shadowRoot = document.body.children[0].shadowRoot;
 		expect(formatHTML(shadowRoot?.innerHTML || "")).toContain("2");
 		
-		const initialBindings = Object.keys((source as any).allBindings).length;
+		const initialBindings = Object.keys((source as any).subscribers).length;
 		expect(initialBindings).toBeGreaterThan(0);
 
 		(vdom as any)._unrender();
 		dot.flushSync();
 
 		// After unmount, the computed should be disposed, so it should detach from source.
-		expect(Object.keys((source as any).allBindings).length).toBe(0);
+		expect(Object.keys((source as any).subscribers).length).toBe(0);
 	});
 
-	test("Reactive Validation: type: String accepts Watcher<string>", () => {
+	test("Reactive Validation: type: String accepts Signal<string>", () => {
 		@(dot.component as any)
 		class Child implements IDotComponent {
 			static props = {
 				name: { type: String, required: true }
 			};
-			props: { name: Watcher<string> | string };
+			props: { name: Signal<string> | string };
 			build(dot: IDotCore) {
 				return dot.div(this.props.name);
 			}
 		}
 
-		const nameWatcher = dot.watch("John");
+		const nameSignal = dot.state("John");
 		
 		// Should NOT throw
-		(dot(document.body) as any).mount(new Child(), { name: nameWatcher });
+		(dot(document.body) as any).mount(new Child(), { name: nameSignal });
 		dot.flushSync();
 
 		const shadowRoot = document.body.children[0].shadowRoot;
 		expect(formatHTML(shadowRoot?.innerHTML || "")).toContain("john");
 
 		// Should throw for wrong type even if reactive
-		const ageWatcher = dot.watch(25);
+		const ageSignal = dot.state(25);
 		expect(() => {
-			(dot(document.body) as any).mount(new Child(), { name: ageWatcher });
+			(dot(document.body) as any).mount(new Child(), { name: ageSignal });
 		}).toThrow(/expected string, but got number/);
 	});
 
 	test("Error Recovery: computed recovers after temporary failure", () => {
-		const source = dot.watch(1);
+		const source = dot.state(1);
 		const computed = dot.computed(() => {
 			if (source.value < 0) {
 				throw new Error("Negative value not allowed");
@@ -92,7 +92,7 @@ describe("Advanced Reactivity and Edge Cases", () => {
 	});
 
 	test("Deep Propagation: A -> B -> C -> DOM chain efficiency", () => {
-		const a = dot.watch(1);
+		const a = dot.state(1);
 		const b = dot.computed(() => a.value + 1);
 		const c = dot.computed(() => b.value + 1);
 		
@@ -100,7 +100,7 @@ describe("Advanced Reactivity and Edge Cases", () => {
 		@(dot.component as any)
 		class Comp implements IDotComponent {
 			static props = { val: { type: Number } };
-			props: { val: Watcher<number> };
+			props: { val: Signal<number> };
 			build(dot: IDotCore) {
 				renderCount++;
 				return dot.div(this.props.val);
@@ -121,14 +121,14 @@ describe("Advanced Reactivity and Edge Cases", () => {
 		expect(formatHTML(shadowRoot?.innerHTML || "")).toContain("12");
 	});
 
-	test("Array Mutation: computed reacts to updateObservers", () => {
-		const list = dot.watch([1, 2, 3]);
+	test("Array Mutation: computed reacts to refresh", () => {
+		const list = dot.state([1, 2, 3]);
 		const sum = dot.computed(() => list.value.reduce((a, b) => a + b, 0));
 
 		expect(sum.value).toBe(6);
 
 		list.value.push(4);
-		list.updateObservers();
+		list.refresh();
 		dot.flushSync();
 
 		expect(sum.value).toBe(10);

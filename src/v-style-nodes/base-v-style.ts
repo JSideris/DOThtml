@@ -1,5 +1,5 @@
 import Binding from "../reactivity/binding";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import cssProps from "../css/css-props";
 
 export default class BaseVStyle {

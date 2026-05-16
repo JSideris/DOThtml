@@ -1,5 +1,5 @@
 import { IBinding, IWatcher } from "dothtml-interfaces";
-import Watcher from "./watcher";
+import Signal from "./signal";
 
 export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
 	_source: IWatcher<T>;
@@ -34,7 +34,11 @@ export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
 	}
 
 	_unsubscribe(id: number){
-		this._source._detachBinding(id);
+		this._source.unsubscribe(id);
+	}
+
+	unsubscribe(id: number) {
+		this._source.unsubscribe(id);
 	}
 
 	constructor(source: IWatcher<T>){

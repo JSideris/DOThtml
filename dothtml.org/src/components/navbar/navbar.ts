@@ -5,7 +5,7 @@ import SmallLogo from "../small-logo/small-logo";
 
 @dot.component
 export default class Navbar implements IDotComponent {
-	private currentPath = dot.watch(window.location.hash || "#/");
+	private currentPath = dot.state(window.location.hash || "#/");
 
 	constructor() {
 		window.addEventListener("hashchange", () => {

@@ -50,11 +50,11 @@ dot.div("Filtered Content")
 
 ## Reactive Styling
 
-The styling system is fully integrated with DOThtml's reactivity system. You can pass `Watcher` or `Binding` objects directly to any style method.
+The styling system is fully integrated with DOThtml's reactivity system. You can pass `Signal` or `Binding` objects directly to any style method.
 
 ```javascript
-const size = dot.watch(20);
-const color = dot.watch("blue");
+const size = dot.state(20);
+const color = dot.state("blue");
 
 dot.div("I am reactive!")
   .style(s => s
@@ -68,7 +68,7 @@ size.value = 40; // The font size updates automatically in the DOM.
 
 ### Batching and Performance
 
-Style updates are automatically batched by the DOThtml scheduler. If you update multiple watchers that drive styles on the same element (or different elements) in a single task, DOThtml will group those changes and apply them in a single DOM update cycle, minimizing layout thrashing.
+Style updates are automatically batched by the DOThtml scheduler. If you update multiple signals that drive styles on the same element (or different elements) in a single task, DOThtml will group those changes and apply them in a single DOM update cycle, minimizing layout thrashing.
 
 ## CSS Variables (Custom Properties)
 
@@ -138,7 +138,7 @@ DOThtml provides a global `dot.css` builder that is automatically bound to the d
 
 ```javascript
 // In your app initialization
-const themeColor = dot.watch("blue");
+const themeColor = dot.state("blue");
 dot.css.variable("primary", themeColor);
 
 // Any component can now use this global variable
@@ -193,7 +193,7 @@ class MyComponent extends IDotComponent {
 }
 ```
 
-> **Performance Note**: The `stylize()` method is intended for **static** styles. To prevent performance pitfalls, DOThtml will throw an error if you try to pass a `Watcher` or `Binding` directly into a `stylize()` block. Instead, use `hostStyle()` or `dot.css` to bind reactive data to CSS variables, and reference those variables in `stylize()` using `s.v()`.
+> **Performance Note**: The `stylize()` method is intended for **static** styles. To prevent performance pitfalls, DOThtml will throw an error if you try to pass a `Signal` or `Binding` directly into a `stylize()` block. Instead, use `hostStyle()` or `dot.css` to bind reactive data to CSS variables, and reference those variables in `stylize()` using `s.v()`.
 
 DOThtml automatically caches these stylesheets on the component's constructor, ensuring that the CSS is parsed only once per component type.
 
@@ -206,7 +206,7 @@ Use the `hostStyle()` method to bind reactive styles to the component's host ele
 ```javascript
 class ThemeableBox extends IDotComponent {
   hostStyle(s) {
-    // Bind a reactive watcher to a CSS variable on the host element.
+    // Bind a reactive signal to a CSS variable on the host element.
     s.variable("box-color", this.props.color);
   }
 
@@ -246,7 +246,7 @@ While `dot.css` targets the document root, you can create style nodes that targe
 ```javascript
 import StyleVNode from "dothtml/v-meta-nodes/style-v-node";
 
-const color = dot.watch("red");
+const color = dot.state("red");
 const globalStyle = new StyleVNode(dot.css.color(color));
 globalStyle.render(".my-dynamic-class"); 
 
@@ -261,7 +261,7 @@ DOThtml's styling system is built for performance:
 - **Constructable Stylesheets**: Uses `CSSStyleSheet` and `adoptedStyleSheets` where supported for ultra-fast style sharing.
 - **Deduplication**: `CSSStyleSheet` instances are cached based on their content. If multiple components or global registrations use the same CSS string, they will share the same underlying stylesheet object.
 - **Component Caching**: Component-level styles (from `stylize()`) are cached on the component's constructor, so they are only generated once.
-- **Reactive Batching**: Style updates via `Watchers` are batched by the scheduler to prevent layout thrashing.
+- **Reactive Batching**: Style updates via `Signals` are batched by the scheduler to prevent layout thrashing.
 
 ## Server-Side Rendering (SSR)
 
@@ -280,7 +280,7 @@ By default, DOThtml batches updates asynchronously. In your tests, you can use `
 
 ```javascript
 test("reactive style update", () => {
-  const color = dot.watch("red");
+  const color = dot.state("red");
   dot(document.body).div().style(s => s.color(color));
 
   color.value = "blue";

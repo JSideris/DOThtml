@@ -7,7 +7,7 @@ export default class TerminalWidget implements IDotComponent {
 		command: { type: String, default: "npm install dothtml" }
 	};
 
-	private copied = dot.watch(false);
+	private copied = dot.state(false);
 
 	copy() {
 		navigator.clipboard.writeText(this.props.command);

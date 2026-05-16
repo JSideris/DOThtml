@@ -1,5 +1,5 @@
 import Binding from "../reactivity/binding";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import { Vdom } from "./vdom";
 
 // TODO: experiment with turning all text into an observable to see if it improves render performance.

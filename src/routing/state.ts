@@ -1,9 +1,9 @@
 import dot from "../dot";
 
-export const currentPath = dot.watch(typeof window !== "undefined" ? window.location.pathname : "/");
-export const previousPath = dot.watch(typeof window !== "undefined" ? window.location.pathname : "/");
-export const currentSearch = dot.watch(typeof window !== "undefined" ? window.location.search : "");
-export const currentHash = dot.watch(typeof window !== "undefined" ? window.location.hash : "");
+export const currentPath = dot.state(typeof window !== "undefined" ? window.location.pathname : "/");
+export const previousPath = dot.state(typeof window !== "undefined" ? window.location.pathname : "/");
+export const currentSearch = dot.state(typeof window !== "undefined" ? window.location.search : "");
+export const currentHash = dot.state(typeof window !== "undefined" ? window.location.hash : "");
 
 /**
  * Navigates to a new path programmatically.

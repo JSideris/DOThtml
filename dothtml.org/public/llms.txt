@@ -9,7 +9,7 @@
 
 ## API & Features
 - [Components](https://dothtml.org/docs/components.md): Building blocks, props, validation, and lifecycle hooks.
-- [Reactivity](https://dothtml.org/docs/reactivity.md): Watchers, computed state, and reactive bindings.
+- [Reactivity](https://dothtml.org/docs/reactivity.md): Signals, computed state, and reactive bindings.
 - [Stores](https://dothtml.org/docs/stores.md): Centralized state management for enterprise-scale applications.
 - [Refs](https://dothtml.org/docs/refs.md): Direct access to DOM elements and component instances.
 - [Styling](https://dothtml.org/docs/styling.md): Fluent, reactive, and high-performance styling system.

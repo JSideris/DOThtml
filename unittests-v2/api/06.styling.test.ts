@@ -120,7 +120,7 @@ describe("Component styles.", ()=>{
 	});
 
 	test("Host variable binding.", ()=>{
-		let color = dot.watch("rgb(0, 0, 255)");
+		let color = dot.state("rgb(0, 0, 255)");
 		
 		class MyComp implements IDotComponent{
 			_?: FrameworkItems | undefined;
@@ -198,7 +198,7 @@ describe("Element styles.", ()=>{
 
 	test("Style builder on element w/ observable value.", ()=>{
 
-		let reactiveColor = dot.watch("red");
+		let reactiveColor = dot.state("red");
 
 		(dot(document.body) as any).div({ 
 			id: "test-el", 
@@ -217,8 +217,8 @@ describe("Element styles.", ()=>{
 
 	test("Style builder on element w/ observable value - hidden element.", ()=>{
 
-		let reactiveColor = dot.watch("red");
-		let showElement = dot.watch(true);
+		let reactiveColor = dot.state("red");
+		let showElement = dot.state(true);
 
 		(dot(document.body) as any).when(showElement, 
 			(dot as any).div({ 
@@ -272,7 +272,7 @@ describe("Element styles.", ()=>{
 
 	test("Filter builder on element w/ observable value (string).", ()=>{
 
-		let reactiveColor = dot.watch(4) as any;
+		let reactiveColor = dot.state(4) as any;
 
 		(dot(document.body) as any).div({ 
 			id: "test-el", 
@@ -293,7 +293,7 @@ describe("Element styles.", ()=>{
 
 	test("Filter builder on element w/ observable value (numeric).", ()=>{
 
-		let reactiveColor = dot.watch(4);
+		let reactiveColor = dot.state(4);
 
 		(dot(document.body) as any).div(
 			{ id: "test-el", style: {
@@ -311,7 +311,7 @@ describe("Element styles.", ()=>{
 	});
 
 	test("Multi-variat transform w/ observables.", ()=>{
-		let x = dot.watch(4);
+		let x = dot.state(4);
 
 		(dot(document.body) as any).div({ 
 			id: "test-el", 
@@ -331,7 +331,7 @@ describe("Element styles.", ()=>{
 	});
 
 	test("Multi-variat transform w/ observables - specific dimensions.", ()=>{
-		let x = dot.watch(4);
+		let x = dot.state(4);
 
 		(dot(document.body) as any).div({ 
 			id: "test-el", 
@@ -352,7 +352,7 @@ describe("Element styles.", ()=>{
 	});
 
 	test("Multi-variat transform w/ observables - specific dimensions with array.", ()=>{
-		let x = dot.watch(4);
+		let x = dot.state(4);
 
 		(dot(document.body) as any).div({ 
 			id: "test-el", 
@@ -427,8 +427,8 @@ describe("Overloads.", ()=>{
 	});
 	
 	test("Length overload with observable.", ()=>{
-		let cms = dot.watch(5);
-		let inches = dot.watch(2);
+		let cms = dot.state(5);
+		let inches = dot.state(2);
 		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {

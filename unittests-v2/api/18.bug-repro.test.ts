@@ -51,7 +51,7 @@ describe("Bug Reproductions", () => {
 
 	describe("Issue 3: Reactive Binding Propagation in Nested Builders", () => {
 		test("transform updates when binding changes", () => {
-			const rotation = dot.watch(10);
+			const rotation = dot.state(10);
 			(dot(document.body) as any).div({
 				id: "test-el",
 				style: (s: any) => s.transform({

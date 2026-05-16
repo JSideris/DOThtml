@@ -1,6 +1,6 @@
 import { deepEqual, removeNodesBetween } from "../helpers/tools";
 import Binding from "../reactivity/binding";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
 import { ObservableCollection } from "./vdom-types";
@@ -176,7 +176,7 @@ export default class CollectionVdom extends Vdom{
 					}
 					state.nextMappedItems.push(existing);
 				} else {
-					const reactive = new Watcher();
+					const reactive = new Signal();
 					const observableIndex = reactive.bind();
 					observableIndex._set(state.currentIndex);
 					

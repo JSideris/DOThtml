@@ -1,4 +1,4 @@
-import Watcher from "./watcher";
+import Signal from "./signal";
 import Computed from "./computed";
 import { getCurrentComponent } from "../vdom-nodes/component-context";
 
@@ -25,7 +25,7 @@ export function createStore<
 	const createInstance = () => {
 		const store: any = {
 			$id: id,
-			_state: {} as Record<string, Watcher>,
+			_state: {} as Record<string, Signal>,
 			_getters: {} as Record<string, Computed<any>>
 		};
 
@@ -33,9 +33,9 @@ export function createStore<
 		if (stateFn) {
 			const rawState = stateFn();
 			for (const key in rawState) {
-				const watcher = new Watcher();
-				watcher.value = rawState[key];
-				store._state[key] = watcher;
+				const signal = new Signal();
+				signal.value = rawState[key];
+				store._state[key] = signal;
 				
 				Object.defineProperty(store, key, {
 					get: () => store._state[key],

@@ -45,7 +45,7 @@ describe("Advanced Refs.", () => {
 
 	test("Ref.ready() promise.", async () => {
 		let ref = (dot as any).ref();
-		let condition = dot.watch(false);
+		let condition = dot.state(false);
 		
 		let readyResolved = false;
 		let readyElement: HTMLElement | null = null;
@@ -89,7 +89,7 @@ describe("Advanced Refs.", () => {
 
 	test("RefCollection reactive updates.", () => {
 		let refs = (dot as any).refCollection();
-		let items = dot.watch(["a", "b"]);
+		let items = dot.state(["a", "b"]);
 		
 		dot(document.body).each(items, (item, i, k) => dot.div({ ref: refs.get(k) } as any, item));
 		
@@ -118,7 +118,7 @@ describe("Advanced Refs.", () => {
 			callCount++;
 		};
 		
-		let condition = dot.watch(true);
+		let condition = dot.state(true);
 		dot(document.body).when(condition, dot.div({ ref: refCallback } as any, "callback test"));
 		
 		expect(callCount).toBe(1);
@@ -145,7 +145,7 @@ describe("Advanced Refs.", () => {
 			callCount++;
 		};
 		
-		let condition = dot.watch(true);
+		let condition = dot.state(true);
 		dot(document.body).when(condition, dot.mount(new MyComponent(), { ref: refCallback }));
 		
 		expect(callCount).toBe(1);

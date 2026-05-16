@@ -1,10 +1,10 @@
-import Watcher, { dependencyStack } from "./watcher";
+import Signal, { dependencyStack } from "./signal";
 import { scheduler } from "./scheduler";
 import { Priority } from "./priority";
 
-export default class Computed<T> extends Watcher<T> {
+export default class Computed<T> extends Signal<T> {
 	private getter: () => T;
-	private dependencies = new Map<Watcher, number>();
+	private dependencies = new Map<Signal, number>();
 	private isQueued = false;
 	private isEvaluating = false;
 	private active = true;
@@ -30,7 +30,7 @@ export default class Computed<T> extends Watcher<T> {
 
 	get value(): T {
 		if (this.isEvaluating) {
-			throw new Error("Circular dependency detected in computed watcher.");
+			throw new Error("Circular dependency detected in computed signal.");
 		}
 		if (this.dirty) {
 			this._update();
@@ -41,10 +41,10 @@ export default class Computed<T> extends Watcher<T> {
 		return super.value;
 	}
 
-	addDependency(watcher: Watcher) {
+	addDependency(signal: Signal) {
 		if (!this.active) return;
-		if (!this.newDependencies.has(watcher)) {
-			this.newDependencies.add(watcher);
+		if (!this.newDependencies.has(signal)) {
+			this.newDependencies.add(signal);
 		}
 	}
 
@@ -57,12 +57,12 @@ export default class Computed<T> extends Watcher<T> {
 		}
 	}
 
-	private newDependencies = new Set<Watcher>();
+	private newDependencies = new Set<Signal>();
 
 	private _update() {
 		if (!this.active) return;
 		if (this.isEvaluating) {
-			throw new Error("Circular dependency detected in computed watcher.");
+			throw new Error("Circular dependency detected in computed signal.");
 		}
 
 		this.isEvaluating = true;
@@ -89,29 +89,29 @@ export default class Computed<T> extends Watcher<T> {
 		}
 
 		// Update dependencies
-		const toRemove: Watcher[] = [];
-		for (const [watcher, subId] of this.dependencies) {
-			if (!this.newDependencies.has(watcher)) {
-				watcher._detachBinding(subId);
-				toRemove.push(watcher);
+		const toRemove: Signal[] = [];
+		for (const [signal, subId] of this.dependencies) {
+			if (!this.newDependencies.has(signal)) {
+				signal.unsubscribe(subId);
+				toRemove.push(signal);
 			}
 		}
-		for (const watcher of toRemove) {
-			this.dependencies.delete(watcher);
+		for (const signal of toRemove) {
+			this.dependencies.delete(signal);
 		}
 
-		for (const watcher of this.newDependencies) {
-			if (!this.dependencies.has(watcher)) {
-				const subId = watcher.subscribe(() => this.requestUpdate(), true);
-				this.dependencies.set(watcher, subId);
+		for (const signal of this.newDependencies) {
+			if (!this.dependencies.has(signal)) {
+				const subId = signal.subscribe(() => this.requestUpdate(), true);
+				this.dependencies.set(signal, subId);
 			}
 		}
 	}
 
 	dispose() {
 		this.active = false;
-		for (const [watcher, subId] of this.dependencies) {
-			watcher._detachBinding(subId);
+		for (const [signal, subId] of this.dependencies) {
+			signal.unsubscribe(subId);
 		}
 		this.dependencies.clear();
 	}

@@ -1,5 +1,5 @@
 import { IDotComponent, IDotCore, IDotCss } from "dothtml-interfaces";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import CollectionVdom from "./collection-vdom";
 import { ConditionalVdom } from "./conditional-vdom";
 import ElementVdom from "./element-vdom";
@@ -14,7 +14,7 @@ import BaseVStyle from "../v-style-nodes/base-v-style";
 type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
 
 function reduceReactive(value: any){
-	if(value instanceof Watcher) return value.bind();
+	if(value instanceof Signal) return value.bind();
 	else return value;
 }
 
@@ -71,23 +71,23 @@ export class ContainerVdom extends Vdom{
 		}
 	}
 	
-	html(c: string|Watcher|Binding){
+	html(c: string|Signal|Binding){
 		let hn = new HtmlVdom(reduceReactive(c));
 		return this._addChild(hn);
 	}
 
-	text(c: string|Watcher|Binding){
+	text(c: string|Signal|Binding){
 		let tn = new TextVdom(reduceReactive(c));
 		return this._addChild(tn);
 	}
 
-	md(c: string|Watcher){
+	md(c: string|Signal){
 		// TODO: for now, just render as text. 
 		// We can add the md functionality later.
 		return this.text(reduceReactive(c));
 	}
 
-	style(c: string | Watcher | Binding | IDotCss | ((s: BaseVStyle) => void)) {
+	style(c: string | Signal | Binding | IDotCss | ((s: BaseVStyle) => void)) {
 		if (typeof c === "function") {
 			const builder = new BaseVStyle();
 			c(builder);
@@ -130,7 +130,7 @@ export class ContainerVdom extends Vdom{
 	}
 
 	// // TODO: need to support immediate rendering.
-	when(condition:Watcher|Binding|boolean, then: ContainerVdom|string|boolean|number){
+	when(condition:Signal|Binding|boolean, then: ContainerVdom|string|boolean|number){
 		let condNode = new ConditionalVdom();
 		let thenContainer: ContainerVdom;
 		if(then instanceof ContainerVdom){
@@ -147,7 +147,7 @@ export class ContainerVdom extends Vdom{
 
 		return this;
 	}
-	otherwiseWhen(condition:Watcher|Binding|boolean, then: ContainerVdom|string|boolean|number, seal = false){
+	otherwiseWhen(condition:Signal|Binding|boolean, then: ContainerVdom|string|boolean|number, seal = false){
 		let condNode = this._children[this._children.length - 1];
 		if(condNode instanceof ConditionalVdom){
 			let thenContainer: ContainerVdom;

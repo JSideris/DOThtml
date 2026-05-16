@@ -1,5 +1,5 @@
 import Binding from "../reactivity/binding";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import VMetaNode from "./v-meta-node";
 
 /**
@@ -27,7 +27,7 @@ export default class AttributeVNode extends VMetaNode{
 			for(let k in this.value){
 				let v = (this.value as any)[k];
 
-				if(v instanceof Watcher) v = v.bind(); // TODO: this probably isn't the right place for this.
+				if(v instanceof Signal) v = v.bind(); // TODO: this probably isn't the right place for this.
 
 				if(v && v instanceof Binding){
 					let id = v._subscribe(this);
@@ -48,7 +48,7 @@ export default class AttributeVNode extends VMetaNode{
 		for(let k in this.value){
 			let v = (this.value as any)[k];
 			if(v){
-				if(v instanceof Watcher) v = v.bind();
+				if(v instanceof Signal) v = v.bind();
 				if(!(v instanceof Binding) || v._get()){	
 					tokens.push(k);
 				}

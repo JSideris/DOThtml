@@ -32,7 +32,7 @@ describe("Styling v6 Extra Coverage", () => {
 		});
 
 		test("toString() with reactive values", () => {
-			const color = dot.watch("green");
+			const color = dot.state("green");
 			const styleNode = new StyleVNode((dot.css as any).color(color));
 			expect(styleNode.toString()).toBe("color: green; ");
 			color.value = "yellow";
@@ -42,7 +42,7 @@ describe("Styling v6 Extra Coverage", () => {
 
 	describe("Reactive Global Selectors", () => {
 		test("StyleVNode.render(selector) creates and updates style tag", () => {
-			const color = dot.watch("rgb(255, 0, 0)");
+			const color = dot.state("rgb(255, 0, 0)");
 			const styleNode = new StyleVNode((dot.css as any).color(color));
 			styleNode.render(".dynamic-global");
 
@@ -60,8 +60,8 @@ describe("Styling v6 Extra Coverage", () => {
 	});
 
 	describe("CSS Variable Helpers Exhaustive", () => {
-		test("s.variable() with numeric watcher", () => {
-			const size = dot.watch(10);
+		test("s.variable() with numeric signal", () => {
+			const size = dot.state(10);
 			dot(document.body).div({ id: "var-test" }).style(s => s.variable("my-size", size.bindAs(v => `${v}px`)));
 			dot.flushSync();
 

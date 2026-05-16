@@ -22,7 +22,7 @@ describe("Styling v6 Phase 3", () => {
 
 	describe("Global Reactive Styles", () => {
 		test("dot.css variable binding to document root", () => {
-			const themeColor = dot.watch("rgb(255, 0, 0)");
+			const themeColor = dot.state("rgb(255, 0, 0)");
 			dot.css.variable("global-accent", themeColor);
 			dot.flushSync();
 			
@@ -54,7 +54,7 @@ describe("Styling v6 Phase 3", () => {
 
 	describe("Static Style Safety", () => {
 		test("stylize throws on reactive values", () => {
-			const color = dot.watch("red");
+			const color = dot.state("red");
 			
 			class FaultyComp {
 				_?: FrameworkItems;
@@ -67,7 +67,7 @@ describe("Styling v6 Phase 3", () => {
 			expect(() => {
 				dot(document.body).mount(new FaultyComp() as any);
 				dot.flushSync();
-			}).toThrow(/Reactive values \(Watchers\/Bindings\) cannot be used directly in stylize\(\)/);
+			}).toThrow(/Reactive values \(Signals\/Bindings\) cannot be used directly in stylize\(\)/);
 		});
 
 		test("stylize does not throw on s.v()", () => {
@@ -88,7 +88,7 @@ describe("Styling v6 Phase 3", () => {
 
 	describe("Host Style Unrendering", () => {
 		test("hostStyle cleanup on unmount", () => {
-			const color = dot.watch("rgb(255, 0, 0)");
+			const color = dot.state("rgb(255, 0, 0)");
 			let mountCount = 0;
 
 			class HostComp {
@@ -110,7 +110,7 @@ describe("Styling v6 Phase 3", () => {
 			dot.flushSync();
 
 			expect(document.body.children.length).toBe(0);
-			// The subscriptions should be cleared. We can check by updating the watcher
+			// The subscriptions should be cleared. We can check by updating the signal
 			// and seeing if anything crashes or if we can track subscription count if we had access.
 			// But primarily, the element is gone.
 			

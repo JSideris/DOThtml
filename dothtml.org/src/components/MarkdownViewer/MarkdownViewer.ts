@@ -8,7 +8,7 @@ export default class MarkdownViewer implements IDotComponent {
 		src: { type: String, required: true }
 	};
 
-	private content = dot.watch("");
+	private content = dot.state("");
 	private lastSrc = "";
 
 	built() {

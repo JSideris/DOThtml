@@ -10,10 +10,10 @@ afterEach(() => {
 describe("Update Batching.", () => {
 
 	test("Multiple updates are batched.", async () => {
-		const counter = dot.watch(0);
+		const counter = dot.state(0);
 		let updateCount = 0;
 		
-		// We can track updates by subscribing to the watcher.
+		// We can track updates by subscribing to the signal.
 		// However, the scheduler batches the *subscriptions* that update the DOM.
 		// So we'll check the DOM content.
 		
@@ -33,7 +33,7 @@ describe("Update Batching.", () => {
 	});
 
 	test("Asynchronous updates.", async () => {
-		const name = dot.watch("A");
+		const name = dot.state("A");
 		dot(document.body).div(name);
 		
 		name.value = "B";
@@ -44,7 +44,7 @@ describe("Update Batching.", () => {
 	});
 
 	test("dot.flushSync() forces immediate update.", () => {
-		const name = dot.watch("A");
+		const name = dot.state("A");
 		dot(document.body).div(name);
 		
 		name.value = "B";
@@ -55,7 +55,7 @@ describe("Update Batching.", () => {
 	});
 
 	test("Unsubscription prevents pending updates.", async () => {
-		const name = dot.watch("A");
+		const name = dot.state("A");
 		const binding = name.bind();
 		dot(document.body).div(binding);
 		
@@ -72,8 +72,8 @@ describe("Update Batching.", () => {
 	});
 
 	test("Nested updates are handled.", async () => {
-		const a = dot.watch(1);
-		const b = dot.watch(10);
+		const a = dot.state(1);
+		const b = dot.state(10);
 		
 		dot(document.body).div(a).div(b);
 		

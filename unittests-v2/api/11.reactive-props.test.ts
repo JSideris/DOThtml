@@ -16,8 +16,8 @@ describe("Reactive Prop Flow", () => {
 		}
 	}
 
-	test("Child re-renders when a Watcher prop changes.", () => {
-		const title = dot.watch("Initial Title");
+	test("Child re-renders when a Signal prop changes.", () => {
+		const title = dot.state("Initial Title");
 		(dot as any)(document.body).mount(new TitleComponent(), { title: title });
 		
 		expect(formatHTML(document.body.children[0].shadowRoot?.innerHTML)).toBe("<h1>initial title</h1>");
@@ -29,7 +29,7 @@ describe("Reactive Prop Flow", () => {
 	});
 
 	test("Child re-renders when a Binding prop changes.", () => {
-		const count = dot.watch(1);
+		const count = dot.state(1);
 		const binding = count.bindAs(v => `Count: ${v}`);
 		
 		(dot as any)(document.body).mount(new TitleComponent(), { title: binding });
@@ -72,7 +72,7 @@ describe("Reactive Prop Flow", () => {
 			}
 		}
 
-		const val = dot.watch("a");
+		const val = dot.state("a");
 		(dot as any)(document.body).mount(new LifecycleComponent(), { val: val });
 		
 		expect(builtCount).toBe(1);
@@ -93,8 +93,8 @@ describe("Reactive Prop Flow", () => {
 			}
 		}
 
-		const a = dot.watch("hello");
-		const b = dot.watch("world");
+		const a = dot.state("hello");
+		const b = dot.state("world");
 		
 		(dot as any)(document.body).mount(new MultiPropComponent(), { a, b });
 		expect(buildCount).toBe(1);
@@ -108,7 +108,7 @@ describe("Reactive Prop Flow", () => {
 	});
 
 	test("Cleanup: Ensure unsubscription on component unmount.", () => {
-		const val = dot.watch("a");
+		const val = dot.state("a");
 		let buildCount = 0;
 		class CleanupComponent implements IDotComponent {
 			props: any;
@@ -118,7 +118,7 @@ describe("Reactive Prop Flow", () => {
 			}
 		}
 
-		const condition = dot.watch(true);
+		const condition = dot.state(true);
 		(dot as any)(document.body).when(condition, (dot as any).mount(new CleanupComponent(), { val: val }));
 		
 		expect(buildCount).toBe(1);

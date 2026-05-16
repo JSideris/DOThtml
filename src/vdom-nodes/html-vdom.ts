@@ -1,6 +1,6 @@
 import { removeNodesBetween } from "../helpers/tools";
 import Binding from "../reactivity/binding";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import { Vdom } from "./vdom";
 
 export class HtmlVdom extends Vdom{

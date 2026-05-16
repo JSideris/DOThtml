@@ -4,7 +4,7 @@ import { TextVdom } from "./vdom-nodes/text-vdom";
 import ElementVdom from "./vdom-nodes/element-vdom";
 import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
-import Watcher from "./reactivity/watcher";
+import Signal from "./reactivity/signal";
 import Computed from "./reactivity/computed";
 import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
@@ -246,14 +246,14 @@ const makeDot = ()=>{
 		}
 	}
 
-	_dot.watch = function<T extends Watcher|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Watcher<T>{
-		let o = new Watcher();
+	_dot.state = function<T extends Signal|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Signal<T>{
+		let o = new Signal();
 		o.key = key;
 		o.value = (value);
 		return o;
 	}
 
-	_dot.computed = function<T>(getter: () => T): Watcher<T>{
+	_dot.computed = function<T>(getter: () => T): Signal<T>{
 		const c = new Computed(getter);
 		const currentComponent = getCurrentComponent();
 		if (currentComponent) {
@@ -271,8 +271,8 @@ const makeDot = ()=>{
 
 	_dot.create = function<T extends IDotComponent>(Ctor: { new(...args: any[]): T }, ...args: any[]): T {
 		const tracker = {
-			computedWatchers: [],
-			registerComputed(w: any) { this.computedWatchers.push(w); }
+			computedSignals: [],
+			registerComputed(w: any) { this.computedSignals.push(w); }
 		};
 		pushComponent(tracker as any);
 		let instance: T;
@@ -281,7 +281,7 @@ const makeDot = ()=>{
 		} finally {
 			popComponent();
 		}
-		(instance as any)._trackedComputeds = tracker.computedWatchers;
+		(instance as any)._trackedComputeds = tracker.computedSignals;
 		return instance;
 	}
 
@@ -344,7 +344,7 @@ const makeDot = ()=>{
 			return arg instanceof ContainerVdom || 
 				arg instanceof Vdom || 
 				(typeof arg == "object" && arg?.build) || 
-				arg instanceof Watcher || 
+				arg instanceof Signal || 
 				arg instanceof Binding || 
 				typeof arg === "string" || 
 				typeof arg === "number" || 
@@ -368,7 +368,7 @@ const makeDot = ()=>{
 			else{
 				if(cont !== null && cont !== undefined){
 					let val = cont;
-					if(val instanceof Watcher){
+					if(val instanceof Signal){
 						val = val.bind();
 					}
 					n.children._addChild(new TextVdom(val));
@@ -379,7 +379,7 @@ const makeDot = ()=>{
 		const applyAttributes = (n: ElementVdom, attrs: any) => {
 			for(let k in attrs) {
 				let attr = attrs[k];
-				if(attr instanceof Watcher && !(attr instanceof Ref)) attr = attr.bind();
+				if(attr instanceof Signal && !(attr instanceof Ref)) attr = attr.bind();
 				let eventName = k;
 				let modifiers = [];
 				if(k.includes(".")){

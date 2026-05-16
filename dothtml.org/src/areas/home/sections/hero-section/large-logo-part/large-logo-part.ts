@@ -9,10 +9,10 @@ type Orbiter = {
 
 @dot.component
 export default class LargeLogoPart implements IDotComponent {
-	private orbiter1: Orbiter = { x: dot.watch(0), y: dot.watch(0), z: dot.watch(0) };
-	private orbiter2: Orbiter = { x: dot.watch(0), y: dot.watch(0), z: dot.watch(0) };
-	private mouseX = dot.watch(0);
-	private mouseY = dot.watch(0);
+	private orbiter1: Orbiter = { x: dot.state(0), y: dot.state(0), z: dot.state(0) };
+	private orbiter2: Orbiter = { x: dot.state(0), y: dot.state(0), z: dot.state(0) };
+	private mouseX = dot.state(0);
+	private mouseY = dot.state(0);
 
 	mounted(): void {
 		this.animate();

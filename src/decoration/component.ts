@@ -5,9 +5,9 @@ export function component<T extends { new(...args: any[]): IDotComponent }>(Ctor
 	const decorated = class extends (Ctor as any) {
 		constructor(...args: any[]) {
 			const tracker = {
-				computedWatchers: [],
+				computedSignals: [],
 				disposables: [],
-				registerComputed(w: any) { this.computedWatchers.push(w); },
+				registerComputed(w: any) { this.computedSignals.push(w); },
 				registerDisposable(d: any) { this.disposables.push(d); }
 			};
 			pushComponent(tracker as any);
@@ -24,7 +24,7 @@ export function component<T extends { new(...args: any[]): IDotComponent }>(Ctor
 			}
 
 			// Store the tracked items on the instance so ComponentVdom can pick them up
-			(this as any)._trackedComputeds = tracker.computedWatchers;
+			(this as any)._trackedComputeds = tracker.computedSignals;
 			(this as any)._trackedDisposables = tracker.disposables;
 		}
 	};

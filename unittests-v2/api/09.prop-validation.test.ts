@@ -79,7 +79,7 @@ describe("Prop Validation", () => {
 	});
 
 	test("Reactive validation.", () => {
-		const score = dot.watch(50);
+		const score = dot.state(50);
 		(dot(document.body) as any).mount(new ValidatedComponent(), { name: "John", score: score });
 		
 		expect(() => {

@@ -3,7 +3,7 @@ import { Vdom } from "./vdom";
 import { ContainerVdom } from "./container-vdom";
 import renderStylesheet from "../helpers/render-stylesheet";
 import { EventManager } from "../events/event-manager";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import Binding from "../reactivity/binding";
 import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
@@ -27,7 +27,7 @@ export class ComponentVdom extends Vdom{
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;
-	private computedWatchers: Computed<any>[] = [];
+	private computedSignals: Computed<any>[] = [];
 	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private updateSubscription = {
@@ -93,8 +93,8 @@ export class ComponentVdom extends Vdom{
 		}
 	}
 
-	registerComputed(watcher: Computed<any>) {
-		this.computedWatchers.push(watcher);
+	registerComputed(signal: Computed<any>) {
+		this.computedSignals.push(signal);
 	}
 
 	registerDisposable(disposable: () => void) {
@@ -127,7 +127,7 @@ export class ComponentVdom extends Vdom{
 		if (!props) return;
 		for (const key in props) {
 			const prop = props[key];
-			if (prop instanceof Watcher || prop instanceof Binding) {
+			if (prop instanceof Signal || prop instanceof Binding) {
 				prop.subscribe(() => this.requestUpdate());
 			}
 		}
@@ -189,9 +189,9 @@ export class ComponentVdom extends Vdom{
 				throw new Error(`[${componentName}] Prop "${key}" is required.`);
 			}
 
-			// Extract value for validation if it's a Watcher or Binding
+			// Extract value for validation if it's a Signal or Binding
 			let valueToValidate = value;
-			if (value instanceof Watcher || value instanceof Binding) {
+			if (value instanceof Signal || value instanceof Binding) {
 				valueToValidate = value.value;
 			}
 
@@ -380,10 +380,10 @@ export class ComponentVdom extends Vdom{
 		}
 		this.styleVNodes = [];
 
-		for (const watcher of this.computedWatchers) {
-			watcher.dispose();
+		for (const signal of this.computedSignals) {
+			signal.dispose();
 		}
-		this.computedWatchers = [];
+		this.computedSignals = [];
 
 		for (const disposable of this.disposables) {
 			disposable();

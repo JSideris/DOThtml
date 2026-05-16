@@ -14,8 +14,8 @@ afterEach(() => {
 
 describe("Computed state.", () => {
 	test("Basic computed reactivity.", () => {
-		const first = dot.watch("John");
-		const last = dot.watch("Doe");
+		const first = dot.state("John");
+		const last = dot.state("Doe");
 		const full = dot.computed(() => `${first.value} ${last.value}`);
 
 		dot(document.body).div(full);
@@ -31,7 +31,7 @@ describe("Computed state.", () => {
 	});
 
 	test("Diamond problem (single update).", () => {
-		const count = dot.watch(0);
+		const count = dot.state(0);
 		let evaluations = 0;
 		const a = dot.computed(() => {
 			evaluations++;
@@ -52,8 +52,8 @@ describe("Computed state.", () => {
 	});
 
 	test("Circular dependency detection.", () => {
-		const a = dot.watch(0);
-		const b = dot.watch(0);
+		const a = dot.state(0);
+		const b = dot.state(0);
 		
 		let compA: any;
 		let compB: any;
@@ -79,9 +79,9 @@ describe("Computed state.", () => {
 	});
 
 	test("Dynamic dependency tracking.", () => {
-		const useA = dot.watch(true);
-		const a = dot.watch("A");
-		const b = dot.watch("B");
+		const useA = dot.state(true);
+		const a = dot.state("A");
+		const b = dot.state("B");
 		let evaluations = 0;
 		const combined = dot.computed(() => {
 			evaluations++;
@@ -122,17 +122,17 @@ describe("Computed state.", () => {
 	});
 
 	test("Memory leak / Disposal.", () => {
-		const source = dot.watch(1);
+		const source = dot.state(1);
 		const comp = dot.computed(() => source.value * 2);
 		
-		expect(Object.keys((source as any).allBindings).length).toBe(1);
+		expect(Object.keys((source as any).subscribers).length).toBe(1);
 		
 		(comp as any).dispose();
-		expect(Object.keys((source as any).allBindings).length).toBe(0);
+		expect(Object.keys((source as any).subscribers).length).toBe(0);
 	});
 
 	test("Component auto-cleanup.", () => {
-		const source = dot.watch(1);
+		const source = dot.state(1);
 		let compRef: any;
 
 		class MyComponent implements IDotComponent {
@@ -146,15 +146,15 @@ describe("Computed state.", () => {
 		const c = new MyComponent();
 		dot(document.body).mount(c);
 		
-		// 1 for the computed watcher
-		expect(Object.keys((source as any).allBindings).length).toBe(1);
+		// 1 for the computed signal
+		expect(Object.keys((source as any).subscribers).length).toBe(1);
 		// 1 for the text binding inside the component's shadow DOM
-		expect(Object.keys((compRef as any).allBindings).length).toBe(1);
+		expect(Object.keys((compRef as any).subscribers).length).toBe(1);
 		
 		const root = document.body[DOT_VDOM_PROP_NAME];
 		root.children._unrender();
 		
-		expect(Object.keys((source as any).allBindings).length).toBe(0);
-		expect(Object.keys((compRef as any).allBindings).length).toBe(0);
+		expect(Object.keys((source as any).subscribers).length).toBe(0);
+		expect(Object.keys((compRef as any).subscribers).length).toBe(0);
 	});
 });

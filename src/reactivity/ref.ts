@@ -1,11 +1,11 @@
 import { IRef } from "dothtml-interfaces/src/bindings/i-ref";
-import Watcher from "./watcher";
+import Signal from "./signal";
 
 /**
  * A reactive reference to a DOM element or component instance.
  * Supports method proxying, allowing direct calls like `myRef.focus()`.
  */
-export default class Ref<T = any> extends Watcher<T | null> implements IRef<any>{
+export default class Ref<T = any> extends Signal<T | null> implements IRef<any>{
 	constructor() {
 		super();
 		this._value = null;
@@ -39,7 +39,7 @@ export default class Ref<T = any> extends Watcher<T | null> implements IRef<any>
 		return new Promise((resolve) => {
 			const id = this.subscribe((val: T | null) => {
 				if (val) {
-					this._detachBinding(id);
+					this.unsubscribe(id);
 					resolve(val);
 				}
 			});

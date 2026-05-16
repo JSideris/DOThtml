@@ -19,7 +19,7 @@ dot.div(
 
 ## Reactive Nature
 
-A `Ref` is a specialized `Watcher`. This means you can use it anywhere a watcher is expected, and you can react to its value changing (e.g., when an element is mounted or unmounted).
+A `Ref` is a specialized `Signal`. This means you can use it anywhere a signal is expected, and you can react to its value changing (e.g., when an element is mounted or unmounted).
 
 ```javascript
 const myRef = dot.ref();

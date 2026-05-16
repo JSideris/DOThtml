@@ -3,7 +3,7 @@ import { IDotComponent } from "dothtml-interfaces";
 
 @dot.component
 export default class MainCodeSample implements IDotComponent {
-	private count = dot.watch(0);
+	private count = dot.state(0);
 
 	stylize(s: any) {
 		return s.class("code-sample-container", c => c
@@ -61,7 +61,7 @@ export default class MainCodeSample implements IDotComponent {
 		const code = `
 @dot.component
 class Counter implements IDotComponent {
-  count = dot.watch(0);
+  count = dot.state(0);
 
   build() {
     return dot.div(

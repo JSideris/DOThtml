@@ -25,7 +25,7 @@ type AfterNavigationHook = (to: string, from: string) => void;
 
 const beforeHooks: NavigationGuard[] = [];
 const afterHooks: AfterNavigationHook[] = [];
-const globalRoutes = dot.watch<RouteDefinition[]>([]);
+const globalRoutes = dot.state<RouteDefinition[]>([]);
 
 export function setGlobalRoutes(routes: RouteDefinition[]) {
 	globalRoutes.value = routes;
@@ -119,7 +119,7 @@ export const Router = dot.component(
 		};
 
 		props: any;
-		private resolvedComponent = dot.watch<any>(null);
+		private resolvedComponent = dot.state<any>(null);
 		private currentMatch: { route: RouteDefinition, params: Record<string, string>, matchedPath: string } | null = null;
 		private lastPath = "";
 		private subId: number = -1;
@@ -132,7 +132,7 @@ export const Router = dot.component(
 		}
 
 		unmounting() {
-			currentPath._detachBinding(this.subId);
+			currentPath.unsubscribe(this.subId);
 		}
 
 		build(dot: any) {

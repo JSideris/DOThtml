@@ -61,7 +61,7 @@ describe("Unlimited Arguments for Element Builders.", () => {
 	});
 
 	test("Reactive bindings work with multiple arguments.", () => {
-		const name = dot.watch("John");
+		const name = dot.state("John");
 		dot(document.body).div("Hello ", name, "!");
 		expect(formatHTML(document.body.innerHTML)).toBe("<div>hello john!</div>");
 		

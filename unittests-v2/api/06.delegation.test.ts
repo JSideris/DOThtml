@@ -60,7 +60,7 @@ describe("Event delegation.", ()=>{
 
 	test("Cleanup on unrender.", ()=>{
 		let handler = jest.fn();
-		let obs = dot.watch(true);
+		let obs = dot.state(true);
 
 		dot(document.body).when(obs, 
 			dot.button({ id: "my-button", onClick: handler } as any)

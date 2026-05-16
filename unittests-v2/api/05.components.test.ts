@@ -44,7 +44,7 @@ class TextDisplay implements IDotComponent{
 }
 
 class YesNoButton implements IDotComponent{
-	value = dot.watch(true);
+	value = dot.state(true);
 	_: FrameworkItems;
 	defaultValue: boolean | undefined;
 	yesText: string;
@@ -120,7 +120,7 @@ describe("Components", ()=>{
 	});
 
 	test("Text binding.", ()=>{
-		let txt = dot.watch("abc");
+		let txt = dot.state("abc");
 		let c1 = new TextDisplay({txt: txt});
 		
 		dot(document.body)

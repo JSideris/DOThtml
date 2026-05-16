@@ -69,7 +69,7 @@ describe("Values.", ()=>{
 
 	test("Input gets updated.", ()=>{
 
-		let obs = dot.watch("abc");
+		let obs = dot.state("abc");
 		
 		dot(document.body).input({ id: "my-input", value: obs });
 		let input = document.getElementById("my-input") as HTMLInputElement;
@@ -96,7 +96,7 @@ describe("Values.", ()=>{
 	test("Nested input gets updated.", ()=>{
 		// This test is different from above because the value is set before the input is rendered.
 
-		let obs = dot.watch("abc");
+		let obs = dot.state("abc");
 		
 		dot(document.body).div(dot.input({ id: "my-input", value: obs }));
 		let input = document.getElementById("my-input") as HTMLInputElement;
@@ -111,7 +111,7 @@ describe("Values.", ()=>{
 
 	test("Check gets updated.", ()=>{
 
-		let obs = dot.watch(true);
+		let obs = dot.state(true);
 
 		dot(document.body).input({ id: "my-input", type: "checkbox", checked: obs });
 		let input = document.getElementById("my-input") as HTMLInputElement;
@@ -133,9 +133,9 @@ describe("Values.", ()=>{
 
 	test("Radio gets updated.", ()=>{
 
-		let obs1 = dot.watch(true);
-		let obs2 = dot.watch(false);
-		let obs3 = dot.watch(false);
+		let obs1 = dot.state(true);
+		let obs2 = dot.state(false);
+		let obs3 = dot.state(false);
 
 		dot(document.body)
 			.input({ id: "my-input-1", name: "group-1", type: "radio", checked: obs1 })
@@ -171,7 +171,7 @@ describe("Values.", ()=>{
 		
 		obs2.value = (true);
 		(dot as any).flushSync();
-		// Programmatic update of one radio doesn't automatically update other watchers in the group yet.
+		// Programmatic update of one radio doesn't automatically update other signals in the group yet.
 		// input2.dispatchEvent(new Event("input", { bubbles: true }));
 		// jest.runAllTimers();
 		// (dot as any).flushSync();
@@ -197,9 +197,9 @@ describe("Values.", ()=>{
 
 	test("Radio with special bindings gets updated.", ()=>{
 
-		let obs1 = dot.watch("TRUE");
-		let obs2 = dot.watch("FALSE");
-		let obs3 = dot.watch("FALSE");
+		let obs1 = dot.state("TRUE");
+		let obs2 = dot.state("FALSE");
+		let obs3 = dot.state("FALSE");
 
 		dot(document.body)
 			.input({ id: "my-input-1", name: "group-1", type: "radio", checked: obs1.bindAs({display: v=>v=="TRUE"}) })
@@ -235,7 +235,7 @@ describe("Values.", ()=>{
 		
 		obs2.value = ("TRUE");
 		(dot as any).flushSync();
-		// Programmatic update of one radio doesn't automatically update other watchers in the group yet.
+		// Programmatic update of one radio doesn't automatically update other signals in the group yet.
 		// input2.dispatchEvent(new Event("input", { bubbles: true }));
 		// jest.runAllTimers();
 		// (dot as any).flushSync();
@@ -261,7 +261,7 @@ describe("Values.", ()=>{
 
 	test("Text area one way binding.", ()=>{
 
-		let obs = dot.watch("abc");
+		let obs = dot.state("abc");
 		
 		dot(document.body).textArea(obs, { id: "my-input" });
 		let input = document.getElementById("my-input") as HTMLTextAreaElement;
@@ -287,17 +287,17 @@ describe("Values.", ()=>{
 
 	test("Value attribute should override textarea text.", ()=>{
 
-		let obs = dot.watch("abc");
+		let obs = dot.state("abc");
 		
 		dot(document.body).textArea("123", {id: "my-input", value: obs});
 		(dot as any).flushSync();
 		expect((document.getElementById("my-input") as HTMLTextAreaElement).value).toBe("abc");
 	});
 
-	test("Text area watcher should overwrite value.", ()=>{
+	test("Text area signal should overwrite value.", ()=>{
 
-		let obs = dot.watch("abc");
-		let obs2 = dot.watch("123");
+		let obs = dot.state("abc");
+		let obs2 = dot.state("123");
 		
 		dot(document.body).textArea(obs2, {id: "my-input", value: obs});
 		(dot as any).flushSync();
@@ -308,7 +308,7 @@ describe("Values.", ()=>{
 
 	test("Text area gets updated.", ()=>{
 
-		let obs = dot.watch("abc");
+		let obs = dot.state("abc");
 		
 		dot(document.body).textArea({id: "my-input", value: obs});
 		(dot as any).flushSync();
@@ -336,7 +336,7 @@ describe("Values.", ()=>{
 	// TODO: test binding on the options themselves.
 	test("Select gets updated.", ()=>{
 
-		let obs = dot.watch("1");
+		let obs = dot.state("1");
 		
 		dot(document.body).select(
 			{ value: obs, id: "my-input" },

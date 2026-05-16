@@ -10,7 +10,7 @@ afterEach(() => {
 describe("Keyed Diffing.", () => {
 
 	test("Items are reused when swapped.", () => {
-		const list = dot.watch([
+		const list = dot.state([
 			{ id: 1, text: "A" },
 			{ id: 2, text: "B" }
 		], "id");
@@ -44,7 +44,7 @@ describe("Keyed Diffing.", () => {
 	});
 
 	test("Middle insertion doesn't re-render everything.", () => {
-		const list = dot.watch([
+		const list = dot.state([
 			{ id: 1, text: "A" },
 			{ id: 3, text: "C" }
 		], "id");
@@ -73,7 +73,7 @@ describe("Keyed Diffing.", () => {
 	});
 
 	test("Deletion removes correct node.", () => {
-		const list = dot.watch([
+		const list = dot.state([
 			{ id: 1, text: "A" },
 			{ id: 2, text: "B" },
 			{ id: 3, text: "C" }
@@ -99,7 +99,7 @@ describe("Keyed Diffing.", () => {
 	});
 
 	test("Unkeyed (index-based) still works.", () => {
-		const list = dot.watch(["A", "B"]);
+		const list = dot.state(["A", "B"]);
 
 		dot(document.body).each(list, (item) => dot.p(item));
 		(dot as any).flushSync();

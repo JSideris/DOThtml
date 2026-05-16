@@ -125,7 +125,7 @@ The `hostStyle()` method allows you to apply styles or bind reactive variables d
 ```javascript
 class ThemeableComponent {
     hostStyle(s) {
-        // Bind a reactive watcher to a CSS variable on the host element.
+        // Bind a reactive signal to a CSS variable on the host element.
         s.variable("theme-color", this.props.color);
         s.display("block");
     }

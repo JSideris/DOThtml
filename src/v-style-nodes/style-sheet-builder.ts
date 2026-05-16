@@ -1,7 +1,7 @@
 import BaseVStyle from "./base-v-style";
 import cssProps from "../css/css-props";
 import { formatCssLength } from "../css/format-css-type";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import Binding from "../reactivity/binding";
 
 
@@ -51,8 +51,8 @@ export default class StyleSheetBuilder {
 				let cssProp = p.prop;
 				let cssValue = p.value;
 
-				if (cssValue instanceof Watcher || cssValue instanceof Binding) {
-					throw new Error(`[DOThtml] Reactive values (Watchers/Bindings) cannot be used directly in stylize(). Use CSS variables instead. Prop: "${p.prop}" in selector: "${r.selector}"`);
+				if (cssValue instanceof Signal || cssValue instanceof Binding) {
+					throw new Error(`[DOThtml] Reactive values (Signals/Bindings) cannot be used directly in stylize(). Use CSS variables instead. Prop: "${p.prop}" in selector: "${r.selector}"`);
 				}
 
 				if (registered) {

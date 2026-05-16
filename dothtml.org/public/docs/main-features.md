@@ -22,10 +22,10 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 ### Advanced Reactivity: Computed State, Reactive Props & Stores
 DOThtml's reactivity system goes beyond simple value tracking, offering powerful tools for managing complex state dependencies.
 
-*   **Computed Watchers**: Create watchers that automatically derive their value from other watchers. They track their own dependencies and only re-evaluate when necessary.
+*   **Computed Signals**: Create signals that automatically derive their value from other signals. They track their own dependencies and only re-evaluate when necessary.
 *   **Centralized Stores**: Use `dot.store` to create global or local state containers. Stores provide a clean way to organize state, getters, and actions, making it easy to share data across your entire application.
 *   **Automatic Resource Management**: Derived state and local stores created within components are automatically disposed of when the component is unmounted, ensuring zero memory leaks.
-*   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Watcher or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
+*   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Signal or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
 *   **Runtime Prop Validation**: Define clear contracts for your components using static prop schemas. DOThtml validates types, required fields, and applies default values at runtime, helping you catch bugs early.
 
 ### State Management with Stores
@@ -68,7 +68,7 @@ class MyComponent implements IDotComponent {
 }
 ```
 
-When a parent passes a `Watcher` or `Binding` as a prop, DOThtml automatically unwraps the value for validation and re-validates whenever the reactive value changes.
+When a parent passes a `Signal` or `Binding` as a prop, DOThtml automatically unwraps the value for validation and re-validates whenever the reactive value changes.
 
 ### Advanced Event Handling
 DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.
@@ -107,13 +107,13 @@ dot.button({
 DOThtml's styling system is built for both developer productivity and high performance.
 
 *   **Fluent Builder**: Use a type-safe API to build styles. No more string concatenation or magic object keys.
-*   **Native Reactivity**: Pass `Watcher` objects directly to style methods. The UI updates automatically when the data changes.
+*   **Native Reactivity**: Pass `Signal` objects directly to style methods. The UI updates automatically when the data changes.
 *   **Automatic Batching**: Style updates are batched by the scheduler, ensuring that multiple property changes result in a single DOM write.
 *   **CSS Variables**: Built-in support for custom properties, allowing for high-performance theme updates and complex component styling.
 
 Example:
 ```javascript
-const size = dot.watch(20);
+const size = dot.state(20);
 dot.div("Growing Text")
   .style(s => s.fontSizePx(size).color("blue"));
 ```
@@ -122,7 +122,7 @@ dot.div("Growing Text")
 DOThtml features an intelligent update scheduler, a sophisticated keyed diffing algorithm, and concurrent rendering capabilities to ensure maximum performance and responsiveness.
 
 #### Update Batching
-Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Watcher` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
+Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
 
 #### Keyed Diffing
 When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. By providing a `key` property in your data, DOThtml can:
@@ -138,7 +138,7 @@ You can also specify the priority of an update using the `setValue` method:
 ```javascript
 import { Priority } from "dothtml";
 
-const list = dot.watch([]);
+const list = dot.state([]);
 // This update will be treated as low priority and will yield to user input.
 list.setValue(largeDataSet, Priority.Background);
 ```
@@ -146,7 +146,7 @@ list.setValue(largeDataSet, Priority.Background);
 If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
 
 ```javascript
-const name = dot.watch("Josh");
+const name = dot.state("Josh");
 dot.div(name);
 
 name.value = "Joshua";

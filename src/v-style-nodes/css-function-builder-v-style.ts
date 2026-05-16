@@ -1,5 +1,5 @@
 import Binding from "../reactivity/binding";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 
 export default abstract class CssFunctionBuilderVStyle{
 
@@ -24,7 +24,7 @@ export default abstract class CssFunctionBuilderVStyle{
 
 				if (v instanceof Binding) {
 					return f(v._get());
-				} else if (v instanceof Watcher) {
+				} else if (v instanceof Signal) {
 					return f(v.value);
 				}
 				else {

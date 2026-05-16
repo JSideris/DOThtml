@@ -1,6 +1,6 @@
 import { IDotCore, IDotCss } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../constants";
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import { ContainerVdom } from "./container-vdom";
@@ -146,7 +146,7 @@ export default class ElementVdom extends Vdom{
 			if (idx !== -1) this.attrVNodes.splice(idx, 1);
 		}
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Watcher || value instanceof BaseVStyle)){
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Signal || value instanceof BaseVStyle)){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){

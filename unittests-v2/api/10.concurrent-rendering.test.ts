@@ -14,8 +14,8 @@ describe("Concurrent Rendering.", () => {
 
 	test("Priority-based updates work.", async () => {
 		const results: string[] = [];
-		const low = dot.watch("Low");
-		const high = dot.watch("High");
+		const low = dot.state("Low");
+		const high = dot.state("High");
 		
 		low.subscribe((v) => results.push(v));
 		high.subscribe((v) => results.push(v));
@@ -29,7 +29,7 @@ describe("Concurrent Rendering.", () => {
 	});
 
 	test("setValue with Priority.Immediate is synchronous.", () => {
-		const name = dot.watch("A");
+		const name = dot.state("A");
 		dot(document.body).div(name);
 		
 		(name as any).setValue("B", Priority.Immediate);
@@ -38,8 +38,8 @@ describe("Concurrent Rendering.", () => {
 	});
 
 	test("Background updates don't block UserBlocking updates.", async () => {
-		const bg = dot.watch("BG");
-		const ui = dot.watch("UI");
+		const bg = dot.state("BG");
+		const ui = dot.state("UI");
 		
 		const results: string[] = [];
 		bg.subscribe((v) => {
@@ -64,7 +64,7 @@ describe("Concurrent Rendering.", () => {
 	});
 
 	test("A second update aborts a yielded in-progress update.", async () => {
-		const list = dot.watch(["A", "B"]);
+		const list = dot.state(["A", "B"]);
 		dot(document.body).each(list, (item) => dot.p(item));
 		(dot as any).flushSync();
 
@@ -95,27 +95,27 @@ describe("Concurrent Rendering.", () => {
 	});
 
 	test("Memory Management: _unrender cleans up all subscriptions.", () => {
-		const externalWatcher = dot.watch("External");
-		const list = dot.watch([1, 2, 3]);
+		const externalSignal = dot.state("External");
+		const list = dot.state([1, 2, 3]);
 		
 		dot(document.body).each(list, (item) => {
-			return dot.p(externalWatcher);
+			return dot.p(externalSignal);
 		});
 		(dot as any).flushSync();
 		
-		// 3 items in list + 1 initial render = 3 subscriptions to externalWatcher
-		expect(Object.keys((externalWatcher as any).allBindings).length).toBe(3);
+		// 3 items in list + 1 initial render = 3 subscriptions to externalSignal
+		expect(Object.keys((externalSignal as any).subscribers).length).toBe(3);
 		
 		// Clear the list
 		list.value = [];
 		(dot as any).flushSync();
 		
 		// All subscriptions should be removed
-		expect(Object.keys((externalWatcher as any).allBindings).length).toBe(0);
+		expect(Object.keys((externalSignal as any).subscribers).length).toBe(0);
 	});
 
 	test("Nested Concurrent Rendering: parent and child both yield.", async () => {
-		const data = dot.watch([
+		const data = dot.state([
 			{ id: 1, sub: [1, 2] },
 			{ id: 2, sub: [3, 4] }
 		], "id");
@@ -151,7 +151,7 @@ describe("Concurrent Rendering.", () => {
 	});
 
 	test("Sync-Over-Async: flushSync forces completion of yielded task.", async () => {
-		const list = dot.watch(["A", "B"]);
+		const list = dot.state(["A", "B"]);
 		dot(document.body).each(list, (item) => dot.p(item));
 		(dot as any).flushSync();
 		
@@ -172,7 +172,7 @@ describe("Concurrent Rendering.", () => {
 
 	test("Event Listener Integrity: moved elements keep listeners.", async () => {
 		let clickCount = 0;
-		const list = dot.watch([
+		const list = dot.state([
 			{ id: 1, text: "A" },
 			{ id: 2, text: "B" }
 		], "id");

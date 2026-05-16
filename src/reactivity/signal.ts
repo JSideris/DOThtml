@@ -27,7 +27,7 @@ const CB_OFFSET = 7; // Always last. User callbacks happen after the DOM is upda
 
 const CATEGORIES = CB_OFFSET + 1;
 
-export default class Watcher<T = any> implements IWatcher<T>{
+export default class Signal<T = any> implements IWatcher<T>{
 
 	bindAs<Td>(transform: ((v:T)=>Td)|{
 		display?: (v: T)=>Td;
@@ -54,7 +54,7 @@ export default class Watcher<T = any> implements IWatcher<T>{
 	_value: T;
 	key: string;
 
-	allBindings: Record<number, Subscription> = {};
+	subscribers: Record<number, Subscription> = {};
 
 	constructor() {
 	}
@@ -77,8 +77,8 @@ export default class Watcher<T = any> implements IWatcher<T>{
 	}
 
 	private updater(value: T, priority: Priority = Priority.Normal){
-		for(let b in this.allBindings){
-			const sub = this.allBindings[b];
+		for(let b in this.subscribers){
+			const sub = this.subscribers[b];
 			if ((sub as any).sync) {
 				sub.update();
 			} else {
@@ -98,24 +98,32 @@ export default class Watcher<T = any> implements IWatcher<T>{
 		let id = this.nextId++;
 		const sub = new Subscription(boundReactive, item);
 		(sub as any).sync = sync;
-		this.allBindings[id] = sub;
+		this.subscribers[id] = sub;
 
 		return id;
 	}
 
-	_detachBinding(id: number) {
-		if(this.allBindings[id]){
-			this.allBindings[id].active = false;
-			delete this.allBindings[id];
+	unsubscribe(id: number) {
+		if(this.subscribers[id]){
+			this.subscribers[id].active = false;
+			delete this.subscribers[id];
 		}
+	}
+
+	_detachBinding(id: number) {
+		this.unsubscribe(id);
 	}
 
 	// Called manually by the user to trigger an update.
 	// Useful for arrays and objects.
-	updateObservers(priority: Priority = Priority.Normal): void {
+	refresh(priority: Priority = Priority.Normal): void {
 		let updatedValue = this.value;
 		// this._cachedLastValue = updatedValue;
 		this.updater(updatedValue, priority);
+	}
+
+	updateObservers(priority: Priority = Priority.Normal): void {
+		this.refresh(priority);
 	}
 	
 }

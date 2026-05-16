@@ -10,7 +10,7 @@ import BaseVStyle from "../v-style-nodes/base-v-style";
 import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
 
-import Watcher from "../reactivity/watcher";
+import Signal from "../reactivity/signal";
 
 export default class StyleVNode extends VMetaNode {
 	target: HTMLElement | string;
@@ -103,7 +103,7 @@ export default class StyleVNode extends VMetaNode {
 	}
 
 	private tryExtractObservable(value: any): boolean {
-		if (value instanceof Binding || value instanceof Watcher) {
+		if (value instanceof Binding || value instanceof Signal) {
 			if (this.observables.indexOf(value as any) === -1) {
 				this.observables.push(value as any);
 				if (this.target) {
@@ -160,12 +160,12 @@ export default class StyleVNode extends VMetaNode {
 
 			if (Array.isArray(source)) {
 				for (const p of source) {
-					const value = p.value instanceof Binding ? p.value._get() : (p.value instanceof Watcher ? p.value.value : p.value);
+					const value = p.value instanceof Binding ? p.value._get() : (p.value instanceof Signal ? p.value.value : p.value);
 					this.applySingleStyle(p.prop, value);
 				}
 			} else {
 				for (let prop in source) {
-					const value = source[prop] instanceof Binding ? source[prop]._get() : (source[prop] instanceof Watcher ? source[prop].value : source[prop]);
+					const value = source[prop] instanceof Binding ? source[prop]._get() : (source[prop] instanceof Signal ? source[prop].value : source[prop]);
 					this.applySingleStyle(prop, value);
 				}
 			}
@@ -218,7 +218,7 @@ export default class StyleVNode extends VMetaNode {
 	}
 
 	private formatSingleStyle(prop: string, value: any): string {
-		let cssValue = value instanceof Binding ? value._get() : (value instanceof Watcher ? value.value : value);
+		let cssValue = value instanceof Binding ? value._get() : (value instanceof Signal ? value.value : value);
 		if (cssValue instanceof CssFunctionBuilderVStyle) {
 			cssValue = cssValue.toString();
 		}
@@ -248,7 +248,7 @@ export default class StyleVNode extends VMetaNode {
 			if (observable instanceof Binding) {
 				(observable as any)._unsubscribe(id);
 			} else {
-				(observable as any)._detachBinding(id);
+				(observable as any).unsubscribe(id);
 			}
 		}
 		this.observableIds = [];

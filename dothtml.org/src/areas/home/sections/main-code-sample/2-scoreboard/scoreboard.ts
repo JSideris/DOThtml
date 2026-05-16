@@ -14,7 +14,7 @@ const ScoreCard = dot.component<["teamName"], ["updateRsvp"]>(
 		_: FrameworkItems;
 		build() {
 
-			let scoreBinding = dot.watch(0);
+			let scoreBinding = dot.state(0);
 
 			return dot
 				.h2(this._.props.teamName)
