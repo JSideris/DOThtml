@@ -16,15 +16,38 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 *   **Reactive Ref System**: Direct access to DOM elements and component instances with built-in reactivity and method proxying.
 *   **Computed State**: Automatically derive values from other reactive sources.
 *   **Reactive Props**: Components that automatically re-render when their inputs change.
+*   **Centralized Stores**: Manage shared application state with a structured, reactive API that eliminates prop drilling.
 *   **Fluent & Reactive Styling**: A type-safe, batched styling system that integrates directly with reactivity.
 
-### Advanced Reactivity: Computed State & Reactive Props
+### Advanced Reactivity: Computed State, Reactive Props & Stores
 DOThtml's reactivity system goes beyond simple value tracking, offering powerful tools for managing complex state dependencies.
 
 *   **Computed Watchers**: Create watchers that automatically derive their value from other watchers. They track their own dependencies and only re-evaluate when necessary.
-*   **Automatic Resource Management**: Derived state created within components is automatically disposed of when the component is unmounted, ensuring zero memory leaks.
+*   **Centralized Stores**: Use `dot.store` to create global or local state containers. Stores provide a clean way to organize state, getters, and actions, making it easy to share data across your entire application.
+*   **Automatic Resource Management**: Derived state and local stores created within components are automatically disposed of when the component is unmounted, ensuring zero memory leaks.
 *   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Watcher or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
 *   **Runtime Prop Validation**: Define clear contracts for your components using static prop schemas. DOThtml validates types, required fields, and applies default values at runtime, helping you catch bugs early.
+
+### State Management with Stores
+For larger applications, DOThtml provides a built-in state management solution called **Stores**. Stores are centralized containers for state, logic, and mutations.
+
+```javascript
+const useUserStore = dot.store({
+    id: "user",
+    state: () => ({
+        name: "Guest",
+        isLoggedIn: false
+    }),
+    actions: {
+        login(name) {
+            this.name.value = name;
+            this.isLoggedIn.value = true;
+        }
+    }
+});
+```
+
+By using stores, you can avoid passing state through multiple layers of components and keep your application logic organized and testable. See the [Stores Documentation](./stores.md) for more details.
 
 ### Component Prop Validation
 DOThtml allows you to define a contract for your components using a static `props` schema. This provides runtime safety and automatic default values.

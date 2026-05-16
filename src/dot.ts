@@ -17,6 +17,7 @@ import Binding from "./reactivity/binding";
 import Ref from "./reactivity/ref";
 import RefCollection from "./reactivity/ref-collection";
 import { scheduler } from "./reactivity/scheduler";
+import { createStore, getStore, clearStores, getStores } from "./reactivity/store";
 import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
 
 const allTags = [
@@ -262,6 +263,11 @@ const makeDot = ()=>{
 	}
 
 	_dot.component = component;
+
+	_dot.store = createStore;
+	_dot.getStore = getStore;
+	_dot.clearStores = clearStores;
+	Object.defineProperty(_dot, "stores", { get: () => getStores() });
 
 	_dot.create = function<T extends IDotComponent>(Ctor: { new(...args: any[]): T }, ...args: any[]): T {
 		const tracker = {

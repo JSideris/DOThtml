@@ -28,6 +28,7 @@ export class ComponentVdom extends Vdom{
 	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;
 	private computedWatchers: Computed<any>[] = [];
+	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private updateSubscription = {
 		active: true,
@@ -87,6 +88,10 @@ export class ComponentVdom extends Vdom{
 
 	registerComputed(watcher: Computed<any>) {
 		this.computedWatchers.push(watcher);
+	}
+
+	registerDisposable(disposable: () => void) {
+		this.disposables.push(disposable);
 	}
 
 	setRef(ref: Ref<any> | ((comp: IDotComponent | null) => void)) {
@@ -370,6 +375,11 @@ export class ComponentVdom extends Vdom{
 			watcher.dispose();
 		}
 		this.computedWatchers = [];
+
+		for (const disposable of this.disposables) {
+			disposable();
+		}
+		this.disposables = [];
 
 		(this.component._._meta as any).isRendered = false;
 		this.component.unmounted && this.component.unmounted();

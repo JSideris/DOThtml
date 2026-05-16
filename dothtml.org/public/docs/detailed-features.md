@@ -7,6 +7,7 @@
 - Polymorphic components.
 - Reactivity.
 - **Keyed Diffing**: High-performance list reconciliation that reuses and moves DOM nodes.
+- **Centralized State Management (Stores)**: A structured, reactive way to manage shared application state with built-in support for singletons, actions, and getters.
 - **Update Batching**: Automatic grouping of state changes to minimize DOM writes.
 - **Enhanced Ref System**: Reactive references to elements and components with method proxying and keyed collections.
 
