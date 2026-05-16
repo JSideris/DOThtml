@@ -6,7 +6,6 @@ import { HtmlVdom } from "../vdom-nodes/html-vdom";
 import { TextVdom } from "../vdom-nodes/text-vdom";
 import Binding from "./binding";
 import ReactiveAttr from "./reactive-attr";
-import ReactiveStyle from "./reactive-style";
 
 
 /**
@@ -38,9 +37,6 @@ export default class Subscription{
 		}
 		else if(this.item instanceof VMetaNode){
 			this.item.update();
-		}
-		else if(this.item instanceof ReactiveStyle){
-			this.item.vStyle.updateProp(this.item.prop, value);
 		}
 		else if(this.item instanceof CollectionVdom){
 			// TODO: shouldn't I pass the value in here???

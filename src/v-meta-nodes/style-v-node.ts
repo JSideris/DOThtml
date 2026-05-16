@@ -13,10 +13,11 @@ import { Priority } from "../reactivity/priority";
 import Watcher from "../reactivity/watcher";
 
 export default class StyleVNode extends VMetaNode {
-	target: HTMLElement;
+	target: HTMLElement | string;
 	document: Document;
 	shadowRoot: ShadowRoot;
 	styleSource: IDotCss | BaseVStyle;
+	private styleElement: HTMLStyleElement;
 
 	private observables: Array<Binding> = [];
 	private observableIds: Array<number> = [];
@@ -45,46 +46,56 @@ export default class StyleVNode extends VMetaNode {
 
 		if (Array.isArray(source)) {
 			// It's from BaseVStyle.getProps()
-			for (const p of source) {
-				this.tryExtractObservable(p.value);
+			for (let i = 0; i < source.length; i++) {
+				let p = source[i];
+				this.processValue(p.prop, p.value, (newVal) => p.value = newVal);
 			}
 		} else {
 			// It's a plain IDotCss object.
 			for (let prop in source) {
-				let value = source[prop];
-				if (!this.tryExtractObservable(value)) {
-					if (typeof value === "object" && value !== null) {
-						// Handle nested builders like filter: { blur: 5 }
-						let builder: CssFunctionBuilderVStyle;
-						switch (prop) {
-							case "filter": {
-								builder = new FilterVStyle(prop);
-								break;
-							}
-							case "transform": {
-								builder = new TransformVStyle(prop);
-								break;
-							}
-						}
+				this.processValue(prop, source[prop], (newVal) => source[prop] = newVal);
+			}
+		}
+	}
 
-						if (builder) {
-							let funcArray = Array.isArray(value) ? value : [value];
-							for (let funcValue of funcArray) {
-								for (let k in funcValue) {
-									let v = funcValue[k];
-									this.tryExtractObservable(v);
-									if (Array.isArray(v)) {
-										for (let w of v) {
-											this.tryExtractObservable(w);
-										}
-									}
+	private processValue(prop: string, value: any, setter: (v: any) => void) {
+		if (!this.tryExtractObservable(value)) {
+			if (typeof value === "object" && value !== null && !(value instanceof CssFunctionBuilderVStyle)) {
+				// Handle nested builders like filter: { blur: 5 }
+				let builder: CssFunctionBuilderVStyle;
+				switch (prop) {
+					case "filter": {
+						builder = new FilterVStyle(prop);
+						break;
+					}
+					case "transform": {
+						builder = new TransformVStyle(prop);
+						break;
+					}
+				}
 
-									if (builder[k]) builder[k](v);
+				if (builder) {
+					let funcArray = Array.isArray(value) ? value : [value];
+					for (let funcValue of funcArray) {
+						for (let k in funcValue) {
+							let v = funcValue[k];
+							this.tryExtractObservable(v);
+							if (Array.isArray(v)) {
+								for (let w of v) {
+									this.tryExtractObservable(w);
 								}
 							}
-							source[prop] = builder;
+
+							if (typeof builder[k] === "function") {
+								if (Array.isArray(v)) {
+									builder[k](...v);
+								} else {
+									builder[k](v);
+								}
+							}
 						}
 					}
+					setter(builder);
 				}
 			}
 		}
@@ -106,10 +117,6 @@ export default class StyleVNode extends VMetaNode {
 	}
 
 	render(target: HTMLElement | string, document: Document = window.document, shadowRoot?: ShadowRoot) {
-		if (typeof target === "string") {
-			// TODO: Support string targets (selectors) in Phase 2/3.
-			return;
-		}
 		this.target = target;
 		this.document = document;
 		this.shadowRoot = shadowRoot;
@@ -117,6 +124,15 @@ export default class StyleVNode extends VMetaNode {
 		for (let observable of this.observables) {
 			let id = (observable as any).subscribe(() => this.update());
 			this.observableIds.push(id);
+		}
+
+		if (typeof target === "string") {
+			this.styleElement = this.document.createElement("style");
+			if (this.shadowRoot) {
+				this.shadowRoot.appendChild(this.styleElement);
+			} else {
+				this.document.head.appendChild(this.styleElement);
+			}
 		}
 
 		this.applyStyles();
@@ -132,19 +148,25 @@ export default class StyleVNode extends VMetaNode {
 	private applyStyles() {
 		if (!this.target) return;
 
-		this.extractObservables();
-
-		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
-
-		if (Array.isArray(source)) {
-			for (const p of source) {
-				const value = p.value instanceof Binding ? p.value._get() : (p.value instanceof Watcher ? p.value.value : p.value);
-				this.applySingleStyle(p.prop, value);
+		if (typeof this.target === "string") {
+			if (this.styleElement) {
+				this.styleElement.textContent = `${this.target} { ${this.getStyleString()} }`;
 			}
 		} else {
-			for (let prop in source) {
-				const value = source[prop] instanceof Binding ? source[prop]._get() : (source[prop] instanceof Watcher ? source[prop].value : source[prop]);
-				this.applySingleStyle(prop, value);
+			this.extractObservables();
+
+			const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+
+			if (Array.isArray(source)) {
+				for (const p of source) {
+					const value = p.value instanceof Binding ? p.value._get() : (p.value instanceof Watcher ? p.value.value : p.value);
+					this.applySingleStyle(p.prop, value);
+				}
+			} else {
+				for (let prop in source) {
+					const value = source[prop] instanceof Binding ? source[prop]._get() : (source[prop] instanceof Watcher ? source[prop].value : source[prop]);
+					this.applySingleStyle(prop, value);
+				}
 			}
 		}
 	}
@@ -160,7 +182,6 @@ export default class StyleVNode extends VMetaNode {
 		let cssProp = prop;
 		let cssUnit = undefined;
 
-		// Check if it's a registered property to get the correct CSS name and unit.
 		const registeredProp = cssProps[prop];
 		if (registeredProp) {
 			cssProp = registeredProp.cssName;
@@ -170,12 +191,45 @@ export default class StyleVNode extends VMetaNode {
 			}
 		}
 
-		if (cssProp.startsWith("--")) {
-			this.target.style.setProperty(cssProp, `${cssValue}`);
-		} else {
-			// Use setProperty for consistency, even for standard props.
+		if (this.target instanceof HTMLElement) {
 			this.target.style.setProperty(cssProp, `${cssValue}`);
 		}
+	}
+
+	private getStyleString(): string {
+		let styles = "";
+		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+
+		if (Array.isArray(source)) {
+			for (const p of source) {
+				styles += this.formatSingleStyle(p.prop, p.value);
+			}
+		} else {
+			for (let prop in source) {
+				styles += this.formatSingleStyle(prop, source[prop]);
+			}
+		}
+		return styles;
+	}
+
+	private formatSingleStyle(prop: string, value: any): string {
+		let cssValue = value instanceof Binding ? value._get() : (value instanceof Watcher ? value.value : value);
+		if (cssValue instanceof CssFunctionBuilderVStyle) {
+			cssValue = cssValue.toString();
+		}
+
+		let cssProp = prop;
+		let cssUnit = undefined;
+
+		const registeredProp = cssProps[prop];
+		if (registeredProp) {
+			cssProp = registeredProp.cssName;
+			cssUnit = registeredProp.unit;
+			if (registeredProp.type === "length" && typeof cssValue === "number") {
+				cssValue = formatCssLength(cssValue, cssUnit);
+			}
+		}
+		return `${cssProp}: ${cssValue}; `;
 	}
 
 	unrender() {
@@ -190,12 +244,21 @@ export default class StyleVNode extends VMetaNode {
 		}
 		this.observableIds = [];
 		this.observables = [];
+		
+		if (this.styleElement) {
+			this.styleElement.remove();
+			this.styleElement = null;
+		}
+
 		this.target = null;
 		this.updateSubscription.active = false;
 	}
 
 	toString() {
-		// TODO: Implement toString for SSR or debugging.
-		return "";
+		if (typeof this.target === "string") {
+			return `${this.target} { ${this.getStyleString()} }`;
+		} else {
+			return this.getStyleString();
+		}
 	}
 }

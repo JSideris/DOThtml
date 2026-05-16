@@ -25,6 +25,16 @@ DOThtml automatically generates methods for common CSS units, so you don't have 
 - **Time**: `.animationDurationMs(500)`, `.transitionDelayS(1)`.
 - **Angles**: `.rotateDeg(45)`, `.skewRad(0.1)`.
 
+### Nested Style Objects
+
+For complex properties like `filter` and `transform`, you can pass a plain object to the builder. DOThtml will automatically convert it into the correct CSS function syntax.
+
+```javascript
+dot.div("Filtered Content")
+  .style(s => s.filter({ blur: "5px", brightness: 0.8 }));
+  // Renders: filter: blur(5px) brightness(0.8);
+```
+
 ## Reactive Styling
 
 The styling system is fully integrated with DOThtml's reactivity system. You can pass `Watcher` or `Binding` objects directly to any style method.
@@ -182,6 +192,21 @@ dot.useGlobalStyles(`
 
 These global styles are automatically added to the `adoptedStyleSheets` of every component created after the registration.
 
+### Dynamic Global Selectors
+
+While `dot.css` targets the document root, you can create style nodes that target any CSS selector and update them reactively.
+
+```javascript
+import StyleVNode from "dothtml/v-meta-nodes/style-v-node";
+
+const color = dot.watch("red");
+const globalStyle = new StyleVNode(dot.css.color(color));
+globalStyle.render(".my-dynamic-class"); 
+
+// Later...
+color.value = "blue"; // Updates the <style> tag targeting .my-dynamic-class
+```
+
 ## Performance and Caching
 
 DOThtml's styling system is built for performance:
@@ -190,6 +215,15 @@ DOThtml's styling system is built for performance:
 - **Deduplication**: `CSSStyleSheet` instances are cached based on their content. If multiple components or global registrations use the same CSS string, they will share the same underlying stylesheet object.
 - **Component Caching**: Component-level styles (from `stylize()`) are cached on the component's constructor, so they are only generated once.
 - **Reactive Batching**: Style updates via `Watchers` are batched by the scheduler to prevent layout thrashing.
+
+## Server-Side Rendering (SSR)
+
+DOThtml's styling system is fully compatible with SSR. You can convert any style builder or style node to a CSS string.
+
+```javascript
+const styles = dot.css.color("red").paddingPx(10);
+console.log(styles.toString()); // "color: red; padding: 10px;"
+```
 
 ## Testing Styling
 
@@ -210,6 +244,18 @@ test("reactive style update", () => {
   expect(document.querySelector("div").style.color).toBe("blue");
 });
 ```
+
+## Legacy Compatibility
+
+For users migrating from older versions of DOThtml, the `dot.useStyles()` method is still available as a bridge to the modern system. It allows you to register global styles using the familiar v5 syntax.
+
+```javascript
+dot.useStyles(`
+  body { background: #eee; }
+`);
+```
+
+While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.
 
 If you want all updates in a test suite to be synchronous by default, you can use `dot.setSync(true)`.
 

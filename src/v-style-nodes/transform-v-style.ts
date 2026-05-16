@@ -14,70 +14,52 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 	
 	translate(x,y?){
 		return arguments.length == 1 
-			? this.appendFunction("translate", [{f:formatCssLength, v:x}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,0,0,1]*/) 
-			: this.appendFunction("translate", [{f:formatCssLength, v:x}, {f:formatCssLength, v:y}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,y,0,1]*/);
+			? this.appendFunction("translate", [{f:formatCssLength, v:x}]) 
+			: this.appendFunction("translate", [{f:formatCssLength, v:x}, {f:formatCssLength, v:y}]);
 	}
 	
 	translate3d(x,y,z){
-		return this.appendFunction("translate3d", [{f:formatCssLength, v:x}, {f:formatCssLength, v:y}, {f:formatCssLength, v:z}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,y,z,1]*/);
+		return this.appendFunction("translate3d", [{f:formatCssLength, v:x}, {f:formatCssLength, v:y}, {f:formatCssLength, v:z}]);
 	}
 	
 	translateX(x){
-		
-		//var x = dotcss.lengthToPx(p[0]);
-		//this.updateValue("translateX", [{f:formatCssLength, v:x + "px")]/*, [1,0,0,0,0,1,0,0,0,0,1,0,x,0,0,1]*/);
 		return this.appendFunction("translateX", [{f:formatCssLength, v:x}]);
 	}
 	
 	translateY(y){
-		//var y = dotcss.lengthToPx(p[0]);
-		//this.updateValue("translateY", [{f:formatCssLength, v:y + "px")]/*, [1,0,0,0,0,1,0,0,0,0,1,0,0,y,0,1]*/);
 		return this.appendFunction("translateY", [{f:formatCssLength, v:y}]);
 	}
 	
 	translateZ(z){
-		
-		//var z = dotcss.lengthToPx(p[0]);
-		//this.updateValue("translateZ", [{f:formatCssLength, v:z + "px")]/*, [1,0,0,0,0,1,0,0,0,0,1,0,0,0,z,1]*/);
 		return this.appendFunction("translateZ", [{f:formatCssLength, v:z}]);
 	}
 	
 	scale(x:number,y?:number){
-		return this.appendFunction("scale", [x,y??1]/*, [x,0,0,0,0,y,0,0,0,0,1,0,0,0,0,1]*/);
+		return this.appendFunction("scale", [x,y??1]);
 	}
 	
 	scale3d(x:number,y:number,z:number){
-		return this.appendFunction("scale3d", [x,y,z]/*, [p[0],0,0,0,0,p[1],0,0,0,0,p[2],0,0,0,0,1]*/);
+		return this.appendFunction("scale3d", [x,y,z]);
 	}
 	
 	scaleX(x:number){
-		//this.updateValue("scaleX", p/*, [p[0],0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]*/);
 		return this.appendFunction("scaleX", [x]);
 	}
 	
 	scaleY(y:number){
-		//this.updateValue("scaleY", p/*, [1,0,0,0,0,p[0],0,0,0,0,1,0,0,0,0,1]*/);
 		return this.appendFunction("scaleY", [y]);
 	}
 	
 	scaleZ(z:number){
-		//this.updateValue("scaleZ", p/*, [1,0,0,0,0,1,0,0,0,0,p[0],0,0,0,0,1]*/);
 		return this.appendFunction("scaleZ", [z]);
 	}
 	
 	rotate(x){
-		// var a = Util.angleToDeg(x);
-		return this.appendFunction("rotate", [{f:formatCssAngle, v:x}]/*, [Math.cos(a),Math.sin(a),0,0,-Math.sin(axxx),Math.cos(axxx),0,0,0,0,1,0,0,0,0,1]*/);
+		return this.appendFunction("rotate", [{f:formatCssAngle, v:x}]);
 	}
 	
 	rotate3d(x: number, y: number, z: number, a){
-		
-		return this.appendFunction("rotate3d", [x, y, z, {f:formatCssAngle, v:a}]/*, 
-			[1+C*(x*x-1),	z*S+x*y*C,		-y*S+x*z*C,		0,
-			-z*S+x*y*C,		1+C*(y*y-1),	x*S+y*z*C,		0,
-			y*S+x*z*C,		-x*S+y*z*C,		1+C*(z*z-1),	0,
-			0,				0,				0,				1]*/
-		);
+		return this.appendFunction("rotate3d", [x, y, z, {f:formatCssAngle, v:a}]);
 	}
 
 	// Manually create the 4 unit functions for rotate 3d since the arg structure is mixed.
@@ -87,7 +69,7 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 	rotate3dTurn(x: number, y: number, z: number, a: number){return this.rotate3d(x,y,z,`${a}turn`);}
 	
 	rotateX(x){
-		return this.appendFunction("rotateX", [{f:formatCssAngle, v:x}]/*, [1,0,0,0,0,Math.cos(axx),Math.sin(axx),0,0,-Math.sin(axx),Math.cos(axx),0,0,0,0,1]*/);
+		return this.appendFunction("rotateX", [{f:formatCssAngle, v:x}]);
 	}
 	
 	rotateY(y){
@@ -99,10 +81,9 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 	}
 	
 	skew(x, y?){
-		
 		return arguments.length == 1 
-			? this.appendFunction("skew", [{f:formatCssAngle, v:x}]/*, [1,0,0,0,Math.tan(axxxxx),1,0,0,0,0,1,0,0,0,0,1]*/)
-			: this.appendFunction("skew", [{f:formatCssAngle, v:x}, {f:formatCssAngle, v:y}]/*, [1,Math.tan(axxxy),0,0,Math.tan(axxxx),1,0,0,0,0,1,0,0,0,0,1]*/);
+			? this.appendFunction("skew", [{f:formatCssAngle, v:x}])
+			: this.appendFunction("skew", [{f:formatCssAngle, v:x}, {f:formatCssAngle, v:y}]);
 	}
 	
 	skewX(x){
@@ -114,8 +95,6 @@ export default class TransformVStyle extends CssFunctionBuilderVStyle{
 	}
 	
 	perspective(d){
-		return this.appendFunction("perspective", [{f:formatCssLength, v:d}]/*, [1,0,0,0,0,1,0,0,0,0,1,0,0,0,dotcss.formatNumberValue(-1 / d),1]*/);
+		return this.appendFunction("perspective", [{f:formatCssLength, v:d}]);
 	}
-
-	
 }

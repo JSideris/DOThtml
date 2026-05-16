@@ -1,17 +1,13 @@
 import Binding from "../reactivity/binding";
 import Watcher from "../reactivity/watcher";
-import VStyle from "./v-style";
 
 export default abstract class CssFunctionBuilderVStyle{
 
-	simpleValue: string;
 	funcs: Array<{
 		func: string,
 		args: Array<{v: number|boolean|string|Binding, f: (v:number|boolean|string|Binding)=>string}>
 	}> = [];
 	readonly propName: string;
-	subscriptions: Record<number, Binding> = {};
-	target: HTMLElement;
 
 	constructor(propName: string){
 		this.propName = propName;
@@ -21,98 +17,27 @@ export default abstract class CssFunctionBuilderVStyle{
 		let result = "";
 
 		// Set the bindings.
-		for(let t of this.funcs){
-			// TODO: need to handle units and special types.
-			let argValues = t.args.map(arg => {
-				if(arg.v instanceof Binding){
-					return arg.f(arg.v._get());
+		for (let t of this.funcs) {
+			let argValues = Array.from(t.args).map(arg => {
+				let v = (arg as any).v !== undefined ? (arg as any).v : arg;
+				let f = (arg as any).f || ((val) => `${val}`);
+
+				if (v instanceof Binding) {
+					return f(v._get());
+				} else if (v instanceof Watcher) {
+					return f(v.value);
 				}
-				else{
-					return arg.f(arg.v).split(" ").join(", ");
+				else {
+					return f(v).toString().split(" ").join(", ");
 				}
 			}).join(", ");
 
-			
+
 			result += `${t.func}(${argValues}) `;
 		}
-		
+
 		return result.trim();
 	}
-
-	// _render(target: HTMLElement) {
-	// 	this.target = target;
-	// 	let result = "";
-
-
-	// 	// Set the bindings.
-	// 	for(let i = 0; i < this.funcs.length; i++){
-	// 		let t = this.funcs[i];
-	// 		for(let k = 0; k < t.args.length; k++){
-	// 			let arg = t.args[k];
-	// 			if(arg.v instanceof Reactive){
-	// 				let subscriptionId = arg.v.subscribeStyle(this, t.func);
-	// 				this.subscriptions[subscriptionId] = arg.v;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// console.log("Setting prop", this.propName);
-	// 	// console.log("Is simple?", this.simpleValue);
-
-	// 	if(this.simpleValue){
-	// 		result = this.simpleValue;
-	// 		target.style[this.propName] = result;
-	// 	}
-	// 	else{
-	// 		this.updateProp(null, null);
-	// 	}
-	// }
-
-	// _unrender() {
-	// 	for(let s in this.subscriptions){
-	// 		this.subscriptions[s].detachBinding(Number(s));
-	// 	}
-
-	// 	this.subscriptions = {};
-
-	// 	this.target = null;
-	// }
-
-	// There's no updating props. All you can do is rerender the whole thing.
-	// updateProp(prop: string, value: string) {
-	// 	throw new Error("Don't call updateProp.");
-	// 	let isSimple = true;
-	// 	let ret = "";
-
-	// 	for(let i = 0; i < this.funcs.length; i++){
-	// 		let t = this.funcs[i];
-	// 		ret += t.func + "(";
-	// 		for(let k = 0; k < t.args.length; k++){
-	// 			let arg = t.args[k];
-	// 			// let v = arg.f ? arg.f(arg.v) : arg.v;
-	// 			let argVal = "";
-	// 			if(arg.v instanceof Reactive){
-	// 				argVal = arg.v.getValue();
-	// 				isSimple = false;
-	// 			}
-	// 			else{
-	// 				argVal = `${arg.v}`;
-	// 			}
-
-	// 			if(arg.f) argVal = arg.f(argVal);
-
-	// 			ret += argVal.toString();
-	// 		}
-	// 		ret = ret.trim() + ") ";
-	// 	}
-	// 	ret = ret.trim();
-
-	// 	if(isSimple){
-	// 		this.simpleValue = ret;
-	// 	}
-	// 	this.target.style[this.propName] = ret;
-	// }
-
 
 	appendFunction(filter: string, args){
 		this.funcs.push({func: filter, args: args});

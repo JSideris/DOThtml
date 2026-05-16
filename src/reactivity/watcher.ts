@@ -5,7 +5,6 @@ import { TextVdom } from "../vdom-nodes/text-vdom";
 import { HtmlVdom } from "../vdom-nodes/html-vdom";
 import { ConditionalVdom } from "../vdom-nodes/conditional-vdom";
 import CollectionVdom from "../vdom-nodes/collection-vdom";
-import VStyle from "../v-style-nodes/v-style";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import VMetaNode from "../v-meta-nodes/v-meta-node";
 import Binding from "./binding";

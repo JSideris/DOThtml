@@ -8,7 +8,7 @@ import Watcher from "./reactivity/watcher";
 import Computed from "./reactivity/computed";
 import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
-// import { useStyles } from "./decoration/use-styles";
+import renderStylesheet from "./helpers/render-stylesheet";
 import BaseVStyle from "./v-style-nodes/base-v-style";
 import StyleVNode from "./v-meta-nodes/style-v-node";
 import { IDotCore, IDotCss, IDotComponent } from "dothtml-interfaces";
@@ -18,8 +18,6 @@ import Ref from "./reactivity/ref";
 import { scheduler } from "./reactivity/scheduler";
 import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
 
-// TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
-// Look into it.
 const allTags = [
 	"a",
 	"aside",
@@ -37,12 +35,12 @@ const allTags = [
 	"button",
 	"canvas",
 	"caption",
-	"cite", //*
+	"cite",
 	"code",
 	"col",
 	"colGroup",
 	"content",
-	"data", //*
+	"data",
 	"dataList",
 	"dd",
 	"del",
@@ -58,7 +56,7 @@ const allTags = [
 	"figCaption",
 	"figure",
 	"footer",
-	"form", //*
+	"form",
 	"h1",
 	"h2",
 	"h3",
@@ -74,7 +72,7 @@ const allTags = [
 	"ins",
 	"kbd",
 	"keyGen",
-	"label", //*
+	"label",
 	"legend",
 	"li",
 	"main",
@@ -103,11 +101,11 @@ const allTags = [
 	"select",
 	"small",
 	"source",
-	"span", //*
+	"span",
 	"strong",
 	"svg",
 	"sub",
-	"summary", //*
+	"summary",
 	"sup",
 	"table",
 	"tBody",
@@ -126,208 +124,8 @@ const allTags = [
 	"wbr"
 ];
 
-// Keeping this around for reference. Might need it at same point.
-// Don't delete. It took a decent amount of effort to put this together.
-// const allAttributes = [
-// 	"accept",
-// 	"accessKey",
-// 	"action",
-// 	"align",
-// 	"allow",
-// 	"allowFullScreen",
-// 	"aLink",
-// 	"alt",
-// 	"archive",
-// 	"autoCapitalize",
-// 	"autoComplete",
-// 	"autoFocus",
-// 	"autoPlay",
-// 	"autoSave",
-// 	"axis",
-// 	"background",
-// 	"bgColor",
-// 	"border",
-// 	"buffered",
-// 	"cellPadding",
-// 	"cellSpacing",
-// 	"challenge",
-// 	"char",
-// 	"charset",
-// 	"charOff",
-// 	"checked",
-// 	// "cite", //*
-// 	"class",
-// 	"classId",
-// 	"clear",
-// 	"codeBase",
-// 	"codeType",
-// 	"color",
-// 	"cols",
-// 	"colSpan",
-// 	"compact",
-// 	"contentEditable",
-// 	"contextMenu",
-// 	"controls",
-// 	"coords",
-// 	"crossOrigin",
-// 	"dateTime",
-// 	"declare",
-// 	"decoding",
-// 	"default",
-// 	//"data", //*
-// 	"dir",
-// 	"dirName",
-// 	"disabled",
-// 	"download",
-// 	"draggable",
-// 	"dropZone",
-// 	"encType",
-// 	"enterKeyHint",
-// 	"exportParts",
-// 	"face",
-// 	"font",
-// 	"fontFace",
-// 	"fontFaceFormat",
-// 	"fontFaceName",
-// 	"fontFaceSrc",
-// 	"fontFaceUri",
-// 	"fontSpecification",
-// 	"for",
-// 	"foreignObject",
-// 	// "form", //*
-// 	"formAction",
-// 	"frame",
-// 	"frameBorder",
-// 	"headers",
-// 	"height",
-// 	"hidden",
-// 	"high",
-// 	"hRef",
-// 	"hRefLang",
-// 	"hSpace",
-// 	"icon",
-// 	"id",
-// 	"inert",
-// 	"inputMode",
-// 	"images",
-// 	"is",
-// 	"isMap",
-// 	"itemId",
-// 	"itemProp",
-// 	"itemRef",
-// 	"itemScope",
-// 	"itemType",
-// 	"keyType",
-// 	"kind",
-// 	// "label", //*
-// 	"lang",
-// 	"list",
-// 	"loading",
-// 	"longDesc",
-// 	"loop",
-// 	"low",
-// 	"manifest",
-// 	"marginHeight",
-// 	"marginWidth",
-// 	"max",
-// 	"maxLength",
-// 	"media",
-// 	"metadata",
-// 	"method",
-// 	"min",
-// 	"missingGlyph",
-// 	"multiple",
-// 	"muted",
-// 	"name",
-// 	"noHRef",
-// 	"nOnce",
-// 	"noResize",
-// 	"noShade",
-// 	"noValidate",
-// 	"noWrap",
-// 	"open",
-// 	"optimum",
-// 	"part",
-// 	"pattern",
-// 	"ping",
-// 	"placeholder",
-// 	"playsInline",
-// 	"poster",
-// 	"preload",
-// 	"prompt",
-// 	"radioGroup",
-// 	"readOnly",
-// 	"referrerPolicy",
-// 	"rel",
-// 	"required",
-// 	"rev",
-// 	"reversed",
-// 	"role",
-// 	"rows",
-// 	"rowSpan",
-// 	"rules",
-// 	"sandbox",
-// 	"scope",
-// 	"scrolling",
-// 	"seamless",
-// 	"selected",
-// 	"shape",
-// 	"size",
-// 	"sizes",
-// 	// "span", //*
-// 	"spellCheck",
-// 	"src",
-// 	"srcDoc",
-// 	"srcLang",
-// 	"srcSet",
-// 	"standby",
-// 	"start",
-// 	"step",
-// 	// "summary", //*
-// 	"style", // Special
-// 	"tabIndex",
-// 	"target",
-// 	"title",
-// 	"translate",
-// 	"type",
-// 	"useMap",
-// 	"vAlign",
-// 	// "value", // Special behavior.
-// 	"valueType",
-// 	"virtualKeyboardPolicy",
-// 	"width",
-// 	"wrap"
-// 	//"dataA", //Special explicit 
-// 	//"citeA",
-// 	//"formA",
-// 	//"labelA",
-// 	//"spanA",
-// 	//"summaryA"
-// ];
-
-// const specialAttributes = [
-// 	["quoteCite","cite"],
-// 	["objectData","data"],
-// 	["whichForm","form"],
-// 	["trackLabel","label"],
-// 	["colSpan","span"],
-// 	["tableSummary","summary"],
-// 	["optionLabel","label"],
-// 	["acceptCharset","accept-charset"],
-// 	["areaHidden", "area-hidden"],
-// 	["areaLabel", "area-label"],
-// 	["areaDescribedBy", "area-describedby"],
-// 	["areaControls", "area-controls"],
-// 	["areaExpanded", "area-expanded"],
-// 	["areaChecked", "area-checked"],
-// 	["areaSelected", "area-selected"],
-// ];
-
-// TODO: don't forget to add md.
-// To find the definitions of these, check container-vdom.ts
 const allCoreWrappers = ["each", "html", "mount", "text", "md", "when", "on"];
 
-// This could easily be modified so that it adds some rudimentary element checking.
 const allEventAttr = {
 	onAbort: 1,
 	onBlur: 1,
@@ -412,13 +210,6 @@ const allEventAttr = {
 	onWheel: 1,
 };
 
-// dot(document.body).div(dot.p("123").id("my-p")).id("my-div");
-
-/**
- * 1. Main VDomNode is built.
- * 2. A new vdom node is built, and `p()` is called in it, creating a new vdom node.
- */
-
 const makeCoreWrapper = (d, fn)=>{
 	d[fn] = function(){
 		let n = new ContainerVdom(dot);
@@ -432,8 +223,6 @@ const makeDot = ()=>{
 
 		if(targetSelector?.ownerDocument?.defaultView){
 			let el = (targetSelector as HTMLElement);
-			// It's an element.
-			// Try to get the node out of it.
 			let node = el[DOT_VDOM_PROP_NAME] as ElementVdom;
 			if(node){
 				return node.children;
@@ -455,11 +244,9 @@ const makeDot = ()=>{
 		}
 	}
 
-	// _dot.watch = function<Ti extends Reactive|Array<any>|{[key: string|number]: any}|string|number|boolean = any, To = Ti>(props: {value: Ti, key?: string, transform?: (value: Ti)=>To}): Reactive<Ti, To>{
 	_dot.watch = function<T extends Watcher|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Watcher<T>{
 		let o = new Watcher();
 		o.key = key;
-		// o._value = props?.value;
 		o.value = (value);
 		return o;
 	}
@@ -505,43 +292,25 @@ const makeDot = ()=>{
 	};
 
 	_dot.css = new BaseVStyle();
-	// ((_dot.css as any)._isBase as boolean) = true; // Remove this so dot.css is a regular builder that can be bound.
 
-	if (typeof document !== "undefined") {
-		const globalStyleVNode = new StyleVNode(_dot.css);
-		globalStyleVNode.render(document.documentElement);
-	}
-
-	// _dot.component = component;
-	// _dot.component["useStyles"] = useStyles;
-
-	_dot.useStyles = (applyToDocument: Document, styles: string|((css)=>string|IDotCss))=>{
-
-		if(applyToDocument && !styles){
-			if(typeof applyToDocument == "string" || (applyToDocument["call"] && applyToDocument["apply"])){
+	_dot.useStyles = (applyToDocument: Document, styles: string | ((css: any) => string | IDotCss)) => {
+		if (applyToDocument && !styles) {
+			if (typeof applyToDocument == "string" || (applyToDocument["call"] && applyToDocument["apply"])) {
 				styles = applyToDocument as any;
 				applyToDocument = document;
 			}
 		}
 
-		let cssStringContent = "";
-		if(typeof styles == "string"){
-			cssStringContent = styles;
+		const styleItem = renderStylesheet(styles, applyToDocument);
+		if (styleItem instanceof HTMLElement) {
+			applyToDocument.head.appendChild(styleItem);
 		}
-		else{
-			let content = styles(dot.css);
-			if(typeof content == "string"){
-				cssStringContent = content;
-			}
-			else{
-				// TODO: need a way to get the string from the framework. Still a WIP.
-			}
-		}
-		const styleSheet = applyToDocument.createElement("style");
-		styleSheet.type = "text/css";
-		styleSheet.textContent = cssStringContent;
-		applyToDocument.head.appendChild(styleSheet);
 	};
+
+	if (typeof document !== "undefined") {
+		const globalStyleVNode = new StyleVNode(_dot.css);
+		globalStyleVNode.render(document.documentElement);
+	}
 
 	_dot.window = (options) => {
 		return new WindowWrapper(options);
@@ -577,13 +346,6 @@ const makeDot = ()=>{
 					if(!cont && (a || b)){
 						attrs = (a || b);
 					}
-
-					// If we didn't find a content, there could have been an invalid value passed in.
-					// The logic to determine if a content was found is a little tricky because we allow null and undefined.
-					// It's actually wrong right now. Not a high priority though.
-					// if(cont === undefined && ((a && b) || ((a || b) && !attr))){
-					// 	throw new Error("Unknown value type.");
-					// }
 				}
 
 				{ // Apply attributes to element.
@@ -616,20 +378,15 @@ const makeDot = ()=>{
 				
 				{ // Add children to new element.
 					if(cont instanceof ContainerVdom){
-						// Note that this creates a redundant new ContainerVdom in the ElementVdom that gets overwritten.
-						// Perhaps there's a way to eliminate this inefficiency.
 						n.children = cont;
 					}
 					else if(cont instanceof Vdom){
 						n.children._addChild(cont);
 					}
 					else if(typeof cont == "object" && cont?.build){
-						// n.children._addChild(new ComponentVdom(dot, cont));
 						n.children.mount(cont);
-						
 					}
 					else{
-						// Text or reactives.
 						if(cont !== null && cont !== undefined){
 							if(cont instanceof Watcher){
 								cont = cont.bind();
@@ -640,24 +397,6 @@ const makeDot = ()=>{
 				}
 
 				return this._addChild(n);
-
-				// if(c instanceof ContainerVDomNode){
-				// 	n = c;
-				// }
-				// else{
-				// 	n = new ContainerVDomNode();
-				// 	if(c instanceof HtmlVDomNode || c instanceof TextVDomNode){
-				// 		n._addChild(c);
-				// 	}
-				// 	else{
-				// 		// It's content (assume text). Later we'll add support for other types.
-				// 		if(c){
-				// 			let inner = new TextVDomNode(c);
-				// 			n._addChild(inner);
-				// 		}
-				// 	}
-				// }
-				// return this._addChild(n);
 			};
 			makeCoreWrapper(_dot, E);
 		}

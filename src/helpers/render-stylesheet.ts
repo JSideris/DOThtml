@@ -10,7 +10,6 @@ export default function renderStylesheet(styleCallback: string|((css: any)=>(str
 		finalStylesheet = styleCallback;
 	}
 	else {
-		// TODO: In the future, we might want to pass a real CSS builder here.
 		let css = null;
 		let styles = styleCallback(css);
 
@@ -18,7 +17,7 @@ export default function renderStylesheet(styleCallback: string|((css: any)=>(str
 			finalStylesheet = styles;
 		}
 		else {
-			// TODO: handle dot syntax when the style builder is set up.
+			// TODO: handle dot syntax if needed.
 		}
 	}
 
@@ -26,7 +25,7 @@ export default function renderStylesheet(styleCallback: string|((css: any)=>(str
 		return stylesheetCache.get(finalStylesheet);
 	}
 
-	let DocumentCSSStyleSheet = document.defaultView?.CSSStyleSheet;
+	let DocumentCSSStyleSheet = (document.defaultView as any)?.CSSStyleSheet;
 
 	if (DocumentCSSStyleSheet) {
 		try {
@@ -37,11 +36,11 @@ export default function renderStylesheet(styleCallback: string|((css: any)=>(str
 				return sharedStyles;
 			}
 		} catch (e) {
-			// Constructor might fail in some environments even if it exists.
+			// Constructor might fail in some environments.
 		}
 	}
 
-	// Not supported or failed. Fallback on a style tag.
+	// Fallback on a style tag.
 	let style = document.createElement("style");
 	style.innerHTML = finalStylesheet;
 	return style;

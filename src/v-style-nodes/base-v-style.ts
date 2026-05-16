@@ -1,25 +1,14 @@
 import Binding from "../reactivity/binding";
 import Watcher from "../reactivity/watcher";
-import VStyle from "./v-style";
 import cssProps from "../css/css-props";
 
-export default class BaseVStyle extends VStyle {
+export default class BaseVStyle {
 
 	// Used internally to indicate that this is the base style builder.
 	// Calling style functions on this object will create (and return) a new BaseVStyle, rather than extend this one.
 	private readonly _isBase = false;
 	private props: Array<{ prop: string, value: any }> = [];
 	private onUpdate: () => void;
-
-	_render(target: HTMLElement) {
-		// No-op. StyleVNode handles rendering now.
-	}
-	_unrender() {
-		// No-op. StyleVNode handles unrendering now.
-	}
-	updateProp(prop: string, value: string) {
-		// No-op. StyleVNode handles updates now.
-	}
 
 	setProp(propName: string, value: any) {
 		if (this._isBase) {
