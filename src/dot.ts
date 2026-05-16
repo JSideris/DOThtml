@@ -6,16 +6,16 @@ import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
 import Watcher from "./reactivity/watcher";
 import Computed from "./reactivity/computed";
-// import { component } from "./decoration/component";
+import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 // import { useStyles } from "./decoration/use-styles";
 import BaseVStyle from "./v-style-nodes/base-v-style";
-import { IDotCore, IDotCss } from "dothtml-interfaces";
+import { IDotCore, IDotCss, IDotComponent } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
 import Ref from "./reactivity/ref";
 import { scheduler } from "./reactivity/scheduler";
-import { getCurrentComponent } from "./vdom-nodes/component-context";
+import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
 
 // TODO: these stay in memory. I believe I could refactor this so that the memory gets cleaned up.
 // Look into it.
@@ -470,6 +470,24 @@ const makeDot = ()=>{
 			currentComponent.registerComputed(c);
 		}
 		return c;
+	}
+
+	_dot.component = component;
+
+	_dot.create = function<T extends IDotComponent>(Ctor: { new(...args: any[]): T }, ...args: any[]): T {
+		const tracker = {
+			computedWatchers: [],
+			registerComputed(w: any) { this.computedWatchers.push(w); }
+		};
+		pushComponent(tracker as any);
+		let instance: T;
+		try {
+			instance = new Ctor(...args);
+		} finally {
+			popComponent();
+		}
+		(instance as any)._trackedComputeds = tracker.computedWatchers;
+		return instance;
 	}
 
 	_dot.ref = function(){

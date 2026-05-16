@@ -69,6 +69,13 @@ export class ComponentVdom extends Vdom{
 				}));
 			}
 		};
+
+		if ((component as any)._trackedComputeds) {
+			for (const w of (component as any)._trackedComputeds) {
+				this.registerComputed(w);
+			}
+			delete (component as any)._trackedComputeds;
+		}
 	}
 
 	registerComputed(watcher: Computed<any>) {
@@ -153,9 +160,17 @@ export class ComponentVdom extends Vdom{
 				throw new Error(`[${componentName}] Prop "${key}" is required.`);
 			}
 
+			// Extract value for validation if it's a Watcher or Binding
+			let valueToValidate = value;
+			if (value instanceof Watcher) {
+				valueToValidate = value.value;
+			} else if (value instanceof Binding) {
+				valueToValidate = (value as any)._get();
+			}
+
 			// Check type (rudimentary)
-			if (value !== undefined && rule.type) {
-				const actualType = typeof value;
+			if (valueToValidate !== undefined && rule.type) {
+				const actualType = typeof valueToValidate;
 				let expectedType: string;
 				if (rule.type === String) expectedType = "string";
 				else if (rule.type === Number) expectedType = "number";
@@ -166,7 +181,7 @@ export class ComponentVdom extends Vdom{
 
 				if (expectedType !== "unknown" && actualType !== expectedType) {
 					// Special check for Array
-					if (rule.type === Array && !Array.isArray(value)) {
+					if (rule.type === Array && !Array.isArray(valueToValidate)) {
 						throw new Error(`[${componentName}] Prop "${key}" expected Array, but got ${actualType}.`);
 					}
 					if (rule.type !== Array) {
@@ -176,8 +191,8 @@ export class ComponentVdom extends Vdom{
 			}
 
 			// Custom validator
-			if (value !== undefined && typeof rule.validator === "function") {
-				if (!rule.validator(value)) {
+			if (valueToValidate !== undefined && typeof rule.validator === "function") {
+				if (!rule.validator(valueToValidate)) {
 					throw new Error(`[${componentName}] Prop "${key}" failed custom validation.`);
 				}
 			}

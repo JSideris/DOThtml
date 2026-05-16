@@ -9,6 +9,7 @@ export default class Computed<T> extends Watcher<T> {
 	private isEvaluating = false;
 	private active = true;
 	private dirty = true;
+	private error: any = null;
 
 	private updateSubscription = {
 		active: true,
@@ -33,6 +34,9 @@ export default class Computed<T> extends Watcher<T> {
 		}
 		if (this.dirty) {
 			this._update();
+		}
+		if (this.error) {
+			throw this.error;
 		}
 		return super.value;
 	}
@@ -63,10 +67,13 @@ export default class Computed<T> extends Watcher<T> {
 
 		this.isEvaluating = true;
 		this.dirty = false;
+		this.error = null;
 		this.newDependencies.clear();
 		dependencyStack.push(this);
 		try {
 			this.setValue(this.getter());
+		} catch (e) {
+			this.error = e;
 		} finally {
 			dependencyStack.pop();
 			this.isEvaluating = false;
