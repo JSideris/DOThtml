@@ -503,7 +503,7 @@ const makeDot = ()=>{
 	}
 
 	_dot.flushSync = () => {
-		scheduler.flush();
+		scheduler.flushSync();
 	}
 
 	{ // Elements

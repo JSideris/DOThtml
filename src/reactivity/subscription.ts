@@ -23,7 +23,7 @@ export default class Subscription{
 	}
 
 	// TODO: would be more efficient to compute the _get first then pass it into this function.
-	update(){
+	update(): any {
 		if(!this.active) return;
 		let value = this.boundReactive._get();
 
@@ -44,7 +44,7 @@ export default class Subscription{
 		}
 		else if(this.item instanceof CollectionVdom){
 			// TODO: shouldn't I pass the value in here???
-			this.item.updateList();
+			return this.item.updateList();
 		}
 		else if(this.item instanceof ConditionalVdom){
 			// TODO: shouldn't I pass the value in here???

@@ -10,6 +10,7 @@ import AttributeVNode from "../v-meta-nodes/attribute-v-node";
 import VMetaNode from "../v-meta-nodes/v-meta-node";
 import Binding from "./binding";
 import Subscription from "./subscription";
+import { Priority } from "./priority";
 import { scheduler } from "./scheduler";
 
 const TEXT_OFFSET = 0;
@@ -62,17 +63,17 @@ export default class Watcher<T = any> implements IWatcher<T>{
 	}
 
 	set value(v: T) {
-		this._value = v;
-		// let newValue = this.value;
-		// if(this._cachedLastValue != newValue){
-		// 	this._cachedLastValue = newValue;
-		// }
-		this.updater(this._value);
+		this.setValue(v);
 	}
 
-	private updater(value: T){
+	setValue(v: T, priority: Priority = Priority.Normal) {
+		this._value = v;
+		this.updater(this._value, priority);
+	}
+
+	private updater(value: T, priority: Priority = Priority.Normal){
 		for(let b in this.allBindings){
-			scheduler.enqueue(this.allBindings[b]);
+			scheduler.enqueue(this.allBindings[b], priority);
 		}
 	}
 
@@ -99,10 +100,10 @@ export default class Watcher<T = any> implements IWatcher<T>{
 
 	// Called manually by the user to trigger an update.
 	// Useful for arrays and objects.
-	updateObservers(): void {
+	updateObservers(priority: Priority = Priority.Normal): void {
 		let updatedValue = this.value;
 		// this._cachedLastValue = updatedValue;
-		this.updater(updatedValue);
+		this.updater(updatedValue, priority);
 	}
 	
 }

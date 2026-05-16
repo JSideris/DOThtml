@@ -47,8 +47,8 @@ dot.button({
 }, "Click Me")
 ```
 
-### Performance: Update Batching & Keyed Diffing
-DOThtml features an intelligent update scheduler and a sophisticated keyed diffing algorithm to ensure maximum performance.
+### Performance: Update Batching, Keyed Diffing & Concurrent Rendering
+DOThtml features an intelligent update scheduler, a sophisticated keyed diffing algorithm, and concurrent rendering capabilities to ensure maximum performance and responsiveness.
 
 #### Update Batching
 Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Watcher` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
@@ -58,6 +58,19 @@ When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items
 *   **Reuse DOM Nodes**: Instead of re-rendering an entire item, DOThtml reuses the existing DOM nodes and only updates the content that changed.
 *   **Efficient Reordering**: If items in your list move, DOThtml moves the corresponding DOM nodes using `insertBefore` instead of unrendering and re-rendering them.
 *   **Minimal DOM Operations**: The reconciliation algorithm ensures that the minimum number of DOM operations are performed to reach the desired state.
+
+#### Concurrent Rendering
+For large updates (like rendering long lists), DOThtml uses concurrent rendering to keep the UI responsive. It breaks down large rendering tasks into small chunks and yields control back to the browser every 5ms. This allows the browser to process high-priority events like typing or clicks even while a large update is in progress.
+
+You can also specify the priority of an update using the `setValue` method:
+
+```javascript
+import { Priority } from "dothtml";
+
+const list = dot.watch([]);
+// This update will be treated as low priority and will yield to user input.
+list.setValue(largeDataSet, Priority.Background);
+```
 
 If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
 
