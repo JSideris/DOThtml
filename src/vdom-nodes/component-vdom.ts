@@ -164,6 +164,10 @@ export class ComponentVdom extends Vdom{
 		this.component.unmounted && this.component.unmounted();
 	}
 
+	_getNodes(): Node[] {
+		return this.shadowEl ? [this.shadowEl] : [];
+	}
+
 	addEventListener(event: string, callback: (e: any)=>void, modifiers: string[] = []){
 		this.events.push({name: event, callback: callback, modifiers: modifiers});
 		if(this.shadowEl) this.renderEvent(event, callback, modifiers);

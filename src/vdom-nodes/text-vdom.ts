@@ -40,6 +40,10 @@ export class TextVdom extends Vdom{
 		}
 	}
 
+	_getNodes(): Node[] {
+		return this.textNode ? [this.textNode] : [];
+	}
+
 	toString(){
 		let temp = document.createTextNode((this.text instanceof Binding ? this.text._get() : this.text) ?? "");
 		let div = document.createElement("div");

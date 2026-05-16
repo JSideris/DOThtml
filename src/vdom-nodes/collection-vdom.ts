@@ -64,6 +64,17 @@ export default class CollectionVdom extends Vdom{
 		this.endNode = null;
 	}
 
+	_getNodes(): Node[] {
+		if(!this.startNode) return [];
+		let nodes = [this.startNode];
+		for(let i = 0; i < this.mappedItems.length; i++){
+			nodes.push(...this.mappedItems[i].vdom._getNodes());
+			nodes.push(this.mappedItems[i].afterNode);
+		}
+		nodes.push(this.endNode);
+		return nodes;
+	}
+
 	/**
 	 * Removes a single item from the DOM, including anchors.
 	 */
@@ -74,130 +85,97 @@ export default class CollectionVdom extends Vdom{
 
 	updateList(){
 		let key: string = null;
-		let mappedData: Array<DatumMap>;
-
-		{ // Get the mapped data.
-
-			let unmappedCollection = null as Array<any>|Record<string|number, any>;
-			if(this.value instanceof Binding){
-				unmappedCollection = this.value._get() as any;
-				key = this.value._source.key ?? null;
-			}
-			else{
-				unmappedCollection = this.value;
-			}
-
-			if(unmappedCollection instanceof Array){
-				mappedData = unmappedCollection.map((v, i) => { 
-					let kv = !!key ? v[key] : null;
-					let reactive = new Watcher();
-					return {
-						vdom: null,
-						value: v,
-						keyValue: kv,
-						afterNode: null,
-						observableIndex: reactive.bind()
-					} as DatumMap; 
-				});
-			}
-			else {
-				mappedData = [];
-				for(let k in unmappedCollection){
-					let v = unmappedCollection[k];
-					let kv = !!key ? v[key] : k;
-					let reactive = new Watcher();
-					mappedData.push({
-						vdom: null,
-						value: v, 
-						keyValue: kv,
-						afterNode: null,
-						observableIndex: reactive.bind()
-					} as DatumMap);
-				}
-			}
+		let unmappedCollection = null as Array<any>|Record<string|number, any>;
+		if(this.value instanceof Binding){
+			unmappedCollection = this.value._get() as any;
+			key = this.value._source.key ?? null;
+		}
+		else{
+			unmappedCollection = this.value;
 		}
 
-		{ // Unrender any items that are not in the mapped data.
-			let oi = 0; // old i
-			let ns = 0; // new start (optimization)
-			let ni = 0; // new i
-			while(oi < this.mappedItems.length){
-				let existing = this.mappedItems[oi];
-				let candidate = mappedData[ni];
-				if(!candidate){
-					this.removeItem(existing);
-					this.mappedItems.splice(oi, 1);
-					ni = ns;
-					continue;
-				}
-				else if((candidate == existing) || (key && candidate.keyValue == existing.keyValue)){
-					ns++;
-					oi++;
-					ni = ns;
-					continue;
-				}
-				else{
-					ni++;
-				}
-			}
-		}
+		const newItems: Array<any> = Array.isArray(unmappedCollection) 
+			? unmappedCollection 
+			: Object.values(unmappedCollection);
 		
-		{ // Render new items.
-			let oi = 0;
-			let ni = 0;
-			let afterTarget = this.startNode;
-			while(ni < mappedData.length){
-				let existing = this.mappedItems[oi];
-				let candidate = mappedData[ni];
+		const newKeys: Array<any> = Array.isArray(unmappedCollection)
+			? newItems.map((v, i) => key ? v[key] : i)
+			: Object.keys(unmappedCollection).map((k, i) => key ? unmappedCollection[k][key] : k);
 
-				if(existing && ((candidate == existing) || (key && candidate.keyValue == existing.keyValue))){
+		// 1. Map old items by key
+		const oldMap = new Map<any, DatumMap>();
+		for (const item of this.mappedItems) {
+			oldMap.set(item.keyValue, item);
+		}
 
-					// Check if we need to rerender.
+		const nextMappedItems: Array<DatumMap> = [];
+		
+		// 2. Iterate through new items
+		for (let i = 0; i < newItems.length; i++) {
+			const value = newItems[i];
+			const keyValue = newKeys[i];
+			let existing = oldMap.get(keyValue);
 
-					if(!deepEqual(existing.value, candidate.value)){
-						existing.vdom._unrender();
-						existing.vdom = this.renderCallback(candidate.value, this.value instanceof Binding ? existing.observableIndex : ni, candidate.keyValue);
-						existing.value = candidate.value
-						existing.vdom._renderBefore(existing.afterNode);
-					}
-					else{
-						// Update all the indicies anyway.
-						existing.observableIndex._set(ni);
-					}
-
-					afterTarget = existing.afterNode;
-					ni++;
-					oi++;
-					// TODO: might need to re-render if it's been updated.
-					// Some thought can go into how to do this. Probably can to a test render into a string then compare the document. 
-					continue;
-				}
-				else{
-					let beforeTarget = afterTarget.ownerDocument.createTextNode("");
-					let ns = afterTarget.parentElement.nextSibling;
-					if(ns){
-						this.startNode.parentElement.insertBefore(beforeTarget, ns);
-					}
-					else{
-						this.startNode.parentElement.appendChild(beforeTarget);
-					}
-					candidate.afterNode = beforeTarget;
+			if (existing) {
+				// Reuse existing
+				oldMap.delete(keyValue);
+				
+				// Check if value changed
+				if (!deepEqual(existing.value, value)) {
+					existing.vdom._unrender();
+					existing.value = value;
+					let vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? existing.observableIndex : i, keyValue);
+					existing.vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
 					
-					candidate.observableIndex._set(ni);
-					let content = this.renderCallback(candidate.value, this.value instanceof Binding ? candidate.observableIndex : ni, candidate.keyValue);
-
-					if(content instanceof Vdom){
-						candidate.vdom = content;
-					}
-					else{
-						candidate.vdom = new TextVdom(content);
-					}
-					candidate.vdom._renderBefore(candidate.afterNode);
-
-					this.mappedItems.splice(ni, 0, candidate);
-					ni++;
+					// We don't render it yet, we'll do it in the re-order step.
+				} else {
+					existing.observableIndex._set(i);
 				}
+				nextMappedItems.push(existing);
+			} else {
+				// Create new
+				const reactive = new Watcher();
+				const observableIndex = reactive.bind();
+				observableIndex._set(i);
+				
+				const vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? observableIndex : i, keyValue);
+				const vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+				
+				const afterNode = this.startNode.ownerDocument.createTextNode("");
+				
+				const item: DatumMap = {
+					vdom,
+					value,
+					keyValue,
+					afterNode,
+					observableIndex
+				};
+				nextMappedItems.push(item);
 			}
 		}
+
+		// 3. Remove items that are no longer present
+		for (const item of oldMap.values()) {
+			this.removeItem(item);
+		}
+
+		// 4. Re-order DOM nodes
+		let lastNode: Node = this.startNode;
+		for (let i = 0; i < nextMappedItems.length; i++) {
+			const item = nextMappedItems[i];
+			
+			if (!item.vdom._isRendered) {
+				item.vdom._renderAfter(lastNode);
+				lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+			} else {
+				// Move it to the correct position
+				item.vdom._moveBefore(lastNode.nextSibling);
+				lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+			}
+
+			lastNode = item.afterNode;
+		}
+
+		this.mappedItems = nextMappedItems;
 	}
 }

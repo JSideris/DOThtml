@@ -47,10 +47,17 @@ dot.button({
 }, "Click Me")
 ```
 
-### Performance: Update Batching
-DOThtml features an intelligent update scheduler that batches multiple state changes into a single DOM update cycle. 
+### Performance: Update Batching & Keyed Diffing
+DOThtml features an intelligent update scheduler and a sophisticated keyed diffing algorithm to ensure maximum performance.
 
-When you update multiple `Watcher` values in a single function or task, DOThtml doesn't update the DOM for each change. Instead, it enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves the overall responsiveness of your application.
+#### Update Batching
+Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Watcher` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
+
+#### Keyed Diffing
+When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. By providing a `key` property in your data, DOThtml can:
+*   **Reuse DOM Nodes**: Instead of re-rendering an entire item, DOThtml reuses the existing DOM nodes and only updates the content that changed.
+*   **Efficient Reordering**: If items in your list move, DOThtml moves the corresponding DOM nodes using `insertBefore` instead of unrendering and re-rendering them.
+*   **Minimal DOM Operations**: The reconciliation algorithm ensures that the minimum number of DOM operations are performed to reach the desired state.
 
 If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
 

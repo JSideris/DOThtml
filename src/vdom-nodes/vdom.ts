@@ -4,6 +4,15 @@ export abstract class Vdom{
 
 	abstract _render(target: HTMLElement);
 	abstract _unrender();
+	abstract _getNodes(): Node[];
+
+	_moveBefore(reference: Node){
+		let nodes = this._getNodes();
+		for(let i = 0; i < nodes.length; i++){
+			reference.parentElement.insertBefore(nodes[i], reference);
+		}
+	}
+
 	__isRendered = false;
 	get _isRendered(){
 		return this.__isRendered

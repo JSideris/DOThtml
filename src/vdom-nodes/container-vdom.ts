@@ -51,6 +51,14 @@ export class ContainerVdom extends Vdom{
 		}
 	}
 
+	_getNodes(): Node[] {
+		let nodes = [];
+		for(let i = 0; i < this._children.length; i++){
+			nodes.push(...this._children[i]._getNodes());
+		}
+		return nodes;
+	}
+
 	// TODO: may need ot privatize this. This is no longer how attributes are set from outside of the framework.
 	attr(A: string, c: any){
 		let C = this._children[this._children.length - 1];

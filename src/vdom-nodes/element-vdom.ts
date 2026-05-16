@@ -108,6 +108,10 @@ export default class ElementVdom extends Vdom{
 		this.attributeObserverIds.length = 0;
 	}
 
+	_getNodes(): Node[] {
+		return this.element ? [this.element] : [];
+	}
+
 	toString(): string {
 		if(this.element){
 			return this.element.outerHTML;

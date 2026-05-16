@@ -66,6 +66,18 @@ export class HtmlVdom extends Vdom{
 		}
 	}
 
+	_getNodes(): Node[] {
+		if(!this.beforeNode) return [];
+		let nodes = [this.beforeNode];
+		let curr = this.beforeNode.nextSibling;
+		while(curr && curr !== this.afterNode){
+			nodes.push(curr);
+			curr = curr.nextSibling;
+		}
+		nodes.push(this.afterNode);
+		return nodes;
+	}
+
 	toString(){
 		return this.html instanceof Binding ? this.html._get() : this.html;
 	}

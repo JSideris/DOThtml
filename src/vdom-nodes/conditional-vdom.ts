@@ -97,6 +97,20 @@ export class ConditionalVdom extends Vdom{
 		}
 	}
 
+	_getNodes(): Node[] {
+		if(!this._isRendered) return [];
+		let nodes = [];
+		for(let i = 0; i < this.conditions.length; i++){
+			let C = this.conditions[i];
+			nodes.push(C.startAnchor);
+			if(i == this.renderedIndex){
+				nodes.push(...C.vNode._getNodes());
+			}
+			nodes.push(C.endAnchor);
+		}
+		return nodes;
+	}
+
 	updateConditions(){
 
 		let node = this.conditions[0].startAnchor.parentElement as HTMLElement;
