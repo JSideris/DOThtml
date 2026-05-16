@@ -35,7 +35,23 @@ class UserProfile {
 ### Validation Rules
 - `type`: One of `String`, `Number`, `Boolean`, `Object`, `Array`.
 - `required`: Boolean. Throws an error if the prop is missing.
-- `default`: The value to use if the prop is not provided.
+- `default`: The value to use if the prop is not provided. Can be a value or a factory function (e.g., `default: () => []`).
+- `validator`: A custom function that returns `true` if the value is valid.
+
+```javascript
+static props = {
+    score: { 
+        type: Number, 
+        validator: (v) => v >= 0 && v <= 100 
+    },
+    tags: { 
+        type: Array, 
+        default: () => ["new"] 
+    }
+};
+```
+
+> **Note**: Validation errors include the component name (e.g., `[UserProfile] Prop "username" is required`) for easier debugging.
 
 ## Lifecycle Hooks
 

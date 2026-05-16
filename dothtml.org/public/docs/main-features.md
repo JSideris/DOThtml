@@ -20,6 +20,7 @@ While it excels as a drop-in library, DOThtml is also a powerful, full-featured 
 DOThtml's reactivity system goes beyond simple value tracking, offering powerful tools for managing complex state dependencies.
 
 *   **Computed Watchers**: Create watchers that automatically derive their value from other watchers. They track their own dependencies and only re-evaluate when necessary.
+*   **Automatic Resource Management**: Derived state created within components is automatically disposed of when the component is unmounted, ensuring zero memory leaks.
 *   **Reactive Prop Flow**: Components automatically re-render when a parent passes a reactive prop (Watcher or Binding) that changes. This ensures that your UI always stays in sync with your data model without manual event listeners.
 *   **Runtime Prop Validation**: Define clear contracts for your components using static prop schemas. DOThtml validates types, required fields, and applies default values at runtime, helping you catch bugs early.
 
