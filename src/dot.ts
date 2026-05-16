@@ -494,6 +494,15 @@ const makeDot = ()=>{
 		return new Ref();
 	}
 
+	_dot.globalStyles = [];
+	_dot.useGlobalStyles = (styles: string | CSSStyleSheet | Array<string | CSSStyleSheet>) => {
+		if (Array.isArray(styles)) {
+			_dot.globalStyles.push(...styles);
+		} else {
+			_dot.globalStyles.push(styles);
+		}
+	};
+
 	_dot.css = new BaseVStyle();
 	((_dot.css as any)._isBase as boolean) = true;
 
@@ -534,6 +543,10 @@ const makeDot = ()=>{
 
 	_dot.flushSync = () => {
 		scheduler.flushSync();
+	}
+
+	_dot.setSync = (sync: boolean) => {
+		scheduler.setSync(sync);
 	}
 
 	{ // Elements

@@ -10,6 +10,8 @@ import BaseVStyle from "../v-style-nodes/base-v-style";
 import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
 
+import Watcher from "../reactivity/watcher";
+
 export default class StyleVNode extends VMetaNode {
 	target: HTMLElement;
 	document: Document;
@@ -40,8 +42,8 @@ export default class StyleVNode extends VMetaNode {
 		if (Array.isArray(source)) {
 			// It's from BaseVStyle.getProps()
 			for (const p of source) {
-				if (p.value instanceof Binding) {
-					this.observables.push(p.value);
+				if (p.value instanceof Binding || p.value instanceof Watcher) {
+					this.observables.push(p.value as any);
 				}
 				// TODO: handle nested builders in BaseVStyle if they are ever added.
 			}
@@ -49,10 +51,10 @@ export default class StyleVNode extends VMetaNode {
 			// It's a plain IDotCss object.
 			for (let prop in source) {
 				let value = source[prop];
-				if (value instanceof Binding) {
-					this.observables.push(value);
+				if (value instanceof Binding || value instanceof Watcher) {
+					this.observables.push(value as any);
 				}
-				else if (typeof value === "object" && value !== null && !(value instanceof Binding)) {
+				else if (typeof value === "object" && value !== null && !(value instanceof Binding || value instanceof Watcher)) {
 					// Handle nested builders like filter: { blur: 5 }
 					let builder: CssFunctionBuilderVStyle;
 					switch (prop) {
@@ -71,12 +73,12 @@ export default class StyleVNode extends VMetaNode {
 						for (let funcValue of funcArray) {
 							for (let k in funcValue) {
 								let v = funcValue[k];
-								if (v instanceof Binding) {
-									this.observables.push(v);
+								if (v instanceof Binding || v instanceof Watcher) {
+									this.observables.push(v as any);
 								}
 								else if (Array.isArray(v)) {
 									for (let w of v) {
-										if (w instanceof Binding) this.observables.push(w);
+										if (w instanceof Binding || w instanceof Watcher) this.observables.push(w as any);
 									}
 								}
 
@@ -100,7 +102,7 @@ export default class StyleVNode extends VMetaNode {
 		this.shadowRoot = shadowRoot;
 
 		for (let observable of this.observables) {
-			let id = observable._subscribe(this);
+			let id = (observable as any).subscribe(() => this.update());
 			this.observableIds.push(id);
 		}
 
@@ -121,12 +123,12 @@ export default class StyleVNode extends VMetaNode {
 
 		if (Array.isArray(source)) {
 			for (const p of source) {
-				const value = p.value instanceof Binding ? p.value._get() : p.value;
+				const value = p.value instanceof Binding ? p.value._get() : (p.value instanceof Watcher ? p.value.value : p.value);
 				this.applySingleStyle(p.prop, value);
 			}
 		} else {
 			for (let prop in source) {
-				const value = source[prop] instanceof Binding ? source[prop]._get() : source[prop];
+				const value = source[prop] instanceof Binding ? source[prop]._get() : (source[prop] instanceof Watcher ? source[prop].value : source[prop]);
 				this.applySingleStyle(prop, value);
 			}
 		}
@@ -163,7 +165,13 @@ export default class StyleVNode extends VMetaNode {
 
 	unrender() {
 		for (let i = 0; i < this.observableIds.length; i++) {
-			this.observables[i]._unsubscribe(this.observableIds[i]);
+			let id = this.observableIds[i];
+			let observable = this.observables[i];
+			if (observable instanceof Binding) {
+				(observable as any)._watcher._detachBinding(id);
+			} else {
+				(observable as any)._detachBinding(id);
+			}
 		}
 		this.observableIds = [];
 		this.observables = [];

@@ -1,4 +1,4 @@
-import { IDotCore } from "dothtml-interfaces";
+import { IDotCore, IDotCss } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../constants";
 import Watcher from "../reactivity/watcher";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";

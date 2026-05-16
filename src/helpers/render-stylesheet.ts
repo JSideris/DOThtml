@@ -1,39 +1,48 @@
 import { IDotCss } from "dothtml-interfaces";
 
+const stylesheetCache = new Map<string, CSSStyleSheet>();
+
 export default function renderStylesheet(styleCallback: string|((css: any)=>(string|IDotCss)), document: Document): CSSStyleSheet|HTMLStyleElement {
 
-	let DocumentCSSStyleSheet = document.defaultView.CSSStyleSheet;
-
-	let sharedStyles = new DocumentCSSStyleSheet();
 	let finalStylesheet = "";
 
 	if (typeof styleCallback == "string") {
 		finalStylesheet = styleCallback;
 	}
 	else {
+		// TODO: In the future, we might want to pass a real CSS builder here.
 		let css = null;
 		let styles = styleCallback(css);
 
 		if (typeof styles == "string") {
-			// Pure CSS. Add to the component's stylesheet.
 			finalStylesheet = styles;
 		}
 		else {
-			// It's required to be dot syntax. We can double check though.
-			// TODO - do this later when the style builder is set up.
+			// TODO: handle dot syntax when the style builder is set up.
 		}
+	}
 
+	if (stylesheetCache.has(finalStylesheet)) {
+		return stylesheetCache.get(finalStylesheet);
 	}
-	
-	if(sharedStyles.replaceSync){
-		sharedStyles.replaceSync(finalStylesheet);
-		
-		return sharedStyles;
+
+	let DocumentCSSStyleSheet = document.defaultView?.CSSStyleSheet;
+
+	if (DocumentCSSStyleSheet) {
+		try {
+			let sharedStyles = new DocumentCSSStyleSheet();
+			if (sharedStyles.replaceSync) {
+				sharedStyles.replaceSync(finalStylesheet);
+				stylesheetCache.set(finalStylesheet, sharedStyles);
+				return sharedStyles;
+			}
+		} catch (e) {
+			// Constructor might fail in some environments even if it exists.
+		}
 	}
-	else{
-		// Not supported. Fallback on a style tag.
-		let style = document.createElement("style");
-		style.innerHTML = finalStylesheet;
-		return style;
-	}
+
+	// Not supported or failed. Fallback on a style tag.
+	let style = document.createElement("style");
+	style.innerHTML = finalStylesheet;
+	return style;
 }

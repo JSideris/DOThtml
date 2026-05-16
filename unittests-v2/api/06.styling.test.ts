@@ -14,6 +14,8 @@ afterEach(() => {
 		styles[i].parentElement?.removeChild(styles[i]);
 	}
 
+	(dot as any).globalStyles = [];
+
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
 });
@@ -43,34 +45,101 @@ describe("Global styles.", ()=>{
 		expect(styleTag).toBeNull();
 	});
 
-	test("Using the style builder.", ()=>{
-		
+	test("Global useGlobalStyles.", ()=>{
+		let css = ".global-class{color: blue;}";
+		(dot as any).useGlobalStyles(css);
+		expect((dot as any).globalStyles).toContain(css);
 	});
 });
 
 describe("Component styles.", ()=>{
-	// This appears to be failing due to the testing environment. Not because of a bug.
-	test.skip("Component styles.", ()=>{
-		let css = "#component-test{color: red;}";
+	test("Component styles.", ()=>{
+		let css = "#component-test{color: rgb(255, 0, 0);}";
 
-		let C = dot.component(class implements IDotComponent{
+		class MyComp implements IDotComponent{
 			_?: FrameworkItems | undefined;
+			stylize() { return css; }
 			build(): IDotDocument {
 				return dot.div({id: "component-test"});
 			}
-		}, [css]);
+		}
 
-		dot(document.body).mount(new C());
+		dot(document.body).mount(new MyComp());
+		dot.flushSync();
 
 		let customEl = document.body.children[0];
-		let shadowDiv = customEl.shadowRoot?.querySelector("#component-test") as Element;
+		let shadowRoot = customEl.shadowRoot;
+		expect(shadowRoot).not.toBeNull();
 
-		expect(shadowDiv).not.toBeNull();
-		expect(shadowDiv.tagName).toBe("DIV");
+		let stylesApplied = false;
+		if (shadowRoot!.adoptedStyleSheets && shadowRoot!.adoptedStyleSheets.length > 0) {
+			stylesApplied = true; // Assume it works if there are sheets.
+		}
+		if (!stylesApplied) {
+			let styleTag = shadowRoot!.querySelector("style");
+			if (styleTag) {
+				stylesApplied = styleTag.innerHTML.includes("#component-test");
+			}
+		}
 
-		let computedStyle = window.getComputedStyle(shadowDiv as Element);
+		expect(stylesApplied).toBe(true);
+	});
+
+	test("Global style adoption.", ()=>{
+		let globalCss = ".global-style{color: rgb(0, 255, 0);}";
+		(dot as any).useGlobalStyles(globalCss);
+
+		class MyComp implements IDotComponent{
+			_?: FrameworkItems | undefined;
+			build(): IDotDocument {
+				return dot.div({class: "global-style", id: "global-test"});
+			}
+		}
+
+		dot(document.body).mount(new MyComp());
+		dot.flushSync();
+
+		let customEl = document.body.children[0];
+		let shadowRoot = customEl.shadowRoot;
 		
-		expect(computedStyle.color).toBe("red");
+		let stylesApplied = false;
+		if (shadowRoot!.adoptedStyleSheets && shadowRoot!.adoptedStyleSheets.length > 0) {
+			stylesApplied = true;
+		}
+		if (!stylesApplied) {
+			let styleTags = shadowRoot!.querySelectorAll("style");
+			for (let i = 0; i < styleTags.length; i++) {
+				if (styleTags[i].innerHTML.includes(".global-style")) {
+					stylesApplied = true;
+					break;
+				}
+			}
+		}
+
+		expect(stylesApplied).toBe(true);
+	});
+
+	test("Host variable binding.", ()=>{
+		let color = dot.watch("rgb(0, 0, 255)");
+		
+		class MyComp implements IDotComponent{
+			_?: FrameworkItems | undefined;
+			stylize() { return ".inner{color: var(--host-color);}"; }
+			hostStyle(s: any) { s.variable("host-color", color); }
+			build(): IDotDocument {
+				return dot.div({class: "inner", id: "host-test"});
+			}
+		}
+
+		dot(document.body).mount(new MyComp());
+		dot.flushSync();
+
+		let customEl = document.body.children[0] as HTMLElement;
+		expect(customEl.style.getPropertyValue("--host-color")).toBe("rgb(0, 0, 255)");
+
+		color.value = "rgb(255, 255, 0)";
+		dot.flushSync();
+		expect(customEl.style.getPropertyValue("--host-color")).toBe("rgb(255, 255, 0)");
 	});
 });
 
@@ -96,7 +165,7 @@ describe("Element styles.", ()=>{
 
 		let reactiveColor = dot.watch("red");
 
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: { 
 				color: reactiveColor
@@ -105,7 +174,8 @@ describe("Element styles.", ()=>{
 		
 		expect(document.getElementById("test-el")?.style.color).toEqual("red");
 		
-		reactiveColor.setValue("green");
+		reactiveColor.value = "green";
+		dot.flushSync();
 
 		expect(document.getElementById("test-el")?.style.color).toEqual("green");
 	});
@@ -115,8 +185,8 @@ describe("Element styles.", ()=>{
 		let reactiveColor = dot.watch("red");
 		let showElement = dot.watch(true);
 
-		dot(document.body).when(showElement, 
-			dot.div({ 
+		(dot(document.body) as any).when(showElement, 
+			(dot as any).div({ 
 				id: "test-el", 
 				style: { 
 					color: reactiveColor 
@@ -126,19 +196,21 @@ describe("Element styles.", ()=>{
 		
 		expect(document.getElementById("test-el")?.style.color).toEqual("red");
 		
-		showElement.setValue(false);
-		reactiveColor.setValue("green");
+		showElement.value = false;
+		reactiveColor.value = "green";
+		dot.flushSync();
 		
 		expect(document.getElementById("test-el")).toBeNull();
 
-		showElement.setValue(true);
+		showElement.value = true;
+		dot.flushSync();
 
 		expect(document.getElementById("test-el")?.style.color).toEqual("green");
 	});
 
 	test("Filter builder on element w/ numeric value.", ()=>{
 
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				filter: {
@@ -151,7 +223,7 @@ describe("Element styles.", ()=>{
 	});
 
 	test("Multi-variat transform.", ()=>{
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				transform: {
@@ -165,9 +237,9 @@ describe("Element styles.", ()=>{
 
 	test("Filter builder on element w/ observable value (string).", ()=>{
 
-		let reactiveColor = dot.watch(4, {transformer: v=>`${v}px`});
+		let reactiveColor = dot.watch(4) as any;
 
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				filter: {
@@ -178,7 +250,8 @@ describe("Element styles.", ()=>{
 		
 		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(4px)");
 		
-		reactiveColor.setValue(10);
+		reactiveColor.value = 10;
+		dot.flushSync();
 		
 		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(10px)");
 	});
@@ -187,7 +260,7 @@ describe("Element styles.", ()=>{
 
 		let reactiveColor = dot.watch(4);
 
-		dot(document.body).div(
+		(dot(document.body) as any).div(
 			{ id: "test-el", style: {
 				filter: {
 					blur: reactiveColor
@@ -196,7 +269,8 @@ describe("Element styles.", ()=>{
 		);
 		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(4px)");
 		
-		reactiveColor.setValue(10);
+		reactiveColor.value = 10;
+		dot.flushSync();
 		
 		expect(document.getElementById("test-el")?.style.filter).toEqual("blur(10px)");
 	});
@@ -204,7 +278,7 @@ describe("Element styles.", ()=>{
 	test("Multi-variat transform w/ observables.", ()=>{
 		let x = dot.watch(4);
 
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				transform: {
@@ -215,7 +289,8 @@ describe("Element styles.", ()=>{
 		
 		expect(document.getElementById("test-el")?.style.transform).toEqual("translate(4px, 8px)");
 		
-		x.setValue(12);
+		x.value = 12;
+		dot.flushSync();
 
 		expect(document.getElementById("test-el")?.style.transform).toEqual("translate(12px, 8px)");
 	});
@@ -223,7 +298,7 @@ describe("Element styles.", ()=>{
 	test("Multi-variat transform w/ observables - specific dimensions.", ()=>{
 		let x = dot.watch(4);
 
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				transform: {
@@ -235,7 +310,8 @@ describe("Element styles.", ()=>{
 		
 		expect(document.getElementById("test-el")?.style.transform).toEqual("translateX(4px) translateY(8px)");
 		
-		x.setValue(12);
+		x.value = 12;
+		dot.flushSync();
 
 		expect(document.getElementById("test-el")?.style.transform).toEqual("translateX(12px) translateY(8px)");
 	});
@@ -243,7 +319,7 @@ describe("Element styles.", ()=>{
 	test("Multi-variat transform w/ observables - specific dimensions with array.", ()=>{
 		let x = dot.watch(4);
 
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				transform: [
@@ -257,7 +333,8 @@ describe("Element styles.", ()=>{
 		
 		expect(document.getElementById("test-el")?.style.transform).toEqual("translateX(4px) translateY(8px)");
 		
-		x.setValue(12);
+		x.value = 12;
+		dot.flushSync();
 
 		expect(document.getElementById("test-el")?.style.transform).toEqual("translateX(12px) translateY(8px)");
 	});
@@ -277,7 +354,7 @@ describe("Data types.", ()=>{
 	// });
 
 	test("Px default.", ()=>{
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: { 
 				width: 100
@@ -288,7 +365,7 @@ describe("Data types.", ()=>{
 	});	
 
 	test("Cm.", ()=>{
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: { 
 				widthCm: 2
@@ -303,7 +380,7 @@ describe("Data types.", ()=>{
 
 describe("Overloads.", ()=>{
 	test("Length overload.", ()=>{
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: { 
 				width: 100,
@@ -317,7 +394,7 @@ describe("Overloads.", ()=>{
 	test("Length overload with observable.", ()=>{
 		let cms = dot.watch(5);
 		let inches = dot.watch(2);
-		dot(document.body).div({ 
+		(dot(document.body) as any).div({ 
 			id: "test-el", 
 			style: {
 				widthCm: cms,

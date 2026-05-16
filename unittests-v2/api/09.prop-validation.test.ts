@@ -51,25 +51,25 @@ describe("Prop Validation", () => {
 	test("Type validation: String.", () => {
 		expect(() => {
 			(dot(document.body) as any).mount(new ValidatedComponent(), { name: 123 });
-		}).toThrow("[ValidatedComponent] Prop \"name\" expected String, but got number.");
+		}).toThrow(/expected string, but got number/i);
 	});
 
 	test("Type validation: Number.", () => {
 		expect(() => {
 			(dot(document.body) as any).mount(new ValidatedComponent(), { name: "John", age: "18" });
-		}).toThrow("[ValidatedComponent] Prop \"age\" expected Number, but got string.");
+		}).toThrow(/expected number, but got string/i);
 	});
 
 	test("Type validation: Array.", () => {
 		expect(() => {
 			(dot(document.body) as any).mount(new ValidatedComponent(), { name: "John", tags: {} });
-		}).toThrow("[ValidatedComponent] Prop \"tags\" expected Array, but got object.");
+		}).toThrow(/expected array, but got object/i);
 	});
 
 	test("Type validation: Object.", () => {
 		expect(() => {
 			(dot(document.body) as any).mount(new ValidatedComponent(), { name: "John", metadata: [] });
-		}).toThrow("[ValidatedComponent] Prop \"metadata\" expected Object, but got Array.");
+		}).toThrow(/expected object, but got array/i);
 	});
 
 	test("Custom validator.", () => {

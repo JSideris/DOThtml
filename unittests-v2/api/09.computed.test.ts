@@ -71,8 +71,10 @@ describe("Computed state.", () => {
 		a.value = 1;
 		b.value = 1;
 
+		dot.flushSync();
+
 		expect(() => {
-			dot.flushSync();
+			let x = compA.value;
 		}).toThrow("Circular dependency detected");
 	});
 

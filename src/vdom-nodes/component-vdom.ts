@@ -9,6 +9,8 @@ import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
 import Computed from "../reactivity/computed";
 import { pushComponent, popComponent } from "./component-context";
+import BaseVStyle from "../v-style-nodes/base-v-style";
+import StyleVNode from "../v-meta-nodes/style-v-node";
 
 let tagId = 0x10000;
 
@@ -21,6 +23,7 @@ export class ComponentVdom extends Vdom{
 	childShadowVdom: ContainerVdom;
 	private dot: IDotCore;
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
+	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;
 	private computedWatchers: Computed<any>[] = [];
 	private updateSubscription = {
@@ -176,17 +179,17 @@ export class ComponentVdom extends Vdom{
 			if (valueToValidate !== undefined && valueToValidate !== null && rule.type) {
 				const actualType = typeof valueToValidate;
 				if (rule.type === String && actualType !== "string") {
-					throw new Error(`[${componentName}] Prop "${key}" expected String, but got ${actualType}.`);
+					throw new Error(`[${componentName}] Prop "${key}" expected string, but got ${actualType}.`);
 				} else if (rule.type === Number && actualType !== "number") {
-					throw new Error(`[${componentName}] Prop "${key}" expected Number, but got ${actualType}.`);
+					throw new Error(`[${componentName}] Prop "${key}" expected number, but got ${actualType}.`);
 				} else if (rule.type === Boolean && actualType !== "boolean") {
-					throw new Error(`[${componentName}] Prop "${key}" expected Boolean, but got ${actualType}.`);
+					throw new Error(`[${componentName}] Prop "${key}" expected boolean, but got ${actualType}.`);
 				} else if (rule.type === Function && actualType !== "function") {
-					throw new Error(`[${componentName}] Prop "${key}" expected Function, but got ${actualType}.`);
+					throw new Error(`[${componentName}] Prop "${key}" expected function, but got ${actualType}.`);
 				} else if (rule.type === Array && !Array.isArray(valueToValidate)) {
-					throw new Error(`[${componentName}] Prop "${key}" expected Array, but got ${actualType}.`);
+					throw new Error(`[${componentName}] Prop "${key}" expected array, but got ${actualType}.`);
 				} else if (rule.type === Object && (actualType !== "object" || Array.isArray(valueToValidate))) {
-					throw new Error(`[${componentName}] Prop "${key}" expected Object, but got ${Array.isArray(valueToValidate) ? "Array" : actualType}.`);
+					throw new Error(`[${componentName}] Prop "${key}" expected object, but got ${Array.isArray(valueToValidate) ? "array" : actualType}.`);
 				}
 			}
 
@@ -205,19 +208,47 @@ export class ComponentVdom extends Vdom{
 		let CustomElementConstructor = document.defaultView.customElements.get(this.component._._meta.tagName);
 		if(CustomElementConstructor == undefined){
 			
-			// Constructed stylesheets.
-			let styles: Array<string>|string = this.component.stylize && this.component.stylize() || [];
-			if(typeof styles == "string") styles = [styles];
+			// Check for cached styles on the constructor.
+			let cachedStyles = (this.component.constructor as any)._cachedStyles;
 			let sharedStylesheets = [];
 			let styleTags = [];
-			if(styles){
-				for(let i = 0; i < styles.length; i++){
-					let styleItem = renderStylesheet(styles[i], document);
-					if(styleItem instanceof document.defaultView.CSSStyleSheet){
-						sharedStylesheets.push(styleItem);
+
+			if (cachedStyles) {
+				sharedStylesheets = cachedStyles.sharedStylesheets;
+				styleTags = cachedStyles.styleTags;
+			} else {
+				// Constructed stylesheets.
+				let styles: Array<string>|string = this.component.stylize && this.component.stylize() || [];
+				if(typeof styles == "string") styles = [styles];
+				
+				if(styles){
+					for(let i = 0; i < styles.length; i++){
+						let styleItem = renderStylesheet(styles[i], document);
+						if(styleItem instanceof (document.defaultView as any).CSSStyleSheet){
+							sharedStylesheets.push(styleItem);
+						}
+						else{
+							styleTags.push(styleItem);
+						}
 					}
-					else{
-						styleTags.push(styleItem);
+				}
+				// Cache them.
+				(this.component.constructor as any)._cachedStyles = { sharedStylesheets, styleTags };
+			}
+
+			// Add global styles.
+			let allSharedStylesheets = [...sharedStylesheets];
+			let allStyleTags = [...styleTags];
+			let globalStyles = (this.dot as any).globalStyles || [];
+			for (let gs of globalStyles) {
+				if (gs instanceof (document.defaultView as any).CSSStyleSheet) {
+					allSharedStylesheets.push(gs);
+				} else if (typeof gs === "string") {
+					let styleItem = renderStylesheet(gs, document);
+					if (styleItem instanceof (document.defaultView as any).CSSStyleSheet) {
+						allSharedStylesheets.push(styleItem);
+					} else {
+						allStyleTags.push(styleItem);
 					}
 				}
 			}
@@ -236,9 +267,9 @@ export class ComponentVdom extends Vdom{
 				_renderComponent(){
 					if(this.cvdom instanceof Vdom){
 						let shadow = this.attachShadow({ mode: 'open' });
-						shadow.adoptedStyleSheets = sharedStylesheets;
-						for(let i = 0; i < styleTags.length; i++){
-							shadow.appendChild(styleTags[i]);
+						shadow.adoptedStyleSheets = allSharedStylesheets;
+						for(let i = 0; i < allStyleTags.length; i++){
+							shadow.appendChild(allStyleTags[i].cloneNode(true));
 						}
 						(this._component._._meta as any).shadowRoot = shadow;
 						this.cvdom.childShadowVdom._render(shadow as any);
@@ -273,6 +304,15 @@ export class ComponentVdom extends Vdom{
 		this.shadowEl["cvdom"] = this;
 		this.shadowEl["component"] = this.component;
 		
+		// Apply host styles if defined.
+		if ((this.component as any).hostStyle) {
+			const hostStyleBuilder = new BaseVStyle();
+			(this.component as any).hostStyle(hostStyleBuilder);
+			const hostStyleVNode = new StyleVNode(hostStyleBuilder);
+			hostStyleVNode.render(this.shadowEl, document);
+			this.styleVNodes.push(hostStyleVNode);
+		}
+
 		this.component._.restyle && this.component._.restyle();
 		
 		node.appendChild(this.shadowEl);
@@ -299,6 +339,11 @@ export class ComponentVdom extends Vdom{
 		// this.childShadowVdom = null; // This makes sense only if shadow dom creation happens inside the render function (which it probably should?).
 		this.shadowEl.remove();
 		this.shadowEl = null;
+
+		for (let i = 0; i < this.styleVNodes.length; i++) {
+			this.styleVNodes[i].unrender();
+		}
+		this.styleVNodes = [];
 
 		for (const watcher of this.computedWatchers) {
 			watcher.dispose();

@@ -2,9 +2,10 @@ import { floatRegex } from "../helpers/tools";
 import Binding from "../reactivity/binding";
 import Watcher from "../reactivity/watcher";
 
-export function formatCssLength(value:string|number|Binding|Array<string|number|Binding>, defaultUnits = "px"){
+export function formatCssLength(value:string|number|Binding|Watcher|Array<string|number|Binding|Watcher>, defaultUnits = "px"){
 	value = value || "0px";
 	if(value instanceof Binding) value = value._get();
+	if(value instanceof Watcher) value = value.value;
 	if(value instanceof Array){
 		return value.map(v=>formatCssLength(v, defaultUnits)).join(" ");
 	}
@@ -21,9 +22,10 @@ export function formatCssLength(value:string|number|Binding|Array<string|number|
 	}
 }
 
-export function formatCssPercentage(value: string|number|Binding|Array<string|number|Binding>){
+export function formatCssPercentage(value: string|number|Binding|Watcher|Array<string|number|Binding|Watcher>){
 	value = value || "0%";
 	if(value instanceof Binding) value = value._get();
+	if(value instanceof Watcher) value = value.value;
 	if(value instanceof Array){
 		return value.map(v=>formatCssPercentage(v)).join(" ");
 	}
@@ -64,9 +66,10 @@ export function formatCssColor(value: string|number){
 	}
 }
 
-export function formatCssAngle(value: string|number|Binding|Array<string|number|Binding>){
+export function formatCssAngle(value: string|number|Binding|Watcher|Array<string|number|Binding|Watcher>){
 	value = value || "0deg";
 	if(value instanceof Binding) value = value._get();
+	if(value instanceof Watcher) value = value.value;
 	if(value instanceof Array){
 		return value.map(v=>formatCssAngle(v)).join(" ");
 	}

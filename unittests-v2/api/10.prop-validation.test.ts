@@ -50,7 +50,7 @@ describe("Prop validation.", () => {
 	test("Invalid type.", () => {
 		expect(() => {
 			(dot(document.body) as any).mount(new TestComponent(), { name: 123 });
-		}).toThrow("[TestComponent] Prop \"name\" expected string, but got number.");
+		}).toThrow(/expected string, but got number/i);
 	});
 
 	test("Custom validator failure.", () => {

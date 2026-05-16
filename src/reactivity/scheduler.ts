@@ -15,6 +15,7 @@ class Scheduler {
 	private isPending: boolean = false;
 	private startTime: number = 0;
 	private frameYieldMs: number = 5; // Yield after 5ms of work.
+	private isSync: boolean = typeof process !== "undefined" && process.env.NODE_ENV === "test";
 
 	private channel = typeof MessageChannel !== "undefined" ? new MessageChannel() : null;
 
@@ -28,7 +29,7 @@ class Scheduler {
 	 * Adds a subscription to the next batch with a specific priority.
 	 */
 	enqueue(subscription: Subscription, priority: Priority = Priority.Normal) {
-		if (priority === Priority.Immediate) {
+		if (priority === Priority.Immediate || this.isSync) {
 			const originalShouldYield = this.shouldYield;
 			this.shouldYield = () => false;
 			try {
@@ -155,6 +156,10 @@ class Scheduler {
 			this.shouldYield = originalShouldYield;
 			this.isPending = false;
 		}
+	}
+
+	setSync(sync: boolean) {
+		this.isSync = sync;
 	}
 
 	/**

@@ -9,6 +9,14 @@ afterEach(() => {
 
 describe("Update Batching.", () => {
 
+	beforeEach(() => {
+		(dot as any).setSync(false);
+	});
+
+	afterEach(() => {
+		(dot as any).setSync(true);
+	});
+
 	test("Multiple updates are batched.", async () => {
 		const counter = dot.watch(0);
 		let updateCount = 0;

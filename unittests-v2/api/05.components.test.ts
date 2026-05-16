@@ -64,7 +64,7 @@ describe("Components", ()=>{
 		dot(document.body).mount(new YesNoButton({ defaultValue: true, yesText: "yes" }));
 
 		// expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001><div>yes</div></dothtml-10001>")
-		expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001></dothtml-10001>");
+		expect(formatHTML(document.body.innerHTML)).toMatch(/<dothtml-[0-9a-f]+><\/dothtml-[0-9a-f]+>/);
 		expect(formatHTML(document.body.children[0].shadowRoot?.innerHTML)).toBe("<div>yes</div>");
 	});
 	
@@ -72,7 +72,7 @@ describe("Components", ()=>{
 		
 		dot(document.body).div(new YesNoButton({ defaultValue: true, yesText: "yes" }));
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<div><dothtml-10001></dothtml-10001></div>")
+		expect(formatHTML(document.body.innerHTML)).toMatch(/<div><dothtml-[0-9a-f]+><\/dothtml-[0-9a-f]+><\/div>/)
 		expect(formatHTML(document.body.children[0].children[0].shadowRoot?.innerHTML)).toBe("<div>yes</div>");
 	});
 	
@@ -100,7 +100,7 @@ describe("Components", ()=>{
 		
 		dot(document.body).div(dot.mount(new YesNoButton({ defaultValue: true, yesText: "yes" })));
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<div><dothtml-10001></dothtml-10001></div>");
+		expect(formatHTML(document.body.innerHTML)).toMatch(/<div><dothtml-[0-9a-f]+><\/dothtml-[0-9a-f]+><\/div>/);
 		expect(document.body.children[0].children[0].shadowRoot?.innerHTML).toBe("<div>yes</div>");
 	});
 	
@@ -110,7 +110,7 @@ describe("Components", ()=>{
 
 		dot(document.body).mount(c1).mount(c2);
 
-		expect(formatHTML(document.body.innerHTML)).toBe("<dothtml-10001></dothtml-10001><dothtml-10001></dothtml-10001>")
+		expect(formatHTML(document.body.innerHTML)).toMatch(/<dothtml-[0-9a-f]+><\/dothtml-[0-9a-f]+><dothtml-[0-9a-f]+><\/dothtml-[0-9a-f]+>/)
 		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>yes</div>");
 		expect(document.body.children[1].shadowRoot?.innerHTML).toBe("<div>no</div>");
 	});

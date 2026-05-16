@@ -77,6 +77,10 @@ class MyButton {
 
 ## Component Styling
 
+DOThtml components use **Shadow DOM** by default, providing strong encapsulation for both structure and style.
+
+### Instance Styles
+
 You can apply styles to elements within your component's `build()` method using the fluent `.style()` API. This is ideal for instance-specific styling driven by props or internal state.
 
 ```javascript
@@ -90,10 +94,51 @@ class StyledBox {
             .style(s => s
                 .backgroundColor(this.props.color)
                 .paddingPx(10)
-                .border("1px solid black")
             );
     }
 }
 ```
 
-For more advanced styling options, including reactive styles and CSS variables, see the [Styling](./styling.md) documentation.
+### Component Templates (`stylize`)
+
+To define styles that are shared across all instances of a component, use the `stylize()` method. These styles are scoped to the component's shadow root.
+
+```javascript
+class MyComponent {
+    stylize(s) {
+        return s.class("header", c => c
+            .fontSizePx(24)
+            .color("blue")
+        );
+    }
+
+    build(dot) {
+        return dot.div({ class: "header" }, "Scoped Header");
+    }
+}
+```
+
+### Host Styling (`hostStyle`)
+
+The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself).
+
+```javascript
+class ThemeableComponent {
+    hostStyle(s) {
+        s.variable("theme-color", this.props.color);
+        s.display("block");
+    }
+
+    stylize(s) {
+        return s.class("content", c => c
+            .border(`2px solid var(--theme-color)`)
+        );
+    }
+
+    build(dot) {
+        return dot.div({ class: "content" }, "Themed Content");
+    }
+}
+```
+
+For more advanced styling options, including global styles and performance optimizations, see the [Styling](./styling.md) documentation.
