@@ -1,18 +1,17 @@
 import { dot } from "dothtml";
+import { IDotComponent } from "dothtml-interfaces";
+import MarkdownViewer from "../../../../components/MarkdownViewer/MarkdownViewer";
 import styles from "./use-cases.css?inline";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import MarkdownViewer from "../../../components/MarkdownViewer/MarkdownViewer";
 
-const UseCases = dot.component(
-	class UseCases implements IDotComponent{
-		_?: FrameworkItems;
-		build() {
-			return dot.div(
-				new MarkdownViewer("/docs/use-cases.md")
-			);
-		}
+@dot.component
+export default class UseCases implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-	}, [styles]
-);
-
-export default UseCases;
+	build() {
+		return dot.div({ class: "use-cases" },
+			dot.mount(new MarkdownViewer({ src: "/docs/use-cases.md" }))
+		);
+	}
+}

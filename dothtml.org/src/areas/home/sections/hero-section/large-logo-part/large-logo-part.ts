@@ -1,5 +1,5 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent, IReactive } from "dothtml-interfaces";
+import { IDotComponent, IReactive } from "dothtml-interfaces";
 import styles from "./large-logo-part.css?inline";
 
 type Orbiter = {
@@ -8,130 +8,85 @@ type Orbiter = {
 	z: IReactive<number>
 };
 
-// @dot.component.useStyles(styles)
-const LargeLogoPart = dot.component(
-	class implements IDotComponent{
-		_?: FrameworkItems;
-		orbiter1: Orbiter = {
-			x: dot.watch(0),
-			y: dot.watch(0),
-			z: dot.watch(0),
-		};
-		orbiter2: Orbiter = {
-			x: dot.watch(0),
-			y: dot.watch(0),
-			z: dot.watch(0),
-		};
+@dot.component
+export default class LargeLogoPart implements IDotComponent {
+	private orbiter1: Orbiter = { x: dot.watch(0), y: dot.watch(0), z: dot.watch(0) };
+	private orbiter2: Orbiter = { x: dot.watch(0), y: dot.watch(0), z: dot.watch(0) };
+	private mouseX = dot.watch(0);
+	private mouseY = dot.watch(0);
 
-		mounted(): void {
-			console.log("READY");
-			this.animate();
+	mounted(): void {
+		this.animate();
+		window.addEventListener("mousemove", (e) => {
+			this.mouseX.setValue((e.clientX / window.innerWidth - 0.5) * 20);
+			this.mouseY.setValue((e.clientY / window.innerHeight - 0.5) * 20);
+		});
+	}
+
+	animate() {
+		requestAnimationFrame(() => this.animate());
+		let t = Date.now();
+		this.calculateOrbitPosition(160, 0.2, 1300, t, this.orbiter1);
+		this.calculateOrbitPosition(160, 0.3, 1400, t, this.orbiter2);
+	}
+
+	calculateOrbitPosition(a: number, e: number, T: number, t: number, out: Orbiter) {
+		let n = 2 * Math.PI / T;
+		let M = n * t;
+		let E = M;
+		for (let i = 0; i < 10; i++) {
+			E = E - (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
 		}
+		let trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+		let r = a * (1 - e * e) / (1 + e * Math.cos(trueAnomaly));
+		out.x.setValue(r * Math.cos(trueAnomaly));
+		out.y.setValue(r * Math.sin(trueAnomaly));
+		out.z.setValue(out.y.value > 0 ? 0 : 3);
+	}
 
-		animate(){
-			requestAnimationFrame(()=>this.animate());
-			let t = Date.now();
-			this.calculateOrbitPosition(160, 0.2, 1300, t, this.orbiter1);
-			this.calculateOrbitPosition(160, 0.3, 1400, t, this.orbiter2);
-		}
+	stylize() {
+		return styles;
+	}
 
-		calculateOrbitPosition(a: number, e: number, T: number, t: number, out: Orbiter) {
-			// Mean motion
-			let n = 2 * Math.PI / T;
-		
-			// Mean anomaly
-			let M = n * t;
-		
-			// Solve Kepler's equation for Eccentric Anomaly (E)
-			let E = M; // Initial approximation
-			for (let i = 0; i < 10; i++) { // Iterate to solve
-				E = E - (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
-			}
-		
-			// True anomaly
-			let trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
-		
-			// Distance from focus
-			let r = a * (1 - e * e) / (1 + e * Math.cos(trueAnomaly));
-		
-			// Convert to Cartesian coordinates
-			let x = r * Math.cos(trueAnomaly);
-			let y = r * Math.sin(trueAnomaly);
-
-			// console.log(trueAnomaly);
-		
-			out.x.setValue(x);
-			out.y.setValue(y);
-			out.z.setValue(y > 0 ? 0 : 3);
-		}
-
-		build() {
-			return dot.div( {id: "container"},
-				dot.div(
-					{
-						id: "logo"
-					},
-					dot.span(
-						{
-							id: "dot"
-						},
-						dot
-						.div({id: "dot-text"}, "DOT")
-
-						.div({
-							id: "orbiter1", 
-							class: "orbiter",
-							style: {
-								zIndex:	this.orbiter1.z,
-								transform: 
-									[{
-										rotateX: 60,
-										rotateY: 60,
-									},
-									{
-										translateX: this.orbiter1.x,
-										translateY: this.orbiter1.y,
-									},
-									{
-										rotateY: -60,
-										rotateX: -60,
-									}]
-
-							}
-						}, 
-						"*")
-
-						.div({
-							id: "orbiter2",
-							class: "orbiter",
-							style: {
-								zIndex: this.orbiter2.z,
-								transform: [
-									{
-										rotateX: -60,
-										rotateY: 50,
-									},
-									{
-										translateX: this.orbiter2.x,
-										translateY: this.orbiter2.y,
-									},
-									{
-										rotateY: -50,
-										rotateX: 60
-									}
-								]
-							}
-
-						}, "*")
-					)
-					.span({id: "html"}, "html")
-				)
-				// .div().id("orbiter1").class("orbiter").style(dot.css.transform(tb => tb.translate(this.orbiter1.x as any, this.orbiter1.y as any)))
-				// .div().id("orbiter1").class("orbiter").style(dot.css.transform(tb => tb.translate3d(`1px`,`1px`,`0px`)))
-				.div({id: "tagline"}, "Redefine web development.")
-			);
-		}
-	}, [styles]
-);
-
-export default LargeLogoPart;
+	build() {
+		return dot.div({ class: "logo-container" },
+			dot.div({ 
+				class: "logo-main",
+				style: s => s.transform({
+					rotateY: this.mouseX.bindAs(x => `${x}deg`),
+					rotateX: this.mouseY.bindAs(y => `${-y}deg`)
+				})
+			},
+				dot.span({ class: "dot-text" }, "DOT"),
+				dot.div({
+					class: "orbiter",
+					style: s => s
+						.zIndex(this.orbiter1.z)
+						.transform({
+							rotateX: "60deg",
+							rotateY: "60deg",
+							translateX: this.orbiter1.x.bindAs(x => `${x}px`),
+							translateY: this.orbiter1.y.bindAs(y => `${y}px`),
+							rotateY_2: "-60deg",
+							rotateX_2: "-60deg"
+						})
+				}),
+				dot.div({
+					class: "orbiter",
+					style: s => s
+						.zIndex(this.orbiter2.z)
+						.transform({
+							rotateX: "-60deg",
+							rotateY: "50deg",
+							translateX: this.orbiter2.x.bindAs(x => `${x}px`),
+							translateY: this.orbiter2.y.bindAs(y => `${y}px`),
+							rotateY_2: "-50deg",
+							rotateX_2: "60deg"
+						})
+				}),
+				dot.span({ class: "html-text" }, "html")
+			),
+			dot.div({ class: "tagline" }, "Redefine web development.")
+		);
+	}
+}

@@ -1,0 +1,13 @@
+.page-section {
+	padding: 80px 40px;
+	border-radius: 24px;
+	background-color: rgba(255, 255, 255, 0.02);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	transition: all 0.3s ease;
+}
+
+.page-section:hover {
+	background-color: rgba(255, 255, 255, 0.04);
+	border-color: rgba(255, 255, 255, 0.1);
+	transform: translateY(-5px);
+}

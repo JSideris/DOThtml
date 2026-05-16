@@ -1,14 +1,21 @@
-#container{
+.nav-btn {
 	display: inline-block;
-	height: 80px;
-	line-height: 80px;
-	color: white;
-	font-size: 30px;
+	padding: 10px 20px;
+	color: var(--text-dim);
+	font-size: 16px;
+	font-weight: 500;
 	cursor: pointer;
-	padding-left: 10px;
-	padding-right: 10px;
+	transition: all 0.2s;
+	border-radius: 8px;
+	user-select: none;
 }
 
-#container:hover{
-	background-color: #333;
+.nav-btn:hover {
+	color: var(--text);
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-btn.active {
+	color: var(--primary);
+	background-color: rgba(255, 152, 0, 0.1);
 }

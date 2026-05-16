@@ -1,44 +1,45 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import styles from "./navbar.css?inline";
+import { IDotComponent } from "dothtml-interfaces";
 import NavBtn from "./nav-btn/nav-btn";
 import SmallLogo from "../small-logo/small-logo";
+import styles from "./navbar.css?inline";
 
-// @dot.component
-// @dot.component.useStyles(styles)
-const Navbar = dot.component(
-	class implements IDotComponent{
-		_?: FrameworkItems;
+@dot.component
+export default class Navbar implements IDotComponent {
+	private currentPath = dot.watch(window.location.hash || "#/");
 
-		navigate(location){
-			console.log(location);
-		}
+	constructor() {
+		window.addEventListener("hashchange", () => {
+			this.currentPath.value = window.location.hash || "#/";
+		});
+	}
 
-		build() {
-			return dot.nav(
-				{id: "container"},
-				dot
-				.mount(new SmallLogo())//.on("click", ()=>{ this.navigate("docs"); })
-				.mount(new NavBtn({ 
+	navigate(path: string) {
+		window.location.hash = `#/${path}`;
+	}
+
+	stylize() {
+		return styles;
+	}
+
+	build() {
+		return dot.nav({ class: "navbar" },
+			dot.mount(new SmallLogo()).on("click", () => this.navigate("")),
+			dot.div({ class: "nav-links" },
+				dot.mount(new NavBtn({ 
 					text: "Docs", 
-					click: ()=>this.navigate("docs")
-				}))//.on("click", ()=>{ this.navigate("docs"); })
-				.mount(new NavBtn({ 
+					active: this.currentPath.bindAs(p => p.startsWith("#/docs"))
+				})).on("click", () => this.navigate("docs")),
+				dot.mount(new NavBtn({ 
 					text: "Examples",
-					click: ()=>this.navigate("examples")
-				}))//.on("click", ()=>{ this.navigate("examples"); })
-				.mount(new NavBtn({ 
+					active: this.currentPath.bindAs(p => p === "#/examples")
+				})).on("click", () => this.navigate("examples")),
+				dot.mount(new NavBtn({ 
 					text: "Blog",
-					click: ()=>this.navigate("blog")
-				}))//.on("click", ()=>{ this.navigate("blog"); })
-				.mount(new NavBtn({ 
-					text: "🌐",
-					// click: ()=>this.navigate("language")
-				}))
-			);
-		}
-
-	}, [styles]
-);
-
-export default Navbar;
+					active: this.currentPath.bindAs(p => p === "#/blog")
+				})).on("click", () => this.navigate("blog")),
+				dot.mount(new NavBtn({ text: "🌐" }))
+			)
+		);
+	}
+}

@@ -41,7 +41,8 @@ export default class MarkdownParser {
 			}
 
 			const escapedCode = this.escapeHtml(lines.join("\n").trim());
-			codeBlocks.push(`<pre><code${languageClass}>${escapedCode}</code></pre>`);
+			const highlightedCode = this.highlight(escapedCode, lang);
+			codeBlocks.push(`<pre><code${languageClass}>${highlightedCode}</code></pre>`);
 			return `${indent}:::CB-ID-${index}:::`;
 		});
 
@@ -244,6 +245,21 @@ export default class MarkdownParser {
 		});
 
 		return html;
+	}
+
+	private static highlight(code: string, lang?: string): string {
+		if (lang !== "ts" && lang !== "js" && lang !== "javascript" && lang !== "typescript") {
+			return code;
+		}
+
+		// Simple regex-based syntax highlighting
+		return code
+			.replace(/\b(const|let|var|function|class|extends|export|import|from|return|if|else|for|while|new|this|async|await|static|private|public|protected|get|set|type|interface|as)\b/g, '<span class="token-keyword">$1</span>')
+			.replace(/\b(string|number|boolean|any|void|never|unknown|Record|Map|Set|Array|Promise)\b/g, '<span class="token-type">$1</span>')
+			.replace(/(".*?"|'.*?'|`[\s\S]*?`)/g, '<span class="token-string">$1</span>')
+			.replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
+			.replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, '<span class="token-comment">$1</span>')
+			.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, '<span class="token-function">$1</span>');
 	}
 
 	private static escapeHtml(text: string): string {

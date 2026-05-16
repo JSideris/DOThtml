@@ -1,19 +1,17 @@
 import { dot } from "dothtml";
+import { IDotComponent } from "dothtml-interfaces";
+import MarkdownViewer from "../../../../components/MarkdownViewer/MarkdownViewer";
 import styles from "./get-dot.css?inline";
-import { FrameworkItems, IDotComponent, IDotCss, IDotGenericElement } from "dothtml-interfaces";
-import MarkdownViewer from "../../../components/MarkdownViewer/MarkdownViewer";
 
 @dot.component
-@dot.component.useStyles(styles)
-class GetDot implements IDotComponent{
-	events?: string[];
-	_?: FrameworkItems;
-	build(): IDotGenericElement {
-		return dot.div(
-			new MarkdownViewer("/docs/get-dot.md")
-		);
+export default class GetDot implements IDotComponent {
+	stylize() {
+		return styles;
 	}
 
+	build() {
+		return dot.div({ class: "get-dot-section" },
+			dot.mount(new MarkdownViewer({ src: "/docs/get-dot.md" }))
+		);
+	}
 }
-
-export default GetDot;

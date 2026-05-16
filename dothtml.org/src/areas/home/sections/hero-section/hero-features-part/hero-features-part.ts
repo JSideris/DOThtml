@@ -1,20 +1,17 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
+import MarkdownViewer from "../../../../../components/MarkdownViewer/MarkdownViewer";
 import styles from "./hero-features-part.css?inline";
-import MarkdownViewer from "../../../components/MarkdownViewer/MarkdownViewer";
 
 @dot.component
-@dot.component.useStyles(styles)
-class HeroFeaturesPart implements IDotComponent{
-	events?: string[];
-	_?: FrameworkItems;
-	build() {
-		return dot.div(
-			{ id: "content" },
-			new MarkdownViewer("/docs/hero-features.md")
-		);
+export default class HeroFeaturesPart implements IDotComponent {
+	stylize() {
+		return styles;
 	}
 
+	build() {
+		return dot.div({ class: "features-container" },
+			dot.mount(new MarkdownViewer({ src: "/docs/hero-features.md" }))
+		);
+	}
 }
-
-export default HeroFeaturesPart;

@@ -1,14 +1,17 @@
 import { dot } from "dothtml";
+import { IDotComponent } from "dothtml-interfaces";
 import styles from "./footer.css?inline";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
 
-const Footer = dot.component(
-	class Footer implements IDotComponent{
-		_?: FrameworkItems;
-		build() {
-			return dot.div();
-		}
-	}, [styles]
-);
+@dot.component
+export default class Footer implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-export default Footer;
+	build() {
+		return dot.footer({ class: "footer" },
+			dot.p(`© ${new Date().getFullYear()} DOThtml. Built with DOThtml 6.`),
+			dot.p("Released under the ISC License.")
+		);
+	}
+}

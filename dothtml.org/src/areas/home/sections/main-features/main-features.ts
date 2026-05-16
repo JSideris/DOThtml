@@ -1,18 +1,17 @@
 import { dot } from "dothtml";
+import { IDotComponent } from "dothtml-interfaces";
+import MarkdownViewer from "../../../../components/MarkdownViewer/MarkdownViewer";
 import styles from "./main-features.css?inline";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import MarkdownViewer from "../../../components/MarkdownViewer/MarkdownViewer";
 
-const MainFeatures = dot.component(
-	class MainFeatures implements IDotComponent{
-		_?: FrameworkItems;
-		build() {
-			return dot.div(
-				new MarkdownViewer("/docs/main-features.md")
-			);
-		}
+@dot.component
+export default class MainFeatures implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-	}, [styles]
-);
-
-export default MainFeatures;
+	build() {
+		return dot.div({ class: "main-features" },
+			dot.mount(new MarkdownViewer({ src: "/docs/main-features.md" }))
+		);
+	}
+}

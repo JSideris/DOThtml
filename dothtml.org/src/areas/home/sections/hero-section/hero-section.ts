@@ -1,28 +1,23 @@
 import { dot } from "dothtml";
-import styles from "./hero-section.css?inline";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
 import LargeLogoPart from "./large-logo-part/large-logo-part";
 import QuickStartPart from "./quick-start-part/quick-start-part";
 import HeroFeaturesPart from "./hero-features-part/hero-features-part";
+import styles from "./hero-section.css?inline";
 
-const HeroSection = dot.component(
-	class implements IDotComponent{
-		events?: string[];
-		_?: FrameworkItems;
-		build() {
-			return dot.div(
-				{ id: "content" },
-				dot.div(
-					{id: "logo-and-quickstart"}, 
-					dot
-						.div({id: "logo-pane"}, new LargeLogoPart())
-						.div({id: "quickstart-pane"}, new QuickStartPart())
-				)
-				.div({id: "info-tags"}, new HeroFeaturesPart())
-			);
-		}
-	}, 
-	[styles]
-)
+@dot.component
+export default class HeroSection implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-export default HeroSection;
+	build() {
+		return dot.div({ class: "hero-section" },
+			dot.div({ class: "hero-main" },
+				dot.div({ class: "logo-pane" }, dot.mount(new LargeLogoPart())),
+				dot.div({ class: "quickstart-pane" }, dot.mount(new QuickStartPart()))
+			),
+			dot.div({ class: "features-pane" }, dot.mount(new HeroFeaturesPart()))
+		);
+	}
+}

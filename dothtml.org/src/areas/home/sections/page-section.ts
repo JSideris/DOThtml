@@ -1,19 +1,14 @@
-
-// This one will be abstract!
-
 import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
 import styles from "./page-section.css?inline";
 
-// AFTER
-const PageSection = dot.component(
-	class implements IDotComponent{
-		events?: string[];
-		_?: FrameworkItems;
-		build(...args: any[]) {
-			return dot.div();
-		}
-	}, [styles]
-);
+@dot.component
+export default class PageSection implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-export default PageSection;
+	build() {
+		return dot.div({ class: "page-section" });
+	}
+}

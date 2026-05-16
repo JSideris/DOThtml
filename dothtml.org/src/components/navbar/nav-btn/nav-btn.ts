@@ -1,24 +1,21 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
 import styles from "./nav-btn.css?inline";
 
-const NavBtn = dot.component<["text"], ["click"]>(
-	class implements IDotComponent{
+@dot.component
+export default class NavBtn implements IDotComponent {
+	static props = {
+		text: { type: String, required: true },
+		active: { type: Boolean, default: false }
+	};
 
-		// events?: string[] = ["click"];
-		_?: FrameworkItems;
-		build() {
-			return dot.a(
-				{ 
-					id: "container", 
-					onClick: ()=>this._.emit("click") 
-				},
-				this._.props.text
-			);
-		}
+	stylize() {
+		return styles;
+	}
 
-	},
-	[styles]
-);
-
-export default NavBtn;
+	build() {
+		return dot.a({ 
+			class: ["nav-btn", { active: this.props.active }] 
+		}, this.props.text);
+	}
+}

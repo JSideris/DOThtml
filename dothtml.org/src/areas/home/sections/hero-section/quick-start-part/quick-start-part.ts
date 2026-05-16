@@ -1,19 +1,22 @@
 import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { IDotComponent } from "dothtml-interfaces";
+import MarkdownViewer from "../../../../../components/MarkdownViewer/MarkdownViewer";
 import styles from "./quick-start-part.css?inline";
-import MarkdownViewer from "../../../../components/MarkdownViewer/MarkdownViewer";
 
-const QuickStartPart = dot.component(
-	class implements IDotComponent{
-		events?: string[];
-		_?: FrameworkItems;
-		build() {
-			return dot.div(
-				{id: "content"},
-				new MarkdownViewer("/docs/quick-start.md")
-			)
-		}
-	}, [styles]
-);
+@dot.component
+export default class QuickStartPart implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-export default QuickStartPart;
+	build() {
+		return dot.div({ class: "terminal-container" },
+			dot.div({ class: "terminal-header" },
+				dot.div({ class: "dot dot-red" }),
+				dot.div({ class: "dot dot-yellow" }),
+				dot.div({ class: "dot dot-green" })
+			),
+			dot.mount(new MarkdownViewer({ src: "/docs/quick-start.md" }))
+		);
+	}
+}

@@ -1,8 +1,7 @@
 import { dot } from "dothtml"
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
-import homeStyles from "./home.css?inline";
+import { IDotComponent } from "dothtml-interfaces";
 import HeroSection from "./sections/hero-section/hero-section";
-// import GetDot from "./sections/get-dot/get-dot";
+import GetDot from "./sections/get-dot/get-dot";
 import MainCodeSample from "./sections/main-code-sample/main-code-sample";
 import MainFeatures from "./sections/main-features/main-features";
 import UseCases from "./sections/use-cases/use-cases";
@@ -10,37 +9,25 @@ import DetailedFeatures from "./sections/detailed-features/detailed-features";
 import LearnMore from "./sections/learn-more/learn-more";
 import Contribute from "./sections/contribute/contribute";
 import Footer from "./sections/footer/footer";
+import styles from "./home.css?inline";
 
-const Home = dot.component(
-	class implements IDotComponent{
-		_?: FrameworkItems;
-		build() {
-			return dot.div(
-				{class: "central-pane"},
-				dot.mount(new HeroSection())
-				// .mount(new GetDot())
-				.mount(new MainCodeSample())
-				.mount(new MainFeatures())
-				.mount(new UseCases())
-				.mount(new DetailedFeatures())
-				.mount(new LearnMore())
-				.mount(new Contribute())
-				.mount(new Footer())
-			);
-		}
-	},
-	[homeStyles]
-);
+@dot.component
+export default class Home implements IDotComponent {
+	stylize() {
+		return styles;
+	}
 
-
-// const Home = dot.component(
-// 	class implements IDotComponent{
-// 		_?: FrameworkItems;
-// 		build(...args: any[]): IDotGenericElement {
-// 			return dot.div("HELLO, WORLD!");
-// 		}
-// 	}, 
-// 	[homeStyles]
-// );
-			
-export default Home;
+	build() {
+		return dot.div({ class: "home-container" },
+			dot.mount(new HeroSection()),
+			dot.mount(new GetDot()),
+			dot.mount(new MainCodeSample()),
+			dot.mount(new MainFeatures()),
+			dot.mount(new UseCases()),
+			dot.mount(new DetailedFeatures()),
+			dot.mount(new LearnMore()),
+			dot.mount(new Contribute()),
+			dot.mount(new Footer())
+		);
+	}
+}
