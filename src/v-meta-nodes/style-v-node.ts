@@ -168,7 +168,7 @@ export default class StyleVNode extends VMetaNode {
 			let id = this.observableIds[i];
 			let observable = this.observables[i];
 			if (observable instanceof Binding) {
-				(observable as any)._watcher._detachBinding(id);
+				(observable as any)._unsubscribe(id);
 			} else {
 				(observable as any)._detachBinding(id);
 			}

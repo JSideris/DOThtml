@@ -9,14 +9,6 @@ afterEach(() => {
 
 describe("Update Batching.", () => {
 
-	beforeEach(() => {
-		(dot as any).setSync(false);
-	});
-
-	afterEach(() => {
-		(dot as any).setSync(true);
-	});
-
 	test("Multiple updates are batched.", async () => {
 		const counter = dot.watch(0);
 		let updateCount = 0;
@@ -35,7 +27,7 @@ describe("Update Batching.", () => {
 		expect(document.body.innerHTML).toBe("<div>0</div>");
 		
 		// Wait for microtask.
-		await Promise.resolve();
+		await new Promise(resolve => setTimeout(resolve, 0));
 		
 		expect(document.body.innerHTML).toBe("<div>3</div>");
 	});
@@ -47,7 +39,7 @@ describe("Update Batching.", () => {
 		name.value = "B";
 		expect(document.body.innerHTML).toBe("<div>A</div>");
 		
-		await Promise.resolve();
+		await new Promise(resolve => setTimeout(resolve, 0));
 		expect(document.body.innerHTML).toBe("<div>B</div>");
 	});
 
@@ -73,7 +65,7 @@ describe("Update Batching.", () => {
 		// In a real app, this happens when a component is unrendered.
 		(binding as any)._unsubscribe(1); // The first subscription ID is 1.
 		
-		await Promise.resolve();
+		await new Promise(resolve => setTimeout(resolve, 0));
 		
 		// Should still be A because the subscription was deactivated.
 		expect(document.body.innerHTML).toBe("<div>A</div>");
@@ -95,14 +87,14 @@ describe("Update Batching.", () => {
 		
 		expect(document.body.innerHTML).toBe("<div>1</div><div>10</div>");
 		
-		await Promise.resolve(); // First flush for 'a'.
+		await new Promise(resolve => setTimeout(resolve, 0)); // First flush for 'a'.
 		// The flush for 'a' triggers a change in 'b', which schedules another flush.
 		// Since our scheduler handles re-scheduling if the queue is not empty, 
 		// it might take another tick or happen in the same tick depending on implementation.
 		// Our implementation calls scheduleFlush() again if queue.size > 0.
 		
 		// Wait one more microtask just in case.
-		await Promise.resolve();
+		await new Promise(resolve => setTimeout(resolve, 0));
 		
 		expect(document.body.innerHTML).toBe("<div>2</div><div>20</div>");
 	});

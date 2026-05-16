@@ -218,7 +218,7 @@ export default class CollectionVdom extends Vdom{
 					item.vdom._renderAfter(state.lastNode);
 					state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
 				} else {
-					item.vdom._moveBefore(state.lastNode.nextSibling);
+					item.vdom._moveBefore(state.lastNode.nextSibling, state.lastNode.parentElement);
 					state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
 				}
 

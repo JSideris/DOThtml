@@ -72,6 +72,7 @@ describe("Event delegation.", ()=>{
 
 		// Remove the button
 		obs.value = false;
+		(dot as any).flushSync();
 		expect(document.getElementById("my-button")).toBeNull();
 
 		// Simulate a click on where the button was (or just verify it's removed from manager)

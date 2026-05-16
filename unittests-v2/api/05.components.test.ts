@@ -14,6 +14,10 @@ import formatHTML from "./formatHTML";
 // Test refs.
 
 afterEach(() => { 
+	const root = document.body[DOT_VDOM_PROP_NAME];
+	if (root && root.children) {
+		root.children._unrender();
+	}
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
 });
@@ -125,6 +129,7 @@ describe("Components", ()=>{
 		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>abc</div>");
 		
 		txt.value = ("def");
+		(dot as any).flushSync();
 
 		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>def</div>");
 	});

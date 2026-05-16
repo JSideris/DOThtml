@@ -6,11 +6,21 @@ export abstract class Vdom{
 	abstract _unrender();
 	abstract _getNodes(): Node[];
 
-	_moveBefore(reference: Node){
+	_moveBefore(reference: Node, parent?: Node){
 		let nodes = this._getNodes();
-		for(let i = 0; i < nodes.length; i++){
-			reference.parentElement.insertBefore(nodes[i], reference);
+		if (nodes.length === 0) return;
+		let p = reference?.parentElement || parent;
+		if (!p) throw new Error("Internal Error: Cannot move nodes without a parent.");
+		
+		for (let i = 0; i < nodes.length; i++) {
+			if (nodes[i] === reference) return;
 		}
+
+		let fragment = (reference?.ownerDocument || p.ownerDocument || document).createDocumentFragment();
+		for(let i = 0; i < nodes.length; i++){
+			fragment.appendChild(nodes[i]);
+		}
+		p.insertBefore(fragment, reference);
 	}
 
 	__isRendered = false;

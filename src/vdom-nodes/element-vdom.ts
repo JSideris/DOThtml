@@ -50,19 +50,19 @@ export default class ElementVdom extends Vdom{
 			(this.ref as any)["_element"] = this.element;
 		}
 
+		node.appendChild(this.element);
+
+		if(this.children){
+			this.children._render(this.element);
+		}
+
 		for(let a in this.attributes){
 			this.renderAttr(a, this.attributes[a], this.element);
 		}
 
-		node.appendChild(this.element);
-
 		for(let i = 0; i < this.events.length; i++){
 			let e = this.events[i];
 			this.renderEvent(e.name, e.callback, e.modifiers);
-		}
-	
-		if(this.children){
-			this.children._render(this.element);
 		}
 	}
 
@@ -177,9 +177,21 @@ export default class ElementVdom extends Vdom{
 			}
 		}
 		else if(typeof value === "string" || typeof value === "number"){
-			node.setAttribute(attr, `${value}`);
+			if(attr == "value" && (this.tag.toLowerCase() == "input" || this.tag.toLowerCase() == "textarea" || this.tag.toLowerCase() == "select")){
+				(node as any).value = value ?? "";
+			}
+			else{
+				node.setAttribute(attr, `${value}`);
+			}
 		}
 		else if (typeof value === "boolean" || value == null || value == undefined){
+			if(attr == "checked" && this.tag.toLowerCase() == "input"){
+				(node as HTMLInputElement).checked = !!value;
+			}
+			else if(attr == "selected" && this.tag.toLowerCase() == "option"){
+				(node as HTMLOptionElement).selected = !!value;
+			}
+			
 			if(value) node.setAttribute(attr, `${value}`);
 			else node.removeAttribute(attr);
 		}

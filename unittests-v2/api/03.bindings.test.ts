@@ -7,6 +7,10 @@ import formatHTML from "./formatHTML";
 // TODO: ensure that if an attribute is set twice, the previous one will unsubscibe from any reactives (or unrender).
 
 afterEach(() => { 
+	const root = document.body[DOT_VDOM_PROP_NAME];
+	if (root && root.children) {
+		root.children._unrender();
+	}
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
 });
@@ -36,6 +40,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 		
 		binding.value = "world";
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world")));
 	});
 
@@ -45,6 +50,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("<p></p>")));
 		
 		binding.value = "<span></span>";
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("<span></span>")));
 	});
 
@@ -54,6 +60,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello").div("hello")));
 		
 		binding.value = "world";
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world").div("world")));
 	});
 
@@ -63,6 +70,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello")));
 		
 		binding.value = null;
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 
@@ -72,6 +80,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(6)));
 
 		binding.value = 5;
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(10)));
 	});
 
@@ -81,6 +90,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(6)));
 
 		binding.value = 5;
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(10)));
 	});
 
@@ -90,6 +100,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML((document.getElementById("my-input") as HTMLInputElement).value)).toBe("6");
 
 		binding.value = 5;
+		(dot as any).flushSync();
 		expect(formatHTML((document.getElementById("my-input") as HTMLInputElement).value)).toBe("10");
 	});
 
@@ -103,6 +114,7 @@ describe("Text data binding.", () => {
 		expect(formatHTML(document.getElementById("my-element")?.style.transform)).toBe("translatex(6px)");
 
 		binding.value = 5;
+		(dot as any).flushSync();
 		expect(formatHTML(document.getElementById("my-element")?.style.transform)).toBe("translatex(10px)");
 	});
 });
@@ -126,6 +138,7 @@ describe("HTML data binding.", () => {
 		// expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 		
 		binding.value = "<span></span>";
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.span())));
 	});
 
@@ -135,6 +148,7 @@ describe("HTML data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p())));
 		
 		binding.value = null;
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 });
@@ -159,6 +173,7 @@ describe("Attribute data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 		
 		binding.value = ("world");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "world"})));
 	});
 
@@ -168,6 +183,7 @@ describe("Attribute data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("hello", {class: "hello"}).div("hello", {class: "hello"})));
 		
 		binding.value = ("world");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("world", {class: "world"}).div("world", {class: "world"})));
 	});
 
@@ -177,6 +193,7 @@ describe("Attribute data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "hello"})));
 		
 		binding.value = (null);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div()));
 	});
 });
@@ -199,15 +216,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("abc");
 
 		val.value = ("123");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123");
 
 		cond.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("false");
 
 		val.value = ("xyz");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("false");
 
 		cond.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("xyz");
 	});
 	test("When binding changes.", () => {
@@ -216,6 +237,7 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("yes")));
 
 		binding.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("no")));
 	});
 	test("When othewise when binding changes.", () => {
@@ -239,15 +261,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a")));
 
 		binding.value = (2);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("b")));
 
 		binding.value = (3);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("c")));
 
 		binding.value = (4);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("d")));
 
 		binding.value = (1);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a")));
 	});
 
@@ -258,15 +284,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("abc")));
 
 		xValue.value = ("123");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("123")));
 		
 		cBinding.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span("123")));
 
 		xValue.value = ("abc");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.span("abc")));
 
 		cBinding.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("abc")));
 	});
 
@@ -285,15 +315,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=abc></p>");
 
 		xValue.value = ("123");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=123></p>");
 		
 		cBinding.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("<span class=123></span>");
 		
 		xValue.value = ("abc");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("<span class=abc></span>");
 		
 		cBinding.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("<p class=abc></p>");
 	});
 
@@ -304,15 +338,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>true</div>");
 
 		xValue.value = ("123");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123<div>true</div>");
 		
 		cBinding.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123<div>false</div>");
 
 		xValue.value = ("abc");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>false</div>");
 
 		cBinding.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("abc<div>true</div>");
 	});
 
@@ -325,15 +363,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("abctrue");
 
 		xValue.value = ("123");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123true");
 		
 		cBinding.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123false");
 
 		xValue.value = ("abc");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("abcfalse");
 
 		cBinding.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("abctrue");
 	});
 
@@ -344,15 +386,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-true");
 
 		xValue.value = ("123");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123-true");
 		
 		cBinding.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("123-false");
 
 		xValue.value = ("abc");
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-false");
 
 		cBinding.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("abc-true");
 	});
 
@@ -363,17 +409,21 @@ describe("Conditional w/ binding.", () => {
 		// expect(formatHTML(document.body.innerHTML)).toBe("0123");
 		
 		binding1.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0x23");
 
 		binding1.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
 		binding1.value = (false);
 		binding2.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0xy3");
 
 		binding2.value = (true);
 		binding1.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
 	});
@@ -385,17 +435,21 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 		
 		binding1.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("023");
 
 		binding1.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
 		binding1.value = (false);
 		binding2.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("03");
 
 		binding2.value = (true);
 		binding1.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0123");
 
 	});
@@ -413,15 +467,19 @@ describe("Conditional w/ binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 		
 		watchInner.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("1");
 
 		watchOuter.value = (false);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("3");
 
 		watchInner.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("2");
 
 		watchOuter.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe("0");
 
 	});
@@ -470,10 +528,12 @@ describe("Iteration w/ binding.", () => {
 		
 		array.push("d");
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a").div("b").div("c").div("d")));
 
 		array.splice(1,1);
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a").div("c").div("d")));
 	});
 
@@ -488,10 +548,12 @@ describe("Iteration w/ binding.", () => {
 		
 		array.push({value:"d"});
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a-0").div("b-1").div("c-2").div("d-3")));
 
 		array.splice(1,1);
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("a-0").div("c-1").div("d-2")));
 	});
 
@@ -505,10 +567,12 @@ describe("Iteration w/ binding.", () => {
 		
 		object.d = "helloworld";
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("x, 0, a").div("y, 1, b").div("z, 2, c").div("helloworld, 3, d")));
 
 		delete object.b;
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("x, 0, a").div("z, 1, c").div("helloworld, 2, d")));
 	});
 
@@ -524,10 +588,12 @@ describe("Iteration w/ binding.", () => {
 		
 		array[1] = {id: 2, isTrue: true};
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("1").div("1").div("false").div("2").div("2").div("true").div("3").div("3").div("false")));
 		
 		array.splice(1,1);
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("1").div("1").div("false").div("3").div("3").div("false")));
 	});
 
@@ -541,6 +607,7 @@ describe("Iteration w/ binding.", () => {
 		
 		array[1] = {id: 2, amount: 10};
 		obs.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div("14")));
 	});
 
@@ -570,6 +637,7 @@ describe("Special attributes.", ()=>{
 		dot(document.body).div({ class: { "my-class": true, "your-class": binding } });
 		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class></div>`);
 		binding.value = (true);
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class your-class></div>`);
 	});
 
@@ -582,6 +650,7 @@ describe("Special attributes.", ()=>{
 
 		data.splice(1, 1);
 		bindings.updateObservers();
+		(dot as any).flushSync();
 		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=class-a class-c></div>`);
 	});
 
@@ -607,10 +676,12 @@ describe("Refs.", ()=>{
 		expect(ref.element.innerHTML).toBe("test");
 		
 		condition.value = false;
+		(dot as any).flushSync();
 		
 		expect(ref.element).not.toBeTruthy();
 		
 		condition.value = true;
+		(dot as any).flushSync();
 
 		expect(ref.element).toBeTruthy();
 		expect(ref.element.innerHTML).toBe("test");

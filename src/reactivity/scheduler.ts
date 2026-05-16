@@ -15,7 +15,7 @@ class Scheduler {
 	private isPending: boolean = false;
 	private startTime: number = 0;
 	private frameYieldMs: number = 5; // Yield after 5ms of work.
-	private isSync: boolean = typeof process !== "undefined" && process.env.NODE_ENV === "test";
+	private isSync: boolean = false;
 	private isSyncing: boolean = false;
 
 	private channel = typeof MessageChannel !== "undefined" ? new MessageChannel() : null;
