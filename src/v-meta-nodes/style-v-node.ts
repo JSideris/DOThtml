@@ -33,6 +33,10 @@ export default class StyleVNode extends VMetaNode {
 		super();
 		this.styleSource = styleSource;
 
+		if (this.styleSource instanceof BaseVStyle) {
+			this.styleSource._setOnUpdate(() => this.update());
+		}
+
 		this.extractObservables();
 	}
 
@@ -42,54 +46,63 @@ export default class StyleVNode extends VMetaNode {
 		if (Array.isArray(source)) {
 			// It's from BaseVStyle.getProps()
 			for (const p of source) {
-				if (p.value instanceof Binding || p.value instanceof Watcher) {
-					this.observables.push(p.value as any);
-				}
-				// TODO: handle nested builders in BaseVStyle if they are ever added.
+				this.tryExtractObservable(p.value);
 			}
 		} else {
 			// It's a plain IDotCss object.
 			for (let prop in source) {
 				let value = source[prop];
-				if (value instanceof Binding || value instanceof Watcher) {
-					this.observables.push(value as any);
-				}
-				else if (typeof value === "object" && value !== null && !(value instanceof Binding || value instanceof Watcher)) {
-					// Handle nested builders like filter: { blur: 5 }
-					let builder: CssFunctionBuilderVStyle;
-					switch (prop) {
-						case "filter": {
-							builder = new FilterVStyle(prop);
-							break;
-						}
-						case "transform": {
-							builder = new TransformVStyle(prop);
-							break;
-						}
-					}
-
-					if (builder) {
-						let funcArray = Array.isArray(value) ? value : [value];
-						for (let funcValue of funcArray) {
-							for (let k in funcValue) {
-								let v = funcValue[k];
-								if (v instanceof Binding || v instanceof Watcher) {
-									this.observables.push(v as any);
-								}
-								else if (Array.isArray(v)) {
-									for (let w of v) {
-										if (w instanceof Binding || w instanceof Watcher) this.observables.push(w as any);
-									}
-								}
-
-								if (builder[k]) builder[k](v);
+				if (!this.tryExtractObservable(value)) {
+					if (typeof value === "object" && value !== null) {
+						// Handle nested builders like filter: { blur: 5 }
+						let builder: CssFunctionBuilderVStyle;
+						switch (prop) {
+							case "filter": {
+								builder = new FilterVStyle(prop);
+								break;
+							}
+							case "transform": {
+								builder = new TransformVStyle(prop);
+								break;
 							}
 						}
-						source[prop] = builder;
+
+						if (builder) {
+							let funcArray = Array.isArray(value) ? value : [value];
+							for (let funcValue of funcArray) {
+								for (let k in funcValue) {
+									let v = funcValue[k];
+									this.tryExtractObservable(v);
+									if (Array.isArray(v)) {
+										for (let w of v) {
+											this.tryExtractObservable(w);
+										}
+									}
+
+									if (builder[k]) builder[k](v);
+								}
+							}
+							source[prop] = builder;
+						}
 					}
 				}
 			}
 		}
+	}
+
+	private tryExtractObservable(value: any): boolean {
+		if (value instanceof Binding || value instanceof Watcher) {
+			if (this.observables.indexOf(value as any) === -1) {
+				this.observables.push(value as any);
+				if (this.target) {
+					// If already rendered, subscribe immediately.
+					let id = (value as any).subscribe(() => this.update());
+					this.observableIds.push(id);
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	render(target: HTMLElement | string, document: Document = window.document, shadowRoot?: ShadowRoot) {
@@ -118,6 +131,8 @@ export default class StyleVNode extends VMetaNode {
 
 	private applyStyles() {
 		if (!this.target) return;
+
+		this.extractObservables();
 
 		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
 

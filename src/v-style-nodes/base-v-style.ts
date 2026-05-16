@@ -9,6 +9,7 @@ export default class BaseVStyle extends VStyle {
 	// Calling style functions on this object will create (and return) a new BaseVStyle, rather than extend this one.
 	private readonly _isBase = false;
 	private props: Array<{ prop: string, value: any }> = [];
+	private onUpdate: () => void;
 
 	_render(target: HTMLElement) {
 		// No-op. StyleVNode handles rendering now.
@@ -27,8 +28,13 @@ export default class BaseVStyle extends VStyle {
 		}
 		else {
 			this.props.push({ prop: propName, value: value });
+			if (this.onUpdate) this.onUpdate();
 			return this;
 		}
+	}
+
+	_setOnUpdate(callback: () => void) {
+		this.onUpdate = callback;
 	}
 
 	/**
@@ -39,6 +45,16 @@ export default class BaseVStyle extends VStyle {
 	variable(name: string, value: any) {
 		if (!name.startsWith("--")) name = "--" + name;
 		return this.setProp(name, value);
+	}
+
+	/**
+	 * Returns a CSS variable reference string.
+	 * @param name The name of the variable (e.g., "my-color" or "--my-color").
+	 * @returns A string in the format "var(--name)".
+	 */
+	v(name: string): string {
+		if (!name.startsWith("--")) name = "--" + name;
+		return `var(${name})`;
 	}
 
 	getProps() {

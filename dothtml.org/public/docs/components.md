@@ -120,18 +120,20 @@ class MyComponent {
 
 ### Host Styling (`hostStyle`)
 
-The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself).
+The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself). This is the primary way to bridge component state with CSS variables for high-performance updates.
 
 ```javascript
 class ThemeableComponent {
     hostStyle(s) {
+        // Bind a reactive watcher to a CSS variable on the host element.
         s.variable("theme-color", this.props.color);
         s.display("block");
     }
 
     stylize(s) {
         return s.class("content", c => c
-            .border(`2px solid var(--theme-color)`)
+            // Reference the host variable using the .v() helper.
+            .border(`2px solid ${s.v("theme-color")}`)
         );
     }
 
@@ -140,5 +142,7 @@ class ThemeableComponent {
     }
 }
 ```
+
+By using `hostStyle` to update a CSS variable, you avoid re-calling the `build()` method for purely visual changes, leading to much better performance in complex applications.
 
 For more advanced styling options, including global styles, performance optimizations, and **testing tips**, see the [Styling](./styling.md) documentation.

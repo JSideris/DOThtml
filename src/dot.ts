@@ -10,6 +10,7 @@ import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 // import { useStyles } from "./decoration/use-styles";
 import BaseVStyle from "./v-style-nodes/base-v-style";
+import StyleVNode from "./v-meta-nodes/style-v-node";
 import { IDotCore, IDotCss, IDotComponent } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
@@ -504,7 +505,12 @@ const makeDot = ()=>{
 	};
 
 	_dot.css = new BaseVStyle();
-	((_dot.css as any)._isBase as boolean) = true;
+	// ((_dot.css as any)._isBase as boolean) = true; // Remove this so dot.css is a regular builder that can be bound.
+
+	if (typeof document !== "undefined") {
+		const globalStyleVNode = new StyleVNode(_dot.css);
+		globalStyleVNode.render(document.documentElement);
+	}
 
 	// _dot.component = component;
 	// _dot.component["useStyles"] = useStyles;

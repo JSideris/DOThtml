@@ -56,13 +56,43 @@ dot.div("Themed Content")
   .style(s => s.variable("accent-color", "orange"));
 ```
 
-In your CSS, you can then reference this variable:
+In your CSS, you can then reference this variable using the `.v()` helper:
 
-```css
-.themed-content {
-  border: 2px solid var(--accent-color);
+```javascript
+stylize(s) {
+  return s.class("themed-content", c => c
+    .border(`2px solid ${s.v("accent-color")}`)
+  );
 }
 ```
+
+### The `s.v()` Shortcut
+
+The `.v()` method is a convenient shortcut for referencing CSS variables within any style builder. It automatically handles the `--` prefix if it's missing.
+
+*   **Usage**: `s.v("my-var")` returns `"var(--my-var)"`.
+*   **Usage**: `s.v("--my-var")` returns `"var(--my-var)"`.
+
+This makes your style definitions cleaner and less error-prone.
+
+## Global Reactive Variables
+
+DOThtml provides a global `dot.css` builder that is automatically bound to the document root (`<html>`). This is the recommended way to handle application-wide theming.
+
+```javascript
+// In your app initialization
+const themeColor = dot.watch("blue");
+dot.css.variable("primary", themeColor);
+
+// Any component can now use this global variable
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("title", t => t.color(s.v("primary")));
+  }
+}
+```
+
+When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
 
 ## Component Styling
 
@@ -105,6 +135,8 @@ class MyComponent extends IDotComponent {
   }
 }
 ```
+
+> **Performance Note**: The `stylize()` method is intended for **static** styles. To prevent performance pitfalls, DOThtml will throw an error if you try to pass a `Watcher` or `Binding` directly into a `stylize()` block. Instead, use `hostStyle()` or `dot.css` to bind reactive data to CSS variables, and reference those variables in `stylize()` using `s.v()`.
 
 DOThtml automatically caches these stylesheets on the component's constructor, ensuring that the CSS is parsed only once per component type.
 

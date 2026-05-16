@@ -1,6 +1,8 @@
 import BaseVStyle from "./base-v-style";
 import cssProps from "../css/css-props";
 import { formatCssLength } from "../css/format-css-type";
+import Watcher from "../reactivity/watcher";
+import Binding from "../reactivity/binding";
 
 export default class StyleSheetBuilder {
 	private rules: Array<{ selector: string, style: BaseVStyle }> = [];
@@ -16,12 +18,27 @@ export default class StyleSheetBuilder {
 		return this;
 	}
 
+	/**
+	 * Returns a CSS variable reference string.
+	 * @param name The name of the variable (e.g., "my-color" or "--my-color").
+	 * @returns A string in the format "var(--name)".
+	 */
+	v(name: string): string {
+		if (!name.startsWith("--")) name = "--" + name;
+		return `var(${name})`;
+	}
+
 	toString() {
 		return this.rules.map(r => {
 			const props = r.style.getProps().map(p => {
 				const registered = cssProps[p.prop];
 				let cssProp = p.prop;
 				let cssValue = p.value;
+
+				if (cssValue instanceof Watcher || cssValue instanceof Binding) {
+					throw new Error(`[DOThtml] Reactive values (Watchers/Bindings) cannot be used directly in stylize(). Use CSS variables instead. Prop: "${p.prop}" in selector: "${r.selector}"`);
+				}
+
 				if (registered) {
 					cssProp = registered.cssName;
 					if (registered.type === "length" && typeof p.value === "number") {

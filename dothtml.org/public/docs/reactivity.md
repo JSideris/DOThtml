@@ -77,15 +77,32 @@ title.value = "New Title"; // MyComponent re-renders automatically.
 
 ## Reactive Styles
 
-Reactivity in DOThtml extends to styling. You can pass `Watcher` or `Binding` objects directly to the fluent style builder. This allows for high-performance, granular updates to an element's appearance without re-rendering the entire component.
+Reactivity in DOThtml extends to styling, allowing for high-performance, granular updates to an element's appearance without re-rendering the entire component. Reactive styling can be applied at three different levels:
+
+### 1. Inline Reactive Styles
+Pass a `Watcher` or `Binding` directly to an element's fluent style builder. This is ideal for element-specific changes.
 
 ```javascript
 const opacity = dot.watch(1);
 dot.div("I can fade")
   .style(s => s.opacity(opacity));
-
-// Later...
-opacity.value = 0.5; // Updates the element's opacity in the DOM.
 ```
 
-For more details on reactive styling, including batching and CSS variables, see the [Styling](./styling.md) documentation.
+### 2. Host Reactive Variables
+Use `hostStyle()` to bind a `Watcher` to a CSS variable on the component's host element. This is the recommended way to handle component-specific reactive styling with maximum performance.
+
+```javascript
+hostStyle(s) {
+  s.variable("local-color", this.props.color);
+}
+```
+
+### 3. Global Reactive Variables
+Bind a `Watcher` to the global `dot.css` builder. This updates a CSS variable on the document root, making it available to every component in your application.
+
+```javascript
+const theme = dot.watch("dark");
+dot.css.variable("theme-mode", theme);
+```
+
+For more details on high-performance styling patterns and the `.v()` helper, see the [Styling](./styling.md) documentation.
