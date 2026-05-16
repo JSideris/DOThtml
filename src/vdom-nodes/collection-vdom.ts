@@ -54,7 +54,14 @@ export default class CollectionVdom extends Vdom{
 		this.endNode = target.ownerDocument.createTextNode("");
 		target.appendChild(this.startNode);
 		target.appendChild(this.endNode);
-		this.updateList();
+		
+		const originalShouldYield = scheduler.shouldYield;
+		scheduler.shouldYield = () => false;
+		try {
+			this.updateList();
+		} finally {
+			scheduler.shouldYield = originalShouldYield;
+		}
 	}
 
 	_unrender() {
@@ -98,21 +105,35 @@ export default class CollectionVdom extends Vdom{
 	}
 
 	updateList(): boolean {
+		let unmappedCollection = null as Array<any>|Record<string|number, any>;
+		if(this.value instanceof Binding){
+			unmappedCollection = this.value._get() as any;
+		}
+		else{
+			unmappedCollection = this.value;
+		}
+
+		const currentItems: Array<any> = Array.isArray(unmappedCollection) 
+			? unmappedCollection 
+			: Object.values(unmappedCollection);
+
+		if (this.updateState) {
+			// If we are already updating, check if the data has changed since we started.
+			if (!deepEqual(this.updateState.newItems, currentItems)) {
+				// The data changed while we were yielded! 
+				// Discard the old state and start fresh.
+				this.updateState = null;
+			}
+		}
+
 		if (!this.updateState) {
 			// Initialize update state
 			let key: string = null;
-			let unmappedCollection = null as Array<any>|Record<string|number, any>;
 			if(this.value instanceof Binding){
-				unmappedCollection = this.value._get() as any;
 				key = this.value._source.key ?? null;
 			}
-			else{
-				unmappedCollection = this.value;
-			}
 
-			const newItems: Array<any> = Array.isArray(unmappedCollection) 
-				? unmappedCollection 
-				: Object.values(unmappedCollection);
+			const newItems = currentItems;
 			
 			const newKeys: Array<any> = Array.isArray(unmappedCollection)
 				? newItems.map((v, i) => key ? v[key] : i)

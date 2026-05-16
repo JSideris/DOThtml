@@ -29,7 +29,13 @@ class Scheduler {
 	 */
 	enqueue(subscription: Subscription, priority: Priority = Priority.Normal) {
 		if (priority === Priority.Immediate) {
-			subscription.update();
+			const originalShouldYield = this.shouldYield;
+			this.shouldYield = () => false;
+			try {
+				subscription.update();
+			} finally {
+				this.shouldYield = originalShouldYield;
+			}
 			return;
 		}
 
@@ -118,26 +124,37 @@ class Scheduler {
 		// We don't want the work loop to trigger while we're doing a sync flush.
 		this.isPending = true; 
 		
-		let hasMoreWork = true;
-		while (hasMoreWork) {
-			hasMoreWork = false;
-			for (let p = Priority.UserBlocking; p <= Priority.Background; p++) {
-				const queue = this.queues[p];
-				if (queue.size === 0) continue;
+		// During flushSync, we should never yield.
+		const originalShouldYield = this.shouldYield;
+		this.shouldYield = () => false;
 
-				const currentQueue = Array.from(queue);
-				queue.clear();
+		try {
+			let hasMoreWork = true;
+			while (hasMoreWork) {
+				hasMoreWork = false;
+				for (let p = Priority.UserBlocking; p <= Priority.Background; p++) {
+					const queue = this.queues[p];
+					if (queue.size === 0) continue;
 
-				for (const subscription of currentQueue) {
-					if (subscription.active) {
-						subscription.update();
+					const currentQueue = Array.from(queue);
+					queue.clear();
+
+					for (const subscription of currentQueue) {
+						if (subscription.active) {
+							const continuation = subscription.update();
+							if (continuation) {
+								queue.add(subscription);
+								hasMoreWork = true;
+							}
+						}
 					}
+					if (queue.size > 0) hasMoreWork = true;
 				}
-				if (queue.size > 0) hasMoreWork = true;
 			}
+		} finally {
+			this.shouldYield = originalShouldYield;
+			this.isPending = false;
 		}
-		
-		this.isPending = false;
 	}
 
 	/**
