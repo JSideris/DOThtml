@@ -1,5 +1,22 @@
 [https://dothtml.org/](https://dothtml.org/) for documentation.
 
+## Quick Start
+
+### Via CDN
+The fastest way to use DOThtml is via a CDN. Add this to your HTML:
+
+```html
+<script src="https://unpkg.com/dothtml@latest/build_umd/dothtml.js"></script>
+<script>
+  dot("body").h1("Hello DOThtml!");
+</script>
+```
+
+### Via NPM
+```bash
+npm install dothtml
+```
+
 ## The DOThtml Paradigm
 
 Most modern web frameworks are "all or nothing." DOThtml is different. It is a **UI Engine** designed to provide a component-based, reactive workflow to projects that have their own primary architecture. 

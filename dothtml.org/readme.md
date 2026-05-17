@@ -22,9 +22,9 @@ Navbar:
 Content:
 
 1. Hero Section.
-<!-- 2. Where to get.
+2. Where to get.
 	a. NPM / Yarn.
-	b. CDN? -->
+	b. CDN? ✅
 3. Small code sample.
 4. Main features.
 	a. Pure TypeScript/JavaScript.
@@ -58,7 +58,7 @@ Content:
 1. Build a DOThtml App
 2. Add DOThtml to an Existing Project
 3. Build a Component Library for DOThtml
-4. Import <script>.
+4. Import <script>. ✅
 
 
 ### Rendering Basics ###

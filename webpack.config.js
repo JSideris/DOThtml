@@ -5,9 +5,9 @@ module.exports = {
 	output: {
 		path: path.resolve(__dirname, "build_umd"),
 		filename: 'dothtml.js',
-		// library: 'dot',
-		// libraryTarget: 'umd',
-		// globalObject: 'this',
+		library: 'dot',
+		libraryTarget: 'umd',
+		globalObject: 'this',
 	},
 	module: {
 		rules: [

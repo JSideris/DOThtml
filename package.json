@@ -6,12 +6,13 @@
   "exports": "./build_module/index.js",
   "types": "./build_module/index.d.ts",
   "files": [
-    "build_module/**/*"
+    "build_module/**/*",
+    "build_umd/**/*"
   ],
   "scripts": {
     "test": "npm run build && jest",
-    "build": "tsc --declaration",
-    "buildumd": "webpack",
+    "build": "tsc --declaration && npm run buildumd",
+    "buildumd": "webpack --mode production",
     "publish-beta": "npm run build && npm publish --tag beta"
   },
   "repository": {
