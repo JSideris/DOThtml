@@ -30,6 +30,9 @@ export default class Subscription{
 		if(this.item instanceof TextVdom){
 			this.item.textNode.textContent = value as string ?? "";
 		}
+		else if(this.item._isReactiveVdom){
+			this.item.update(value);
+		}
 		else if(this.item instanceof HtmlVdom){
 			this.item.updateHtml(value);
 		}

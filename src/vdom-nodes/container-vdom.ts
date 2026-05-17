@@ -5,6 +5,7 @@ import { ConditionalVdom } from "./conditional-vdom";
 import ElementVdom from "./element-vdom";
 import { HtmlVdom } from "./html-vdom";
 import { TextVdom } from "./text-vdom";
+import { ReactiveVdom } from "./reactive-vdom";
 import { Vdom } from "./vdom";
 import { AttributeValueType, ObservableCollection } from "./vdom-types";
 import { ComponentVdom } from "./component-vdom";
@@ -77,7 +78,11 @@ export class ContainerVdom extends Vdom{
 	}
 
 	text(c: string|Signal|Binding){
-		let tn = new TextVdom(reduceReactive(c));
+		let val = reduceReactive(c);
+		if(val instanceof Binding){
+			return this._addChild(new ReactiveVdom(this._dot, val));
+		}
+		let tn = new TextVdom(val);
 		return this._addChild(tn);
 	}
 

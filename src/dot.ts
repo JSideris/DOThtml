@@ -1,6 +1,7 @@
 
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
 import { TextVdom } from "./vdom-nodes/text-vdom";
+import { ReactiveVdom } from "./vdom-nodes/reactive-vdom";
 import ElementVdom from "./vdom-nodes/element-vdom";
 import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
@@ -391,7 +392,12 @@ const makeDot = ()=>{
 					if(val instanceof Signal){
 						val = val.bind();
 					}
-					n.children._addChild(new TextVdom(val));
+					if(val instanceof Binding){
+						n.children._addChild(new ReactiveVdom(dot, val));
+					}
+					else{
+						n.children._addChild(new TextVdom(val));
+					}
 				}
 			}
 		};
