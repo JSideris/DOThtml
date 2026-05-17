@@ -177,6 +177,20 @@ describe("Attribute data binding.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "world"})));
 	});
 
+	test("Reactive attribute updates do not add duplicate subscriptions.", ()=>{
+		let binding = dot.state("value-0");
+		dot(document.body).div({class: binding});
+		expect((binding as any).subscribers.size).toBe(1);
+
+		for(let i = 1; i <= 50; i++){
+			binding.value = `value-${i}`;
+			(dot as any).flushSync();
+		}
+
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div({class: "value-50"})));
+		expect((binding as any).subscribers.size).toBe(1);
+	});
+
 	test("Multi render observable modified string attribute.", ()=>{
 		let binding = dot.state("hello");
 		dot(document.body).div(binding, {class: binding}).div(binding,{class: binding});

@@ -27,7 +27,9 @@ export class ComponentVdom extends Vdom{
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;
+	private isBuilding = false;
 	private computedSignals: Computed<any>[] = [];
+	private buildComputedSignals: Computed<any>[] = [];
 	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private updateSubscription = {
@@ -94,7 +96,11 @@ export class ComponentVdom extends Vdom{
 	}
 
 	registerComputed(signal: Computed<any>) {
-		this.computedSignals.push(signal);
+		if (this.isBuilding) {
+			this.buildComputedSignals.push(signal);
+		} else {
+			this.computedSignals.push(signal);
+		}
 	}
 
 	registerDisposable(disposable: () => void) {
@@ -111,9 +117,11 @@ export class ComponentVdom extends Vdom{
 		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
 		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
 		pushComponent(this);
+		this.isBuilding = true;
 		try {
 			this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
 		} finally {
+			this.isBuilding = false;
 			popComponent();
 		}
 		
@@ -146,13 +154,21 @@ export class ComponentVdom extends Vdom{
 		// Unrender old children
 		this.childShadowVdom._unrender();
 
+		// Dispose of build-time computed signals
+		for (const signal of this.buildComputedSignals) {
+			signal.dispose();
+		}
+		this.buildComputedSignals = [];
+
 		this.validateProps();
 
 		// Re-build
 		pushComponent(this);
+		this.isBuilding = true;
 		try {
 			this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
 		} finally {
+			this.isBuilding = false;
 			popComponent();
 		}
 
@@ -466,6 +482,11 @@ export class ComponentVdom extends Vdom{
 			signal.dispose();
 		}
 		this.computedSignals = [];
+
+		for (const signal of this.buildComputedSignals) {
+			signal.dispose();
+		}
+		this.buildComputedSignals = [];
 
 		for (const disposable of this.disposables) {
 			disposable();

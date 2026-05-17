@@ -30,9 +30,10 @@ class Scheduler {
 	 * Adds a subscription to the next batch with a specific priority.
 	 */
 	enqueue(subscription: Subscription, priority: Priority = Priority.Normal) {
-		if (subscription.isQueued) return;
-		subscription.isQueued = true;
-		this.queues[priority].add(subscription);
+		if (!subscription.isQueued) {
+			subscription.isQueued = true;
+			this.queues[priority].add(subscription);
+		}
 
 		if (priority === Priority.Immediate || this.isSync) {
 			this.flushSync();
@@ -83,26 +84,29 @@ class Scheduler {
 			const queue = this.queues[p];
 			if (queue.size === 0) continue;
 
-			const currentQueue = Array.from(queue);
+			// Take a snapshot and clear the queue immediately.
+			const items = Array.from(queue);
 			queue.clear();
 
-			for (const subscription of currentQueue) {
+			for (let i = 0; i < items.length; i++) {
+				const subscription = items[i];
 				subscription.isQueued = false;
+
 				if (subscription.active) {
-					// In the future, subscription.update() might return a continuation
-					// if it's an interruptible task (like CollectionVdom.updateList).
 					const continuation = subscription.update();
 					
 					if (continuation) {
-						// If it yielded, we need to put it back at the front of the queue
-						// or handle it as a special case. For now, we'll just re-enqueue it.
-						// Note: This is a simplified version. A real implementation would
-						// likely store the continuation state.
-						this.queues[p].add(subscription);
+						subscription.isQueued = true;
+						queue.add(subscription);
 					}
 				}
 
 				if (this.shouldYield()) {
+					// Put remaining items from the snapshot back into the queue.
+					for (let j = i + 1; j < items.length; j++) {
+						queue.add(items[j]);
+						// items[j].isQueued is already true.
+					}
 					return true; // We need to yield, work is not finished.
 				}
 			}
@@ -138,14 +142,15 @@ class Scheduler {
 					const queue = this.queues[p];
 					if (queue.size === 0) continue;
 
-					const currentQueue = Array.from(queue);
+					const items = Array.from(queue);
 					queue.clear();
 
-					for (const subscription of currentQueue) {
+					for (const subscription of items) {
 						subscription.isQueued = false;
 						if (subscription.active) {
 							const continuation = subscription.update();
 							if (continuation) {
+								subscription.isQueued = true;
 								queue.add(subscription);
 								hasMoreWork = true;
 							}

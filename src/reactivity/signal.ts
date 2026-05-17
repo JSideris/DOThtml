@@ -84,8 +84,10 @@ export default class Signal<T = any> implements IWatcher<T>{
 		for(const sub of this.subscribers.values()){
 			if ((sub as any).sync) {
 				sub.update();
-			} else if (!sub.isQueued) {
-				scheduler.enqueue(sub, priority);
+			} else {
+				if (!sub.isQueued || priority === Priority.Immediate) {
+					scheduler.enqueue(sub, priority);
+				}
 			}
 		}
 	}

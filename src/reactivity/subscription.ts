@@ -34,7 +34,7 @@ export default class Subscription{
 			this.item.updateHtml(value);
 		}
 		else if(this.item instanceof ReactiveAttr){
-			this.item.elementVdom.setAttr(this.item.attribute, this.boundReactive);
+			this.item.elementVdom.updateReactiveAttr(this.item.attribute, value as any);
 		}
 		else if(this.item instanceof VMetaNode){
 			this.item.update();

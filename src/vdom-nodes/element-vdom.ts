@@ -182,6 +182,11 @@ export default class ElementVdom extends Vdom{
 		}
 	}
 
+	updateReactiveAttr(attr: string, value: AttributeValueType){
+		if(!this.element) return;
+		this.renderAttr((attr ?? "").toLowerCase(), value, this.element);
+	}
+
 	private renderAttr(attr: string, value: AttributeValueType, node: HTMLElement){
 
 		if(attr == "ref"){
