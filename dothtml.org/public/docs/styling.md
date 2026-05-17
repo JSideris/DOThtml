@@ -442,14 +442,6 @@ dot.useStyles(`
 
 While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.
 
-If you want all updates in a test suite to be synchronous by default, you can use `dot.setSync(true)`.
+## Next Steps
 
-```javascript
-beforeEach(() => {
-  dot.setSync(true);
-});
-
-afterEach(() => {
-  dot.setSync(false);
-});
-```
+Now that your app looks great, learn how to navigate between pages with **[Routing](./routing.md)**.

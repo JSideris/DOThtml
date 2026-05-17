@@ -1,46 +1,6 @@
-# TypeScript Support
+# TypeScript Reference
 
 DOThtml is built with TypeScript from the ground up, providing a first-class developer experience with full type safety and autocompletion.
-
-## Setup
-
-When using DOThtml in a TypeScript project, you'll want to ensure your `tsconfig.json` is configured correctly to support decorators, which are a core part of the component system.
-
-### tsconfig.json
-
-```json
-{
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "strict": true
-  }
-}
-```
-
-## Defining Components
-
-The recommended way to build components in TypeScript is using the `@dot.component` decorator and extending the `DotComponent` base class.
-
-```typescript
-import { dot, DotComponent } from "dothtml";
-
-interface HelloProps {
-    name: string;
-}
-
-@dot.component
-class HelloWorld extends DotComponent<HelloProps> {
-    build(dot) {
-        return dot.h1(`Hello ${this.props.name}!`);
-    }
-}
-
-dot(document.body).mount(new HelloWorld({ name: "World" }));
-```
 
 ## Core Interfaces
 
@@ -78,3 +38,9 @@ class MyComponent extends DotComponent<MyProps, MyRefs> {
     }
 }
 ```
+
+## Next Steps
+
+Now that you've explored the TypeScript reference, learn about performance and advanced features:
+
+[Detailed Features & Performance](./detailed-features.md)

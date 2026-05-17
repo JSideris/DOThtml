@@ -8,3 +8,9 @@ Zero core dependencies. ~20kb bundle size. Plays nicely with other frameworks. D
 
 ## Fun
 DOThtml just works the way you expect it to. It does all the major stuff other modern frameworks can do (and plenty of stuff they can't) with less salt. No more XML-based markup!
+
+## Next Steps
+
+Ready to dive deeper or contribute?
+
+[Learn More & Contribute](./learn-more.md)

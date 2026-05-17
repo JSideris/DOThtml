@@ -15,15 +15,15 @@ export default class Docs extends DotComponent<DocsProps> {
 
 	private docs = [
 		{ id: "quick-start", label: "Quick Start" },
-		{ id: "typescript", label: "TypeScript" },
 		{ id: "main-features", label: "Main Features" },
-		{ id: "use-cases", label: "Use Cases" },
 		{ id: "components", label: "Components" },
 		{ id: "reactivity", label: "Reactivity" },
+		{ id: "use-cases", label: "Use Cases" },
 		{ id: "stores", label: "Stores" },
 		{ id: "refs", label: "Refs" },
-		{ id: "styling", label: "Styling" },
+		{ id: "styling", label: "Stylize & Style" },
 		{ id: "routing", label: "Routing" },
+		{ id: "typescript", label: "TypeScript Reference" },
 		{ id: "detailed-features", label: "Detailed Features" },
 		{ id: "hero-features", label: "Hero Features" },
 		{ id: "learn-more", label: "Learn More & Contribute" }

@@ -17,9 +17,24 @@ DOThtml is available via NPM.
 npm i dothtml
 ```
 
-### TypeScript Support
+### Manual TypeScript Setup
 
-DOThtml is written in TypeScript and provides built-in type definitions.
+When using DOThtml in a TypeScript project, you'll want to ensure your `tsconfig.json` is configured correctly to support decorators, which are a core part of the component system.
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true
+  }
+}
+```
+
+### Usage
 
 ```typescript
 import { dot } from "dothtml";
@@ -28,7 +43,7 @@ dot(document.body)
 .h1("Hello from TypeScript!");
 ```
 
-For more advanced TypeScript usage, including component decorators, see the [TypeScript](./typescript.md) guide.
+For more advanced TypeScript usage, including component decorators, see the [TypeScript Reference](./typescript.md) guide.
 
 ## Use via CDN
 
@@ -47,6 +62,6 @@ dot("#app")
 
 ## Next Steps
 
-Now that you have DOThtml installed, learn how to build your first component:
+Now that you have DOThtml installed, learn about the core features:
 
-[Create your first Component](./components.md)
+[Main Features](./main-features.md)

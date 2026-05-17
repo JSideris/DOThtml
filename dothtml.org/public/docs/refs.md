@@ -104,4 +104,6 @@ dot.div({
 ## Lifecycle Integration
 
 - **Mounting**: Refs are populated immediately after the element is created but before the `mounted()` lifecycle hook is called.
-- **Unmounting**: Refs are set to `null` immediately after the `unmounting()` hook is called but before the element is removed from the DOM.
+## Next Steps
+
+Now that you have access to your elements, learn how to make them look great with **[Styling](./styling.md)**.

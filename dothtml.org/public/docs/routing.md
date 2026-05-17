@@ -138,10 +138,6 @@ dot.Router.beforeEach((to, from, next) => {
 });
 ```
 
-## Performance
+## Next Steps
 
-The DOThtml router is highly optimized for performance. It caches route matching results during the build phase, ensuring that nested components and parameter resolution are extremely fast even in large applications with complex routing tables.
-
-## Scroll Restoration
-
-DOThtml automatically manages scroll positions. When navigating to a new page, it scrolls to the top. When using the back/forward buttons, it restores the previous scroll position. It also supports scrolling to elements via the URL hash.
+Finally, check out the **[TypeScript Reference](./typescript.md)** for advanced type safety and core interfaces.

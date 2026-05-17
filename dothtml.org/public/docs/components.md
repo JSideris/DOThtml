@@ -219,4 +219,6 @@ class ThemeableComponent {
 
 By using `hostStyle` to update a CSS variable, you avoid re-calling the `build()` method for purely visual changes, leading to much better performance in complex applications.
 
-For more advanced styling options, including global styles, performance optimizations, and **testing tips**, see the [Styling](./styling.md) documentation.
+## Next Steps
+
+Now that you've learned about components, see how to make them interactive with **[Reactivity](./reactivity.md)**.

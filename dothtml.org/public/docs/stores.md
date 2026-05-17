@@ -107,4 +107,6 @@ dot.stores.counter.increment();
 1. **Keep State Flat**: Avoid deeply nested objects in `state()` if possible, as it makes reactivity easier to manage.
 2. **Use Getters for Derivations**: Don't manually calculate values in your components; move that logic into store getters.
 3. **Actions for Logic**: Keep your components focused on UI and move business logic into store actions.
-4. **Unique IDs**: Always use a unique, descriptive string for your store `id` to avoid collisions in the global registry.
+## Next Steps
+
+Now that you can manage state, learn how to get direct access to elements with **[Refs](./refs.md)**.

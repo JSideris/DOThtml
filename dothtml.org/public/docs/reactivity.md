@@ -109,4 +109,6 @@ const theme = dot.state("dark");
 dot.css.variable("theme-mode", theme);
 ```
 
-For more details on high-performance styling patterns and the `.v()` helper, see the [Styling](./styling.md) documentation.
+## Next Steps
+
+Now that you understand reactivity, see some real-world **[Use Cases](./use-cases.md)** for DOThtml.
