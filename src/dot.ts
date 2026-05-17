@@ -263,6 +263,7 @@ const makeDot = ()=>{
 	}
 
 	_dot.component = component;
+	_dot.getCurrentComponent = getCurrentComponent;
 
 	_dot.store = createStore;
 	_dot.getStore = getStore;
@@ -272,7 +273,9 @@ const makeDot = ()=>{
 	_dot.create = function<T extends IDotComponent>(Ctor: { new(...args: any[]): T }, ...args: any[]): T {
 		const tracker = {
 			computedSignals: [],
-			registerComputed(w: any) { this.computedSignals.push(w); }
+			disposables: [],
+			registerComputed(w: any) { this.computedSignals.push(w); },
+			registerDisposable(d: any) { this.disposables.push(d); }
 		};
 		pushComponent(tracker as any);
 		let instance: T;
@@ -281,7 +284,19 @@ const makeDot = ()=>{
 		} finally {
 			popComponent();
 		}
-		(instance as any)._trackedComputeds = tracker.computedSignals;
+
+		if ((instance as any)._trackedComputeds) {
+			(instance as any)._trackedComputeds.push(...tracker.computedSignals);
+		} else {
+			(instance as any)._trackedComputeds = tracker.computedSignals;
+		}
+
+		if ((instance as any)._trackedDisposables) {
+			(instance as any)._trackedDisposables.push(...tracker.disposables);
+		} else {
+			(instance as any)._trackedDisposables = tracker.disposables;
+		}
+
 		return instance;
 	}
 

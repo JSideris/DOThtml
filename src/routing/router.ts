@@ -119,11 +119,11 @@ export const Router = dot.component(
 		};
 
 		props: any;
-		private resolvedComponent = dot.state<any>(null);
-		private currentMatch: { route: RouteDefinition, params: Record<string, string>, matchedPath: string } | null = null;
-		private lastPath = "";
-		private subId: number = -1;
-		private loaderCache = new Map<any, any>();
+		resolvedComponent = dot.state<any>(null);
+		currentMatch: { route: RouteDefinition, params: Record<string, string>, matchedPath: string } | null = null;
+		lastPath = "";
+		subId: number = -1;
+		loaderCache = new Map<any, any>();
 
 		mounting() {
 			this.subId = currentPath.subscribe(() => {

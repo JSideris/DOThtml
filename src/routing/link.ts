@@ -18,7 +18,7 @@ export const Link = dot.component(
 		props: any;
 		slots: any;
 
-		private getResolvedPath() {
+		getResolvedPath() {
 			if (this.props.name) {
 				return generatePath(getGlobalRoutes(), this.props.name, this.props.params) || "";
 			}
