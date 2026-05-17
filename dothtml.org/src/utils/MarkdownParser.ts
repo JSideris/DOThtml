@@ -40,8 +40,8 @@ export default class MarkdownParser {
 				lines = lines.map((line) => line.substring(Math.min(line.length, minIndent)));
 			}
 
-			const escapedCode = this.escapeHtml(lines.join("\n").trim());
-			const highlightedCode = this.highlight(escapedCode, lang);
+			const rawCode = lines.join("\n").trim();
+			const highlightedCode = this.highlight(rawCode, lang);
 			codeBlocks.push(`<pre><code${languageClass}>${highlightedCode}</code></pre>`);
 			return `${indent}:::CB-ID-${index}:::`;
 		});
@@ -277,7 +277,7 @@ export default class MarkdownParser {
 
 	public static highlight(code: string, lang?: string): string {
 		if (lang !== "ts" && lang !== "js" && lang !== "javascript" && lang !== "typescript") {
-			return code;
+			return this.escapeHtml(code);
 		}
 
 		const tokens: string[] = [];
@@ -285,23 +285,28 @@ export default class MarkdownParser {
 		// 1. Protect strings and comments by replacing them with placeholders
 		let highlighted = code
 			.replace(/(".*?"|'.*?'|`[\s\S]*?`|(\/\/.*$|\/\*[\s\S]*?\*\/))/gm, (match) => {
-				const id = `:::TOKEN-${tokens.length}:::`;
+				const id = `__TOKEN_${tokens.length}__`;
 				// Determine if it's a string or a comment for later styling
 				const className = (match.startsWith("//") || match.startsWith("/*")) ? "token-comment" : "token-string";
-				tokens.push(`<span class="${className}">${match}</span>`);
+				// Escape the content of the string/comment
+				const escapedMatch = this.escapeHtml(match);
+				tokens.push(`<span class="${className}">${escapedMatch}</span>`);
 				return id;
 			});
 
-		// 2. Now it's safe to highlight keywords, types, and functions
+		// 2. Escape the remaining code (which now contains placeholders)
+		highlighted = this.escapeHtml(highlighted);
+
+		// 3. Now it's safe to highlight keywords, types, and functions
 		highlighted = highlighted
 			.replace(/\b(const|let|var|function|class|extends|export|import|from|return|if|else|for|while|new|this|async|await|static|private|public|protected|get|set|type|interface|as)\b/g, '<span class="token-keyword">$1</span>')
 			.replace(/\b(string|number|boolean|any|void|never|unknown|Record|Map|Set|Array|Promise)\b/g, '<span class="token-type">$1</span>')
 			.replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
 			.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, '<span class="token-function">$1</span>');
 
-		// 3. Restore the protected strings and comments
+		// 4. Restore the protected strings and comments
 		tokens.forEach((tokenHtml, i) => {
-			highlighted = highlighted.split(`:::TOKEN-${i}:::`).join(tokenHtml);
+			highlighted = highlighted.split(`__TOKEN_${i}__`).join(tokenHtml);
 		});
 
 		return highlighted;
