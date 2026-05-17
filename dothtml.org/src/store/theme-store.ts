@@ -38,14 +38,15 @@ export const useThemeStore = dot.store({
 		background: "#050505",
 		surface: "#0a0a0a",
 		surfaceLight: "#151515",
-		primary: "#ff9800", // DOThtml Orange
-		secondary: "#00f2ff", // Cyber Cyan
+		primary: "#3ca05a", // Forest Green
+		secondary: "#e080c0", // Brighter Complementary Purple
 		text: "#ffffff",
 		textDim: "#a0a0a0",
 		glassBackground: "rgba(10, 10, 10, 0.7)",
 		glassBorder: "rgba(255, 255, 255, 0.1)",
 		isDarkMode: true,
-		isCycling: false
+		isCycling: false,
+		isGlowing: true
 	}),
 	actions: {
 		setPrimary(color: string) {
@@ -65,12 +66,43 @@ export const useThemeStore = dot.store({
 				if (!this.isCycling.value) return;
 				hue = (hue + 1) % 360;
 				let pVal = hslToHex(hue, 100, 50);
-				let sVal = hslToHex((hue + 180) % 360, 100, 50);
+				let sVal = hslToHex((hue + 180) % 360, 100, 80); // Brighter secondary in cycle
 				this.primary.value = pVal;
 				this.secondary.value = sVal;
 				requestAnimationFrame(cycle);
 			};
 			requestAnimationFrame(cycle);
+		},
+		startGlowing() {
+			const baseR = 60;
+			const baseG = 160;
+			const baseB = 90;
+			
+			// Frequencies that don't resonate easily
+			const freqR = 0.0007;
+			const freqG = 0.0011;
+			const freqB = 0.0013;
+			
+			const glow = () => {
+				if (!this.isGlowing.value) return;
+				
+				const t = Date.now();
+				
+				// ±15% oscillation
+				const r = Math.round(baseR + baseR * 0.15 * Math.sin(t * freqR));
+				const g = Math.round(baseG + baseG * 0.15 * Math.sin(t * freqG));
+				const b = Math.round(baseB + baseB * 0.15 * Math.sin(t * freqB));
+				
+				const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+				this.primary.value = hex;
+				
+				// Keep secondary complementary but brighter and more saturated
+				const hsl = hexToHsl(hex);
+				this.secondary.value = hslToHex((hsl.h + 180) % 360, Math.min(hsl.s + 20, 100), Math.max(hsl.l + 30, 75));
+				
+				requestAnimationFrame(glow);
+			};
+			requestAnimationFrame(glow);
 		}
 	},
 	getters: {

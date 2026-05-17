@@ -15,6 +15,18 @@ export default class LargeLogoPart implements IDotComponent {
 	private mouseX = dot.state(0);
 	private mouseY = dot.state(0);
 
+	private orbiter1Transform = dot.computed(() => 
+		`rotateX(60deg) rotateY(60deg) translate3d(${this.orbiter1.x.value}px, ${this.orbiter1.y.value}px, 0px) rotateY(-60deg) rotateX(-60deg)`
+	);
+
+	private orbiter2Transform = dot.computed(() => 
+		`rotateX(-60deg) rotateY(50deg) translate3d(${this.orbiter2.x.value}px, ${this.orbiter2.y.value}px, 0px) rotateY(-50deg) rotateX(60deg)`
+	);
+
+	private logoTransform = dot.computed(() => 
+		`rotateY(${this.mouseX.value}deg) rotateX(${-this.mouseY.value}deg)`
+	);
+
 	mounted(): void {
 		this.animate();
 		window.addEventListener("mousemove", (e) => {
@@ -41,7 +53,7 @@ export default class LargeLogoPart implements IDotComponent {
 		let r = a * (1 - e * e) / (1 + e * Math.cos(trueAnomaly));
 		out.x.setValue(r * Math.cos(trueAnomaly));
 		out.y.setValue(r * Math.sin(trueAnomaly));
-		out.z.setValue(out.y.value > 0 ? 0 : 3);
+		out.z.setValue(0);
 	}
 
 	stylize(s: any) {
@@ -60,16 +72,19 @@ export default class LargeLogoPart implements IDotComponent {
 			.letterSpacingPx(-5)
 			.position("relative")
 			.userSelect("none")
+			.transformStyle("preserve-3d")
 		).class("dot-text", d => d
 			.color(s.v("primary"))
 			.textShadow(theme.primary.bindAs(p => `0 0 30px ${p}4d`))
 			.display("flex")
 			.alignItems("center")
+			.transformStyle("preserve-3d")
 		).class("o-wrapper", o => o
 			.position("relative")
 			.display("inline-flex")
 			.alignItems("center")
 			.justifyContent("center")
+			.transformStyle("preserve-3d")
 		).class("html-text", h => h
 			.color(s.v("text"))
 		).class("orbiter", o => o
@@ -78,7 +93,7 @@ export default class LargeLogoPart implements IDotComponent {
 			.heightPx(12)
 			.backgroundColor(s.v("secondary"))
 			.borderRadiusP(50)
-			.boxShadow(`0 0 15px ${s.v("secondary")}`)
+			.boxShadow(`0 0 20px ${s.v("secondary")}, 0 0 40px ${s.v("secondary")}66`)
 			.display("flex")
 			.alignItems("center")
 			.justifyContent("center")
@@ -104,45 +119,24 @@ export default class LargeLogoPart implements IDotComponent {
 		return dot.div({ class: "logo-container" },
 			dot.div({ 
 				class: "logo-main",
-				style: s => s.transform({
-					rotateY: this.mouseX.bindAs(x => `${x}deg`),
-					rotateX: this.mouseY.bindAs(y => `${-y}deg`)
-				})
+				style: s => s.transform(this.logoTransform)
 			},
 				dot.span({ class: "dot-text" }, 
-					"D",
+					dot.span({ style: s => s.transform(t => t.translateZ("1px")) }, "D"),
 					dot.span({ class: "o-wrapper" }, 
-						"O",
+						dot.span({ style: s => s.transform(t => t.translateZ("1px")) }, "O"),
 						dot.div({
 							class: "orbiter",
-							style: s => s
-								.zIndex(this.orbiter1.z)
-								.transform({
-									rotateX: "60deg",
-									rotateY: "60deg",
-									translateX: this.orbiter1.x.bindAs(x => `${x}px`),
-									translateY: this.orbiter1.y.bindAs(y => `${y}px`),
-									rotateY_2: "-60deg",
-									rotateX_2: "-60deg"
-								})
+							style: s => s.transform(this.orbiter1Transform)
 						}),
 						dot.div({
 							class: "orbiter",
-							style: s => s
-								.zIndex(this.orbiter2.z)
-								.transform({
-									rotateX: "-60deg",
-									rotateY: "50deg",
-									translateX: this.orbiter2.x.bindAs(x => `${x}px`),
-									translateY: this.orbiter2.y.bindAs(y => `${y}px`),
-									rotateY_2: "-50deg",
-									rotateX_2: "60deg"
-								})
+							style: s => s.transform(this.orbiter2Transform)
 						})
 					),
-					"T"
+					dot.span({ style: s => s.transform(t => t.translateZ("1px")) }, "T")
 				),
-				dot.span({ class: "html-text" }, "html")
+				dot.span({ class: "html-text", style: s => s.transform(t => t.translateZ("1px")) }, "html")
 			),
 			dot.div({ class: "tagline" }, "Redefine web development.")
 		);
