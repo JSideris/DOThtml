@@ -280,14 +280,31 @@ export default class MarkdownParser {
 			return code;
 		}
 
-		// Simple regex-based syntax highlighting
-		return code
+		const tokens: string[] = [];
+		
+		// 1. Protect strings and comments by replacing them with placeholders
+		let highlighted = code
+			.replace(/(".*?"|'.*?'|`[\s\S]*?`|(\/\/.*$|\/\*[\s\S]*?\*\/))/gm, (match) => {
+				const id = `:::TOKEN-${tokens.length}:::`;
+				// Determine if it's a string or a comment for later styling
+				const className = (match.startsWith("//") || match.startsWith("/*")) ? "token-comment" : "token-string";
+				tokens.push(`<span class="${className}">${match}</span>`);
+				return id;
+			});
+
+		// 2. Now it's safe to highlight keywords, types, and functions
+		highlighted = highlighted
 			.replace(/\b(const|let|var|function|class|extends|export|import|from|return|if|else|for|while|new|this|async|await|static|private|public|protected|get|set|type|interface|as)\b/g, '<span class="token-keyword">$1</span>')
 			.replace(/\b(string|number|boolean|any|void|never|unknown|Record|Map|Set|Array|Promise)\b/g, '<span class="token-type">$1</span>')
-			.replace(/(".*?"|'.*?'|`[\s\S]*?`)/g, '<span class="token-string">$1</span>')
 			.replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
-			.replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, '<span class="token-comment">$1</span>')
 			.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, '<span class="token-function">$1</span>');
+
+		// 3. Restore the protected strings and comments
+		tokens.forEach((tokenHtml, i) => {
+			highlighted = highlighted.split(`:::TOKEN-${i}:::`).join(tokenHtml);
+		});
+
+		return highlighted;
 	}
 
 	private static escapeHtml(text: string): string {

@@ -1,19 +1,5 @@
 # Quick Start & Installation
 
-## Use via CDN
-
-If you want to use DOThtml without a build step, you can include it via a script tag:
-
-```html
-<script src="https://unpkg.com/dothtml@latest/build_umd/dothtml.js"></script>
-```
-
-This will expose a global `dot` object that you can use immediately:
-
-```javascript
-dot("#app").div("Ready to go!");
-```
-
 ## Start Something New in TypeScript
 
 ```bash
@@ -33,17 +19,34 @@ npm i dothtml
 
 ### TypeScript Support
 
-DOThtml is written in TypeScript and provides built-in type definitions. All core interfaces and base classes (like `DotComponent`, `IReactive`, etc.) are exported directly from the `dothtml` package.
+DOThtml is written in TypeScript and provides built-in type definitions.
 
 ```typescript
-import { dot, DotComponent } from "dothtml";
+import { dot } from "dothtml";
 
-@dot.component
-class HelloWorld extends DotComponent {
-    build(dot) {
-        return dot.h1("Hello World!");
-    }
-}
-
-dot(document.body).mount(new HelloWorld());
+dot(document.body)
+.h1("Hello from TypeScript!");
 ```
+
+For more advanced TypeScript usage, including component decorators, see the [TypeScript](./typescript.md) guide.
+
+## Use via CDN
+
+If you want to use DOThtml without a build step, you can include it via a script tag:
+
+```html
+<script src="https://unpkg.com/dothtml@latest/build_umd/dothtml.js"></script>
+```
+
+This will expose a global `dot` object that you can use immediately:
+
+```javascript
+dot("#app")
+.div("Ready to go!");
+```
+
+## Next Steps
+
+Now that you have DOThtml installed, learn how to build your first component:
+
+[Create your first Component](./components.md)
