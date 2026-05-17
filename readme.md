@@ -24,9 +24,8 @@ Special thanks to [dosy](https://www.npmjs.com/~dosy) for giving me the module o
 ## CSS
 The Style builder is powerful and useful, but still not fully developed. Consider importing stylesheets separately if affected by any of the below limitations.
 - Pseudo selectors like :hover aren't supported by the style builder since there's no straightforward way to set them in JavaScript in a neat way that supports component isolation.
-- Animations kind of broke when merging DOTcss in, and don't support the increased complexity which is now allowed.
 - All length properties take a single value. Two and four argument lengths (for things like margin) are not yet supported. 
 - A lot of CSS properties don't enforce proper typing and will allow any string. This is a WIP and will naturally get better over time.
-- CSS @ rules like @keyframes, @font-face, etc are currently not supported because they are currently not configurable in JavaScript. A workaround that generates dynamic CSS is planned.
+- CSS @font-face is not yet supported in the style builder. Use `dot.useGlobalStyles()` or external stylesheets for custom fonts.
 
 - Support for header elements (including stylesheets) is planned.

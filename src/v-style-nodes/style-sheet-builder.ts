@@ -7,11 +7,15 @@ import Computed from "../reactivity/computed";
 import CssFunctionBuilderVStyle from "./css-function-builder-v-style";
 import FilterVStyle from "./filter-v-style";
 import TransformVStyle from "./transform-v-style";
+import KeyframesBuilder from "./keyframes-builder";
 
 
 type StyleRule = 
 	| { type: "rule", selector: string, style: BaseVStyle }
-	| { type: "media", condition: string, builder: StyleSheetBuilder };
+	| { type: "media", condition: string, builder: StyleSheetBuilder }
+	| { type: "container", condition: string, builder: StyleSheetBuilder }
+	| { type: "supports", condition: string, builder: StyleSheetBuilder }
+	| { type: "keyframes", name: string, builder: KeyframesBuilder };
 
 export default class StyleSheetBuilder {
 	private rules: Array<StyleRule> = [];
@@ -64,6 +68,27 @@ export default class StyleSheetBuilder {
 		return this;
 	}
 
+	container(condition: string, callback: (s: StyleSheetBuilder) => void) {
+		const builder = new StyleSheetBuilder();
+		callback(builder);
+		this.rules.push({ type: "container", condition, builder });
+		return this;
+	}
+
+	supports(condition: string, callback: (s: StyleSheetBuilder) => void) {
+		const builder = new StyleSheetBuilder();
+		callback(builder);
+		this.rules.push({ type: "supports", condition, builder });
+		return this;
+	}
+
+	keyframes(name: string, callback: (k: KeyframesBuilder) => void) {
+		const builder = new KeyframesBuilder(this);
+		callback(builder);
+		this.rules.push({ type: "keyframes", name, builder });
+		return this;
+	}
+
 	/**
 	 * Returns a CSS variable reference string.
 	 * @param name The name of the variable (e.g., "my-color" or "--my-color").
@@ -74,105 +99,112 @@ export default class StyleSheetBuilder {
 		return `var(${name})`;
 	}
 
+	formatPropsForBlock(style: BaseVStyle): string {
+		return style.getProps().map(p => {
+			const registered = cssProps[p.prop];
+			let cssProp = p.prop;
+			let cssValue = p.value;
+
+			if (typeof cssValue === "object" && cssValue !== null && !(cssValue instanceof CssFunctionBuilderVStyle) && !(cssValue instanceof Signal) && !(cssValue instanceof Binding)) {
+				let builder: CssFunctionBuilderVStyle;
+				switch (p.prop) {
+					case "filter": {
+						builder = new FilterVStyle(p.prop);
+						break;
+					}
+					case "transform": {
+						builder = new TransformVStyle(p.prop);
+						break;
+					}
+				}
+
+				if (builder) {
+					let funcArray = Array.isArray(cssValue) ? cssValue : [cssValue];
+					for (let funcValue of funcArray) {
+						for (let k in funcValue) {
+							let v = funcValue[k];
+							let methodKey = k.replace(/_\d+$/, "");
+							if (typeof builder[methodKey] === "function") {
+								if (Array.isArray(v)) {
+									builder[methodKey](...v);
+								} else {
+									builder[methodKey](v);
+								}
+							}
+						}
+					}
+					cssValue = builder;
+				}
+			}
+
+			if (cssValue instanceof Signal || cssValue instanceof Binding || cssValue instanceof CssFunctionBuilderVStyle) {
+				let isReactive = cssValue instanceof Signal || cssValue instanceof Binding;
+				if (cssValue instanceof CssFunctionBuilderVStyle) {
+					for (const f of cssValue.funcs) {
+						for (const arg of f.args) {
+							if ((arg as any).v instanceof Signal || (arg as any).v instanceof Binding || arg instanceof Signal || arg instanceof Binding) {
+								isReactive = true;
+								break;
+							}
+						}
+						if (isReactive) break;
+					}
+				}
+
+				if (isReactive) {
+					const varName = `--dh-v${++this.varCounter}`;
+					const reactiveSource = cssValue;
+					let reactiveValue: any = cssValue;
+
+					if (registered && (registered.type === "length" || registered.type === "hybrid") && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
+						reactiveValue = new Computed(() => {
+							const val = reactiveSource instanceof Binding ? reactiveSource._get() : (reactiveSource as any).value;
+							if (typeof val === "number") {
+								return formatCssLength(val, registered.unit);
+							}
+							return val;
+						});
+					} else if (reactiveSource instanceof CssFunctionBuilderVStyle) {
+						reactiveValue = new Computed(() => reactiveSource.toString());
+					}
+
+					this.ghostVars.push({ name: varName, value: reactiveValue as any });
+					cssValue = `var(${varName})`;
+				}
+			}
+
+			if (registered) {
+				cssProp = registered.cssName;
+				if ((registered.type === "length" || registered.type === "hybrid") && typeof p.value === "number") {
+					if (registered.type === "hybrid" && registered.unit === undefined) {
+						// Leave as unitless number
+					} else {
+						cssValue = formatCssLength(p.value, registered.unit);
+					}
+				} else if (registered.unit && typeof p.value === "number") {
+					cssValue = `${p.value}${registered.unit}`;
+				}
+			}
+			return `${cssProp}: ${cssValue};`;
+		}).join(" ");
+	}
+
 	toString(indent: string = "") {
 		return this.rules.map(r => {
 			if (r.type === "media") {
 				return `${indent}@media ${r.condition} {\n${r.builder.toString(indent + "  ")}\n${indent}}`;
 			}
+			if (r.type === "container") {
+				return `${indent}@container ${r.condition} {\n${r.builder.toString(indent + "  ")}\n${indent}}`;
+			}
+			if (r.type === "supports") {
+				return `${indent}@supports ${r.condition} {\n${r.builder.toString(indent + "  ")}\n${indent}}`;
+			}
+			if (r.type === "keyframes") {
+				return `${indent}@keyframes ${r.name} {\n${r.builder.toString(indent + "  ")}\n${indent}}`;
+			}
 
-			const props = r.style.getProps().map(p => {
-				const registered = cssProps[p.prop];
-				let cssProp = p.prop;
-				let cssValue = p.value;
-
-				if (typeof cssValue === "object" && cssValue !== null && !(cssValue instanceof CssFunctionBuilderVStyle) && !(cssValue instanceof Signal) && !(cssValue instanceof Binding)) {
-					// Handle nested builders like filter: { blur: 5 }
-					let builder: CssFunctionBuilderVStyle;
-					switch (p.prop) {
-						case "filter": {
-							builder = new FilterVStyle(p.prop);
-							break;
-						}
-						case "transform": {
-							builder = new TransformVStyle(p.prop);
-							break;
-						}
-					}
-
-					if (builder) {
-						let funcArray = Array.isArray(cssValue) ? cssValue : [cssValue];
-						for (let funcValue of funcArray) {
-							for (let k in funcValue) {
-								let v = funcValue[k];
-								let methodKey = k.replace(/_\d+$/, "");
-								if (typeof builder[methodKey] === "function") {
-									if (Array.isArray(v)) {
-										builder[methodKey](...v);
-									} else {
-										builder[methodKey](v);
-									}
-								}
-							}
-						}
-						cssValue = builder;
-					}
-				}
-
-				if (cssValue instanceof Signal || cssValue instanceof Binding || cssValue instanceof CssFunctionBuilderVStyle) {
-					// Check if it's actually reactive (CssFunctionBuilderVStyle might not be)
-					let isReactive = cssValue instanceof Signal || cssValue instanceof Binding;
-					if (cssValue instanceof CssFunctionBuilderVStyle) {
-						for (const f of cssValue.funcs) {
-							for (const arg of f.args) {
-								if ((arg as any).v instanceof Signal || (arg as any).v instanceof Binding || arg instanceof Signal || arg instanceof Binding) {
-									isReactive = true;
-									break;
-								}
-							}
-							if (isReactive) break;
-						}
-					}
-
-					if (isReactive) {
-						const varName = `--dh-v${++this.varCounter}`;
-						const reactiveSource = cssValue;
-						let reactiveValue: any = cssValue;
-
-						// If it's a length property and we have a number signal, wrap it to add units.
-						if (registered && (registered.type === "length" || registered.type === "hybrid") && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
-							reactiveValue = new Computed(() => {
-								const val = reactiveSource instanceof Binding ? reactiveSource._get() : (reactiveSource as any).value;
-								if (typeof val === "number") {
-									return formatCssLength(val, registered.unit);
-								}
-								return val;
-							});
-						} else if (reactiveSource instanceof CssFunctionBuilderVStyle) {
-							reactiveValue = new Computed(() => {
-								const val = reactiveSource.toString();
-								return val;
-							});
-						}
-
-						this.ghostVars.push({ name: varName, value: reactiveValue as any });
-						cssValue = `var(${varName})`;
-					}
-				}
-
-				if (registered) {
-					cssProp = registered.cssName;
-					if ((registered.type === "length" || registered.type === "hybrid") && typeof p.value === "number") {
-						if (registered.type === "hybrid" && registered.unit === undefined) {
-							// Leave as unitless number
-						} else {
-							cssValue = formatCssLength(p.value, registered.unit);
-						}
-					} else if (registered.unit && typeof p.value === "number") {
-						cssValue = `${p.value}${registered.unit}`;
-					}
-				}
-				return `${cssProp}: ${cssValue};`;
-			}).join(" ");
+			const props = this.formatPropsForBlock(r.style);
 			return `${indent}${r.selector} { ${props} }`;
 		}).join("\n");
 	}
@@ -190,7 +222,7 @@ export default class StyleSheetBuilder {
 			}
 		}
 		for (const r of this.rules) {
-			if (r.type === "media") {
+			if (r.type === "media" || r.type === "container" || r.type === "supports") {
 				r.builder.dispose();
 			}
 		}

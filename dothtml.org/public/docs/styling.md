@@ -167,6 +167,67 @@ Media queries in DOThtml are:
 - **Scoped**: Just like other styles in `stylize()`, they are scoped to the component's shadow root.
 - **Nested**: You can even nest media queries if needed.
 
+## Keyframe Animations
+
+Define reusable animations in `stylize()` with `.keyframes()`. Use `.from()`, `.to()`, and `.at()` for keyframe steps:
+
+```javascript
+stylize(s) {
+  return s.class("pulse", p => p
+    .animationName("pulse")
+    .animationDurationS(2)
+    .animationIterationCount("infinite")
+  ).keyframes("pulse", k => k
+    .from(f => f.opacity(0.4))
+    .to(t => t.opacity(1))
+  );
+}
+```
+
+For multi-step animations:
+
+```javascript
+.keyframes("bounce", k => k
+  .at(0, s => s.transform({ translateY: 0 }))
+  .at(50, s => s.transform({ translateY: -20 }))
+  .at("100%", s => s.transform({ translateY: 0 }))
+)
+```
+
+## Container Queries
+
+Container queries let a component respond to its **parent's** size instead of the viewport. Set `container-type` on a host, then use `.container()`:
+
+```javascript
+stylize(s) {
+  return s.class("card-host", h => h.containerType("inline-size"))
+    .container("(min-width: 400px)", c => c
+      .class("card", card => card.flexDirection("row"))
+    );
+}
+```
+
+Named containers:
+
+```javascript
+.class("sidebar", s => s.containerName("sidebar").containerType("inline-size"))
+.container("sidebar (min-width: 300px)", c => c
+  .class("nav", n => n.display("flex"))
+)
+```
+
+## Feature Queries (`@supports`)
+
+Use `.supports()` for progressive enhancement when a CSS feature may be unavailable:
+
+```javascript
+stylize(s) {
+  return s.supports("(display: grid)", sup => sup
+    .class("layout", l => l.display("grid"))
+  ).class("layout", l => l.display("flex")); // fallback
+}
+```
+
 ## Global Reactive Variables
 
 DOThtml provides a global `dot.css` builder that is automatically bound to the document root (`<html>`). This is the recommended way to handle application-wide theming.

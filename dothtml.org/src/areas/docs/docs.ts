@@ -28,7 +28,7 @@ export default class Docs implements IDotComponent {
 			.display("flex")
 			.minHeightPx(800)
 			.paddingPx(100, 40, 40, 40)
-			.maxWidthPx(1400)
+			.maxWidthPx(1450)
 			.marginPx(0, "auto")
 			.gapPx(40)
 			.position("relative")
