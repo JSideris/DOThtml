@@ -1,5 +1,4 @@
-import { dot } from "dothtml";
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, IDotComponent } from "dothtml";
 import TerminalWidget from "../../../../components/ui/terminal-widget";
 
 @dot.component

@@ -4,9 +4,22 @@ Components are the building blocks of DOThtml applications. They are defined as 
 
 ## Basic Structure
 
+### JavaScript
 ```javascript
 class MyComponent {
     build(dot) {
+        return dot.div("Hello World");
+    }
+}
+```
+
+### TypeScript
+```typescript
+import { dot, IDotComponent } from "dothtml";
+
+@dot.component
+class MyComponent implements IDotComponent {
+    build() {
         return dot.div("Hello World");
     }
 }

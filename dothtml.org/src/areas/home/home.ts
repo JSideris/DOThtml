@@ -1,5 +1,4 @@
-import { dot } from "dothtml"
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, IDotComponent } from "dothtml"
 import HeroSection from "./sections/hero-section/hero-section";
 import GetDot from "./sections/get-dot/get-dot";
 import MainCodeSample from "./sections/main-code-sample/main-code-sample";

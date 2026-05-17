@@ -1,5 +1,4 @@
-import dot from "../../src/dot";
-import { IDotComponent, IDotCore } from "dothtml-interfaces";
+import { dot, IDotComponent, IDotCore } from "../../src";
 import formatHTML from "./formatHTML";
 import Signal from "../../src/reactivity/signal";
 

@@ -1,5 +1,4 @@
-import { dot } from "dothtml";
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, IDotComponent } from "dothtml";
 
 @dot.component
 export default class SmallLogo implements IDotComponent {

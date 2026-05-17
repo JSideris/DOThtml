@@ -1,7 +1,6 @@
-import { dot } from "../../src";
+import { dot, IDotComponent, IDotDocument } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
-import { IDotComponent, IDotDocument } from "dothtml-interfaces";
 
 afterEach(() => { 
 	const root = document.body[DOT_VDOM_PROP_NAME];

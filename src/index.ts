@@ -1,6 +1,5 @@
 
-// TODO: this is failing but it isn't a high priority right now.
-// export * from "dothtml-interfaces";
+export type * from "dothtml-interfaces";
 
 import dot from "./dot";
 import { Priority } from "./reactivity/priority";

@@ -1,5 +1,4 @@
-import { FrameworkItems, IDotComponent, IDotCss, IDotDocument, IReactive } from "dothtml-interfaces";
-import { dot } from "../../src";
+import { dot, FrameworkItems, IDotComponent, IDotCss, IDotDocument, IReactive } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 import formatHTML from "./formatHTML";
 

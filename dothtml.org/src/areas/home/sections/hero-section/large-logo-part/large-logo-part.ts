@@ -1,5 +1,4 @@
-import { dot } from "dothtml";
-import { IDotComponent, IReactive } from "dothtml-interfaces";
+import { dot, IDotComponent, IReactive } from "dothtml";
 import { theme } from "../../../../../store/theme-store";
 
 type Orbiter = {

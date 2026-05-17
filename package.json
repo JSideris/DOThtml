@@ -54,6 +54,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "dothtml-interfaces": "^0.4.6"
+    "dothtml-interfaces": "file:../DOThtml-interfaces"
   }
 }

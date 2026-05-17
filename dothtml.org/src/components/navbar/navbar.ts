@@ -1,5 +1,4 @@
-import { dot } from "dothtml";
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, IDotComponent } from "dothtml";
 import NavBtn from "./nav-btn/nav-btn";
 import SmallLogo from "../small-logo/small-logo";
 

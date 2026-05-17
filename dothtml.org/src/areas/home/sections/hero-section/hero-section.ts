@@ -1,5 +1,4 @@
-import { dot } from "dothtml";
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, IDotComponent } from "dothtml";
 import LargeLogoPart from "./large-logo-part/large-logo-part";
 import QuickStartPart from "./quick-start-part/quick-start-part";
 import HeroFeaturesPart from "./hero-features-part/hero-features-part";

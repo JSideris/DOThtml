@@ -17,7 +17,6 @@
     "vite": "^8.0.13"
   },
   "dependencies": {
-    "dothtml": "^6.0.0-beta.46",
-    "dothtml-interfaces": "^0.4.6"
+    "dothtml": "file:.."
   }
 }

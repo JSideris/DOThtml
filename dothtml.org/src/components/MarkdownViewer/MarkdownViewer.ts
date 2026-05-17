@@ -1,5 +1,4 @@
-import { dot, Priority } from "dothtml";
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, Priority, IDotComponent } from "dothtml";
 import MarkdownParser from "../../utils/MarkdownParser";
 
 @dot.component

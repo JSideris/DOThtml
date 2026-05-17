@@ -1,5 +1,4 @@
-import { dot } from "dothtml";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { dot, FrameworkItems, IDotComponent } from "dothtml";
 
 
 let data = [

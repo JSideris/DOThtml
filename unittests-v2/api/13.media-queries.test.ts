@@ -1,5 +1,4 @@
-import { FrameworkItems, IDotComponent, IDotDocument } from "dothtml-interfaces";
-import { dot } from "../../src";
+import { dot, FrameworkItems, IDotComponent, IDotDocument } from "../../src";
 import StyleSheetBuilder from "../../src/v-style-nodes/style-sheet-builder";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 

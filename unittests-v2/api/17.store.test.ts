@@ -1,5 +1,4 @@
-import { dot } from "../../src";
-import { IDotComponent } from "dothtml-interfaces";
+import { dot, IDotComponent } from "../../src";
 import formatHTML from "./formatHTML";
 
 afterEach(() => { 

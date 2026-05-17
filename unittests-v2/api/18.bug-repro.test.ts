@@ -1,5 +1,4 @@
-import { dot } from "../../src";
-import { FrameworkItems, IDotComponent } from "dothtml-interfaces";
+import { dot, FrameworkItems, IDotComponent } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 
 afterEach(() => { 

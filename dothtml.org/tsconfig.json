@@ -46,6 +46,10 @@
 		//	 "*": ["../../../src/"], // This mapping is relative to "baseUrl"
 		// },
 		"useDefineForClassFields": false, // Important. Without this default values of undefined are auto-assigned after the factory setter.
+		"baseUrl": ".",
+		"paths": {
+			"dothtml": ["../src/index.ts"]
+		}
 	},
 
 	"include": [
