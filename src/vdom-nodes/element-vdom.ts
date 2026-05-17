@@ -223,7 +223,7 @@ export default class ElementVdom extends Vdom{
 			this.attributeObserverIds.push({id: id, observable: value});
 
 			// If it's a value prop, update the observable on change.
-			if(attr == "value" || attr == "checked"){
+			if((attr == "value" || attr == "checked") && value.isWritable){
 				let timeout = null;
 				if(!this.inputListener){
 					this.inputListener = (e)=>{

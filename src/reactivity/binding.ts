@@ -9,6 +9,10 @@ export default class Binding<T = any, Td = T> implements IBinding<T, Td> {
 		read?: (v: string)=>T;
 	}
 
+	get isWritable(): boolean {
+		return (this._source as any).isWritable && (!this._transform || !!this._transform.read);
+	}
+
 	get value(): Td {
 		return this._get();
 	}

@@ -56,6 +56,10 @@ export default class Signal<T = any> implements IWatcher<T>{
 
 	subscribers: Record<number, Subscription> = {};
 
+	get isWritable(): boolean {
+		return true;
+	}
+
 	constructor() {
 	}
 

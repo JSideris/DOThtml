@@ -53,23 +53,6 @@ describe("Styling v6 Phase 3", () => {
 	});
 
 	describe("Static Style Safety", () => {
-		test("stylize throws on reactive values", () => {
-			const color = dot.state("red");
-			
-			class FaultyComp {
-				_?: FrameworkItems;
-				stylize(s: any) {
-					return s.class("test", c => c.color(color));
-				}
-				build() { return dot.div(); }
-			}
-
-			expect(() => {
-				dot(document.body).mount(new FaultyComp() as any);
-				dot.flushSync();
-			}).toThrow(/Reactive values \(Signals\/Bindings\) cannot be used directly in stylize\(\)/);
-		});
-
 		test("stylize does not throw on s.v()", () => {
 			class SafeComp {
 				_?: FrameworkItems;

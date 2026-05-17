@@ -11,6 +11,10 @@ export default class Computed<T> extends Signal<T> {
 	private dirty = true;
 	private error: any = null;
 
+	get isWritable(): boolean {
+		return false;
+	}
+
 	private updateSubscription = {
 		active: true,
 		update: () => {
