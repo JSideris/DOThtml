@@ -1,4 +1,4 @@
-import { dot, IDotComponent, IReactive } from "dothtml";
+import { dot, DotComponent, IReactive } from "dothtml";
 import { theme } from "../../../../../store/theme-store";
 
 type Orbiter = {
@@ -8,7 +8,7 @@ type Orbiter = {
 };
 
 @dot.component
-export default class LargeLogoPart implements IDotComponent {
+export default class LargeLogoPart extends DotComponent {
 	private orbiter1: Orbiter = { x: dot.state(0), y: dot.state(0), z: dot.state(0) };
 	private orbiter2: Orbiter = { x: dot.state(0), y: dot.state(0), z: dot.state(0) };
 	private mouseX = dot.state(0);

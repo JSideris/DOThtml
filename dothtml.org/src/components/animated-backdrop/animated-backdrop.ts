@@ -1,8 +1,8 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import { theme } from "../../store/theme-store";
 
 @dot.component
-export default class AnimatedBackdrop implements IDotComponent {
+export default class AnimatedBackdrop extends DotComponent {
 	stylize(s: any) {
 		return s.class("backdrop", b => b
 			.position("fixed")

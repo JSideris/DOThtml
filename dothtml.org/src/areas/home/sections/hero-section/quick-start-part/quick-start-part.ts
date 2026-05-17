@@ -1,8 +1,8 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import MarkdownViewer from "../../../../../components/MarkdownViewer/MarkdownViewer";
 
 @dot.component
-export default class QuickStartPart implements IDotComponent {
+export default class QuickStartPart extends DotComponent {
 	stylize(s: any) {
 		return s.class("terminal-container", t => t
 			.backgroundColor("rgba(0, 0, 0, 0.4)")

@@ -1,12 +1,13 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import NavBtn from "./nav-btn/nav-btn";
 import SmallLogo from "../small-logo/small-logo";
 
 @dot.component
-export default class Navbar implements IDotComponent {
+export default class Navbar extends DotComponent {
 	private currentPath = dot.state(window.location.hash || "#/");
 
 	constructor() {
+		super();
 		window.addEventListener("hashchange", () => {
 			this.currentPath.value = window.location.hash || "#/";
 		});

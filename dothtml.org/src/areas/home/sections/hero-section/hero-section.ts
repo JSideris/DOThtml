@@ -1,10 +1,10 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import LargeLogoPart from "./large-logo-part/large-logo-part";
 import QuickStartPart from "./quick-start-part/quick-start-part";
 import HeroFeaturesPart from "./hero-features-part/hero-features-part";
 
 @dot.component
-export default class HeroSection implements IDotComponent {
+export default class HeroSection extends DotComponent {
 	stylize(s: any) {
 		return s.class("hero-section", h => h
 			.display("flex")

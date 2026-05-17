@@ -1,8 +1,8 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import TerminalWidget from "../../../../components/ui/terminal-widget";
 
 @dot.component
-export default class GetDot implements IDotComponent {
+export default class GetDot extends DotComponent {
 	stylize(s: any) {
 		return s.class("get-dot-section", g => g
 			.backgroundColor("rgba(255, 152, 0, 0.05)")

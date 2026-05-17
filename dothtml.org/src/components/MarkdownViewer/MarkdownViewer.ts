@@ -1,8 +1,12 @@
-import { dot, Priority, IDotComponent } from "dothtml";
+import { dot, Priority, DotComponent } from "dothtml";
 import MarkdownParser from "../../utils/MarkdownParser";
 
+interface MarkdownViewerProps {
+	src: string;
+}
+
 @dot.component
-export default class MarkdownViewer implements IDotComponent {
+export default class MarkdownViewer extends DotComponent<MarkdownViewerProps> {
 	static props = {
 		src: { type: String, required: true }
 	};

@@ -1,7 +1,7 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 
 @dot.component
-export default class MainFeatures implements IDotComponent {
+export default class MainFeatures extends DotComponent {
 	private features = [
 		{ title: "Zero Dependencies", description: "A ~20kb footprint that won't bloat your project.", icon: "📦" },
 		{ title: "Reactive State", description: "Data-driven updates that just work, with built-in batching.", icon: "⚡" },

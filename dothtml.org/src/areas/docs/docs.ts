@@ -1,8 +1,14 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import MarkdownViewer from "../../components/MarkdownViewer/MarkdownViewer";
 
+interface DocsProps {
+	routeParams: {
+		doc?: string;
+	};
+}
+
 @dot.component
-export default class Docs implements IDotComponent {
+export default class Docs extends DotComponent<DocsProps> {
 	static props = {
 		routeParams: { type: Object, default: () => ({}) }
 	};

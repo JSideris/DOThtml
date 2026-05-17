@@ -1,8 +1,8 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 import MarkdownViewer from "../../../../../components/MarkdownViewer/MarkdownViewer";
 
 @dot.component
-export default class HeroFeaturesPart implements IDotComponent {
+export default class HeroFeaturesPart extends DotComponent {
 	stylize(s: any) {
 		return s.class("features-container", c => c
 			.display("flex")

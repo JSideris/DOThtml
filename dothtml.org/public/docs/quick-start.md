@@ -19,8 +19,17 @@ npm i dothtml
 
 ### TypeScript Support
 
-DOThtml is written in TypeScript and provides built-in type definitions. All core interfaces (like `IDotComponent`, `IReactive`, etc.) are exported directly from the `dothtml` package.
+DOThtml is written in TypeScript and provides built-in type definitions. All core interfaces and base classes (like `DotComponent`, `IReactive`, etc.) are exported directly from the `dothtml` package.
 
 ```typescript
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
+
+@dot.component
+class HelloWorld extends DotComponent {
+    build(dot) {
+        return dot.h1("Hello World!");
+    }
+}
+
+dot(document.body).mount(new HelloWorld());
 ```

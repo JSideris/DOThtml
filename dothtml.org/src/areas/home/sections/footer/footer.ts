@@ -1,7 +1,7 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 
 @dot.component
-export default class Footer implements IDotComponent {
+export default class Footer extends DotComponent {
 	stylize(s: any) {
 		return s.class("footer", f => f
 			.paddingPx(60, 20)

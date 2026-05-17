@@ -1,7 +1,7 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 
 @dot.component
-export default class UseCases implements IDotComponent {
+export default class UseCases extends DotComponent {
 	private cases = [
 		{ title: "Legacy Integration", description: "Drop DOThtml into any existing project to power complex widgets.", icon: "🔄" },
 		{ title: "Micro-frontends", description: "Build independent, encapsulated UI modules that play well with others.", icon: "🧩" },

@@ -1,4 +1,4 @@
-import { dot, IDotComponent } from "dothtml"
+import { dot, DotComponent } from "dothtml"
 import HeroSection from "./sections/hero-section/hero-section";
 import GetDot from "./sections/get-dot/get-dot";
 import MainCodeSample from "./sections/main-code-sample/main-code-sample";
@@ -7,7 +7,7 @@ import UseCases from "./sections/use-cases/use-cases";
 import Footer from "./sections/footer/footer";
 
 @dot.component
-export default class Home implements IDotComponent {
+export default class Home extends DotComponent {
 	stylize(s: any) {
 		return s.class("home-container", h => h
 			.maxWidthPx(1200)

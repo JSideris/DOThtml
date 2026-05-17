@@ -1,25 +1,66 @@
 # Components
 
-Components are the building blocks of DOThtml applications. They are defined as classes that implement the `IDotComponent` interface.
+Components are the building blocks of DOThtml applications. They are defined as classes that encapsulate structure, style, and logic.
 
-## Basic Structure
+## Defining Components
 
-### JavaScript
+There are two main ways to define components in DOThtml.
+
+### 1. The Primary Pattern (Recommended)
+
+For most applications, especially those using TypeScript, the preferred way to define a component is by using the `@dot.component` decorator and extending the `DotComponent` base class. This provides the best developer experience, including full type safety and automatic reactivity tracking.
+
+```typescript
+import { dot, DotComponent } from "dothtml";
+
+interface MyProps {
+    name: string;
+}
+
+@dot.component
+class MyComponent extends DotComponent<MyProps> {
+    build(dot) {
+        return dot.div(`Hello, ${this.props.name}!`);
+    }
+}
+
+// Instantiate using the 'new' keyword
+dot(document.body).mount(new MyComponent({ name: "World" }));
+```
+
+**Why use this pattern?**
+*   **Type Safety**: The `DotComponent` base class allows you to type your `props` and `refs`.
+*   **Reactivity Tracking**: The decorator ensures that any reactive signals created in the constructor are properly disposed of when the component is unmounted.
+*   **Clean Syntax**: It feels like standard class-based development.
+
+### 2. The Niche Pattern (Interface-only)
+
+If you need complete separation between implementation and interfaces (e.g., for complex Dependency Injection scenarios) or prefer to avoid decorators, you can implement the `IDotComponent` interface directly.
+
+```typescript
+import { dot, IDotComponent, IDotCore } from "dothtml";
+
+class MyComponent implements IDotComponent {
+    constructor(public props: { name: string }) {}
+
+    build(dot: IDotCore) {
+        return dot.div(`Hello, ${this.props.name}!`);
+    }
+}
+
+// Instantiate using dot.create to ensure reactivity tracking
+dot(document.body).mount(dot.create(MyComponent, { name: "World" }));
+```
+
+**Note**: When using this pattern, you **must** use `dot.create` to instantiate the component if you use any reactive signals in the constructor. Using `new` directly on an undecorated class will result in "orphaned" signals that cause memory leaks.
+
+## Basic Structure (JavaScript)
+
+In plain JavaScript, where decorators might not be available, you can define components as simple classes.
+
 ```javascript
 class MyComponent {
     build(dot) {
-        return dot.div("Hello World");
-    }
-}
-```
-
-### TypeScript
-```typescript
-import { dot, IDotComponent } from "dothtml";
-
-@dot.component
-class MyComponent implements IDotComponent {
-    build() {
         return dot.div("Hello World");
     }
 }

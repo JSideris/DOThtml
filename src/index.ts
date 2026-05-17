@@ -44,5 +44,6 @@ document["_dotId"] = "default";
 
 export { dot, Priority };
 export * from "./routing";
+export * from "./base-component";
 
 

@@ -1,7 +1,12 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
+
+interface NavBtnProps {
+	text: string;
+	active?: boolean;
+}
 
 @dot.component
-export default class NavBtn implements IDotComponent {
+export default class NavBtn extends DotComponent<NavBtnProps> {
 	static props = {
 		text: { type: String, required: true },
 		active: { type: Boolean, default: false }

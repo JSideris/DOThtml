@@ -1,7 +1,7 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 
 @dot.component
-export default class SmallLogo implements IDotComponent {
+export default class SmallLogo extends DotComponent {
 	stylize(s: any) {
 		return s.class("logo-container", c => c
 			.cursor("pointer")

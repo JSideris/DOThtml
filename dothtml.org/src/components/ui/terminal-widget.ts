@@ -1,7 +1,11 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
+
+interface TerminalProps {
+	command: string;
+}
 
 @dot.component
-export default class TerminalWidget implements IDotComponent {
+export default class TerminalWidget extends DotComponent<TerminalProps> {
 	static props = {
 		command: { type: String, default: "npm install dothtml" }
 	};

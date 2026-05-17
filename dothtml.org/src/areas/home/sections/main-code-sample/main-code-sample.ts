@@ -1,7 +1,7 @@
-import { dot, IDotComponent } from "dothtml";
+import { dot, DotComponent } from "dothtml";
 
 @dot.component
-export default class MainCodeSample implements IDotComponent {
+export default class MainCodeSample extends DotComponent {
 	private count = dot.state(0);
 
 	stylize(s: any) {
@@ -59,7 +59,7 @@ export default class MainCodeSample implements IDotComponent {
 	build() {
 		const code = `
 @dot.component
-class Counter implements IDotComponent {
+class Counter extends DotComponent {
   count = dot.state(0);
 
   build() {
