@@ -270,6 +270,7 @@ export class ComponentVdom extends Vdom{
 				const ghostVars = builder.getGhostVars();
 				// Cache them.
 				(this.component.constructor as any)._cachedStyles = { sharedStylesheets, styleTags, ghostVars };
+				builder.dispose();
 			}
 
 			// Add global styles.
@@ -405,6 +406,15 @@ export class ComponentVdom extends Vdom{
 			const instanceGhostVars = builder.getGhostVars();
 
 			for (const gv of instanceGhostVars) {
+				// Register the Computed signal itself for disposal
+				let valToRegister = gv.value;
+				if (valToRegister instanceof Binding) {
+					valToRegister = (valToRegister as any)._source;
+				}
+				if (valToRegister instanceof Computed) {
+					this.registerComputed(valToRegister);
+				}
+
 				const updateSubscription = {
 					active: true,
 					update: () => {
@@ -413,7 +423,7 @@ export class ComponentVdom extends Vdom{
 					}
 				};
 				const subId = (gv.value as any).subscribe(() => {
-					scheduler.enqueue(updateSubscription, Priority.Immediate);
+					scheduler.enqueue(updateSubscription as any, Priority.Normal);
 				});
 				this.registerDisposable(() => (gv.value as any).unsubscribe(subId));
 				updateSubscription.update(); // Initial value

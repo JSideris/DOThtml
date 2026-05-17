@@ -31,14 +31,14 @@ describe("Advanced Reactivity and Edge Cases", () => {
 		const shadowRoot = document.body.children[0].shadowRoot;
 		expect(formatHTML(shadowRoot?.innerHTML || "")).toContain("2");
 		
-		const initialBindings = Object.keys((source as any).subscribers).length;
+		const initialBindings = (source as any).subscribers.size;
 		expect(initialBindings).toBeGreaterThan(0);
 
 		(vdom as any)._unrender();
 		dot.flushSync();
 
 		// After unmount, the computed should be disposed, so it should detach from source.
-		expect(Object.keys((source as any).subscribers).length).toBe(0);
+		expect((source as any).subscribers.size).toBe(0);
 	});
 
 	test("Reactive Validation: type: String accepts Signal<string>", () => {

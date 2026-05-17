@@ -104,14 +104,14 @@ describe("Concurrent Rendering.", () => {
 		(dot as any).flushSync();
 		
 		// 3 items in list + 1 initial render = 3 subscriptions to externalSignal
-		expect(Object.keys((externalSignal as any).subscribers).length).toBe(3);
+		expect((externalSignal as any).subscribers.size).toBe(3);
 		
 		// Clear the list
 		list.value = [];
 		(dot as any).flushSync();
 		
 		// All subscriptions should be removed
-		expect(Object.keys((externalSignal as any).subscribers).length).toBe(0);
+		expect((externalSignal as any).subscribers.size).toBe(0);
 	});
 
 	test("Nested Concurrent Rendering: parent and child both yield.", async () => {

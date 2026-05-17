@@ -180,4 +180,19 @@ export default class StyleSheetBuilder {
 	hasRules() {
 		return this.rules.length > 0;
 	}
+
+	dispose() {
+		for (const gv of this.ghostVars) {
+			if (gv.value instanceof Computed) {
+				gv.value.dispose();
+			} else if (gv.value instanceof Binding && (gv.value as any)._source instanceof Computed) {
+				(gv.value as any)._source.dispose();
+			}
+		}
+		for (const r of this.rules) {
+			if (r.type === "media") {
+				r.builder.dispose();
+			}
+		}
+	}
 }

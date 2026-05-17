@@ -206,7 +206,7 @@ describe("Dynamic Styling Enhancements", () => {
 	describe("Edge Cases and Cleanup", () => {
 		test("Ghost variables are cleaned up on unmount", () => {
 			const color = dot.state("rgb(255, 0, 0)");
-			let subCount = (color as any).subscribers ? Object.keys((color as any).subscribers).length : 0;
+			let subCount = (color as any).subscribers ? (color as any).subscribers.size : 0;
 			
 			class CleanupComp {
 				_?: FrameworkItems;
@@ -220,13 +220,13 @@ describe("Dynamic Styling Enhancements", () => {
 			(container as any).mount(new CleanupComp() as any);
 			dot.flushSync();
 
-			const newSubCount = Object.keys((color as any).subscribers).length;
+			const newSubCount = (color as any).subscribers.size;
 			expect(newSubCount).toBeGreaterThan(subCount);
 
 			(container as any)._unrender();
 			dot.flushSync();
 
-			const finalSubCount = Object.keys((color as any).subscribers).length;
+			const finalSubCount = (color as any).subscribers.size;
 			expect(finalSubCount).toBe(subCount);
 		});
 

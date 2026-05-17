@@ -125,10 +125,10 @@ describe("Computed state.", () => {
 		const source = dot.state(1);
 		const comp = dot.computed(() => source.value * 2);
 		
-		expect(Object.keys((source as any).subscribers).length).toBe(1);
+		expect((source as any).subscribers.size).toBe(1);
 		
 		(comp as any).dispose();
-		expect(Object.keys((source as any).subscribers).length).toBe(0);
+		expect((source as any).subscribers.size).toBe(0);
 	});
 
 	test("Component auto-cleanup.", () => {
@@ -147,14 +147,14 @@ describe("Computed state.", () => {
 		dot(document.body).mount(c);
 		
 		// 1 for the computed signal
-		expect(Object.keys((source as any).subscribers).length).toBe(1);
+		expect((source as any).subscribers.size).toBe(1);
 		// 1 for the text binding inside the component's shadow DOM
-		expect(Object.keys((compRef as any).subscribers).length).toBe(1);
+		expect((compRef as any).subscribers.size).toBe(1);
 		
 		const root = document.body[DOT_VDOM_PROP_NAME];
 		root.children._unrender();
 		
-		expect(Object.keys((source as any).subscribers).length).toBe(0);
-		expect(Object.keys((compRef as any).subscribers).length).toBe(0);
+		expect((source as any).subscribers.size).toBe(0);
+		expect((compRef as any).subscribers.size).toBe(0);
 	});
 });

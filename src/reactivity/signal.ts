@@ -54,7 +54,7 @@ export default class Signal<T = any> implements IWatcher<T>{
 	_value: T;
 	key: string;
 
-	subscribers: Record<number, Subscription> = {};
+	subscribers = new Map<number, Subscription>();
 
 	get isWritable(): boolean {
 		return true;
@@ -81,8 +81,7 @@ export default class Signal<T = any> implements IWatcher<T>{
 	}
 
 	private updater(value: T, priority: Priority = Priority.Normal){
-		for(let b in this.subscribers){
-			const sub = this.subscribers[b];
+		for(const sub of this.subscribers.values()){
 			if ((sub as any).sync) {
 				sub.update();
 			} else {
@@ -102,15 +101,15 @@ export default class Signal<T = any> implements IWatcher<T>{
 		let id = this.nextId++;
 		const sub = new Subscription(boundReactive, item);
 		(sub as any).sync = sync;
-		this.subscribers[id] = sub;
+		this.subscribers.set(id, sub);
 
 		return id;
 	}
 
 	unsubscribe(id: number) {
-		if(this.subscribers[id]){
-			this.subscribers[id].active = false;
-			delete this.subscribers[id];
+		if(this.subscribers.has(id)){
+			this.subscribers.get(id)!.active = false;
+			this.subscribers.delete(id);
 		}
 	}
 
