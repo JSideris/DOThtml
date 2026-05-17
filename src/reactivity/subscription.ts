@@ -15,6 +15,7 @@ export default class Subscription{
 	boundReactive: IBinding;
 	item: any;
 	active: boolean = true;
+	isQueued: boolean = false;
 
 	constructor(boundReactive: IBinding, item: any){
 		this.boundReactive = boundReactive;

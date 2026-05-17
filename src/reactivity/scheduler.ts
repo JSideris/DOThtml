@@ -30,6 +30,8 @@ class Scheduler {
 	 * Adds a subscription to the next batch with a specific priority.
 	 */
 	enqueue(subscription: Subscription, priority: Priority = Priority.Normal) {
+		if (subscription.isQueued) return;
+		subscription.isQueued = true;
 		this.queues[priority].add(subscription);
 
 		if (priority === Priority.Immediate || this.isSync) {
@@ -85,6 +87,7 @@ class Scheduler {
 			queue.clear();
 
 			for (const subscription of currentQueue) {
+				subscription.isQueued = false;
 				if (subscription.active) {
 					// In the future, subscription.update() might return a continuation
 					// if it's an interruptible task (like CollectionVdom.updateList).
@@ -139,6 +142,7 @@ class Scheduler {
 					queue.clear();
 
 					for (const subscription of currentQueue) {
+						subscription.isQueued = false;
 						if (subscription.active) {
 							const continuation = subscription.update();
 							if (continuation) {
