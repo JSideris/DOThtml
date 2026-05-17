@@ -118,12 +118,14 @@ class StyledBox {
 
 To define styles that are shared across all instances of a component, use the `stylize()` method. These styles are scoped to the component's shadow root.
 
+**Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
+
 ```javascript
 class MyComponent {
     stylize(s) {
         return s.class("header", c => c
             .fontSizePx(24)
-            .color("blue")
+            .color(theme.primary) // Automatically reactive!
         );
     }
 
@@ -135,12 +137,16 @@ class MyComponent {
 
 ### Host Styling (`hostStyle`)
 
-The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself). This is the primary way to bridge component state with CSS variables for high-performance updates.
+The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself). 
+
+While `stylize()` is now reactive, `hostStyle()` remains useful for:
+1.  **Layout Control**: Setting `display: block` or `grid` on the custom element itself.
+2.  **Manual Variable Control**: When you want to explicitly name a variable for external use.
 
 ```javascript
 class ThemeableComponent {
     hostStyle(s) {
-        // Bind a reactive signal to a CSS variable on the host element.
+        // Explicitly bind a variable to the host element.
         s.variable("theme-color", this.props.color);
         s.display("block");
     }
@@ -151,7 +157,6 @@ class ThemeableComponent {
             .border(`2px solid ${s.v("theme-color")}`)
         );
     }
-
     build(dot) {
         return dot.div({ class: "content" }, "Themed Content");
     }

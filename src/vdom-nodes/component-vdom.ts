@@ -239,7 +239,17 @@ export class ComponentVdom extends Vdom{
 			} else {
 				// Constructed stylesheets.
 				const builder = new StyleSheetBuilder();
+				if ((this.dot as any)._theme) {
+					builder.setTheme((this.dot as any)._theme);
+				}
 				let styles: any = this.component.stylize && (this.component.stylize as any)(builder) || [];
+
+				if (styles instanceof Signal || styles instanceof Binding) {
+					// Dynamic stylesheet. We'll handle this per-instance.
+					(this.component.constructor as any)._isDynamicStyle = true;
+					styles = null; 
+				}
+
 				if (styles === builder || (!styles && builder.hasRules())) {
 					styles = builder.toString();
 				}
@@ -257,8 +267,9 @@ export class ComponentVdom extends Vdom{
 						}
 					}
 				}
+				const ghostVars = builder.getGhostVars();
 				// Cache them.
-				(this.component.constructor as any)._cachedStyles = { sharedStylesheets, styleTags };
+				(this.component.constructor as any)._cachedStyles = { sharedStylesheets, styleTags, ghostVars };
 			}
 
 			// Add global styles.
@@ -294,11 +305,44 @@ export class ComponentVdom extends Vdom{
 				_renderComponent(){
 					if(this.cvdom instanceof Vdom){
 						let shadow = this.attachShadow({ mode: 'open' });
-						shadow.adoptedStyleSheets = allSharedStylesheets;
+						shadow.adoptedStyleSheets = [...allSharedStylesheets];
 						for(let i = 0; i < allStyleTags.length; i++){
 							shadow.appendChild(allStyleTags[i].cloneNode(true));
 						}
 						(this._component._._meta as any).shadowRoot = shadow;
+
+						if ((this._component.constructor as any)._isDynamicStyle) {
+							const updateDynamicStyle = () => {
+								const builder = new StyleSheetBuilder();
+								if ((this.cvdom.dot as any)._theme) {
+									builder.setTheme((this.cvdom.dot as any)._theme);
+								}
+								const styles = (this._component.stylize as any)(builder);
+								const styleVal = styles instanceof Binding ? styles._get() : (styles instanceof Signal ? styles.value : styles);
+								
+								let finalStyle = styleVal;
+								if (styleVal === builder || (!styleVal && builder.hasRules())) {
+									finalStyle = builder.toString();
+								}
+
+								// For dynamic styles, we'll use a dedicated style tag in the shadow root.
+								let dynamicStyleTag = shadow.getElementById("--dh-dynamic-style") as HTMLStyleElement;
+								if (!dynamicStyleTag) {
+									dynamicStyleTag = document.createElement("style");
+									dynamicStyleTag.id = "--dh-dynamic-style";
+									shadow.appendChild(dynamicStyleTag);
+								}
+								dynamicStyleTag.textContent = finalStyle;
+							};
+
+							const styles = (this._component.stylize as any)(new StyleSheetBuilder());
+							if (styles instanceof Signal || styles instanceof Binding) {
+								const subId = (styles as any).subscribe(updateDynamicStyle);
+								this.cvdom.registerDisposable(() => (styles as any).unsubscribe(subId));
+							}
+							updateDynamicStyle();
+						}
+
 						this.cvdom.childShadowVdom._render(shadow as any);
 					}
 					else{
@@ -346,6 +390,29 @@ export class ComponentVdom extends Vdom{
 			const hostStyleVNode = new StyleVNode(hostStyleBuilder);
 			hostStyleVNode.render(this.shadowEl, document);
 			this.styleVNodes.push(hostStyleVNode);
+		}
+
+		// Sync ghost variables.
+		const cachedStyles = (this.component.constructor as any)._cachedStyles;
+		if (cachedStyles && cachedStyles.ghostVars) {
+			// We need to re-run stylize to get the bindings for THIS instance.
+			const builder = new StyleSheetBuilder();
+			if ((this.dot as any)._theme) {
+				builder.setTheme((this.dot as any)._theme);
+			}
+			this.component.stylize && (this.component.stylize as any)(builder);
+			builder.toString(); // Collect ghost variables
+			const instanceGhostVars = builder.getGhostVars();
+
+			for (const gv of instanceGhostVars) {
+				const updateVar = () => {
+					const val = gv.value instanceof Binding ? gv.value._get() : (gv.value as any).value;
+					this.shadowEl.style.setProperty(gv.name, `${val}`);
+				};
+				const subId = (gv.value as any).subscribe(updateVar);
+				this.registerDisposable(() => (gv.value as any).unsubscribe(subId));
+				updateVar(); // Initial value
+			}
 		}
 
 		this.component._.restyle && this.component._.restyle();

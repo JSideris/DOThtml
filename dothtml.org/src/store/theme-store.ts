@@ -1,5 +1,16 @@
 import { dot } from "dothtml";
 
+function hslToHex(h: number, s: number, l: number) {
+	l /= 100;
+	const a = s * Math.min(l, 1 - l) / 100;
+	const f = (n: number) => {
+		const k = (n + h / 30) % 12;
+		const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+		return Math.round(255 * color).toString(16).padStart(2, '0');
+	};
+	return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 export const useThemeStore = dot.store({
 	id: "theme",
 	state: () => ({
@@ -38,6 +49,14 @@ export const useThemeStore = dot.store({
 		}
 	},
 	getters: {
+		primaryHex: (state: any) => {
+			const val = state.primary.value;
+			if (val.startsWith("hsl")) {
+				const match = val.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+				if (match) return hslToHex(Number(match[1]), Number(match[2]), Number(match[3]));
+			}
+			return val;
+		},
 		glassStyle: (state: any) => ({
 			backgroundColor: state.glassBackground.value,
 			backdropFilter: "blur(12px)",

@@ -306,6 +306,11 @@ const makeDot = ()=>{
 
 	_dot.css = new BaseVStyle();
 
+	_dot._theme = null;
+	_dot.setTheme = (theme: any) => {
+		_dot._theme = theme;
+	};
+
 	_dot.useStyles = (applyToDocument: Document, styles: string | CSSStyleSheet | ((css: any) => string | IDotCss)) => {
 		if (applyToDocument && !styles) {
 			if (typeof applyToDocument == "string" || (applyToDocument["call"] && applyToDocument["apply"])) {

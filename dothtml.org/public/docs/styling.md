@@ -66,6 +66,41 @@ dot.div("I am reactive!")
 size.value = 40; // The font size updates automatically in the DOM.
 ```
 
+### Ghost Variable Injection (Auto-CSS Variables)
+
+One of DOThtml's most powerful features is **Ghost Variable Injection**. Traditionally, to make a scoped style reactive, you would have to manually define a CSS variable in one place and use it in another. DOThtml now handles this automatically.
+
+When you use a `Signal` or `Binding` inside the `stylize()` builder, DOThtml:
+1.  Generates a unique, deterministic CSS variable name (e.g., `--dh-v1`).
+2.  Injects that variable into the static CSS rule.
+3.  Automatically updates the variable value on every component instance whenever the signal changes.
+
+```javascript
+class GlowingBox extends IDotComponent {
+  stylize(s) {
+    return s.class("box", b => b
+      // DOThtml sees the signal and handles the CSS variable plumbing!
+      .backgroundColor(theme.primary.bindAs(p => `${p}33`))
+      .border(`1px solid ${theme.primary}`)
+    );
+  }
+}
+```
+
+This provides the performance of native CSS variables with the developer experience of a reactive framework.
+
+### Fluent Template Literals (`s.template`)
+
+When you need to combine static CSS strings with reactive values (like in a `linear-gradient` or `rgba` function), use the `s.template` helper.
+
+```javascript
+stylize(s) {
+  return s.class("overlay", o => o
+    .background(s.template`linear-gradient(${theme.primary}1a, transparent)`)
+  );
+}
+```
+
 ### Batching and Performance
 
 Style updates are automatically batched by the DOThtml scheduler. If you update multiple signals that drive styles on the same element (or different elements) in a single task, DOThtml will group those changes and apply them in a single DOM update cycle, minimizing layout thrashing.
@@ -151,6 +186,29 @@ class MyComponent extends IDotComponent {
 
 When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
 
+## Reactive Theme Context
+
+DOThtml provides a first-class `Theme` concept that makes design systems easy to implement. By using `dot.setTheme()`, you can make a global reactive object available to all component style builders via `s.theme`.
+
+```javascript
+// 1. Define your theme
+const myTheme = {
+  primary: dot.state("#007bff"),
+  spacing: dot.state(10)
+};
+dot.setTheme(myTheme);
+
+// 2. Use it in any component
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("container", c => c
+      .color(s.theme.primary) // Automatically creates a reactive binding
+      .paddingPx(s.theme.spacing)
+    );
+  }
+}
+```
+
 ## Component Styling
 
 DOThtml provides several ways to style components, ranging from instance-specific inline styles to shared, scoped templates.
@@ -193,9 +251,28 @@ class MyComponent extends IDotComponent {
 }
 ```
 
-> **Performance Note**: The `stylize()` method is intended for **static** styles. To prevent performance pitfalls, DOThtml will throw an error if you try to pass a `Signal` or `Binding` directly into a `stylize()` block. Instead, use `hostStyle()` or `dot.css` to bind reactive data to CSS variables, and reference those variables in `stylize()` using `s.v()`.
+> **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
 
-DOThtml automatically caches these stylesheets on the component's constructor, ensuring that the CSS is parsed only once per component type.
+### Signal Stylesheet Swapping
+
+For advanced use cases like switching between "Light" and "Dark" modes or "Compact" and "Comfortable" layouts, the `stylize()` method can return a `Signal` or `Binding` of styles.
+
+```javascript
+const layoutMode = dot.state("comfortable");
+
+class AppContainer extends IDotComponent {
+  stylize(s) {
+    return layoutMode.bindAs(mode => {
+      if (mode === "compact") {
+        return s.class("main", m => m.paddingPx(5).fontSizePx(12));
+      }
+      return s.class("main", m => m.paddingPx(20).fontSizePx(16));
+    });
+  }
+}
+```
+
+When the `layoutMode` signal changes, DOThtml efficiently swaps the stylesheet for all instances of the component without re-rendering the component's HTML structure.
 
 ### Host Variable Binding
 

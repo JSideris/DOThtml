@@ -3,6 +3,10 @@ import cssProps from "../css/css-props";
 import { formatCssLength } from "../css/format-css-type";
 import Signal from "../reactivity/signal";
 import Binding from "../reactivity/binding";
+import Computed from "../reactivity/computed";
+import CssFunctionBuilderVStyle from "./css-function-builder-v-style";
+import FilterVStyle from "./filter-v-style";
+import TransformVStyle from "./transform-v-style";
 
 
 type StyleRule = 
@@ -11,6 +15,36 @@ type StyleRule =
 
 export default class StyleSheetBuilder {
 	private rules: Array<StyleRule> = [];
+	public theme: any = null;
+	private ghostVars: Array<{ name: string, value: Signal | Binding }> = [];
+	private varCounter = 0;
+
+	getGhostVars() {
+		return this.ghostVars;
+	}
+
+	setTheme(theme: any) {
+		this.theme = theme;
+		return this;
+	}
+
+	template(strings: TemplateStringsArray, ...values: any[]) {
+		return new Computed(() => {
+			let result = "";
+			for (let i = 0; i < strings.length; i++) {
+				result += strings[i];
+				if (i < values.length) {
+					let val = values[i];
+					if (val instanceof Signal || val instanceof Binding) {
+						result += val instanceof Binding ? val._get() : val.value;
+					} else {
+						result += val;
+					}
+				}
+			}
+			return result;
+		});
+	}
 
 	class(name: string, callback: (s: BaseVStyle) => void) {
 		return this.rule(`.${name}`, callback);
@@ -51,8 +85,78 @@ export default class StyleSheetBuilder {
 				let cssProp = p.prop;
 				let cssValue = p.value;
 
-				if (cssValue instanceof Signal || cssValue instanceof Binding) {
-					throw new Error(`[DOThtml] Reactive values (Signals/Bindings) cannot be used directly in stylize(). Use CSS variables instead. Prop: "${p.prop}" in selector: "${r.selector}"`);
+				if (typeof cssValue === "object" && cssValue !== null && !(cssValue instanceof CssFunctionBuilderVStyle) && !(cssValue instanceof Signal) && !(cssValue instanceof Binding)) {
+					// Handle nested builders like filter: { blur: 5 }
+					let builder: CssFunctionBuilderVStyle;
+					switch (p.prop) {
+						case "filter": {
+							builder = new FilterVStyle(p.prop);
+							break;
+						}
+						case "transform": {
+							builder = new TransformVStyle(p.prop);
+							break;
+						}
+					}
+
+					if (builder) {
+						let funcArray = Array.isArray(cssValue) ? cssValue : [cssValue];
+						for (let funcValue of funcArray) {
+							for (let k in funcValue) {
+								let v = funcValue[k];
+								let methodKey = k.replace(/_\d+$/, "");
+								if (typeof builder[methodKey] === "function") {
+									if (Array.isArray(v)) {
+										builder[methodKey](...v);
+									} else {
+										builder[methodKey](v);
+									}
+								}
+							}
+						}
+						cssValue = builder;
+					}
+				}
+
+				if (cssValue instanceof Signal || cssValue instanceof Binding || cssValue instanceof CssFunctionBuilderVStyle) {
+					// Check if it's actually reactive (CssFunctionBuilderVStyle might not be)
+					let isReactive = cssValue instanceof Signal || cssValue instanceof Binding;
+					if (cssValue instanceof CssFunctionBuilderVStyle) {
+						for (const f of cssValue.funcs) {
+							for (const arg of f.args) {
+								if ((arg as any).v instanceof Signal || (arg as any).v instanceof Binding || arg instanceof Signal || arg instanceof Binding) {
+									isReactive = true;
+									break;
+								}
+							}
+							if (isReactive) break;
+						}
+					}
+
+					if (isReactive) {
+						const varName = `--dh-v${++this.varCounter}`;
+						const reactiveSource = cssValue;
+						let reactiveValue: any = cssValue;
+
+						// If it's a length property and we have a number signal, wrap it to add units.
+						if (registered && (registered.type === "length" || registered.type === "hybrid") && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
+							reactiveValue = new Computed(() => {
+								const val = reactiveSource instanceof Binding ? reactiveSource._get() : (reactiveSource as any).value;
+								if (typeof val === "number") {
+									return formatCssLength(val, registered.unit);
+								}
+								return val;
+							});
+						} else if (reactiveSource instanceof CssFunctionBuilderVStyle) {
+							reactiveValue = new Computed(() => {
+								const val = reactiveSource.toString();
+								return val;
+							});
+						}
+
+						this.ghostVars.push({ name: varName, value: reactiveValue as any });
+						cssValue = `var(${varName})`;
+					}
 				}
 
 				if (registered) {
