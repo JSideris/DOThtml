@@ -9,6 +9,7 @@ import Home from "./areas/home/home";
 import Docs from "./areas/docs/docs";
 import Navbar from "./components/navbar/navbar";
 import AnimatedBackdrop from "./components/animated-backdrop/animated-backdrop";
+import ThemeControls from "./components/theme-controls/theme-controls";
 import { theme } from "./store/theme-store";
 
 // Global Theme Setup
@@ -75,7 +76,8 @@ const routes = [
 dot(document.body)
 	.mount(new AnimatedBackdrop())
 	.mount(new Navbar())
-	.mount(new Router(), { routes });
+	.mount(new Router(), { routes })
+	.mount(new ThemeControls());
 
 // if (module["hot"]) {
 // 	module["hot"].accept('./index.ts', () => {

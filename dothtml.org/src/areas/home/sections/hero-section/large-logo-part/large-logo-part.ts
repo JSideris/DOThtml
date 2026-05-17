@@ -1,5 +1,6 @@
 import { dot } from "dothtml";
 import { IDotComponent, IReactive } from "dothtml-interfaces";
+import { theme } from "../../../../../store/theme-store";
 
 type Orbiter = {
 	x: IReactive<number>
@@ -61,7 +62,7 @@ export default class LargeLogoPart implements IDotComponent {
 			.userSelect("none")
 		).class("dot-text", d => d
 			.color(s.v("primary"))
-			.textShadow(`0 0 30px rgba(255, 152, 0, 0.3)`)
+			.textShadow(theme.primary.bindAs(p => `0 0 30px ${p}4d`))
 			.display("flex")
 			.alignItems("center")
 		).class("o-wrapper", o => o

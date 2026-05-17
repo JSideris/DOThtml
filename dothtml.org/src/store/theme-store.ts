@@ -12,8 +12,31 @@ export const useThemeStore = dot.store({
 		textDim: "#a0a0a0",
 		glassBackground: "rgba(10, 10, 10, 0.7)",
 		glassBorder: "rgba(255, 255, 255, 0.1)",
-		isDarkMode: true
+		isDarkMode: true,
+		isCycling: false
 	}),
+	actions: {
+		setPrimary(color: string) {
+			this.primary.value = color;
+		},
+		toggleCycle() {
+			this.isCycling.value = !this.isCycling.value;
+			if (this.isCycling.value) {
+				this.startCycling();
+			}
+		},
+		startCycling() {
+			let hue = 0;
+			const cycle = () => {
+				if (!this.isCycling.value) return;
+				hue = (hue + 1) % 360;
+				this.primary.value = `hsl(${hue}, 100%, 50%)`;
+				this.secondary.value = `hsl(${(hue + 180) % 360}, 100%, 50%)`;
+				requestAnimationFrame(cycle);
+			};
+			requestAnimationFrame(cycle);
+		}
+	},
 	getters: {
 		glassStyle: (state: any) => ({
 			backgroundColor: state.glassBackground.value,
