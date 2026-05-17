@@ -405,13 +405,18 @@ export class ComponentVdom extends Vdom{
 			const instanceGhostVars = builder.getGhostVars();
 
 			for (const gv of instanceGhostVars) {
-				const updateVar = () => {
-					const val = gv.value instanceof Binding ? gv.value._get() : (gv.value as any).value;
-					this.shadowEl.style.setProperty(gv.name, `${val}`);
+				const updateSubscription = {
+					active: true,
+					update: () => {
+						const val = gv.value instanceof Binding ? gv.value._get() : (gv.value as any).value;
+						this.shadowEl.style.setProperty(gv.name, `${val}`);
+					}
 				};
-				const subId = (gv.value as any).subscribe(updateVar);
+				const subId = (gv.value as any).subscribe(() => {
+					scheduler.enqueue(updateSubscription, Priority.Immediate);
+				});
 				this.registerDisposable(() => (gv.value as any).unsubscribe(subId));
-				updateVar(); // Initial value
+				updateSubscription.update(); // Initial value
 			}
 		}
 

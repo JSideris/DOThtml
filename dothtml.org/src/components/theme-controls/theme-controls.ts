@@ -55,8 +55,14 @@ export default class ThemeControls implements IDotComponent {
 				dot.input({ 
 					type: "color", 
 					class: "color-input",
-					value: theme.primaryHex,
-					onInput: (e: any) => theme.setPrimary(e.target.value)
+					value: theme.primary,
+					onInput: (e: any) => {
+						const val = e.target.value;
+						if (!val) return;
+						requestAnimationFrame(() => {
+							theme.setPrimary(val);
+						});
+					}
 				})
 			),
 			dot.button({ 
