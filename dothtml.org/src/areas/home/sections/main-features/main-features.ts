@@ -12,7 +12,16 @@ export default class MainFeatures extends DotComponent {
 	];
 
 	stylize(s: any) {
-		return s.class("features-grid", g => g
+		return s.class("features-section", f => f
+			.display("flex")
+			.flexDirection("column")
+			.gapPx(40)
+		).class("title", t => t
+			.fontSizePx(32)
+			.fontWeight(700)
+			.textAlign("center")
+			.color(s.v("primary"))
+		).class("features-grid", g => g
 			.display("grid")
 			.gridTemplateColumns("repeat(auto-fit, minmax(300px, 1fr))")
 			.gapPx(30)
@@ -51,12 +60,15 @@ export default class MainFeatures extends DotComponent {
 	}
 
 	build() {
-		return dot.div({ class: "features-grid" },
-			dot.each(this.features, feature => 
-				dot.div({ class: "feature-card" },
-					dot.div({ class: "feature-icon" }, feature.icon),
-					dot.h3({ class: "feature-title" }, feature.title),
-					dot.p({ class: "feature-description" }, feature.description)
+		return dot.div({ class: "features-section" },
+			dot.h2({ class: "title" }, "Powerful Features"),
+			dot.div({ class: "features-grid" },
+				dot.each(this.features, feature => 
+					dot.div({ class: "feature-card" },
+						dot.div({ class: "feature-icon" }, feature.icon),
+						dot.h3({ class: "feature-title" }, feature.title),
+						dot.p({ class: "feature-description" }, feature.description)
+					)
 				)
 			)
 		);

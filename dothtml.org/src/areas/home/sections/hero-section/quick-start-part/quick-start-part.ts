@@ -12,8 +12,8 @@ export default class QuickStartPart extends DotComponent {
 			.border("1px solid rgba(255, 255, 255, 0.1)")
 			.borderRadiusPx(12)
 			.paddingPx(20)
-			.widthP(100)
-			.maxWidthPx(450)
+			.widthPx(450)
+			.maxWidthP(100)
 			.boxShadow("0 20px 50px rgba(0, 0, 0, 0.5)")
 		).class("terminal-header", h => h
 			.display("flex")

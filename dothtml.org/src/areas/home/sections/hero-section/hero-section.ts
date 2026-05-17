@@ -67,7 +67,7 @@ export default class HeroSection extends DotComponent {
 			),
 			dot.div({ class: "hero-actions" },
 				dot.button({ class: "btn btn-primary", onClick: () => window.location.hash = "#/docs/quick-start" }, "Get Started"),
-				dot.button({ class: "btn btn-secondary", onClick: () => window.location.hash = "#/docs" }, "View Docs")
+				dot.button({ class: "btn btn-secondary", onClick: () => window.open("https://github.com/JSideris/DOThtml", "_blank") }, "GitHub")
 			),
 			dot.div({ class: "features-pane" }, dot.mount(new HeroFeaturesPart()))
 		);

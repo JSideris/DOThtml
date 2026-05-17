@@ -29,7 +29,6 @@ export default class TerminalWidget extends DotComponent<TerminalProps> {
 			.boxShadow("0 10px 30px rgba(0, 0, 0, 0.5)")
 			.display("flex")
 			.alignItems("center")
-			.justifyContent("space-between")
 			.cursor("pointer")
 		).class("prompt", p => p
 			.color(s.v("primary"))
@@ -38,20 +37,19 @@ export default class TerminalWidget extends DotComponent<TerminalProps> {
 		).class("command", c => c
 			.color("#fff")
 			.flex(1)
+			.whiteSpace("nowrap")
+			.overflow("hidden")
+			.textOverflow("ellipsis")
 		).class("copy-hint", ch => ch
-			.fontSizePx(12)
+			.position("absolute")
+			.topPx(8)
+			.rightPx(12)
+			.fontSizePx(10)
 			.color(s.v("text-dim"))
-			.marginLeftPx(20)
-			.opacity(0.7)
+			.opacity(0.5)
 		).media("screen and (max-width: 600px)", m => m
 			.class("terminal", t => t
 				.paddingPx(15)
-				.flexDirection("column")
-				.alignItems("flex-start")
-				.gapPx(10)
-			).class("copy-hint", ch => ch
-				.marginLeftPx(0)
-				.fontSizePx(10)
 			)
 		);
 	}

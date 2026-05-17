@@ -49,6 +49,13 @@ dot.useGlobalStyles(`
 		border: 1px solid var(--glass-border);
 		border-radius: 12px;
 	}
+
+	.token-keyword { color: #c678dd; }
+	.token-type { color: #e5c07b; }
+	.token-string { color: #98c379; }
+	.token-number { color: #d19a66; }
+	.token-comment { color: #5c6370; font-style: italic; }
+	.token-function { color: #61afef; }
 `);
 
 dot.useStyles(document, `

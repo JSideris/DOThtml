@@ -72,12 +72,6 @@ export default class MarkdownViewer extends DotComponent<MarkdownViewerProps> {
 		).class("markdown-body code", c => c
 			.fontFamily("'JetBrains Mono', monospace")
 			.fontSizePx(14)
-		).class("token-keyword", k => k.color("#c678dd")
-		).class("token-type", t => t.color("#e5c07b")
-		).class("token-string", st => st.color("#98c379")
-		).class("token-number", n => n.color("#d19a66")
-		).class("token-comment", co => co.color("#5c6370").fontStyle("italic")
-		).class("token-function", f => f.color("#61afef")
 		);
 	}
 

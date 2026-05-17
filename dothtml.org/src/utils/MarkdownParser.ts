@@ -275,7 +275,7 @@ export default class MarkdownParser {
 		return html;
 	}
 
-	private static highlight(code: string, lang?: string): string {
+	public static highlight(code: string, lang?: string): string {
 		if (lang !== "ts" && lang !== "js" && lang !== "javascript" && lang !== "typescript") {
 			return code;
 		}

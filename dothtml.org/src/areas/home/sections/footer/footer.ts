@@ -16,7 +16,10 @@ export default class Footer extends DotComponent {
 	build() {
 		return dot.footer({ class: "footer" },
 			dot.p(`© ${new Date().getFullYear()} DOThtml. Built with DOThtml 6.`),
-			dot.p("Released under the ISC License.")
+			dot.p(
+				dot.span("Released under the ISC License. "),
+				dot.a({ href: "https://github.com/JSideris/DOThtml", target: "_blank" }, "View on GitHub")
+			)
 		);
 	}
 }
