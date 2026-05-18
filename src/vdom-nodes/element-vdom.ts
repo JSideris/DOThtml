@@ -19,8 +19,6 @@ export class AttributeItem{
 	attribute: string;
 }
 
-let manualInputAllowed = true;
-
 export default class ElementVdom extends Vdom{
 
 	children: ContainerVdom = null;
@@ -34,6 +32,9 @@ export default class ElementVdom extends Vdom{
 	private styleVNodes: Array<StyleVNode> = [];
 	private ref: Ref | ((el: HTMLElement | null) => void);
 	inputListener: (e: any) => void;
+	private inputTimeout: any = null;
+	private manualInputAllowed: boolean = true;
+	private activeBindings: Record<string, Binding> = {};
 
 	constructor(dot: IDotCore, tag: string){
 		super();
@@ -76,6 +77,11 @@ export default class ElementVdom extends Vdom{
 		if(this.inputListener){
 			this.element.removeEventListener("input", this.inputListener);
 			this.inputListener = null;
+		}
+
+		if(this.inputTimeout){
+			clearTimeout(this.inputTimeout);
+			this.inputTimeout = null;
 		}
 
 		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
@@ -232,12 +238,20 @@ export default class ElementVdom extends Vdom{
 				let timeout = null;
 				if(!this.inputListener){
 					this.inputListener = (e)=>{
-						if(!manualInputAllowed)	return;
+						// if(!this.manualInputAllowed) return;
+						// const targetAttr = ((e.target as any).type === "checkbox" || (e.target as any).type === "radio") ? "checked" : "value";
+						// const binding = this.activeBindings[targetAttr];
+						// if(!binding) return;
+
 						if(timeout) clearTimeout(timeout);
 						timeout = setTimeout(()=>{
-							manualInputAllowed = false;
-							value._set((this.element as HTMLInputElement)[attr]);
-							manualInputAllowed = true;
+							try {
+								const val = (this.element as HTMLInputElement)[attr];
+								console.log("SETTING VALUE: " + val + " (type: " + typeof val + ")");
+								value._set(val);
+							} catch (e) {
+								console.log("CAUGHT ERROR: " + e.message);
+							}
 							timeout = null;
 						}, 200);
 					}

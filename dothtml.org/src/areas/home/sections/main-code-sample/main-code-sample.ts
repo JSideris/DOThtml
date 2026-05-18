@@ -194,13 +194,11 @@ class NameDisplay extends DotComponent {
 				preview: () => dot.div({ class: "input-group" },
 					dot.input({ 
 						class: "input-field",
-						value: this.firstName,
-						onInput: (e: any) => this.firstName.value = e.target.value
+						value: this.firstName
 					}),
 					dot.input({ 
 						class: "input-field",
-						value: this.lastName,
-						onInput: (e: any) => this.lastName.value = e.target.value
+						value: this.lastName
 					}),
 					dot.div({ class: "full-name" }, "Hello, ", this.fullName)
 				)
