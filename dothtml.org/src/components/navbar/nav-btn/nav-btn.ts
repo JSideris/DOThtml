@@ -2,7 +2,7 @@ import { dot, DotComponent } from "dothtml";
 
 interface NavBtnProps {
 	text: string;
-	active?: boolean;
+	active?: any;
 }
 
 @dot.component

@@ -65,18 +65,8 @@ export default class Navbar extends DotComponent {
 					})).on("click", () => this.navigate("docs")),
 					dot.mount(new NavBtn({ 
 						text: "Examples",
-						active: false
-					})).on("click", () => {
-						const el = document.getElementById("examples");
-						if (el) {
-							el.scrollIntoView({ behavior: "smooth" });
-						} else {
-							this.navigate("");
-							setTimeout(() => {
-								document.getElementById("examples")?.scrollIntoView({ behavior: "smooth" });
-							}, 300);
-						}
-					}),
+						active: this.currentPath.bindAs(p => p.includes("#examples"))
+					})).on("click", () => (dot as any).navigate("/#examples")),
 					dot.mount(new NavBtn({ 
 						text: "Blog",
 						active: this.currentPath.bindAs(p => p === "#/blog")

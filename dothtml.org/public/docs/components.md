@@ -146,7 +146,9 @@ DOThtml provides a modern event system inspired by leading frameworks, offering 
 
 ## Component Styling
 
-DOThtml components use **Shadow DOM** by default, providing strong encapsulation for both structure and style.
+DOThtml components use **Shadow DOM** by default, providing strong encapsulation for both structure and style. This isolation ensures that styles defined inside a component don't leak out, and global styles don't accidentally break your component's internal layout.
+
+> **Note**: While Shadow DOM provides strong encapsulation, DOThtml's routing system is designed to work across these boundaries. Standard features like **anchor links** and **hash navigation** work seamlessly even when the target elements are defined inside components.
 
 ### Instance Styles
 

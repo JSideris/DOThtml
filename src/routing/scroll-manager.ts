@@ -1,6 +1,45 @@
 import { currentPath, currentHash } from "./state";
+import { getElementByIdDeep } from "../helpers/dom-utils";
+import dot from "../dot";
 
 const scrollPositions = new Map<string, { x: number, y: number }>();
+let scrollTimeout: any = null;
+
+/**
+ * Performs scrolling based on the current hash or saved position.
+ */
+function performScroll(path: string, smooth: boolean = false) {
+	const hash = currentHash.value;
+	if (hash && hash.startsWith("#")) {
+		const id = hash.substring(1);
+		const element = getElementByIdDeep(id);
+		if (element) {
+			const prefersReducedMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			element.scrollIntoView({ 
+				behavior: smooth && !prefersReducedMotion ? "smooth" : "auto" 
+			});
+			return;
+		}
+	}
+
+	const savedPosition = scrollPositions.get(path);
+	if (savedPosition) {
+		window.scrollTo(savedPosition.x, savedPosition.y);
+	} else {
+		window.scrollTo(0, 0);
+	}
+}
+
+/**
+ * Schedules a scroll operation, cancelling any previously scheduled one.
+ */
+function scheduleScroll(path: string, smooth: boolean) {
+	if (scrollTimeout) clearTimeout(scrollTimeout);
+	scrollTimeout = setTimeout(() => {
+		performScroll(path, smooth);
+		scrollTimeout = null;
+	}, 0);
+}
 
 /**
  * Initializes the scroll manager.
@@ -20,25 +59,16 @@ export function initScrollManager() {
 		});
 	}, { passive: true });
 
-	currentPath.subscribe((newPath) => {
-		// Wait for the DOM to update
-		setTimeout(() => {
-			const hash = currentHash.value;
-			if (hash && hash.startsWith("#")) {
-				const id = hash.substring(1);
-				const element = document.getElementById(id);
-				if (element) {
-					element.scrollIntoView();
-					return;
-				}
-			}
+	const routeState = dot.computed(() => ({
+		path: currentPath.value,
+		hash: currentHash.value
+	}));
 
-			const savedPosition = scrollPositions.get(newPath);
-			if (savedPosition) {
-				window.scrollTo(savedPosition.x, savedPosition.y);
-			} else {
-				window.scrollTo(0, 0);
-			}
-		}, 0);
+	routeState.subscribe((state) => {
+		// Wait for the DOM to update
+		scheduleScroll(state.path, true);
 	});
+
+	// Handle initial scroll
+	scheduleScroll(currentPath.value, false);
 }

@@ -80,6 +80,28 @@ dot.div(dot.computed(() => `Search for: ${query.value.q}`));
 dot.div(dot.computed(() => `Section: ${hash.value}`));
 ```
 
+## Anchor Navigation (Auto-Scrolling)
+
+DOThtml provides built-in support for standard web anchor navigation. When the URL hash changes (e.g., `#section-1`), the framework automatically finds the element with the matching ID and scrolls it into view.
+
+### Shadow-Aware ID Lookup
+
+Unlike standard browser APIs, DOThtml's anchor navigation is **shadow-aware**. This means that even if your target element is deeply nested inside a component's Shadow DOM, the router will find it and scroll to it automatically.
+
+```javascript
+class MyComponent {
+    build(dot) {
+        return dot.div({ id: "my-target" }, "Scroll to me!");
+    }
+}
+```
+
+### Smooth Scrolling & Accessibility
+
+By default, DOThtml uses **smooth scrolling** for internal navigation to provide a more polished user experience. 
+
+The framework also respects user accessibility settings: if a user has enabled "Reduced Motion" in their operating system, DOThtml will automatically fall back to instant scrolling to ensure a comfortable experience for everyone.
+
 ## Lazy Loading
 
 Components can be loaded lazily using dynamic `import()`.

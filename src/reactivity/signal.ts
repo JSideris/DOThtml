@@ -76,6 +76,7 @@ export default class Signal<T = any> implements IWatcher<T>{
 	}
 
 	setValue(v: T, priority: Priority = Priority.Normal) {
+		if (this._value === v) return;
 		this._value = v;
 		this.updater(this._value, priority);
 	}
