@@ -9,7 +9,7 @@ describe("Two-way binding race condition reproduction", () => {
 		}
 	});
 
-	test("Unmounting an input within the 200ms debounce window should not push undefined to the signal", async () => {
+	test("Unmounting an input immediately after input should not push undefined to the signal", async () => {
 		const name = dot.state("Initial");
 		const showInput = dot.state(true);
 		
@@ -35,11 +35,6 @@ describe("Two-way binding race condition reproduction", () => {
 		input.value = "Changed";
 		input.dispatchEvent(new Event('input', { bubbles: true }));
 
-		// The framework now has a 200ms timer pending to set name.value = "Changed"
-
-		// Wait 100ms
-		await new Promise(resolve => setTimeout(resolve, 100));
-
 		// IMMEDIATELY unmount the input by changing the condition
 		showInput.value = false;
 		dot.flushSync();
@@ -47,23 +42,9 @@ describe("Two-way binding race condition reproduction", () => {
 		// The input is now gone from the DOM and its VNode is unrendered
 		expect(document.getElementById("test-input")).toBeNull();
 
-		// Wait for the 200ms debounce timer to fire (total 350ms from input)
-		await new Promise(resolve => setTimeout(resolve, 250));
-
-		// PROOF: If the bug exists, lastValueReceived will be undefined because 
-		// the dangling timer fired after unrender and read from a null element.
-		// If the bug is fixed, it should either still be "Initial" (because the timer was cleared)
-		// or "Changed" (if it managed to fire before unrender, though unlikely in this sync flow).
-		// It should CERTAINLY NOT be undefined.
-		
-		if (lastValueReceived === undefined) {
-			console.log("BUG CONFIRMED: lastValueReceived is undefined");
-		} else {
-			console.log("BUG NOT DETECTED: lastValueReceived is " + lastValueReceived);
-		}
-
+		// With immediate updates, the signal is updated as soon as the event is dispatched.
 		expect(lastValueReceived).not.toBeUndefined();
-		expect(lastValueReceived).not.toBe(undefined);
+		expect(lastValueReceived).toBe("Changed");
 	});
 
 	test("Flicker reproduction: rapid unmount and remount", async () => {
@@ -87,22 +68,13 @@ describe("Two-way binding race condition reproduction", () => {
 		input.value = "Changed";
 		input.dispatchEvent(new Event('input', { bubbles: true }));
 
-		await new Promise(resolve => setTimeout(resolve, 100));
-
 		// Rapidly unmount and remount
 		showInput.value = false;
 		dot.flushSync();
 		showInput.value = true;
 		dot.flushSync();
 
-		await new Promise(resolve => setTimeout(resolve, 250));
-
-		if (lastValueReceived === undefined) {
-			console.log("FLICKER CONFIRMED: lastValueReceived is undefined");
-		} else {
-			console.log("FLICKER NOT DETECTED: lastValueReceived is " + lastValueReceived);
-		}
-
 		expect(lastValueReceived).not.toBeUndefined();
+		expect(lastValueReceived).toBe("Changed");
 	});
 });

@@ -1,10 +1,6 @@
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 
-beforeEach(() => {
-	jest.useFakeTimers();
-});
-
 afterEach(() => { 
 	const root = document.body[DOT_VDOM_PROP_NAME];
 	if (root && root.children) {
@@ -12,11 +8,10 @@ afterEach(() => {
 	}
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
-	jest.useRealTimers();
 });
 
 describe("Two-way binding safety.", () => {
-	test("Race Condition: Unrender during debounce should not throw or set undefined.", () => {
+	test("Race Condition: Unrender after input should not throw or set undefined.", () => {
 		let obs = dot.state("initial");
 		
 		dot(document.body).input({ id: "my-input", value: obs });
@@ -25,15 +20,16 @@ describe("Two-way binding safety.", () => {
 		input.value = "new value";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
 		
-		// Unrender before debounce fires
+		// Unrender immediately after input
 		const root = document.body[DOT_VDOM_PROP_NAME];
 		root.children._unrender();
 		
 		expect(() => {
-			jest.runAllTimers();
+			(dot as any).flushSync();
 		}).not.toThrow();
 		
-		expect(obs.value).toBe("initial");
+		// With immediate updates, the signal is updated as soon as the event is dispatched.
+		expect(obs.value).toBe("new value");
 	});
 
 	test("Stale Closure: Swapping binding should update the new signal.", () => {
@@ -52,7 +48,7 @@ describe("Two-way binding safety.", () => {
 		input.value = "typing...";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
 
-		// Swap binding before debounce fires
+		// Swap binding immediately
 		vdom.setAttr("value", obs2.bind());
 		(dot as any).flushSync();
 		expect(input.value).toBe("obs2");
@@ -61,11 +57,10 @@ describe("Two-way binding safety.", () => {
 		input.value = "new typing";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
 
-		jest.runAllTimers();
 		(dot as any).flushSync();
 		
-		expect(obs1.value).toBe("obs1"); // Should not have been updated
-		expect(obs2.value).toBe("new typing"); // Should have been updated
+		expect(obs1.value).toBe("typing..."); // Updated by the first event
+		expect(obs2.value).toBe("new typing"); // Updated by the second event
 	});
 
 	test("Global State Isolation: Multiple inputs should not interfere.", () => {
@@ -82,37 +77,11 @@ describe("Two-way binding safety.", () => {
 		i1.value = "new1";
 		i1.dispatchEvent(new Event("input", { bubbles: true }));
 		
-		// Wait 100ms (halfway through debounce)
-		jest.advanceTimersByTime(100);
-		
 		i2.value = "new2";
 		i2.dispatchEvent(new Event("input", { bubbles: true }));
 		
-		// Wait another 100ms (i1 should fire now)
-		jest.advanceTimersByTime(100);
 		(dot as any).flushSync();
 		expect(obs1.value).toBe("new1");
-		expect(obs2.value).toBe("v2"); // i2 still has 100ms left
-		
-		// Wait remaining 100ms
-		jest.advanceTimersByTime(100);
-		(dot as any).flushSync();
 		expect(obs2.value).toBe("new2");
-	});
-
-	test("Memory Management: Timers should be cleared on unrender.", () => {
-		let obs = dot.state("initial");
-		dot(document.body).input({ value: obs.bind() });
-		let input = document.querySelector("input") as HTMLInputElement;
-		
-		input.value = "changed";
-		input.dispatchEvent(new Event("input", { bubbles: true }));
-		
-		expect(jest.getTimerCount()).toBe(1);
-		
-		const root = document.body[DOT_VDOM_PROP_NAME];
-		root.children._unrender();
-		
-		expect(jest.getTimerCount()).toBe(0);
 	});
 });

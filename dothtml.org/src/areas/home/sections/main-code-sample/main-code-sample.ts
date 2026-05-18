@@ -254,7 +254,7 @@ class Pulse extends DotComponent {
 			}
 		};
 
-		return dot.div({ class: "code-sample-section" },
+		return dot.div({ id: "examples", class: "code-sample-section" },
 			dot.h2({ class: "title" }, "Simple & Intuitive"),
 			dot.div({ class: "example-tabs" },
 				dot.each(Object.keys(examples), name => 

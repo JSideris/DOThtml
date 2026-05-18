@@ -1,10 +1,6 @@
 import { dot } from "../../src";
 import { DOT_VDOM_PROP_NAME } from "../../src/constants";
 
-beforeEach(() => {
-	jest.useFakeTimers();
-});
-
 afterEach(() => { 
 	const root = document.body[DOT_VDOM_PROP_NAME];
 	if (root && root.children) {
@@ -12,7 +8,6 @@ afterEach(() => {
 	}
 	document.body.innerHTML = ''; 
 	document.body[DOT_VDOM_PROP_NAME] = null;
-	jest.useRealTimers();
 });
 
 describe("DOM events.", ()=>{
@@ -52,13 +47,13 @@ describe("DOM events.", ()=>{
 		const text = 'Hello, World!';
 		inputElement!.value = text;
 		inputElement!.dispatchEvent(new Event('input', { bubbles: true }));
-		jest.runAllTimers();
+		(dot as any).flushSync();
 		expect(inputElement!.value).toBe(text);
 	
 		// Simulate blurring the input
 		inputElement!.blur();
 		inputElement!.dispatchEvent(new Event('change', { bubbles: true }));
-		jest.runAllTimers();
+		(dot as any).flushSync();
 		expect(mockChangeHandler).toHaveBeenCalled();
 		expect(mockBlurHandler).toHaveBeenCalled();
 		expect(document.activeElement).not.toBe(inputElement);
@@ -87,7 +82,6 @@ describe("Values.", ()=>{
 
 		input.value = "abc123";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 
 		expect(obs.value).toBe("abc123");
@@ -125,7 +119,6 @@ describe("Values.", ()=>{
 
 		input.checked = true;
 		input.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 
 		expect(obs.value).toBe(true);
@@ -173,7 +166,7 @@ describe("Values.", ()=>{
 		(dot as any).flushSync();
 		// Programmatic update of one radio doesn't automatically update other signals in the group yet.
 		// input2.dispatchEvent(new Event("input", { bubbles: true }));
-		// jest.runAllTimers();
+		// (dot as any).flushSync();
 		// (dot as any).flushSync();
 
 		expect(input1.checked).toBe(false);
@@ -184,7 +177,6 @@ describe("Values.", ()=>{
 		
 		input3.checked = true;
 		input3.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 		
 		expect(input1.checked).toBe(false);
@@ -237,7 +229,7 @@ describe("Values.", ()=>{
 		(dot as any).flushSync();
 		// Programmatic update of one radio doesn't automatically update other signals in the group yet.
 		// input2.dispatchEvent(new Event("input", { bubbles: true }));
-		// jest.runAllTimers();
+		// (dot as any).flushSync();
 		// (dot as any).flushSync();
 
 		expect(input1.checked).toBe(false);
@@ -248,7 +240,6 @@ describe("Values.", ()=>{
 		
 		input3.checked = true;
 		input3.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 		
 		expect(input1.checked).toBe(false);
@@ -279,7 +270,6 @@ describe("Values.", ()=>{
 
 		input.value = "abc123";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 
 		expect(obs.value).toBe("123");
@@ -327,7 +317,6 @@ describe("Values.", ()=>{
 
 		input.value = "abc123";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 
 		expect(obs.value).toBe("abc123");
@@ -369,7 +358,6 @@ describe("Values.", ()=>{
 		
 		input.value = "3";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 		
 		expect(opt1.selected).toBe(false);
@@ -379,7 +367,6 @@ describe("Values.", ()=>{
 		
 		opt1.selected = true;
 		opt1.dispatchEvent(new Event("input", { bubbles: true }));
-		jest.runAllTimers();
 		(dot as any).flushSync();
 		expect(opt1.selected).toBe(true);
 		expect(opt2.selected).toBe(false);

@@ -26,14 +26,16 @@ export default class ElementVdom extends Vdom{
 	tag: string = null;
 	private attributes: Record<string, AttributeValueType> = {};
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
-	private attributeObserverIds: Array<{id: number, observable: Binding}> = [];
+	private attributeObserverIds: Array<{id: number, observable: Binding, attr: string}> = [];
 	private childBuilders: Array<{_render: (el: HTMLElement)=>void, _unrender: ()=>void}> = [];
 	private attrVNodes: Array<AttributeVNode> = [];
 	private styleVNodes: Array<StyleVNode> = [];
 	private ref: Ref | ((el: HTMLElement | null) => void);
 	inputListener: (e: any) => void;
-	private inputTimeout: any = null;
+	compositionStartListener: () => void;
+	compositionEndListener: (e: any) => void;
 	private manualInputAllowed: boolean = true;
+	private isComposing: boolean = false;
 	private activeBindings: Record<string, Binding> = {};
 
 	constructor(dot: IDotCore, tag: string){
@@ -79,9 +81,14 @@ export default class ElementVdom extends Vdom{
 			this.inputListener = null;
 		}
 
-		if(this.inputTimeout){
-			clearTimeout(this.inputTimeout);
-			this.inputTimeout = null;
+		if(this.compositionStartListener){
+			this.element.removeEventListener("compositionstart", this.compositionStartListener);
+			this.compositionStartListener = null;
+		}
+
+		if(this.compositionEndListener){
+			this.element.removeEventListener("compositionend", this.compositionEndListener);
+			this.compositionEndListener = null;
 		}
 
 		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
@@ -150,6 +157,16 @@ export default class ElementVdom extends Vdom{
 			oldVal.unrender();
 			const idx = this.attrVNodes.indexOf(oldVal);
 			if (idx !== -1) this.attrVNodes.splice(idx, 1);
+		}
+
+		// Clean up old binding if it exists.
+		for (let i = 0; i < this.attributeObserverIds.length; i++) {
+			let item = this.attributeObserverIds[i];
+			if (item.attr === attr) {
+				item.observable._unsubscribe(item.id);
+				this.attributeObserverIds.splice(i, 1);
+				break;
+			}
 		}
 
 		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Signal || value instanceof BaseVStyle)){
@@ -231,32 +248,39 @@ export default class ElementVdom extends Vdom{
 		else if (value instanceof Binding){
 			this.renderAttr(attr, value._get(), node);
 			let id = value._subscribe(new ReactiveAttr(this, attr));
-			this.attributeObserverIds.push({id: id, observable: value});
+			this.attributeObserverIds.push({id: id, observable: value, attr: attr});
 
 			// If it's a value prop, update the observable on change.
 			if((attr == "value" || attr == "checked") && value.isWritable){
-				let timeout = null;
+				this.activeBindings[attr] = value;
 				if(!this.inputListener){
 					this.inputListener = (e)=>{
-						// if(!this.manualInputAllowed) return;
-						// const targetAttr = ((e.target as any).type === "checkbox" || (e.target as any).type === "radio") ? "checked" : "value";
-						// const binding = this.activeBindings[targetAttr];
-						// if(!binding) return;
+						if (this.isComposing) return;
+						try {
+							const targetAttr = ((e.target as any).type === "checkbox" || (e.target as any).type === "radio") ? "checked" : "value";
+							const binding = this.activeBindings[targetAttr];
+							if(!binding) return;
 
-						if(timeout) clearTimeout(timeout);
-						timeout = setTimeout(()=>{
-							try {
-								const val = (this.element as HTMLInputElement)[attr];
-								console.log("SETTING VALUE: " + val + " (type: " + typeof val + ")");
-								value._set(val);
-							} catch (e) {
-								console.log("CAUGHT ERROR: " + e.message);
-							}
-							timeout = null;
-						}, 200);
+							const val = (this.element as HTMLInputElement)[targetAttr];
+							binding._set(val);
+						} catch (e) {
+							console.error("CAUGHT ERROR: " + e.message);
+						}
 					}
 
-					(this.element as HTMLInputElement).addEventListener("input", this.inputListener);
+					this.compositionStartListener = () => {
+						this.isComposing = true;
+					};
+
+					this.compositionEndListener = (e) => {
+						this.isComposing = false;
+						// Manually trigger an update after composition ends.
+						this.inputListener(e);
+					};
+
+					this.element.addEventListener("input", this.inputListener);
+					this.element.addEventListener("compositionstart", this.compositionStartListener);
+					this.element.addEventListener("compositionend", this.compositionEndListener);
 				}
 			}
 
