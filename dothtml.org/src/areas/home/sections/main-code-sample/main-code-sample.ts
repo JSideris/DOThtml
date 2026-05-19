@@ -2,6 +2,27 @@ import { dot, DotComponent } from "dothtml";
 import MarkdownParser from "../../../../utils/MarkdownParser";
 
 @dot.component
+class SatelliteContent extends DotComponent {
+	props: { color: any };
+	build() {
+		return dot.div({ style: "padding: 20px; font-family: sans-serif; text-align: center;" },
+			dot.h3("Satellite Window"),
+			dot.p("I am a reactive child window."),
+			dot.div({ style: "display: flex; gap: 10px; justify-content: center; margin-top: 20px;" },
+				dot.button({ 
+					style: "padding: 8px 16px; cursor: pointer; background: #4ecdc4; border: none; border-radius: 4px; font-weight: bold;",
+					onClick: () => this.props.color.value = "#4ecdc4" 
+				}, "Teal"),
+				dot.button({ 
+					style: "padding: 8px 16px; cursor: pointer; background: #ff6b6b; border: none; border-radius: 4px; font-weight: bold;",
+					onClick: () => this.props.color.value = "#ff6b6b" 
+				}, "Red")
+			)
+		);
+	}
+}
+
+@dot.component
 export default class MainCodeSample extends DotComponent {
 	private activeExample = dot.state("Counter");
 
@@ -15,6 +36,11 @@ export default class MainCodeSample extends DotComponent {
 
 	// Example 4: Styling
 	private pulseFast = dot.state(false);
+
+	// Example 5: Popups
+	private popupColor = dot.state("#ff6b6b");
+	private satelliteWrapper: any = null;
+	private isSatelliteOpen = dot.state(false);
 
 	// Example 3: Store (Notification Service)
 	private static alertStore = dot.store({
@@ -34,6 +60,39 @@ export default class MainCodeSample extends DotComponent {
 			}
 		}
 	});
+
+	private toggleSatellite() {
+		if (this.satelliteWrapper?.isOpen) {
+			this.satelliteWrapper.focus();
+			return;
+		}
+
+		this.satelliteWrapper = dot.window({
+			title: "Satellite Controller",
+			content: new SatelliteContent({ color: this.popupColor }),
+			width: 350,
+			height: 250,
+			position: "beside-parent",
+			tether: true,
+			syncStyles: true
+		});
+
+		this.satelliteWrapper.open().then(() => {
+			this.isSatelliteOpen.value = true;
+			this.satelliteWrapper.window.addEventListener("beforeunload", () => {
+				this.isSatelliteOpen.value = false;
+			});
+		});
+	}
+
+	private teleportSatellite() {
+		if (this.satelliteWrapper?.isOpen) {
+			const x = Math.random() * (window.screen.width - 350);
+			const y = Math.random() * (window.screen.height - 250);
+			this.satelliteWrapper.moveTo(x, y);
+			this.satelliteWrapper.focus();
+		}
+	}
 
 	stylize(s: any) {
 		return s.class("code-sample-section", s => s
@@ -334,6 +393,73 @@ class Pulse extends DotComponent {
 						onClick: () => this.pulseFast.value = !this.pulseFast.value
 					}, "DOT"),
 					dot.p({ style: "margin-top: 20px; color: #a0a0a0; font-size: 12px;" }, "Click the box to toggle Turbo Mode")
+				)
+			},
+			"Popups": {
+				code: `@dot.component
+class App extends DotComponent {
+  color = dot.state("#ff6b6b");
+  satellite = null;
+
+  toggleSatellite() {
+    if (this.satellite?.isOpen) {
+      this.satellite.focus(); // Prevent duplicates
+      return;
+    }
+
+    this.satellite = dot.window({
+      title: "Satellite Controller",
+      content: new Satellite({ color: this.color }),
+      width: 350, height: 250,
+      position: "beside-parent",
+      tether: true, // Auto-close with parent
+      syncStyles: true
+    });
+    
+    this.satellite.open();
+  }
+
+  teleport() {
+    this.satellite?.moveTo(
+      Math.random() * 500, 
+      Math.random() * 500
+    );
+  }
+
+  build() {
+    return dot.div({ style: s => s.backgroundColor(this.color) },
+      dot.button({ onClick: () => this.toggleSatellite() }, 
+        "Spawn Satellite"
+      ),
+      dot.button({ onClick: () => this.teleport() }, 
+        "Teleport"
+      ),
+      dot.button({ onClick: () => this.satellite?.close() }, 
+        "Close"
+      )
+    );
+  }
+}`,
+				preview: () => dot.div(
+					dot.div({ 
+						style: s => s.widthPx(100).heightPx(50).backgroundColor(this.popupColor).borderRadiusPx(8).marginBottomPx(20).transition("background-color 0.3s")
+					}),
+					dot.div({ style: "display: flex; gap: 10px;" },
+						dot.button({ 
+							class: "btn",
+							onClick: () => this.toggleSatellite()
+						}, this.isSatelliteOpen.bindAs(open => open ? "Focus Satellite" : "Spawn Satellite")),
+						dot.button({ 
+							class: "btn",
+							style: this.isSatelliteOpen.bindAs(open => open ? "" : "display: none"),
+							onClick: () => this.teleportSatellite()
+						}, "Teleport"),
+						dot.button({ 
+							class: "btn",
+							style: this.isSatelliteOpen.bindAs(open => open ? "background-color: #ff4757" : "display: none"),
+							onClick: () => this.satelliteWrapper?.close()
+						}, "Close")
+					)
 				)
 			}
 		};

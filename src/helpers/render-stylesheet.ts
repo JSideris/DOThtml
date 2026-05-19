@@ -1,6 +1,6 @@
 import { IDotCss } from "dothtml-interfaces";
 
-const stylesheetCache = new Map<string, CSSStyleSheet>();
+const stylesheetCache = new WeakMap<Document, Map<string, CSSStyleSheet>>();
 
 export default function renderStylesheet(styleCallback: string|CSSStyleSheet|((css: any)=>(string|IDotCss)), document: Document): CSSStyleSheet|HTMLStyleElement {
 
@@ -25,8 +25,14 @@ export default function renderStylesheet(styleCallback: string|CSSStyleSheet|((c
 		}
 	}
 
-	if (stylesheetCache.has(finalStylesheet)) {
-		return stylesheetCache.get(finalStylesheet);
+	let docCache = stylesheetCache.get(document);
+	if (!docCache) {
+		docCache = new Map();
+		stylesheetCache.set(document, docCache);
+	}
+
+	if (docCache.has(finalStylesheet)) {
+		return docCache.get(finalStylesheet);
 	}
 
 	let DocumentCSSStyleSheet = (document.defaultView as any)?.CSSStyleSheet;
@@ -36,7 +42,7 @@ export default function renderStylesheet(styleCallback: string|CSSStyleSheet|((c
 			let sharedStyles = new DocumentCSSStyleSheet();
 			if (sharedStyles.replaceSync) {
 				sharedStyles.replaceSync(finalStylesheet);
-				stylesheetCache.set(finalStylesheet, sharedStyles);
+				docCache.set(finalStylesheet, sharedStyles);
 				return sharedStyles;
 			}
 		} catch (e) {

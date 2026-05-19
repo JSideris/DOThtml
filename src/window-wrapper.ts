@@ -149,7 +149,22 @@ export default class WindowWrapper implements IDotWindowWrapper{
 
 		// 3. Copy adoptedStyleSheets
 		if(this.document.adoptedStyleSheets && document.adoptedStyleSheets){
-			this.document.adoptedStyleSheets = [...document.adoptedStyleSheets];
+			const clonedSheets = [];
+			for(const sheet of document.adoptedStyleSheets){
+				try{
+					const newSheet = new (this.window as any).CSSStyleSheet();
+					let cssText = "";
+					for(let i = 0; i < sheet.cssRules.length; i++){
+						cssText += sheet.cssRules[i].cssText + "\n";
+					}
+					newSheet.replaceSync(cssText);
+					clonedSheets.push(newSheet);
+				}
+				catch(e){
+					console.warn("Failed to clone adopted stylesheet:", e);
+				}
+			}
+			this.document.adoptedStyleSheets = clonedSheets;
 		}
 
 		// 4. Copy <style> and <link> tags

@@ -434,6 +434,7 @@ export class ComponentVdom extends Vdom{
 				const updateSubscription = {
 					active: true,
 					update: () => {
+						if (!this.shadowEl) return;
 						const val = gv.value instanceof Binding ? gv.value._get() : (gv.value as any).value;
 						this.shadowEl.style.setProperty(gv.name, `${val}`);
 					}
