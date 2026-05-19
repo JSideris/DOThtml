@@ -13,10 +13,23 @@ export default class MainCodeSample extends DotComponent {
 	private lastName = dot.state("Doe");
 	private fullName = dot.computed(() => `${this.firstName.value} ${this.lastName.value}`);
 
-	// Example 3: Store
-	private static userStore = dot.store({
-		id: "main-demo-user",
-		state: () => ({ name: "Guest" })
+	// Example 3: Store (Notification Service)
+	private static alertStore = dot.store({
+		id: "main-demo-alerts",
+		state: () => ({ list: dot.state([] as Array<{id: number, text: string}>, "id") }),
+		getters: {
+			count: (s: any) => s.list.value.length
+		},
+		actions: {
+			push(text: string) {
+				const id = Date.now() + Math.random();
+				const newAlert = { id, text };
+				this.list.value = [...this.list.value, newAlert];
+				setTimeout(() => {
+					this.list.value = this.list.value.filter((m: any) => m.id !== id);
+				}, 3000);
+			}
+		}
 	});
 
 	stylize(s: any) {
@@ -80,6 +93,8 @@ export default class MainCodeSample extends DotComponent {
 			.borderRadiusPx(12)
 			.paddingPx(40)
 			.minHeightPx(350)
+			.position("relative")
+			.overflow("hidden")
 		).class("counter-display", d => d
 			.fontSizePx(48)
 			.fontWeight(700)
@@ -133,6 +148,27 @@ export default class MainCodeSample extends DotComponent {
 		).keyframes("pulse-demo", k => k
 			.from(f => f.transform({ scale: 1 }).boxShadow(`0 0 0 0px ${s.v("primary")}66`))
 			.to(t => t.transform({ scale: 1.05 }).boxShadow(`0 0 0 20px ${s.v("primary")}00`))
+		).class("toast-container", tc => tc
+			.position("absolute")
+			.bottomPx(20)
+			.rightPx(20)
+			.display("flex")
+			.flexDirection("column")
+			.gapPx(10)
+			.alignItems("flex-end")
+		).class("toast", t => t
+			.paddingPx(10, 20)
+			.backgroundColor(s.v("primary"))
+			.color("#000")
+			.borderRadiusPx(8)
+			.fontSizePx(12)
+			.fontWeight(600)
+			.boxShadow("0 4px 12px rgba(0,0,0,0.3)")
+			.animationName("toast-in")
+			.animationDurationS(0.3)
+		).keyframes("toast-in", k => k
+			.from(f => f.transform({ translateX: 20 }).opacity(0))
+			.to(t => t.transform({ translateX: 0 }).opacity(1))
 		).media("screen and (max-width: 900px)", m => m
 			.class("code-sample-container", c => c
 				.flexDirection("column")
@@ -201,38 +237,58 @@ class NameDisplay extends DotComponent {
 				)
 			},
 			"Store": {
-				code: `const useUserStore = dot.store({
-  id: "user-profile",
-  state: () => ({ name: "Guest" })
+				code: `const useAlerts = dot.store({
+  id: "alerts",
+  // Use "id" as a stable key
+  state: () => ({ 
+    list: dot.state([], "id") 
+  }),
+  getters: {
+    count: (s) => s.list.value.length
+  },
+  actions: {
+    push(text) {
+      const id = Date.now();
+      const newAlert = { id, text };
+      this.list.value = [...this.list.value, newAlert];
+      setTimeout(() => 
+        this.list.value = this.list.value
+          .filter(a => a.id !== id), 3000
+      );
+    }
+  }
 });
 
 @dot.component
-class ProfileEditor extends DotComponent {
-  user = useUserStore();
+class App extends DotComponent {
+  alerts = useAlerts();
   build() {
-    return dot.input({ 
-      bind: this.user.name
-    });
-  }
-}
-
-@dot.component
-class WelcomeHeader extends DotComponent {
-  user = useUserStore();
-  build() {
-    return dot.h2("Welcome, ", this.user.name);
+    return dot.div(
+      dot.button({ 
+        onClick: () => this.alerts.push("Success!") 
+      }, "Trigger Alert"),
+      dot.p("Active alerts: ", this.alerts.count),
+      dot.div({ class: "toast-container" },
+        dot.each(this.alerts.list, alert => 
+          dot.div({ class: "toast" }, alert.text)
+        )
+      )
+    );
   }
 }`,
 				preview: () => {
-					const user = MainCodeSample.userStore();
-					return dot.div({ class: "input-group" },
-						dot.div({ style: "margin-bottom: 10px; font-size: 14px; color: #a0a0a0;" }, "Shared state across components:"),
-						dot.input({ 
-							class: "input-field",
-							bind: user.name,
-							placeholder: "Type your name..."
-						} as any),
-						dot.div({ class: "full-name" }, "Welcome, ", user.name)
+					const alerts = MainCodeSample.alertStore();
+					return dot.div(
+						dot.button({ 
+							class: "btn",
+							onClick: () => alerts.push(`Alert ${Date.now().toString().slice(-4)}`) 
+						}, "Trigger Alert"),
+						dot.p({ style: "margin-top: 20px; color: #a0a0a0;" }, "Active alerts: ", alerts.count),
+						dot.div({ class: "toast-container" },
+							dot.each(alerts.list, (alert: any) => 
+								dot.div({ class: "toast" }, alert.text)
+							)
+						)
 					);
 				}
 			},

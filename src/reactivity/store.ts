@@ -33,8 +33,11 @@ export function createStore<
 		if (stateFn) {
 			const rawState = stateFn();
 			for (const key in rawState) {
-				const signal = new Signal();
-				signal.value = rawState[key];
+				const val = rawState[key];
+				const signal = (val as any) instanceof Signal ? (val as Signal) : new Signal();
+				if (signal !== (val as any)) {
+					signal.value = val;
+				}
 				store._state[key] = signal;
 				
 				Object.defineProperty(store, key, {
