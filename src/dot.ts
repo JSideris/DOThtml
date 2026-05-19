@@ -309,6 +309,16 @@ const makeDot = ()=>{
 		return new RefCollection<T>();
 	}
 
+	_dot.alpha = function(color: string | Signal<string> | Binding<string>, opacity: number | Signal<number> | Binding<number>) {
+		return new Computed(() => {
+			const c = color instanceof Binding ? color._get() : (color instanceof Signal ? color.value : color);
+			const o = opacity instanceof Binding ? opacity._get() : (opacity instanceof Signal ? opacity.value : opacity);
+			
+			const percentage = Math.round(Math.max(0, Math.min(100, (1 - o) * 100)) * 100) / 100;
+			return `color-mix(in srgb, ${c}, transparent ${percentage}%)`;
+		});
+	};
+
 	_dot.globalStyles = [];
 	_dot.useGlobalStyles = (styles: string | CSSStyleSheet | Array<string | CSSStyleSheet>) => {
 		const stylesArray = Array.isArray(styles) ? styles : [styles];

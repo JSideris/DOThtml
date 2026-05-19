@@ -40,12 +40,17 @@ Unlike some frameworks that round values to the nearest integer, DOThtml preserv
 
 ### Nested Style Objects
 
-For complex properties like `filter` and `transform`, you can pass a plain object to the builder. DOThtml will automatically convert it into the correct CSS function syntax.
+For complex properties like `filter` and `transform`, you can pass a plain object to the builder. DOThtml will automatically convert it into the correct CSS function syntax. **This also works with reactive Signals and Bindings.**
 
 ```javascript
 dot.div("Filtered Content")
   .style(s => s.filter({ blur: "5px", brightness: 0.8 }));
   // Renders: filter: blur(5px) brightness(0.8);
+
+// Reactive usage
+const scale = dot.state(1.5);
+dot.div("Zooming Content")
+  .style(s => s.transform({ scale: scale }));
 ```
 
 ## Reactive Styling
@@ -100,6 +105,21 @@ stylize(s) {
   );
 }
 ```
+
+### Color Alpha Utility (`dot.alpha`)
+
+CSS variables are powerful, but they have a limitation: you cannot easily append an alpha channel to them (e.g., `var(--primary)88` is invalid). DOThtml provides the `dot.alpha()` utility to safely handle this using modern CSS `color-mix`.
+
+```javascript
+const opacity = dot.state(0.5);
+
+dot.div("Faded Background")
+  .style(s => s
+    .backgroundColor(dot.alpha("var(--primary)", opacity))
+  );
+```
+
+This utility works with static strings, Signals, or Bindings for both the color and the opacity.
 
 ### Batching and Performance
 

@@ -99,6 +99,23 @@ export default class StyleSheetBuilder {
 		return `var(${name})`;
 	}
 
+	private applyObjectToBuilder(builder: CssFunctionBuilderVStyle, cssValue: any) {
+		let funcArray = Array.isArray(cssValue) ? cssValue : [cssValue];
+		for (let funcValue of funcArray) {
+			for (let k in funcValue) {
+				let v = funcValue[k];
+				let methodKey = k.replace(/_\d+$/, "");
+				if (typeof builder[methodKey] === "function") {
+					if (Array.isArray(v)) {
+						builder[methodKey](...v);
+					} else {
+						builder[methodKey](v);
+					}
+				}
+			}
+		}
+	}
+
 	formatPropsForBlock(style: BaseVStyle): string {
 		return style.getProps().map(p => {
 			const registered = cssProps[p.prop];
@@ -119,20 +136,7 @@ export default class StyleSheetBuilder {
 				}
 
 				if (builder) {
-					let funcArray = Array.isArray(cssValue) ? cssValue : [cssValue];
-					for (let funcValue of funcArray) {
-						for (let k in funcValue) {
-							let v = funcValue[k];
-							let methodKey = k.replace(/_\d+$/, "");
-							if (typeof builder[methodKey] === "function") {
-								if (Array.isArray(v)) {
-									builder[methodKey](...v);
-								} else {
-									builder[methodKey](v);
-								}
-							}
-						}
-					}
+					this.applyObjectToBuilder(builder, cssValue);
 					cssValue = builder;
 				}
 			}
@@ -156,7 +160,22 @@ export default class StyleSheetBuilder {
 					const reactiveSource = cssValue;
 					let reactiveValue: any = cssValue;
 
-					if (registered && (registered.type === "length" || registered.type === "hybrid") && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
+					if ((p.prop === "transform" || p.prop === "filter") && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
+						reactiveValue = new Computed(() => {
+							const val = reactiveSource instanceof Binding ? reactiveSource._get() : (reactiveSource as any).value;
+							if (typeof val === "object" && val !== null) {
+								const builder = p.prop === "transform" ? new TransformVStyle(p.prop) : new FilterVStyle(p.prop);
+								this.applyObjectToBuilder(builder, val);
+								return builder.toString();
+							}
+							return val;
+						});
+					} else if (registered && registered.unit && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
+						reactiveValue = new Computed(() => {
+							const val = reactiveSource instanceof Binding ? reactiveSource._get() : (reactiveSource as any).value;
+							return typeof val === "number" ? `${val}${registered.unit}` : val;
+						});
+					} else if (registered && (registered.type === "length" || registered.type === "hybrid") && !(reactiveSource instanceof CssFunctionBuilderVStyle)) {
 						reactiveValue = new Computed(() => {
 							const val = reactiveSource instanceof Binding ? reactiveSource._get() : (reactiveSource as any).value;
 							if (typeof val === "number") {

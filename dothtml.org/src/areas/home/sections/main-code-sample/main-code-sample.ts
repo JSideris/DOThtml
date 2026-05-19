@@ -13,6 +13,9 @@ export default class MainCodeSample extends DotComponent {
 	private lastName = dot.state("Doe");
 	private fullName = dot.computed(() => `${this.firstName.value} ${this.lastName.value}`);
 
+	// Example 4: Styling
+	private pulseFast = dot.state(false);
+
 	// Example 3: Store (Notification Service)
 	private static alertStore = dot.store({
 		id: "main-demo-alerts",
@@ -83,6 +86,7 @@ export default class MainCodeSample extends DotComponent {
 			.color("#d4d4d4")
 			.overflow("auto")
 			.minHeightPx(350)
+			.maxHeightPx(500)
 		).class("preview-pane", p => p
 			.flex(1)
 			.display("flex")
@@ -93,6 +97,7 @@ export default class MainCodeSample extends DotComponent {
 			.borderRadiusPx(12)
 			.paddingPx(40)
 			.minHeightPx(350)
+			.maxHeightPx(500)
 			.position("relative")
 			.overflow("hidden")
 		).class("counter-display", d => d
@@ -135,19 +140,21 @@ export default class MainCodeSample extends DotComponent {
 		).class("pulse-box", p => p
 			.widthPx(100)
 			.heightPx(100)
-			.backgroundColor(s.v("primary"))
+			.backgroundColor(this.pulseFast.bindAs(f => f ? s.v("secondary") : s.v("primary")))
 			.borderRadiusPx(20)
 			.display("flex")
 			.alignItems("center")
 			.justifyContent("center")
 			.color("#000")
 			.fontWeight(800)
+			.cursor("pointer")
 			.animationName("pulse-demo")
-			.animationDurationS(2)
+			.animationDurationS(this.pulseFast.bindAs(f => f ? 0.6 : 2))
 			.animationIterationCount("infinite")
 		).keyframes("pulse-demo", k => k
-			.from(f => f.transform({ scale: 1 }).boxShadow(`0 0 0 0px ${s.v("primary")}66`))
-			.to(t => t.transform({ scale: 1.05 }).boxShadow(`0 0 0 20px ${s.v("primary")}00`))
+			.at(0, f => f.transform({ scale: 1, rotate: 0 }).boxShadow(s.template`0 0 0 0px color-mix(in srgb, ${s.v("primary")}, transparent 60%)`))
+			.at(50, m => m.transform(this.pulseFast.bindAs(f => ({ scale: f ? 1.3 : 1.1, rotate: f ? 10 : 0 })) as any).boxShadow(this.pulseFast.bindAs(f => `0 0 20px ${f ? "15px" : "10px"} color-mix(in srgb, ${f ? s.v("secondary") : s.v("primary")}, transparent 50%)`) as any))
+			.at(100, t => t.transform({ scale: 1, rotate: 0 }).boxShadow(s.template`0 0 0 0px color-mix(in srgb, ${s.v("primary")}, transparent 60%)`))
 		).class("toast-container", tc => tc
 			.position("absolute")
 			.bottomPx(20)
@@ -295,22 +302,39 @@ class App extends DotComponent {
 			"Styling": {
 				code: `@dot.component
 class Pulse extends DotComponent {
+  isFast = dot.state(false);
+
   stylize(s) {
     return s.class("box", b => b
-      .animationName("pulse")
-      .animationDurationS(2)
-      .animationIterationCount("infinite")
+      .backgroundColor(this.isFast.bindAs(f => 
+        f ? s.v("secondary") : s.v("primary")
+      ))
+      .animationDurationS(this.isFast.bindAs(f => 
+        f ? 0.6 : 2
+      ))
     ).keyframes("pulse", k => k
-      .from(f => f.transform({ scale: 1 }))
-      .to(t => t.transform({ scale: 1.1 }))
+      .at(0,   f => f.transform({ scale: 1, rotate: 0 }))
+      .at(50,  m => m.transform(this.isFast.bindAs(f => 
+        ({ scale: f ? 1.3 : 1.1, rotate: f ? 10 : 0 })
+      )))
+      .at(100, t => t.transform({ scale: 1, rotate: 0 }))
     );
   }
 
   build() {
-    return dot.div({ class: "box" }, "DOT");
+    return dot.div({ 
+      class: "box", 
+      onClick: () => this.isFast.value = !this.isFast.value 
+    }, "DOT");
   }
 }`,
-				preview: () => dot.div({ class: "pulse-box" }, "DOT")
+				preview: () => dot.div(
+					dot.div({ 
+						class: "pulse-box",
+						onClick: () => this.pulseFast.value = !this.pulseFast.value
+					}, "DOT"),
+					dot.p({ style: "margin-top: 20px; color: #a0a0a0; font-size: 12px;" }, "Click the box to toggle Turbo Mode")
+				)
 			}
 		};
 

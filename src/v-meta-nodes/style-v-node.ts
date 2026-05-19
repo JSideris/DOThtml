@@ -176,6 +176,10 @@ export default class StyleVNode extends VMetaNode {
 		let cssValue;
 		if (value instanceof CssFunctionBuilderVStyle) {
 			cssValue = value.toString();
+		} else if (typeof value === "object" && value !== null && (prop === "transform" || prop === "filter")) {
+			const builder = prop === "transform" ? new TransformVStyle(prop) : new FilterVStyle(prop);
+			this.applyObjectToBuilder(builder, value);
+			cssValue = builder.toString();
 		} else {
 			cssValue = value;
 		}
@@ -193,6 +197,8 @@ export default class StyleVNode extends VMetaNode {
 				} else {
 					cssValue = formatCssLength(cssValue, cssUnit);
 				}
+			} else if (registeredProp.unit && typeof cssValue === "number") {
+				cssValue = `${cssValue}${registeredProp.unit}`;
 			}
 		}
 
@@ -217,10 +223,31 @@ export default class StyleVNode extends VMetaNode {
 		return styles;
 	}
 
+	private applyObjectToBuilder(builder: CssFunctionBuilderVStyle, value: any) {
+		let funcArray = Array.isArray(value) ? value : [value];
+		for (let funcValue of funcArray) {
+			for (let k in funcValue) {
+				let v = funcValue[k];
+				let methodKey = k.replace(/_\d+$/, "");
+				if (typeof builder[methodKey] === "function") {
+					if (Array.isArray(v)) {
+						builder[methodKey](...v);
+					} else {
+						builder[methodKey](v);
+					}
+				}
+			}
+		}
+	}
+
 	private formatSingleStyle(prop: string, value: any): string {
 		let cssValue = value instanceof Binding ? value._get() : (value instanceof Signal ? value.value : value);
 		if (cssValue instanceof CssFunctionBuilderVStyle) {
 			cssValue = cssValue.toString();
+		} else if (typeof cssValue === "object" && cssValue !== null && (prop === "transform" || prop === "filter")) {
+			const builder = prop === "transform" ? new TransformVStyle(prop) : new FilterVStyle(prop);
+			this.applyObjectToBuilder(builder, cssValue);
+			cssValue = builder.toString();
 		}
 
 		let cssProp = prop;
@@ -236,6 +263,8 @@ export default class StyleVNode extends VMetaNode {
 				} else {
 					cssValue = formatCssLength(cssValue, cssUnit);
 				}
+			} else if (registeredProp.unit && typeof cssValue === "number") {
+				cssValue = `${cssValue}${registeredProp.unit}`;
 			}
 		}
 		return `${cssProp}: ${cssValue}; `;
