@@ -109,6 +109,33 @@ const theme = dot.state("dark");
 dot.css.variable("theme-mode", theme);
 ```
 
+## Two-Way Binding
+
+DOThtml supports explicit two-way binding for form elements using the `bind` attribute. This synchronizes the DOM state with a `Signal` or `Binding` in both directions.
+
+```javascript
+const name = dot.state("John");
+
+dot.input({ bind: name }); // Typing in the input updates the signal.
+dot.div("Hello, ", name);  // The div updates as you type.
+```
+
+### Supported Elements
+- `<input>`: Binds to the `value` property (or `checked` for checkboxes/radios).
+- `<textarea>`: Binds to the `value` property.
+- `<select>`: Binds to the `value` property.
+
+### One-Way vs. Two-Way
+Using the standard `value` or `checked` attributes with a signal provides **one-way binding** (Signal -> DOM). To enable **two-way binding** (Signal <-> DOM), you must use the `bind` attribute.
+
+```javascript
+// One-way: DOM updates when signal changes, but not vice versa.
+dot.input({ value: mySignal }); 
+
+// Two-way: DOM and signal are kept in sync.
+dot.input({ bind: mySignal }); 
+```
+
 ## Next Steps
 
 Now that you understand reactivity, see some real-world **[Use Cases](./use-cases.md)** for DOThtml.

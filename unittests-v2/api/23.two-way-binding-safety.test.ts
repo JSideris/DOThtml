@@ -14,7 +14,7 @@ describe("Two-way binding safety.", () => {
 	test("Race Condition: Unrender after input should not throw or set undefined.", () => {
 		let obs = dot.state("initial");
 		
-		dot(document.body).input({ id: "my-input", value: obs });
+		dot(document.body).input({ id: "my-input", bind: obs } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		input.value = "new value";
@@ -37,7 +37,7 @@ describe("Two-way binding safety.", () => {
 		let obs2 = dot.state("obs2");
 		
 		// We'll manually call setAttr to simulate a binding swap
-		dot(document.body).input({ id: "my-input", value: obs1.bind() });
+		dot(document.body).input({ id: "my-input", bind: obs1.bind() } as any);
 		
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		let vdom = input[DOT_VDOM_PROP_NAME];
@@ -49,7 +49,7 @@ describe("Two-way binding safety.", () => {
 		input.dispatchEvent(new Event("input", { bubbles: true }));
 
 		// Swap binding immediately
-		vdom.setAttr("value", obs2.bind());
+		vdom.setAttr("bind", obs2.bind());
 		(dot as any).flushSync();
 		expect(input.value).toBe("obs2");
 
@@ -68,8 +68,8 @@ describe("Two-way binding safety.", () => {
 		let obs2 = dot.state("v2");
 		
 		dot(document.body)
-			.input({ id: "input1", value: obs1.bind() })
-			.input({ id: "input2", value: obs2.bind() });
+			.input({ id: "input1", bind: obs1.bind() } as any)
+			.input({ id: "input2", bind: obs2.bind() } as any);
 			
 		let i1 = document.getElementById("input1") as HTMLInputElement;
 		let i2 = document.getElementById("input2") as HTMLInputElement;

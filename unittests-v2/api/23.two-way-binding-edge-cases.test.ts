@@ -15,7 +15,7 @@ afterEach(() => {
 describe("Two-way binding edge cases.", () => {
 	test("Basic two-way binding.", () => {
 		const name = dot.state("John");
-		dot(document.body).input({ value: name });
+		dot(document.body).input({ bind: name } as any);
 		const input = document.body.querySelector("input") as HTMLInputElement;
 		
 		expect(input.value).toBe("John");

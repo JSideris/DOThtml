@@ -182,8 +182,8 @@ class NameDisplay extends DotComponent {
 
   build() {
     return dot.div(
-      dot.input({ value: this.first }),
-      dot.input({ value: this.last }),
+      dot.input({ bind: this.first }),
+      dot.input({ bind: this.last }),
       dot.h2("Hello, ", this.full)
     );
   }
@@ -191,12 +191,12 @@ class NameDisplay extends DotComponent {
 				preview: () => dot.div({ class: "input-group" },
 					dot.input({ 
 						class: "input-field",
-						value: this.firstName
-					}),
+						bind: this.firstName
+					} as any),
 					dot.input({ 
 						class: "input-field",
-						value: this.lastName
-					}),
+						bind: this.lastName
+					} as any),
 					dot.div({ class: "full-name" }, "Hello, ", this.fullName)
 				)
 			},
@@ -211,8 +211,7 @@ class ProfileEditor extends DotComponent {
   user = useUserStore();
   build() {
     return dot.input({ 
-      value: this.user.name,
-      onInput: (e) => this.user.name.value = e.target.value
+      bind: this.user.name
     });
   }
 }
@@ -230,10 +229,9 @@ class WelcomeHeader extends DotComponent {
 						dot.div({ style: "margin-bottom: 10px; font-size: 14px; color: #a0a0a0;" }, "Shared state across components:"),
 						dot.input({ 
 							class: "input-field",
-							value: user.name,
-							onInput: (e: any) => user.name.value = e.target.value,
+							bind: user.name,
 							placeholder: "Type your name..."
-						}),
+						} as any),
 						dot.div({ class: "full-name" }, "Welcome, ", user.name)
 					);
 				}

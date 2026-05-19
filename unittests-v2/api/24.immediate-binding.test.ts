@@ -14,7 +14,7 @@ describe("Immediate binding tests.", () => {
 	test("Signal updates immediately on input.", () => {
 		let obs = dot.state("initial");
 		
-		dot(document.body).input({ id: "my-input", value: obs });
+		dot(document.body).input({ id: "my-input", bind: obs } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		expect(input.value).toBe("initial");
@@ -31,7 +31,7 @@ describe("Immediate binding tests.", () => {
 	test("Cursor position is preserved during immediate update.", () => {
 		let obs = dot.state("abc");
 		
-		dot(document.body).input({ id: "my-input", value: obs });
+		dot(document.body).input({ id: "my-input", bind: obs } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		input.focus();
@@ -52,7 +52,7 @@ describe("Immediate binding tests.", () => {
 	test("IME composition prevents immediate update.", () => {
 		let obs = dot.state("initial");
 		
-		dot(document.body).input({ id: "my-input", value: obs });
+		dot(document.body).input({ id: "my-input", bind: obs } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		// Start composition

@@ -30,18 +30,18 @@ describe("Explicit two-way binding (Phase 2).", () => {
 		expect(name.value).toBe("Manual");
 	});
 
-	test("dot.input({ value: signal }) provides two-way binding (backward compatibility).", () => {
+	test("dot.input({ value: signal }) is now ONE-WAY.", () => {
 		const name = dot.state("Initial");
 		dot(document.body).input({ id: "my-input", value: name } as any);
 		const input = document.getElementById("my-input") as HTMLInputElement;
 
 		expect(input.value).toBe("Initial");
 
-		// DOM -> Signal
+		// DOM -> Signal (should NO LONGER work)
 		input.value = "Manual";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
 		dot.flushSync();
-		expect(name.value).toBe("Manual");
+		expect(name.value).toBe("Initial");
 	});
 
 	test("dot.input({ value: signal, onInput: ... }) provides one-way binding for value.", () => {

@@ -66,7 +66,7 @@ describe("Values.", ()=>{
 
 		let obs = dot.state("abc");
 		
-		dot(document.body).input({ id: "my-input", value: obs });
+		dot(document.body).input({ id: "my-input", bind: obs } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		// Writing
@@ -107,7 +107,7 @@ describe("Values.", ()=>{
 
 		let obs = dot.state(true);
 
-		dot(document.body).input({ id: "my-input", type: "checkbox", checked: obs });
+		dot(document.body).input({ id: "my-input", type: "checkbox", bind: obs } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		expect(input.checked).toBe(true);
@@ -131,9 +131,9 @@ describe("Values.", ()=>{
 		let obs3 = dot.state(false);
 
 		dot(document.body)
-			.input({ id: "my-input-1", name: "group-1", type: "radio", checked: obs1 })
-			.input({ id: "my-input-2", name: "group-1", type: "radio", checked: obs2 })
-			.input({ id: "my-input-3", name: "group-1", type: "radio", checked: obs3 })
+			.input({ id: "my-input-1", name: "group-1", type: "radio", bind: obs1 } as any)
+			.input({ id: "my-input-2", name: "group-1", type: "radio", bind: obs2 } as any)
+			.input({ id: "my-input-3", name: "group-1", type: "radio", bind: obs3 } as any)
 			.input({ id: "my-input-4", name: "group-2", type: "radio", checked: true });
 
 		let input1 = document.getElementById("my-input-1") as HTMLInputElement;
@@ -194,9 +194,9 @@ describe("Values.", ()=>{
 		let obs3 = dot.state("FALSE");
 
 		dot(document.body)
-			.input({ id: "my-input-1", name: "group-1", type: "radio", checked: obs1.bindAs({display: v=>v=="TRUE"}) })
-			.input({ id: "my-input-2", name: "group-1", type: "radio", checked: obs2.bindAs({display: v=>v=="TRUE"}) })
-			.input({ id: "my-input-3", name: "group-1", type: "radio", checked: obs3.bindAs({display: v=>v=="TRUE"}) })
+			.input({ id: "my-input-1", name: "group-1", type: "radio", bind: obs1.bindAs({display: v=>v=="TRUE"}) } as any)
+			.input({ id: "my-input-2", name: "group-1", type: "radio", bind: obs2.bindAs({display: v=>v=="TRUE"}) } as any)
+			.input({ id: "my-input-3", name: "group-1", type: "radio", bind: obs3.bindAs({display: v=>v=="TRUE"}) } as any)
 			.input({ id: "my-input-4", name: "group-2", type: "radio", checked: true });
 
 		let input1 = document.getElementById("my-input-1") as HTMLInputElement;
@@ -300,7 +300,7 @@ describe("Values.", ()=>{
 
 		let obs = dot.state("abc");
 		
-		dot(document.body).textArea({id: "my-input", value: obs});
+		dot(document.body).textArea({id: "my-input", bind: obs} as any);
 		(dot as any).flushSync();
 		let input = document.getElementById("my-input") as HTMLTextAreaElement;
 		
@@ -328,7 +328,7 @@ describe("Values.", ()=>{
 		let obs = dot.state("1");
 		
 		dot(document.body).select(
-			{ value: obs, id: "my-input" },
+			{ bind: obs, id: "my-input" } as any,
 			
 			dot.option( { id: "option-1", value: "1" })
 			.option({ id: "option-2", value: "2" })

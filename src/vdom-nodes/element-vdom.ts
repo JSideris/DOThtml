@@ -154,6 +154,15 @@ export default class ElementVdom extends Vdom{
 	setAttr(attr, value){
 
 		attr = (attr ?? "").toLowerCase();
+		let targetAttr = attr;
+		if(attr == "bind"){
+			let typeAttr = this.attributes["type"];
+			if (typeAttr instanceof Binding) typeAttr = typeAttr._get();
+			else if (typeAttr instanceof Signal) typeAttr = typeAttr.value;
+
+			const type = (typeof typeAttr === "string") ? typeAttr.toLowerCase() : null;
+			targetAttr = (this.tag.toLowerCase() == "input" && (type == "checkbox" || type == "radio")) ? "checked" : "value";
+		}
 
 		const oldVal = this.attributes[attr];
 		if (oldVal instanceof StyleVNode) {
@@ -170,7 +179,7 @@ export default class ElementVdom extends Vdom{
 		// Clean up old binding if it exists.
 		for (let i = 0; i < this.attributeObserverIds.length; i++) {
 			let item = this.attributeObserverIds[i];
-			if (item.attr === attr) {
+			if (item.attr === attr || item.attr === targetAttr) {
 				item.observable._unsubscribe(item.id);
 				this.attributeObserverIds.splice(i, 1);
 				break;
@@ -279,13 +288,7 @@ export default class ElementVdom extends Vdom{
 			}
 
 			// If it's a value prop, update the observable on change.
-			if((attr == "value" || attr == "checked") && value.isWritable){
-				// Coordination check: if there's a manual listener, we only attach the internal one if it's an explicit bind.
-				if(!isExplicitBind){
-					const hasManualListener = this.events.some(e => e.name.toLowerCase() === "input" || e.name.toLowerCase() === "change");
-					if(hasManualListener) return;
-				}
-
+			if((attr == "value" || attr == "checked") && value.isWritable && isExplicitBind){
 				this.activeBindings[attr] = value;
 				if(!this.inputListener){
 					this.inputListener = (e)=>{

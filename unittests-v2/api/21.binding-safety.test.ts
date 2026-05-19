@@ -83,7 +83,7 @@ describe("Binding safety.", () => {
 			read: v => parseInt(v.replace("$", ""))
 		});
 		
-		dot(document.body).input({ id: "my-input", value: b });
+		dot(document.body).input({ id: "my-input", bind: b } as any);
 		let input = document.getElementById("my-input") as HTMLInputElement;
 		
 		expect(input.value).toBe("$10");

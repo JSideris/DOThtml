@@ -22,8 +22,8 @@ describe("Two-way binding race condition reproduction", () => {
 		dot(document.body).when(showInput, 
 			dot.input({ 
 				id: "test-input",
-				value: name 
-			})
+				bind: name 
+			} as any)
 		);
 		dot.flushSync();
 
@@ -59,8 +59,8 @@ describe("Two-way binding race condition reproduction", () => {
 		dot(document.body).when(showInput, 
 			dot.input({ 
 				id: "test-input",
-				value: name 
-			})
+				bind: name 
+			} as any)
 		);
 		dot.flushSync();
 
