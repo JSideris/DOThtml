@@ -37,6 +37,7 @@ export default class ElementVdom extends Vdom{
 	private manualInputAllowed: boolean = true;
 	private isComposing: boolean = false;
 	private activeBindings: Record<string, Binding> = {};
+	private lastSyncedValues: Record<string, any> = {};
 
 	constructor(dot: IDotCore, tag: string){
 		super();
@@ -63,35 +64,42 @@ export default class ElementVdom extends Vdom{
 			this.children._render(this.element);
 		}
 
-		for(let a in this.attributes){
-			this.renderAttr(a, this.attributes[a], this.element);
-		}
-
+		// Render events first so they are available for attribute checks.
 		for(let i = 0; i < this.events.length; i++){
 			let e = this.events[i];
 			this.renderEvent(e.name, e.callback, e.modifiers);
+		}
+
+		// Render 'type' first if it exists, as it affects how 'bind', 'value', and 'checked' are handled.
+		if (this.attributes["type"] !== undefined) {
+			this.renderAttr("type", this.attributes["type"], this.element);
+		}
+
+		for(let a in this.attributes){
+			if (a === "type") continue;
+			this.renderAttr(a, this.attributes[a], this.element);
 		}
 	}
 
 	_unrender() {
 		this.children._unrender();
 
+		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
 		if(this.inputListener){
-			this.element.removeEventListener("input", this.inputListener);
+			eventManager.removeListener(this.element, "input", this.inputListener);
 			this.inputListener = null;
 		}
 
 		if(this.compositionStartListener){
-			this.element.removeEventListener("compositionstart", this.compositionStartListener);
+			eventManager.removeListener(this.element, "compositionstart", this.compositionStartListener);
 			this.compositionStartListener = null;
 		}
 
 		if(this.compositionEndListener){
-			this.element.removeEventListener("compositionend", this.compositionEndListener);
+			eventManager.removeListener(this.element, "compositionend", this.compositionEndListener);
 			this.compositionEndListener = null;
 		}
 
-		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
 		for(let i = 0; i < this.events.length; i++){
 			let e = this.events[i];
 			eventManager.removeListener(this.element, e.name.toLowerCase(), e.callback);
@@ -210,7 +218,17 @@ export default class ElementVdom extends Vdom{
 		this.renderAttr((attr ?? "").toLowerCase(), value, this.element);
 	}
 
-	private renderAttr(attr: string, value: AttributeValueType, node: HTMLElement){
+	private renderAttr(attr: string, value: AttributeValueType, node: HTMLElement, isExplicitBind: boolean = false){
+
+		if(attr == "bind"){
+			let typeAttr = this.attributes["type"];
+			if (typeAttr instanceof Binding) typeAttr = typeAttr._get();
+			else if (typeAttr instanceof Signal) typeAttr = typeAttr.value;
+
+			const type = (typeof typeAttr === "string") ? typeAttr.toLowerCase() : null;
+			attr = (this.tag.toLowerCase() == "input" && (type == "checkbox" || type == "radio")) ? "checked" : "value";
+			isExplicitBind = true;
+		}
 
 		if(attr == "ref"){
 			this.ref = value as any;
@@ -225,6 +243,7 @@ export default class ElementVdom extends Vdom{
 		else if(typeof value === "string" || typeof value === "number"){
 			if(attr == "value" && (this.tag.toLowerCase() == "input" || this.tag.toLowerCase() == "textarea" || this.tag.toLowerCase() == "select")){
 				(node as any).value = value ?? "";
+				this.lastSyncedValues[attr] = value ?? "";
 			}
 			else{
 				node.setAttribute(attr, `${value}`);
@@ -233,9 +252,14 @@ export default class ElementVdom extends Vdom{
 		else if (typeof value === "boolean" || value == null || value == undefined){
 			if(attr == "checked" && this.tag.toLowerCase() == "input"){
 				(node as HTMLInputElement).checked = !!value;
+				this.lastSyncedValues[attr] = !!value;
 			}
 			else if(attr == "selected" && this.tag.toLowerCase() == "option"){
 				(node as HTMLOptionElement).selected = !!value;
+			}
+			else if(attr == "value" && (this.tag.toLowerCase() == "input" || this.tag.toLowerCase() == "textarea" || this.tag.toLowerCase() == "select")){
+				(node as any).value = value ?? "";
+				this.lastSyncedValues[attr] = value ?? "";
 			}
 			
 			if(value) node.setAttribute(attr, `${value}`);
@@ -246,12 +270,22 @@ export default class ElementVdom extends Vdom{
 			node.setAttribute(attr, value.join(" "));
 		}
 		else if (value instanceof Binding){
-			this.renderAttr(attr, value._get(), node);
-			let id = value._subscribe(new ReactiveAttr(this, attr));
-			this.attributeObserverIds.push({id: id, observable: value, attr: attr});
+			this.renderAttr(attr, value._get(), node, isExplicitBind);
+			
+			// Only subscribe if we haven't already for this attribute.
+			if (!this.attributeObserverIds.some(item => item.attr === attr && item.observable === value)) {
+				let id = value._subscribe(new ReactiveAttr(this, attr));
+				this.attributeObserverIds.push({id: id, observable: value, attr: attr});
+			}
 
 			// If it's a value prop, update the observable on change.
 			if((attr == "value" || attr == "checked") && value.isWritable){
+				// Coordination check: if there's a manual listener, we only attach the internal one if it's an explicit bind.
+				if(!isExplicitBind){
+					const hasManualListener = this.events.some(e => e.name.toLowerCase() === "input" || e.name.toLowerCase() === "change");
+					if(hasManualListener) return;
+				}
+
 				this.activeBindings[attr] = value;
 				if(!this.inputListener){
 					this.inputListener = (e)=>{
@@ -262,7 +296,17 @@ export default class ElementVdom extends Vdom{
 							if(!binding) return;
 
 							const val = (this.element as HTMLInputElement)[targetAttr];
-							binding._set(val);
+							const currentSigVal = binding._get();
+							const lastVal = this.lastSyncedValues[targetAttr];
+
+							// Only update the signal if the DOM changed AND the signal hasn't already been updated to this value.
+							// We use loose equality here to handle null/undefined/empty string transitions gracefully.
+							if (currentSigVal == lastVal && val != lastVal) {
+								binding._set(val);
+							}
+							
+							// Always update the last synced value to match the current state.
+							this.lastSyncedValues[targetAttr] = binding._get();
 						} catch (e) {
 							console.error("CAUGHT ERROR: " + e.message);
 						}
@@ -278,19 +322,13 @@ export default class ElementVdom extends Vdom{
 						this.inputListener(e);
 					};
 
-					this.element.addEventListener("input", this.inputListener);
-					this.element.addEventListener("compositionstart", this.compositionStartListener);
-					this.element.addEventListener("compositionend", this.compositionEndListener);
+					const eventManager = EventManager.getForDocument(this.element.ownerDocument);
+					eventManager.addListener(this.element, "input", this.inputListener);
+					eventManager.addListener(this.element, "compositionstart", this.compositionStartListener);
+					eventManager.addListener(this.element, "compositionend", this.compositionEndListener);
 				}
 			}
-
-			// TODO: support reactives of arrays. There's already a test for this.
 		}
-		// else if (value instanceof BaseVStyle){
-		// 	// Style building.
-		// 	value._render(this.element);
-		// 	this.childBuilders.push(value);
-		// }
 		else if(value instanceof AttributeVNode){
 			value.render(node);
 			this.attrVNodes.push(value);
@@ -299,13 +337,12 @@ export default class ElementVdom extends Vdom{
 			value.render(node);
 			this.styleVNodes.push(value);
 		}
-		else{
-			// TODO: 
-			// attachEvent((pendingCallTarget as Element), newName, call.params[0], call.arg3);
-		}
 	}
 
 	addEventListener(event: string, callback: (e: any)=>void, modifiers: string[] = []){
+		// Check if listener already exists to avoid duplicates.
+		if (this.events.some(e => e.name === event && e.callback === callback)) return;
+		
 		this.events.push({name: event, callback: callback, modifiers: modifiers});
 		if(this.element) this.renderEvent(event, callback, modifiers);
 	}

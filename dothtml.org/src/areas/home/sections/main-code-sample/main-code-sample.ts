@@ -14,12 +14,9 @@ export default class MainCodeSample extends DotComponent {
 	private fullName = dot.computed(() => `${this.firstName.value} ${this.lastName.value}`);
 
 	// Example 3: Store
-	private static counterStore = dot.store({
-		id: "main-demo-counter",
-		state: () => ({ count: 0 }),
-		actions: {
-			inc() { this.count.value++; }
-		}
+	private static userStore = dot.store({
+		id: "main-demo-user",
+		state: () => ({ name: "Guest" })
 	});
 
 	stylize(s: any) {
@@ -204,31 +201,40 @@ class NameDisplay extends DotComponent {
 				)
 			},
 			"Store": {
-				code: `const useStore = dot.store({
-  id: "counter",
-  state: () => ({ count: 0 }),
-  actions: {
-    inc() { this.count.value++; }
-  }
+				code: `const useUserStore = dot.store({
+  id: "user-profile",
+  state: () => ({ name: "Guest" })
 });
 
 @dot.component
-class GlobalCounter extends DotComponent {
-  counter = useStore();
+class ProfileEditor extends DotComponent {
+  user = useUserStore();
   build() {
-    return dot.button({ 
-      onClick: () => this.counter.inc() 
-    }, this.counter.count);
+    return dot.input({ 
+      value: this.user.name,
+      onInput: (e) => this.user.name.value = e.target.value
+    });
+  }
+}
+
+@dot.component
+class WelcomeHeader extends DotComponent {
+  user = useUserStore();
+  build() {
+    return dot.h2("Welcome, ", this.user.name);
   }
 }`,
 				preview: () => {
-					const store = MainCodeSample.counterStore();
-					return dot.div(
-						dot.div({ class: "counter-display" }, store.count),
-						dot.button({ 
-							class: "btn",
-							onClick: () => store.inc() 
-						}, "Global Increment")
+					const user = MainCodeSample.userStore();
+					return dot.div({ class: "input-group" },
+						dot.div({ style: "margin-bottom: 10px; font-size: 14px; color: #a0a0a0;" }, "Shared state across components:"),
+						dot.input({ 
+							class: "input-field",
+							value: user.name,
+							onInput: (e: any) => user.name.value = e.target.value,
+							placeholder: "Type your name..."
+						}),
+						dot.div({ class: "full-name" }, "Welcome, ", user.name)
 					);
 				}
 			},
