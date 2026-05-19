@@ -50,7 +50,7 @@ dot.flushSync();
 - **CSS Variables**: Built-in support for custom properties to enable high-performance theme updates.
 - **Style Batching**: Automatic grouping of style updates via the scheduler to minimize layout thrashing.
 - **DI (Dependency Injection)**: Decouple your application logic from the UI for better testability and modularity.
-- **Popup Management**: Manage popup windows and modals directly from your application state.
+- **[Popup Management](./popups.md)**: Manage popup windows and modals directly from your application state.
 - **Polymorphic Components**: Support for components that can render as different HTML elements while preserving logic.
 - **Enhanced Ref System**: Reactive references to elements and components with method proxying and keyed collections.
 

@@ -59,4 +59,11 @@ export abstract class Vdom{
 			temp.parentElement.removeChild(temp);
 		}
 	}
+
+	_moveTo(target: HTMLElement){
+		let nodes = this._getNodes();
+		for(let i = 0; i < nodes.length; i++){
+			target.appendChild(nodes[i]);
+		}
+	}
 }

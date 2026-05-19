@@ -23,6 +23,9 @@ For larger applications, DOThtml provides a built-in state management solution c
 ### [Fluent & Reactive Styling](./styling.md)
 A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables and media queries.
 
+### [Popup Window Management](./popups.md)
+DOThtml provides a unique "Multi-Window Orchestration Layer," allowing you to manage popup windows as seamless extensions of your main app with shared state and inherited styles.
+
 ### [Performance & Advanced Features](./detailed-features.md)
 DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.
 

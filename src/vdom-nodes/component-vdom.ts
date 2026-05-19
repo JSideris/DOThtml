@@ -509,6 +509,18 @@ export class ComponentVdom extends Vdom{
 		return this.shadowEl ? [this.shadowEl] : [];
 	}
 
+	_moveTo(target: HTMLElement){
+		const oldDoc = this.shadowEl?.ownerDocument;
+		const newDoc = target.ownerDocument;
+		
+		if(oldDoc && newDoc && oldDoc !== newDoc){
+			// Re-setup custom element in the new document
+			this.setupCustomElement(newDoc);
+		}
+		
+		super._moveTo(target);
+	}
+
 	addEventListener(event: string, callback: (e: any)=>void, modifiers: string[] = []){
 		this.events.push({name: event, callback: callback, modifiers: modifiers});
 		if(this.shadowEl) this.renderEvent(event, callback, modifiers);
