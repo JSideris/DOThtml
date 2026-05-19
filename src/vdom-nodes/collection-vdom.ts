@@ -1,4 +1,4 @@
-import { deepEqual, removeNodesBetween } from "../helpers/tools";
+import { deepEqual } from "../helpers/tools";
 import Binding from "../reactivity/binding";
 import Signal from "../reactivity/signal";
 import { TextVdom } from "./text-vdom";
@@ -35,6 +35,7 @@ export default class CollectionVdom extends Vdom{
 		nextMappedItems: Array<DatumMap>;
 		currentIndex: number;
 		lastNode: Node;
+		tailAppendPrefix: number;
 		step: "diff" | "reorder" | "cleanup";
 	} | null = null;
 
@@ -94,6 +95,34 @@ export default class CollectionVdom extends Vdom{
 		return nodes;
 	}
 
+	private getTailAppendPrefixLength(newKeys: Array<any>): number {
+		const old = this.mappedItems;
+		if (old.length === 0 || newKeys.length <= old.length) return 0;
+		for (let i = 0; i < old.length; i++) {
+			if (newKeys[i] !== old[i].keyValue) return 0;
+		}
+		return old.length;
+	}
+
+	private isItemPositionedAfter(item: DatumMap, anchor: Node): boolean {
+		const nodes = item.vdom._getNodes();
+		if (!nodes.length || !anchor.parentElement) return false;
+		if (nodes[0] !== anchor.nextSibling) return false;
+		const lastNode = nodes[nodes.length - 1];
+		return item.afterNode === lastNode.nextSibling;
+	}
+
+	private reuseExistingItem(existing: DatumMap, value: any, index: number) {
+		if (existing.value !== value && !deepEqual(existing.value, value)) {
+			existing.vdom._unrender();
+			existing.value = value;
+			let vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? existing.observableIndex : index, existing.keyValue);
+			existing.vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+		} else {
+			existing.observableIndex._set(index);
+		}
+	}
+
 	/**
 	 * Removes a single item from the DOM, including anchors.
 	 */
@@ -139,9 +168,14 @@ export default class CollectionVdom extends Vdom{
 				? newItems.map((v, i) => key ? v[key] : i)
 				: Object.keys(unmappedCollection).map((k, i) => key ? unmappedCollection[k][key] : k);
 
+			const tailAppendPrefix = this.getTailAppendPrefixLength(newKeys);
+
 			const oldMap = new Map<any, DatumMap>();
-			for (const item of this.mappedItems) {
-				oldMap.set(item.keyValue, item);
+			for (let i = 0; i < this.mappedItems.length; i++) {
+				const item = this.mappedItems[i];
+				if (i >= tailAppendPrefix) {
+					oldMap.set(item.keyValue, item);
+				}
 			}
 
 			this.updateState = {
@@ -151,6 +185,7 @@ export default class CollectionVdom extends Vdom{
 				nextMappedItems: [],
 				currentIndex: 0,
 				lastNode: this.startNode,
+				tailAppendPrefix,
 				step: "diff"
 			};
 		}
@@ -162,31 +197,31 @@ export default class CollectionVdom extends Vdom{
 			while (state.currentIndex < state.newItems.length) {
 				const value = state.newItems[state.currentIndex];
 				const keyValue = state.newKeys[state.currentIndex];
-				let existing = state.oldMap.get(keyValue);
 
-				if (existing) {
-					state.oldMap.delete(keyValue);
-					if (!deepEqual(existing.value, value)) {
-						existing.vdom._unrender();
-						existing.value = value;
-						let vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? existing.observableIndex : state.currentIndex, keyValue);
-						existing.vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
-					} else {
-						existing.observableIndex._set(state.currentIndex);
-					}
+				if (state.currentIndex < state.tailAppendPrefix) {
+					const existing = this.mappedItems[state.currentIndex];
+					this.reuseExistingItem(existing, value, state.currentIndex);
 					state.nextMappedItems.push(existing);
 				} else {
-					const reactive = new Signal();
-					const observableIndex = reactive.bind();
-					observableIndex._set(state.currentIndex);
-					
-					const vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? observableIndex : state.currentIndex, keyValue);
-					const vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
-					const afterNode = this.startNode.ownerDocument.createTextNode("");
-					
-					state.nextMappedItems.push({
-						vdom, value, keyValue, afterNode, observableIndex
-					});
+					let existing = state.oldMap.get(keyValue);
+
+					if (existing) {
+						state.oldMap.delete(keyValue);
+						this.reuseExistingItem(existing, value, state.currentIndex);
+						state.nextMappedItems.push(existing);
+					} else {
+						const reactive = new Signal();
+						const observableIndex = reactive.bind();
+						observableIndex._set(state.currentIndex);
+						
+						const vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? observableIndex : state.currentIndex, keyValue);
+						const vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+						const afterNode = this.startNode.ownerDocument.createTextNode("");
+						
+						state.nextMappedItems.push({
+							vdom, value, keyValue, afterNode, observableIndex
+						});
+					}
 				}
 
 				state.currentIndex++;
@@ -217,7 +252,7 @@ export default class CollectionVdom extends Vdom{
 				if (!item.vdom._isRendered) {
 					item.vdom._renderAfter(state.lastNode);
 					state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
-				} else {
+				} else if (!this.isItemPositionedAfter(item, state.lastNode)) {
 					item.vdom._moveBefore(state.lastNode.nextSibling, state.lastNode.parentElement);
 					state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
 				}
