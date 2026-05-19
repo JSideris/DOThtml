@@ -1,0 +1,10 @@
+.container { width: 100%; max-width: 800px; margin: 0 auto; }
+.jumbotron { padding: 2rem 1rem; margin-bottom: 2rem; background-color: #e9ecef; border-radius: .3rem; }
+.row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; }
+.col-md-6 { flex: 0 0 50%; max-width: 50%; padding: 0 15px; }
+.btn { display: inline-block; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; border: 1px solid transparent; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; border-radius: .25rem; margin: 5px; }
+.btn-primary { color: #fff; background-color: #007bff; border-color: #007bff; }
+.table { width: 100%; margin-bottom: 1rem; color: #212529; border-collapse: collapse; }
+.table td, .table th { padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6; }
+.danger { background-color: #f8d7da; }
+.selected { background-color: #fff3cd; }

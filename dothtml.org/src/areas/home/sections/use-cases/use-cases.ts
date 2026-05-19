@@ -3,10 +3,12 @@ import { dot, DotComponent } from "dothtml";
 @dot.component
 export default class UseCases extends DotComponent {
 	private cases = [
-		{ title: "Legacy Integration", description: "Drop DOThtml into any existing project to power complex widgets.", icon: "🔄" },
 		{ title: "Micro-frontends", description: "Build independent, encapsulated UI modules that play well with others.", icon: "🧩" },
 		{ title: "High-performance SPAs", description: "Create lightning-fast single page applications with built-in routing.", icon: "🏎️" },
-		{ title: "Design Systems", description: "Develop consistent, reusable component libraries with scoped styles.", icon: "📐" }
+		{ title: "Design Systems", description: "Develop consistent, reusable component libraries with scoped styles.", icon: "📐" },
+		{ title: "Game Engines", description: "Build HUDs, menus, and inventory systems that run alongside high-performance canvas rendering.", icon: "🎮" },
+		{ title: "Embedded Widgets", description: "Create chat bots or tools that are safe to embed on any site with Shadow DOM isolation.", icon: "🔌" },
+		{ title: "Legacy Integration", description: "Drop DOThtml into any existing project to power complex widgets.", icon: "🔄" }
 	];
 
 	stylize(s: any) {

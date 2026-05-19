@@ -7,7 +7,7 @@ export default class MainFeatures extends DotComponent {
 		{ title: "Reactive State", description: "Data-driven updates that just work, with built-in batching.", icon: "⚡" },
 		{ title: "Shadow DOM Native", description: "Built-in encapsulation ensures your components work perfectly.", icon: "🛡️" },
 		{ title: "Strongly Typed", description: "Built with TypeScript for maximum developer productivity.", icon: "📘" },
-		{ title: "Fluent Styling", description: "Type-safe, reactive styling system integrated with reactivity.", icon: "🎨" },
+		{ title: "Fluent Styling", description: "Reactive styling that bypasses the VDOM, outperforming React and Vue in visual updates.", icon: "🎨" },
 		{ title: "Concurrent Rendering", description: "Keeps your UI responsive even during large updates.", icon: "🚀" }
 	];
 

@@ -72,6 +72,27 @@ export default class MarkdownViewer extends DotComponent<MarkdownViewerProps> {
 		).class("markdown-body code", c => c
 			.fontFamily("'JetBrains Mono', monospace")
 			.fontSizePx(14)
+		).class("markdown-body table", t => t
+			.widthP(100)
+			.borderCollapse("collapse")
+			.marginBottomPx(20)
+			.overflow("hidden")
+			.borderRadiusPx(8)
+			.border("1px solid rgba(255, 255, 255, 0.1)")
+		).class("markdown-body th", t => t
+			.backgroundColor("rgba(255, 255, 255, 0.05)")
+			.color(s.v("primary"))
+			.textAlign("left")
+			.paddingPx(12, 15)
+			.fontWeight(700)
+			.borderBottom("2px solid rgba(255, 255, 255, 0.1)")
+		).class("markdown-body td", t => t
+			.paddingPx(12, 15)
+			.borderBottom("1px solid rgba(255, 255, 255, 0.05)")
+		).class("markdown-body tr:last-child td", t => t
+			.borderBottom("none")
+		).class("markdown-body tr:hover td", t => t
+			.backgroundColor("rgba(255, 255, 255, 0.02)")
 		);
 	}
 

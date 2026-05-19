@@ -23,7 +23,9 @@ export default class Docs extends DotComponent<DocsProps> {
 		{ id: "refs", label: "Refs" },
 		{ id: "styling", label: "Stylize & Style" },
 		{ id: "routing", label: "Routing" },
+		{ id: "popups", label: "Popups" },
 		{ id: "typescript", label: "TypeScript Reference" },
+		{ id: "benchmarks", label: "Benchmarks" },
 		{ id: "detailed-features", label: "Detailed Features" },
 		{ id: "hero-features", label: "Hero Features" },
 		{ id: "learn-more", label: "Learn More & Contribute" }
