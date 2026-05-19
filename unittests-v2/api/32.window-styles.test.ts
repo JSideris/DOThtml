@@ -7,6 +7,10 @@ describe("Window Style Syncing.", () => {
 	beforeEach(() => {
 		originalOpen = window.open;
 		mockWindow = {
+			CSSStyleSheet: typeof CSSStyleSheet !== "undefined" ? function() {
+				this.replaceSync = jest.fn();
+				this.cssRules = [];
+			} : undefined,
 			document: {
 				write: jest.fn(),
 				body: document.createElement("body"),

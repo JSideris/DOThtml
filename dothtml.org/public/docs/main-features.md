@@ -5,7 +5,7 @@ DOThtml is a lightweight, reactive UI engine designed for both simple drop-in wi
 ## A Library, Not a Framework
 Unlike other tools that demand you build your entire app around them, DOThtml is designed to be dropped into **any** project. 
 
-*   **Zero Core Dependencies**: A ~20kb footprint that won't bloat your project.
+*   **Zero Core Dependencies**: A ~18kb footprint that won't bloat your project.
 *   **Architectural Freedom**: Use it for your entire UI, or just for a single complex widget in a legacy app.
 *   **Shadow DOM Native**: Built-in encapsulation ensures your components work perfectly regardless of the host environment.
 

@@ -50,7 +50,7 @@ For more advanced TypeScript usage, including component decorators, see the [Typ
 If you want to use DOThtml without a build step, you can include it via a script tag:
 
 ```html
-<script src="https://unpkg.com/dothtml@latest/build_umd/dothtml.js"></script>
+<script src="https://unpkg.com/dothtml@latest/dist/index.global.js"></script>
 ```
 
 This will expose a global `dot` object that you can use immediately:
