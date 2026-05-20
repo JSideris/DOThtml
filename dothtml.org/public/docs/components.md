@@ -319,7 +319,3 @@ Because DOThtml uses **Shadow DOM**, there is a strict boundary between a compon
 
 **Example Pitfall:**
 If you create a `Modal` component, the parent component can style the `p` tag it passes into the slot, but it **cannot** style the `.modal-backdrop` div defined inside the `Modal` component.
-
-## Next Steps
-
-Now that you've learned about components, see how to make them interactive with **[Reactivity](./reactivity.md)**.

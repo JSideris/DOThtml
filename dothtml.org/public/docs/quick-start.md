@@ -67,9 +67,3 @@ This will expose a global `dot` object that you can use immediately:
 dot("#app")
 .div("Ready to go!");
 ```
-
-## Next Steps
-
-Now that you have DOThtml installed, learn about the core features:
-
-[Rendering Basics](./rendering-basics.md)

@@ -8,6 +8,3 @@ DOThtml is uniquely suited for scenarios where you need modern UI capabilities w
 *   **Browser Extensions**: Create high-performance, low-footprint UIs for the web's most resource-constrained environments.
 *   **Multi-Window Applications**: Build professional-grade tools (editors, dashboards, control panels) that span multiple windows with shared state and consistent styling.
 *   **IoT & Embedded Interfaces**: Build lightweight, reactive configuration portals for devices with limited CPU and memory.
-## Next Steps
-
-Ready to build something bigger? Learn about **[State Management with Stores](./stores.md)**.

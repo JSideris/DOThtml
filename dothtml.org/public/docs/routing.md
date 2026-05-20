@@ -159,7 +159,3 @@ dot.Router.beforeEach((to, from, next) => {
     else next(false);
 });
 ```
-
-## Next Steps
-
-Finally, check out the **[TypeScript Reference](./typescript.md)** for advanced type safety and core interfaces.

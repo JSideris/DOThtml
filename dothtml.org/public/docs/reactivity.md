@@ -135,7 +135,3 @@ dot.input({ value: mySignal });
 // Two-way: DOM and signal are kept in sync.
 dot.input({ bind: mySignal }); 
 ```
-
-## Next Steps
-
-Now that you understand reactivity, see some real-world **[Use Cases](./use-cases.md)** for DOThtml.

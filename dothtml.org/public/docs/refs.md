@@ -104,6 +104,3 @@ dot.div({
 ## Lifecycle Integration
 
 - **Mounting**: Refs are populated immediately after the element is created but before the `mounted()` lifecycle hook is called. This makes them perfect for initializing **[Scroll & Visibility](./scroll-and-visibility.md)** observers.
-## Next Steps
-
-Now that you have access to your elements, learn how to make them look great with **[Styling](./styling.md)**.

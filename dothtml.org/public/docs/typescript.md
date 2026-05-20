@@ -38,9 +38,3 @@ class MyComponent extends DotComponent<MyProps, MyRefs> {
     }
 }
 ```
-
-## Next Steps
-
-Now that you've explored the TypeScript reference, learn about performance and advanced features:
-
-[Detailed Features & Performance](./detailed-features.md)

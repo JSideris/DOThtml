@@ -84,6 +84,30 @@ export default class Docs extends DotComponent<DocsProps> {
 			.paddingPx(40)
 			.borderRadiusPx(12)
 			.border("1px solid rgba(255, 255, 255, 0.03)")
+		).class("docs-pagination", p => p
+			.display("flex")
+			.justifyContent("space-between")
+			.marginTopPx(60)
+			.paddingTopPx(40)
+			.borderTop("1px solid rgba(255, 255, 255, 0.05)")
+		).class("pagination-link", l => l
+			.display("flex")
+			.flexDirection("column")
+			.textDecoration("none")
+			.transition("all 0.2s")
+		).class("pagination-link.next", l => l
+			.alignItems("flex-end")
+			.textAlign("right")
+		).class("pagination-label", la => la
+			.fontSizePx(14)
+			.color(s.v("text-dim"))
+			.marginBottomPx(5)
+		).class("pagination-title", t => t
+			.fontSizePx(18)
+			.color(s.v("primary"))
+			.fontWeight(600)
+		).class("pagination-link:hover .pagination-title", t => t
+			.color(s.v("text"))
 		).media("screen and (max-width: 800px)", m => m
 			.class("docs-container", dc => dc
 				.flexDirection("column")
@@ -97,6 +121,9 @@ export default class Docs extends DotComponent<DocsProps> {
 
 	build() {
 		const currentDoc = this.props.routeParams.doc || "quick-start";
+		const currentIndex = this.docs.findIndex(d => d.id === currentDoc);
+		const prevDoc = currentIndex > 0 ? this.docs[currentIndex - 1] : null;
+		const nextDoc = currentIndex < this.docs.length - 1 ? this.docs[currentIndex + 1] : null;
 
 		return dot.div({ class: "docs-container" },
 			dot.aside({ class: "sidebar" },
@@ -113,7 +140,17 @@ export default class Docs extends DotComponent<DocsProps> {
 				)
 			),
 			dot.main({ class: "docs-content" },
-				dot.mount(new MarkdownViewer({ src: `/docs/${currentDoc}.md` }))
+				dot.mount(new MarkdownViewer({ src: `/docs/${currentDoc}.md` })),
+				dot.div({ class: "docs-pagination" },
+					prevDoc ? dot.a({ href: `#/docs/${prevDoc.id}`, class: "pagination-link prev" },
+						dot.span({ class: "pagination-label" }, "← Previous"),
+						dot.span({ class: "pagination-title" }, prevDoc.label)
+					) : dot.div(),
+					nextDoc ? dot.a({ href: `#/docs/${nextDoc.id}`, class: "pagination-link next" },
+						dot.span({ class: "pagination-label" }, "Next →"),
+						dot.span({ class: "pagination-title" }, nextDoc.label)
+					) : dot.div()
+				)
 			)
 		);
 	}

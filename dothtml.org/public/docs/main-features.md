@@ -31,7 +31,3 @@ Start projects in seconds with the official `create-dothtml` CLI, featuring a Vi
 
 ### [Performance & Advanced Features](./detailed-features.md)
 DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.
-
-## Next Steps
-
-Now that you have an overview of what DOThtml can do, we recommend diving into the **[Components](./components.md)** guide to start building your first UI.

@@ -94,9 +94,3 @@ dot.div(dot.html("<b>Hello</b>"));
 // Explicit text (useful if you want to be certain)
 dot.div(dot.text("<b>Hello</b>"));
 ```
-
-## Next Steps
-
-Now that you understand the basics of rendering, explore how to build reusable UI pieces:
-
-[Component-Based Architecture](./components.md)

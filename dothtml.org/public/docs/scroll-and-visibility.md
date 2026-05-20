@@ -187,7 +187,3 @@ mounted() {
     window.addEventListener("scroll", this.scrollHandler, { passive: true });
 }
 ```
-
-## Next Steps
-
-Learn more about how to capture elements with **[Refs](./refs.md)**, how to manage complex application state with **[Stores](./stores.md)**, or explore high-performance **[Styling](./styling.md)** techniques.

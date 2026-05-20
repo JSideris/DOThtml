@@ -461,7 +461,3 @@ dot.useStyles(`
 ```
 
 While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.
-
-## Next Steps
-
-Now that your app looks great, learn how to navigate between pages with **[Routing](./routing.md)**.
