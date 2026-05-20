@@ -194,7 +194,7 @@ export default class PerformanceSection extends DotComponent {
 				dot.div({ class: "stat-card" },
 					dot.div({ class: "stat-header" },
 						dot.span({ class: "stat-label" }, "Append 1,000 Rows"),
-						dot.span({ class: "stat-value" }, `${appendData.DOTHTML}ms`)
+						dot.span({ class: "stat-value" }, `${appendData.DOTHTML} ms`)
 					),
 					dot.div({ class: "bar-container" },
 						this.renderBar("DOThtml", appendData.DOTHTML, appendMax, false),
@@ -210,7 +210,7 @@ export default class PerformanceSection extends DotComponent {
 				dot.div({ class: "stat-card" },
 					dot.div({ class: "stat-header" },
 						dot.span({ class: "stat-label" }, "Bulk Style Update"),
-						dot.span({ class: "stat-value" }, `${styleData.DOTHTML}ms`)
+						dot.span({ class: "stat-value" }, `${styleData.DOTHTML} ms`)
 					),
 					dot.div({ class: "bar-container" },
 						this.renderBar("DOThtml", styleData.DOTHTML, styleMax, false),
@@ -236,7 +236,7 @@ export default class PerformanceSection extends DotComponent {
 						),
 						dot.div({ style: "text-align: center" },
 							dot.div({ class: "stack-label" }, "DOThtml"),
-							dot.div({ class: "stack-value" }, `${DOTHTML_COMPRESSED_SIZE}kB`)
+							dot.div({ class: "stack-value" }, `${DOTHTML_COMPRESSED_SIZE} kB`)
 						)
 					),
 					// React Stack (9 boxes ~ 45kB)
@@ -249,7 +249,7 @@ export default class PerformanceSection extends DotComponent {
 						),
 						dot.div({ style: "text-align: center" },
 							dot.div({ class: "stack-label" }, "React + DOM"),
-							dot.div({ class: "stack-value" }, "42.0kB")
+							dot.div({ class: "stack-value" }, "42.0 kB")
 						)
 					)
 				),
@@ -266,7 +266,7 @@ export default class PerformanceSection extends DotComponent {
 		return dot.div({ class: "bar-item" },
 			dot.div({ class: "bar-label-group" },
 				dot.span(label),
-				dot.span(value + "ms")
+				dot.span(value + " ms")
 			),
 			dot.div({ class: "bar-track" },
 				dot.div({ 
