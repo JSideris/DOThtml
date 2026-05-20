@@ -64,4 +64,4 @@ dot("#app")
 
 Now that you have DOThtml installed, learn about the core features:
 
-[Main Features](./main-features.md)
+[Rendering Basics](./rendering-basics.md)

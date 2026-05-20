@@ -15,6 +15,7 @@ export default class Docs extends DotComponent<DocsProps> {
 
 	private docs = [
 		{ id: "quick-start", label: "Quick Start" },
+		{ id: "rendering-basics", label: "Rendering Basics" },
 		{ id: "main-features", label: "Main Features" },
 		{ id: "components", label: "Components" },
 		{ id: "reactivity", label: "Reactivity" },
