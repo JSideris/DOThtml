@@ -20,204 +20,161 @@ import RefCollection from "./reactivity/ref-collection";
 import { scheduler } from "./reactivity/scheduler";
 import { createStore, getStore, clearStores, getStores } from "./reactivity/store";
 import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
+import { createElement } from "./dot-helpers";
+import { allTags, allCoreWrappers, allTagsSet } from "./tags";
+import { DotChain } from "./dot-chain";
+import { HtmlVdom } from "./vdom-nodes/html-vdom";
+import { ConditionalVdom } from "./vdom-nodes/conditional-vdom";
+import CollectionVdom from "./vdom-nodes/collection-vdom";
+import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
 
-const allTags = [
-	"a",
-	"aside",
-	"abbr",
-	"address",
-	"area",
-	"article",
-	"audio",
-	"b",
-	"bdi",
-	"bdo",
-	"blockQuote",
-	"body",
-	"br",
-	"button",
-	"canvas",
-	"caption",
-	"cite",
-	"code",
-	"col",
-	"colGroup",
-	"content",
-	"data",
-	"dataList",
-	"dd",
-	"del",
-	"details",
-	"dfn",
-	"dialog",
-	"div",
-	"dl",
-	"dt",
-	"em",
-	"embed",
-	"fieldSet",
-	"figCaption",
-	"figure",
-	"footer",
-	"form",
-	"h1",
-	"h2",
-	"h3",
-	"h4",
-	"h5",
-	"h6",
-	"header",
-	"hr",
-	"i",
-	"iFrame",
-	"img",
-	"input",
-	"ins",
-	"kbd",
-	"keyGen",
-	"label",
-	"legend",
-	"li",
-	"main",
-	"map",
-	"mark",
-	"menu",
-	"menuItem",
-	"meter",
-	"nav",
-	"object",
-	"ol",
-	"optGroup",
-	"option",
-	"output",
-	"p",
-	"param",
-	"pre",
-	"progress",
-	"q",
-	"rp",
-	"rt",
-	"ruby",
-	"s",
-	"samp",
-	"section",
-	"select",
-	"small",
-	"source",
-	"span",
-	"strong",
-	"svg",
-	"sub",
-	"summary",
-	"sup",
-	"table",
-	"tBody",
-	"td",
-	"textArea",
-	"tFoot",
-	"th",
-	"tHead",
-	"time",
-	"tr",
-	"track",
-	"u",
-	"ul",
-	"var",
-	"video",
-	"wbr"
-];
+function reduceReactive(value: any){
+	if(value instanceof Signal) return value.bind();
+	else return value;
+}
 
-const allCoreWrappers = ["each", "html", "mount", "text", "md", "when", "on"];
+function promote(vdom: Vdom): DotChain {
+	if (vdom instanceof DotChain) return vdom;
+	return new DotChain(vdom._dot, vdom);
+}
 
-const allEventAttr = {
-	onAbort: 1,
-	onBlur: 1,
-	onChange: 1,
-	onInput: 1,
-	onCanPlay: 1,
-	onCantPlayThrough: 1,
-	onClick: 1,
-	onCopy: 1,
-	onContextMenu: 1,
-	onCueChange: 1,
-	onCut: 1,
-	onDblClick: 1,
-	onDrag: 1,
-	onDragEnd: 1,
-	onDragEnter: 1,
-	onDragLeave: 1,
-	onDragOver: 1,
-	onDragStart: 1,
-	onDrop: 1,
-	onDurationChange: 1,
-	onEmptied: 1,
-	onEnded: 1,
-	onError: 1,
-	onFocus: 1,
-	onHashChange: 1,
-	onInvalid: 1,
-	onKeyDown: 1,
-	onKeyPress: 1,
-	onKeyUp: 1,
-	onLoad: 1,
-	onLoadedData: 1,
-	onLoadedMetadata: 1,
-	onLoadStart: 1,
-	onMouseDown: 1,
-	onMouseEnter: 1,
-	onMouseLeave: 1,
-	onMouseMove: 1,
-	onMouseOut: 1,
-	onMouseOver: 1,
-	onMouseUp: 1,
-	onPointerCancel: 1,
-	onPointerDown: 1,
-	onPointerEnter: 1,
-	onPointerLeave: 1,
-	onPointerMove: 1,
-	onPointerOut: 1,
-	onPointerOver: 1,
-	onPointerUp: 1,
-	onTouchStart: 1,
-	onTouchEnd: 1,
-	onTouchCancel: 1,
-	onTouchMove: 1,
-	onMouseWheel: 1,
-	onOffline: 1,
-	onOnline: 1,
-	onPageHide: 1,
-	onPagePaste: 1,
-	onPageShow: 1,
-	onPause: 1,
-	onPlay: 1,
-	onPlaying: 1,
-	onPopState: 1,
-	onProgress: 1,
-	onRateChange: 1,
-	onReset: 1,
-	onResize: 1,
-	onScroll: 1,
-	onSearch: 1,
-	onSeeked: 1,
-	onSeeking: 1,
-	onSelect: 1,
-	onStalled: 1,
-	onStorage: 1,
-	onSubmit: 1,
-	onSuspend: 1,
-	onTimeUpdate: 1,
-	onToggle: 1,
-	onUnload: 1,
-	onVolumeChange: 1,
-	onWaiting: 1,
-	onWheel: 1,
+(Vdom.prototype as any)._addChild = function(node: Vdom) {
+	return promote(this)._addChild(node);
 };
+
+(Vdom.prototype as any).text = function(c: any) {
+	let val = reduceReactive(c);
+	if(val instanceof Binding){
+		return this._addChild(new ReactiveVdom(this._dot, val));
+	}
+	return this._addChild(new TextVdom(val));
+};
+
+(Vdom.prototype as any).html = function(c: any) {
+	return this._addChild(new HtmlVdom(reduceReactive(c)));
+};
+
+(Vdom.prototype as any).md = function(c: any) {
+	return this.text(c);
+};
+
+(Vdom.prototype as any).mount = function(c: any, attrs?: any) {
+	let cn = new ComponentVdom(this._dot, c);
+	if(attrs){
+		for(let k in attrs){
+			let val = attrs[k];
+			if(k === "ref"){
+				cn.setRef(val);
+			}
+			else if(k.startsWith("on") && typeof val === "function"){
+				let eventName = k;
+				let modifiers = [];
+				if(k.includes(".")){
+					const parts = k.split(".");
+					eventName = parts[0];
+					modifiers = parts.slice(1);
+				}
+				cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
+			}
+			else{
+				if(!c["props"]) (c as any).props = {};
+				(c as any).props[k] = val;
+			}
+		}
+	}
+	cn.init();
+	return this._addChild(cn);
+};
+
+(Vdom.prototype as any).when = function(condition: any, then: any) {
+	let condNode = new ConditionalVdom(this._dot);
+	let thenContainer: Vdom;
+	if (then instanceof Vdom) {
+		thenContainer = then;
+	} else {
+		thenContainer = new FragmentVdom(this._dot);
+		(thenContainer as FragmentVdom)._children.push(new TextVdom(reduceReactive(then)));
+	}
+	condNode.addCondition(reduceReactive(condition), thenContainer as any);
+	return this._addChild(condNode);
+};
+
+(Vdom.prototype as any).each = function(collection: any, callback: any) {
+	let collectionVdom = new CollectionVdom(this._dot, reduceReactive(collection), callback);
+	return this._addChild(collectionVdom);
+};
+
+(Vdom.prototype as any).otherwiseWhen = function(condition: any, then: any, seal = false) {
+	let lastChild = this._getLastChild();
+
+	if (lastChild instanceof ConditionalVdom) {
+		let thenNode: Vdom;
+		if (then instanceof Vdom) {
+			thenNode = then;
+		} else {
+			thenNode = new TextVdom(reduceReactive(then));
+		}
+		lastChild.addCondition(reduceReactive(condition), thenNode, seal);
+	} else {
+		throw new Error("Can't branch off of a non-conditional node.");
+	}
+	return this;
+};
+
+(Vdom.prototype as any).otherwise = function(then: any) {
+	return this.otherwiseWhen(true, then, true);
+};
+
+(Vdom.prototype as any).attr = function(A: string, c: any) {
+	let lastChild = this._getLastChild();
+
+	if (lastChild instanceof ElementVdom) {
+		lastChild.setAttr(A, c);
+	} else {
+		throw new Error(`Invalid node to set ${A} attribute.`);
+	}
+	return this;
+};
+
+(Vdom.prototype as any).style = function(c: string | Signal | Binding | IDotCss | ((s: BaseVStyle) => void)) {
+	if (typeof c === "function") {
+		const builder = new BaseVStyle();
+		c(builder);
+		this.attr("style", builder);
+	} else {
+		this.attr("style", c);
+	}
+	return this;
+};
+
+(Vdom.prototype as any).on = function(event: string, callback: (e: any)=>void) {
+	let lastChild = this._getLastChild();
+
+	if(lastChild && (lastChild instanceof ElementVdom || lastChild instanceof ComponentVdom)){
+		lastChild.addEventListener(event, callback);
+	}
+	else{
+		throw new Error(`Invalid node to set ${event} listener.`);
+	}
+	return this;
+};
+
+for (let i = 0; i < allTags.length; i++) {
+	const tag = allTags[i];
+	(Vdom.prototype as any)[tag] = function(...args: any[]) {
+		return this._addChild(createElement(this._dot, tag, args));
+	};
+}
 
 const makeCoreWrapper = (d, fn)=>{
 	d[fn] = function(){
-		let n = new ContainerVdom(dot);
-		n[fn](...arguments);
-		return n;
+		if (allTagsSet.has(fn)) {
+			return createElement(dot, fn, arguments);
+		} else {
+			let n = new ContainerVdom(dot);
+			n[fn](...arguments);
+			return n;
+		}
 	}
 }
 
@@ -370,100 +327,14 @@ const makeDot = ()=>{
 		scheduler.setSync(sync);
 	}
 
-	{ // Elements
-		const isContent = (arg: any) => {
-			return arg instanceof ContainerVdom || 
-				arg instanceof Vdom || 
-				(typeof arg == "object" && arg?.build) || 
-				arg instanceof Signal || 
-				arg instanceof Binding || 
-				typeof arg === "string" || 
-				typeof arg === "number" || 
-				typeof arg === "boolean" || 
-				Array.isArray(arg);
-		};
-
-		const applyContent = (n: ElementVdom, cont: any) => {
-			if(Array.isArray(cont)){
-				for(let i = 0; i < cont.length; i++) applyContent(n, cont[i]);
-			}
-			else if(cont instanceof ContainerVdom){
-				for(let i = 0; i < cont._children.length; i++) n.children._addChild(cont._children[i]);
-			}
-			else if(cont instanceof Vdom){
-				n.children._addChild(cont);
-			}
-			else if(typeof cont == "object" && cont?.build){
-				n.children.mount(cont);
-			}
-			else{
-				if(cont !== null && cont !== undefined){
-					let val = cont;
-					if(val instanceof Signal){
-						val = val.bind();
-					}
-					if(val instanceof Binding){
-						n.children._addChild(new ReactiveVdom(dot, val));
-					}
-					else{
-						n.children._addChild(new TextVdom(val));
-					}
-				}
-			}
-		};
-
-		const applyAttributes = (n: ElementVdom, attrs: any) => {
-			for(let k in attrs) {
-				let attr = attrs[k];
-				if(attr instanceof Signal && !(attr instanceof Ref)) attr = attr.bind();
-				let eventName = k;
-				let modifiers = [];
-				if(k.includes(".")){
-					const parts = k.split(".");
-					eventName = parts[0];
-					modifiers = parts.slice(1);
-				}
-
-				const isEvent = allEventAttr[eventName] || (eventName.startsWith("on") && eventName[2] && eventName[2] === eventName[2].toUpperCase());
-
-				if(isEvent) {
-					if(typeof attrs[k] !== "function") {
-						throw new Error(`Value of event attribute ${k} must be a function.`);
-					}
-
-					(n as any).addEventListener(eventName.substring(2).toLowerCase(), attr, modifiers);
-				} else {
-					n.setAttr(k, attr);
-				}
-			}
-		};
-
-		for(let i = 0; i < allTags.length; i++){
-			let E = allTags[i];
-			ContainerVdom.prototype[E] = function(...args: any[]){
-				let n = new ElementVdom(dot, E);
-
-				for(let j = 0; j < args.length; j++){
-					let arg = args[j];
-					if(isContent(arg)){
-						applyContent(n, arg);
-					}
-					else if(arg && typeof arg === "object"){
-						applyAttributes(n, arg);
-					}
-				}
-
-				return this._addChild(n);
-			};
-			makeCoreWrapper(_dot, E);
-		}
+	for(let i = 0; i < allTags.length; i++){
+		let E = allTags[i];
+		makeCoreWrapper(_dot, E);
 	}
 
-	{ // Special core functions.
-		for(let i = 0; i < allCoreWrappers.length; i++){
-			let W = allCoreWrappers[i];
-			makeCoreWrapper(_dot, W);
-		}
+	for(let i = 0; i < allCoreWrappers.length; i++){
+		let W = allCoreWrappers[i];
+		makeCoreWrapper(_dot, W);
 	}
 
 	return _dot as unknown as IDotCore;

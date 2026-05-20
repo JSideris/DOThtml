@@ -189,7 +189,7 @@ function buildSummaryTable(results, testNames) {
 	for (const framework of Object.keys(results)) {
 		table[framework] = {};
 		for (const testName of testNames) {
-			table[framework][testName] = formatStat(results[framework][testName].mean);
+			table[framework][testName] = formatStat(results[framework][testName].median);
 		}
 	}
 	return table;
@@ -202,18 +202,18 @@ function writeReport(config, results) {
 	let report = '# Framework Benchmark Results\n\n';
 	report += `Configuration: ${config.iterations} iterations, ${config.warmup} warmup, ${config.suites} suite(s). Timings measured in-browser with \`performance.now()\`.\n\n`;
 
-	report += '## DOM Operations (Average ms)\n\n';
+	report += '## DOM Operations (Median ms)\n\n';
 	report += '| Test | DOThtml | React | Vue | Svelte |\n';
 	report += '| --- | --- | --- | --- | --- |\n';
 	for (const testName of domTestNames) {
-		report += `| ${testName} | ${formatStat(results.dom.dothtml[testName].mean)}ms | ${formatStat(results.dom.react[testName].mean)}ms | ${formatStat(results.dom.vue[testName].mean)}ms | ${formatStat(results.dom.svelte[testName].mean)}ms |\n`;
+		report += `| ${testName} | ${formatStat(results.dom.dothtml[testName].median)}ms | ${formatStat(results.dom.react[testName].median)}ms | ${formatStat(results.dom.vue[testName].median)}ms | ${formatStat(results.dom.svelte[testName].median)}ms |\n`;
 	}
 
-	report += '\n## Reactive Styling Performance\n\n';
+	report += '\n## Reactive Styling Performance (Median ms)\n\n';
 	report += '| Test | DOThtml | React | Vue | Svelte |\n';
 	report += '| --- | --- | --- | --- | --- |\n';
 	for (const testName of stylingTestNames) {
-		report += `| ${testName} | ${formatStat(results.styling.dothtml[testName].mean)}ms | ${formatStat(results.styling.react[testName].mean)}ms | ${formatStat(results.styling.vue[testName].mean)}ms | ${formatStat(results.styling.svelte[testName].mean)}ms |\n`;
+		report += `| ${testName} | ${formatStat(results.styling.dothtml[testName].median)}ms | ${formatStat(results.styling.react[testName].median)}ms | ${formatStat(results.styling.vue[testName].median)}ms | ${formatStat(results.styling.svelte[testName].median)}ms |\n`;
 	}
 
 	report += '\n## Detailed Statistics\n\n';
@@ -315,9 +315,9 @@ async function runBenchmark() {
 	const domTestNames = Object.keys(results.dom.dothtml);
 	const stylingTestNames = Object.keys(results.styling.dothtml);
 
-	console.log('\nDOM Benchmark Results (Average ms):');
+	console.log('\nDOM Benchmark Results (Median ms):');
 	console.table(buildSummaryTable(results.dom, domTestNames));
-	console.log('\nStyling Benchmark Results (Average ms):');
+	console.log('\nStyling Benchmark Results (Median ms):');
 	console.table(buildSummaryTable(results.styling, stylingTestNames));
 
 	console.log('\nDetailed statistics (median / std dev):');
@@ -333,6 +333,7 @@ async function runBenchmark() {
 	const report = writeReport(config, results);
 	fs.writeFileSync(path.join(__dirname, 'results.md'), report);
 	console.log('\nReport generated: benchmarks/results.md');
+	process.exit(0);
 }
 
 runBenchmark().catch(err => {

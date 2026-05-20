@@ -3,6 +3,7 @@ import Binding from "../reactivity/binding";
 import { ContainerVdom } from "./container-vdom";
 import { Vdom } from "./vdom";
 import { ConditionalNodeItem } from "./vdom-types";
+import { IDotCore } from "dothtml-interfaces";
 
 export class ConditionalVdom extends Vdom{
 
@@ -10,7 +11,11 @@ export class ConditionalVdom extends Vdom{
 	private sealed = false;
 	private renderedIndex = -1;
 
-	addCondition(condition:Binding|boolean, vNode: ContainerVdom, seal = false){
+	constructor(dot: IDotCore){
+		super(dot);
+	}
+
+	addCondition(condition:Binding|boolean, vNode: Vdom, seal = false){
 
 		if(this.sealed){
 			throw new Error("Cannot add additional conditions to a sealed block.");
@@ -109,6 +114,10 @@ export class ConditionalVdom extends Vdom{
 			nodes.push(C.endAnchor);
 		}
 		return nodes;
+	}
+
+	_getLastChild(): Vdom | null {
+		return this;
 	}
 
 	updateConditions(){

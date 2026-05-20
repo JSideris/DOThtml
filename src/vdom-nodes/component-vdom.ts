@@ -23,7 +23,6 @@ export class ComponentVdom extends Vdom{
 	component: IDotComponent;
 	shadowEl: HTMLElement;
 	childShadowVdom: ContainerVdom;
-	private dot: IDotCore;
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;
@@ -41,8 +40,7 @@ export class ComponentVdom extends Vdom{
 	};
 
 	constructor(dot: IDotCore, component: IDotComponent){
-		super();
-		this.dot = dot;
+		super(dot);
 		this.component = component;
 
 		if(component._?._meta){
@@ -119,7 +117,7 @@ export class ComponentVdom extends Vdom{
 		pushComponent(this);
 		this.isBuilding = true;
 		try {
-			this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+			this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
 		} finally {
 			this.isBuilding = false;
 			popComponent();
@@ -166,7 +164,7 @@ export class ComponentVdom extends Vdom{
 		pushComponent(this);
 		this.isBuilding = true;
 		try {
-			this.childShadowVdom = this.component.build(this.dot) as unknown as ContainerVdom;
+			this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
 		} finally {
 			this.isBuilding = false;
 			popComponent();
@@ -255,8 +253,8 @@ export class ComponentVdom extends Vdom{
 			} else {
 				// Constructed stylesheets.
 				const builder = new StyleSheetBuilder();
-				if ((this.dot as any)._theme) {
-					builder.setTheme((this.dot as any)._theme);
+				if ((this._dot as any)._theme) {
+					builder.setTheme((this._dot as any)._theme);
 				}
 				let styles: any = this.component.stylize && (this.component.stylize as any)(builder) || [];
 
@@ -292,7 +290,7 @@ export class ComponentVdom extends Vdom{
 			// Add global styles.
 			let allSharedStylesheets = [...sharedStylesheets];
 			let allStyleTags = [...styleTags];
-			let globalStyles = (this.dot as any).globalStyles || [];
+			let globalStyles = (this._dot as any).globalStyles || [];
 			for (let gs of globalStyles) {
 				if (gs instanceof (document.defaultView as any).CSSStyleSheet) {
 					allSharedStylesheets.push(gs);
@@ -331,8 +329,8 @@ export class ComponentVdom extends Vdom{
 						if ((this._component.constructor as any)._isDynamicStyle) {
 							const updateDynamicStyle = () => {
 								const builder = new StyleSheetBuilder();
-								if ((this.cvdom.dot as any)._theme) {
-									builder.setTheme((this.cvdom.dot as any)._theme);
+								if ((this.cvdom._dot as any)._theme) {
+									builder.setTheme((this.cvdom._dot as any)._theme);
 								}
 								const styles = (this._component.stylize as any)(builder);
 								const styleVal = styles instanceof Binding ? styles._get() : (styles instanceof Signal ? styles.value : styles);
@@ -414,8 +412,8 @@ export class ComponentVdom extends Vdom{
 		if (cachedStyles && cachedStyles.ghostVars) {
 			// We need to re-run stylize to get the bindings for THIS instance.
 			const builder = new StyleSheetBuilder();
-			if ((this.dot as any)._theme) {
-				builder.setTheme((this.dot as any)._theme);
+			if ((this._dot as any)._theme) {
+				builder.setTheme((this._dot as any)._theme);
 			}
 			this.component.stylize && (this.component.stylize as any)(builder);
 			builder.toString(); // Collect ghost variables
@@ -508,6 +506,10 @@ export class ComponentVdom extends Vdom{
 
 	_getNodes(): Node[] {
 		return this.shadowEl ? [this.shadowEl] : [];
+	}
+
+	_getLastChild(): Vdom | null {
+		return this;
 	}
 
 	_moveTo(target: HTMLElement){

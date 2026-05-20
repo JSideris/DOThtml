@@ -1,10 +1,19 @@
+import { IDotCore } from "dothtml-interfaces";
+
 export abstract class Vdom{
+
+	_dot: IDotCore;
+
+	constructor(dot?: IDotCore){
+		this._dot = dot;
+	}
 
 	// One (and only one) of these is valid:
 
 	abstract _render(target: HTMLElement);
 	abstract _unrender();
 	abstract _getNodes(): Node[];
+	abstract _getLastChild(): Vdom | null;
 
 	_moveBefore(reference: Node, parent?: Node){
 		let nodes = this._getNodes();
@@ -66,4 +75,18 @@ export abstract class Vdom{
 			target.appendChild(nodes[i]);
 		}
 	}
+
+	// Chaining methods (implemented in dot-chain.ts)
+	text(c: any): this { return null as any; }
+	html(c: any): this { return null as any; }
+	md(c: any): this { return null as any; }
+	mount(c: any, attrs?: any): this { return null as any; }
+	when(condition: any, then: any): this { return null as any; }
+	each(collection: any, callback: any): this { return null as any; }
+	otherwiseWhen(condition: any, then: any, seal?: boolean): this { return null as any; }
+	otherwise(then: any): this { return null as any; }
+	attr(A: string, c: any): this { return null as any; }
+	style(c: any): this { return null as any; }
+	on(event: string, callback: (e: any)=>void): this { return null as any; }
+	[key: string]: any;
 }

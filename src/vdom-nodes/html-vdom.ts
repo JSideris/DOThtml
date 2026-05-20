@@ -8,12 +8,12 @@ export class HtmlVdom extends Vdom{
 	beforeNode: Node;
 	afterNode: Node;
 
-	html: string|Binding;
+	_html: string|Binding;
 	observerId: number = 0;
 
 	constructor(html: string|Binding){
 		super();
-		this.html = html;
+		this._html = html;
 	}
 
 	updateHtml(html){
@@ -32,12 +32,12 @@ export class HtmlVdom extends Vdom{
 
 	_render(target: HTMLElement) {
 		let html = "";
-		if(this.html instanceof Binding){
-			html = this.html._get() ?? "";
-			this.observerId = this.html._subscribe(this);
+		if(this._html instanceof Binding){
+			html = this._html._get() ?? "";
+			this.observerId = this._html._subscribe(this);
 		}
 		else{
-			html = this.html;
+			html = this._html;
 		}
 
 		this.beforeNode = target.ownerDocument.createTextNode("");
@@ -60,8 +60,8 @@ export class HtmlVdom extends Vdom{
 			this.afterNode = null;
 		}
 
-		if(this.observerId && this.html instanceof Binding){
-			this.html._unsubscribe(this.observerId);
+		if(this.observerId && this._html instanceof Binding){
+			this._html._unsubscribe(this.observerId);
 			this.observerId = 0;
 		}
 	}
@@ -78,7 +78,11 @@ export class HtmlVdom extends Vdom{
 		return nodes;
 	}
 
+	_getLastChild(): Vdom | null {
+		return this;
+	}
+
 	toString(){
-		return this.html instanceof Binding ? this.html._get() : this.html;
+		return this._html instanceof Binding ? this._html._get() : this._html;
 	}
 }

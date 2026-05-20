@@ -5,6 +5,7 @@ import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
 import { ObservableCollection } from "./vdom-types";
 import { scheduler } from "../reactivity/scheduler";
+import { IDotCore } from "dothtml-interfaces";
 
 type DatumMap = {
 	vdom: Vdom; 
@@ -41,8 +42,8 @@ export default class CollectionVdom extends Vdom{
 		step: "diff" | "reorder" | "cleanup";
 	} | null = null;
 
-	constructor(value: ObservableCollection, renderCallback: (x: any, i: number|string, k: string)=>Vdom){
-		super();
+	constructor(dot: IDotCore, value: ObservableCollection, renderCallback: (x: any, i: number|string, k: string)=>Vdom){
+		super(dot);
 		this.value = value;
 		this.renderCallback = renderCallback;
 	}
@@ -97,6 +98,10 @@ export default class CollectionVdom extends Vdom{
 		return nodes;
 	}
 
+	_getLastChild(): Vdom | null {
+		return this;
+	}
+
 	private getTailAppendPrefixLength(newKeys: Array<any>): number {
 		const old = this.mappedItems;
 		if (old.length === 0 || newKeys.length <= old.length) return 0;
@@ -119,7 +124,9 @@ export default class CollectionVdom extends Vdom{
 			existing.vdom._unrender();
 			existing.value = value;
 			let vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? existing.observableIndex : index, existing.keyValue);
-			existing.vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+			let vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+			if ((vdom as any)._root) vdom = (vdom as any)._root;
+			existing.vdom = vdom;
 		} else {
 			existing.observableIndex._set(index);
 		}
@@ -248,7 +255,8 @@ export default class CollectionVdom extends Vdom{
 						observableIndex._set(state.currentIndex);
 						
 						const vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? observableIndex : state.currentIndex, keyValue);
-						const vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+						let vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+						if ((vdom as any)._root) vdom = (vdom as any)._root;
 						const afterNode = this.startNode.ownerDocument.createTextNode("");
 						
 						state.nextMappedItems.push({

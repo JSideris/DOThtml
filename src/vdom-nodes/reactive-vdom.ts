@@ -8,7 +8,6 @@ import { ComponentVdom } from "./component-vdom";
 
 export class ReactiveVdom extends Vdom {
 	private binding: Binding;
-	private dot: IDotCore;
 	private beforeNode: Node = null;
 	private afterNode: Node = null;
 	private currentVdom: Vdom = null;
@@ -16,8 +15,7 @@ export class ReactiveVdom extends Vdom {
 	_isReactiveVdom = true;
 
 	constructor(dot: IDotCore, binding: Binding) {
-		super();
-		this.dot = dot;
+		super(dot);
 		this.binding = binding;
 	}
 
@@ -29,12 +27,12 @@ export class ReactiveVdom extends Vdom {
 			return value;
 		}
 		if (typeof value === "object" && value.build) {
-			const cv = new ComponentVdom(this.dot, value);
+			const cv = new ComponentVdom(this._dot, value);
 			cv.init();
 			return cv;
 		}
 		if (Array.isArray(value)) {
-			const container = new ContainerVdom(this.dot);
+			const container = new ContainerVdom(this._dot);
 			for (const item of value) {
 				container._addChild(this._toVdom(item));
 			}
@@ -98,6 +96,10 @@ export class ReactiveVdom extends Vdom {
 		}
 		nodes.push(this.afterNode);
 		return nodes;
+	}
+
+	_getLastChild(): Vdom | null {
+		return this;
 	}
 
 	toString() {

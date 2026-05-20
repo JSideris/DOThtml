@@ -6,22 +6,22 @@ import { Vdom } from "./vdom";
 
 export class TextVdom extends Vdom{
 
-	text: string|boolean|number|Binding;
+	_text: string|boolean|number|Binding;
 	textNode: Node = null;
 	observerId = 0;
 
 	constructor(text: string|boolean|number|Binding){
 		super();
-		this.text = text;
+		this._text = text;
 	}
 
 	_render(node: HTMLElement) {
-		if(this.text instanceof Binding){
-			this.textNode = node.ownerDocument.createTextNode(this.text._get() ?? "");
-			this.observerId = this.text._subscribe(this);
+		if(this._text instanceof Binding){
+			this.textNode = node.ownerDocument.createTextNode(this._text._get() ?? "");
+			this.observerId = this._text._subscribe(this);
 		}
 		else{
-			this.textNode = node.ownerDocument.createTextNode(`${this.text ?? ""}`);
+			this.textNode = node.ownerDocument.createTextNode(`${this._text ?? ""}`);
 		}
 		
 		node.appendChild(this.textNode);
@@ -34,8 +34,8 @@ export class TextVdom extends Vdom{
 			this.textNode = null;
 		}
 
-		if(this.observerId && this.text instanceof Binding){
-			this.text._unsubscribe(this.observerId);
+		if(this.observerId && this._text instanceof Binding){
+			this._text._unsubscribe(this.observerId);
 			this.observerId = 0;
 		}
 	}
@@ -44,8 +44,12 @@ export class TextVdom extends Vdom{
 		return this.textNode ? [this.textNode] : [];
 	}
 
+	_getLastChild(): Vdom | null {
+		return this;
+	}
+
 	toString(){
-		let temp = document.createTextNode((this.text instanceof Binding ? this.text._get() : this.text) ?? "");
+		let temp = document.createTextNode((this._text instanceof Binding ? this._text._get() : this._text) ?? "");
 		let div = document.createElement("div");
 		div.appendChild(temp);
 		return div.innerHTML;

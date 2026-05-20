@@ -1,0 +1,48 @@
+import { Vdom } from "./vdom-nodes/vdom";
+import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
+import { IDotCore } from "dothtml-interfaces";
+
+export class DotChain extends Vdom {
+	_root: Vdom;
+
+	constructor(dot: IDotCore, initial: Vdom) {
+		super(dot);
+		this._root = initial;
+	}
+
+	_addChild(node: Vdom) {
+		if (!(this._root instanceof FragmentVdom)) {
+			const frag = new FragmentVdom(this._dot);
+			frag._children.push(this._root);
+			frag._children.push(node);
+			this._root = frag;
+		} else {
+			this._root._children.push(node);
+		}
+		return this;
+	}
+
+	_render(target: HTMLElement) {
+		this._root._render(target);
+	}
+
+	_unrender() {
+		this._root._unrender();
+	}
+
+	get _isRendered() {
+		return this._root._isRendered;
+	}
+
+	set _isRendered(value: boolean) {
+		this._root._isRendered = value;
+	}
+
+	_getNodes(): Node[] {
+		return this._root._getNodes();
+	}
+
+	_getLastChild(): Vdom | null {
+		return this._root._getLastChild();
+	}
+}

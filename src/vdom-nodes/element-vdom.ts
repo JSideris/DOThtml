@@ -21,7 +21,17 @@ export class AttributeItem{
 
 export default class ElementVdom extends Vdom{
 
-	children: ContainerVdom = null;
+	private _children: ContainerVdom = null;
+	get children(): ContainerVdom {
+		if(!this._children){
+			this._children = new ContainerVdom(this._dot);
+			this._children._parent = this;
+		}
+		return this._children;
+	}
+	set children(value: ContainerVdom) {
+		this._children = value;
+	}
 	element: HTMLElement;
 	tag: string = null;
 	private attributes: Record<string, AttributeValueType> = {};
@@ -40,13 +50,12 @@ export default class ElementVdom extends Vdom{
 	private lastSyncedValues: Record<string, any> = {};
 
 	constructor(dot: IDotCore, tag: string){
-		super();
+		super(dot);
 		this.tag = tag;
-		this.children = new ContainerVdom(dot);
-		this.children._parent = this;
 	}
 
 	_render(node: HTMLElement){
+		this._isRendered = true;
 
 		this.element = node.ownerDocument.createElement(this.tag);
 		this.element[DOT_VDOM_PROP_NAME] = this;
@@ -60,8 +69,8 @@ export default class ElementVdom extends Vdom{
 
 		node.appendChild(this.element);
 
-		if(this.children){
-			this.children._render(this.element);
+		if(this._children){
+			this._children._render(this.element);
 		}
 
 		// Render events first so they are available for attribute checks.
@@ -82,7 +91,11 @@ export default class ElementVdom extends Vdom{
 	}
 
 	_unrender() {
-		this.children._unrender();
+		if(!this._isRendered) return;
+		this._isRendered = false;
+		if(this._children) this._children._unrender();
+
+		if(!this.element) return;
 
 		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
 		if(this.inputListener){
@@ -140,6 +153,10 @@ export default class ElementVdom extends Vdom{
 
 	_getNodes(): Node[] {
 		return this.element ? [this.element] : [];
+	}
+
+	_getLastChild(): Vdom | null {
+		return this;
 	}
 
 	toString(): string {
