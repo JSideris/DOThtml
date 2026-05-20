@@ -40,10 +40,13 @@ const cc = {
 }
 
 export async function cli(args: string[]) {
-	// The first two args are node and the script path.
-	// We want to support: npx create-dothtml my-app
-	// or: npx create-dothtml init my-app
-	
+	const command = args[2];
+
+	if (command === "generate" || command === "g") {
+		handleGenerate(args.slice(3));
+		return;
+	}
+
 	let projectName = args[2];
 	let startIndex = 2;
 
@@ -150,11 +153,64 @@ export async function cli(args: string[]) {
 	}
 }
 
+function handleGenerate(args: string[]) {
+	const type = args[0];
+	const name = args[1];
+
+	if (type !== "component" || !name) {
+		console.log(`\n${cc.bright}USAGE${cc.reset}`);
+		console.log(`  npx create-dothtml generate component <name>\n`);
+		return;
+	}
+
+	const isTs = fs.existsSync(path.join(process.cwd(), "tsconfig.json"));
+	const ext = isTs ? "ts" : "js";
+	const componentsDir = path.join(process.cwd(), "src", "components");
+
+	if (!fs.existsSync(componentsDir)) {
+		fs.mkdirSync(componentsDir, { recursive: true });
+	}
+
+	const filePath = path.join(componentsDir, `${name}.${ext}`);
+	if (fs.existsSync(filePath)) {
+		printError(`Component "${name}" already exists at ${filePath}`);
+		return;
+	}
+
+	const template = isTs 
+		? `import { dot, IDotComponent, IDotDocument, FrameworkItems } from 'dothtml';
+
+export class ${name} implements IDotComponent {
+  _: FrameworkItems;
+
+  build(): IDotDocument {
+    return dot.div({ class: '${name.toLowerCase()}' })
+      .h2('${name} Component')
+      .p('This is a new component created with create-dothtml.');
+  }
+}
+`
+		: `import { dot } from 'dothtml';
+
+export class ${name} {
+  build() {
+    return dot.div({ class: '${name.toLowerCase()}' })
+      .h2('${name} Component')
+      .p('This is a new component created with create-dothtml.');
+  }
+}
+`;
+
+	fs.writeFileSync(filePath, template);
+	console.log(`\n${cc.FgGreen}Success!${cc.reset} Created component ${cc.fgBrightBlue}${name}${cc.reset} at ${filePath}\n`);
+}
+
 function printUsage() {
 	console.log(`\n${cc.fgBrightBlue}create-dothtml${cc.reset}`);
 	console.log(`The official project initializer for DOThtml.\n`);
 	console.log(`${cc.bright}USAGE${cc.reset}`);
-	console.log(`  npx create-dothtml ${cc.fgBrightWhite}<project-name>${cc.reset} [options]\n`);
+	console.log(`  npx create-dothtml ${cc.fgBrightWhite}<project-name>${cc.reset} [options]`);
+	console.log(`  npx create-dothtml ${cc.fgBrightWhite}generate component <name>${cc.reset}\n`);
 	console.log(`${cc.bright}OPTIONS${cc.reset}`);
 	console.log(`  --js       Use JavaScript instead of TypeScript (default)`);
 	console.log(`  --no-lint  Skip adding ESLint to the project`);
