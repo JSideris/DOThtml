@@ -11,6 +11,7 @@
 - [Reactivity](https://dothtml.org/docs/reactivity.md): Signals, computed state, and reactive bindings.
 - [Stores](https://dothtml.org/docs/stores.md): Centralized state management for enterprise-scale applications.
 - [Refs](https://dothtml.org/docs/refs.md): Direct access to DOM elements and component instances.
+- [Scroll & Visibility](https://dothtml.org/docs/scroll-and-visibility.md): Global scroll tracking and element visibility detection.
 - [Styling](https://dothtml.org/docs/styling.md): Fluent, reactive, and high-performance styling system.
 - [Routing](https://dothtml.org/docs/routing.md): Reactive routing with navigation guards and lazy loading.
 - [Popups](https://dothtml.org/docs/popups.md): Multi-window orchestration layer with shared state and style inheritance.

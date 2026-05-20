@@ -1,7 +1,33 @@
-import { dot, DotComponent } from "dothtml";
+import { dot, DotComponent, Priority } from "dothtml";
 
 @dot.component
 export default class PerformanceSection extends DotComponent {
+	private isVisible = dot.state(false);
+	private benchmarksVisible = dot.state(false);
+	private moduleRef = dot.ref<HTMLElement>();
+	private benchmarksRef = dot.ref<HTMLElement>();
+
+	mounted() {
+		const observer = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					if (entry.target === this.moduleRef.value) {
+						this.isVisible.setValue(true);
+					} else if (entry.target === this.benchmarksRef.value) {
+						this.benchmarksVisible.setValue(true);
+					}
+				}
+			});
+		}, { threshold: 0.5 });
+
+		if (this.moduleRef.value) {
+			observer.observe(this.moduleRef.value);
+		}
+		if (this.benchmarksRef.value) {
+			observer.observe(this.benchmarksRef.value);
+		}
+	}
+
 	stylize(s: any) {
 		return s.class("performance-section", p => p
 			.display("flex")
@@ -72,9 +98,59 @@ export default class PerformanceSection extends DotComponent {
 			.heightP(100)
 			.backgroundColor(s.v("primary"))
 			.borderRadiusPx(4)
-			.transition("width 1s ease-out")
+			.transition("width 1.5s cubic-bezier(0.22, 1, 0.36, 1)")
 		).class("bar-fill.competitor", f => f
 			.backgroundColor("rgba(255, 255, 255, 0.5)")
+		).class("size-comparison-module", m => m
+			.marginTopPx(20)
+			.display("flex")
+			.flexDirection("column")
+			.alignItems("center")
+			.gapPx(20)
+			.widthP(100)
+		).class("size-comparison-grid", g => g
+			.display("flex")
+			.justifyContent("center")
+			.alignItems("flex-end")
+			.gapPx(60)
+			.paddingPx(30, 40)
+			.backgroundColor("rgba(255, 255, 255, 0.02)")
+			.borderRadiusPx(24)
+			.border("1px solid rgba(255, 255, 255, 0.05)")
+			.widthP(100)
+			.maxWidthPx(500)
+		).class("stack-group", g => g
+			.display("flex")
+			.flexDirection("column")
+			.alignItems("center")
+			.gapPx(15)
+		).class("box-stack", s => s
+			.display("flex")
+			.flexDirection("column-reverse")
+			.gapPx(4)
+		).class("box", b => b
+			.widthPx(70)
+			.heightPx(15)
+			.borderRadiusPx(3)
+			.border("1px solid rgba(255, 255, 255, 0.1)")
+			.opacity(0)
+			.transform("translateY(20px)")
+			.transition("opacity 0.5s ease-out, transform 0.5s ease-out")
+		).class("box.visible", b => b
+			.opacity(1)
+			.transform("translateY(0)")
+		).class("box.dothtml", b => b
+			.backgroundColor(s.v("primary"))
+			.boxShadow(s.template`0 0 20px ${s.v("primary")}44`)
+		).class("box.react", b => b
+			.backgroundColor("rgba(255, 255, 255, 0.1)")
+		).class("stack-label", l => l
+			.fontSizePx(18)
+			.fontWeight(700)
+			.color(s.v("text"))
+		).class("stack-value", v => v
+			.fontSizePx(16)
+			.color(s.v("text-dim"))
 		).class("cta-group", c => c
 			.marginTopPx(20)
 		).class("btn-outline", b => b
@@ -103,39 +179,71 @@ export default class PerformanceSection extends DotComponent {
 				dot.h2({ class: "title" }, "Built for Speed"),
 				dot.p({ class: "subtitle" }, "DOThtml outperforms traditional frameworks by eliminating the Virtual DOM overhead.")
 			),
-			dot.div({ class: "stats-grid" },
-				// Rendering Performance Card
+			dot.div({ class: "stats-grid", ref: this.benchmarksRef },
+				// Append Rows Card
 				dot.div({ class: "stat-card" },
 					dot.div({ class: "stat-header" },
-						dot.span({ class: "stat-label" }, "10k Row Creation"),
-						dot.span({ class: "stat-value" }, "661ms")
+						dot.span({ class: "stat-label" }, "Append 1,000 Rows"),
+						dot.span({ class: "stat-value" }, "7.39ms")
 					),
 					dot.div({ class: "bar-container" },
-						this.renderBar("DOThtml", 661, 1100, false),
-						this.renderBar("React", 1100, 1100, true),
-						this.renderBar("Svelte", 902, 1100, true),
-						this.renderBar("Vue", 679, 1100, true)
+						this.renderBar("DOThtml", 7.39, 75.97, false),
+						this.renderBar("React", 75.97, 75.97, true),
+						this.renderBar("Svelte", 53.45, 75.97, true),
+						this.renderBar("Vue", 54.02, 75.97, true)
 					),
 					dot.p({ style: "font-size: 14px; color: var(--text-dim); margin-top: 10px;" }, 
-						"DOThtml is 40% faster than React when rendering large datasets."
+						"DOThtml is 10x faster than React when appending new data to an existing list."
 					)
 				),
-				// Bundle Size Card
+				// Bulk Style Update Card
 				dot.div({ class: "stat-card" },
 					dot.div({ class: "stat-header" },
-						dot.span({ class: "stat-label" }, "Bundle Size"),
-						dot.span({ class: "stat-value" }, "18.6kB")
+						dot.span({ class: "stat-label" }, "Bulk Style Update"),
+						dot.span({ class: "stat-value" }, "0.15ms")
 					),
 					dot.div({ class: "bar-container" },
-						this.renderBar("DOThtml", 18.6, 42, false),
-						this.renderBar("React + DOM", 42, 42, true),
-						this.renderBar("Vue", 33, 42, true),
-						this.renderBar("Svelte", 2, 42, true)
+						this.renderBar("DOThtml", 0.15, 0.33, false),
+						this.renderBar("React", 0.33, 0.33, true),
+						this.renderBar("Svelte", 0.23, 0.33, true),
+						this.renderBar("Vue", 0.22, 0.33, true)
 					),
 					dot.p({ style: "font-size: 14px; color: var(--text-dim); margin-top: 10px;" }, 
-						"Ultra-lightweight footprint for instant loading and minimal resource usage."
+						"Granular reactivity allows DOThtml to update styles with zero overhead."
 					)
 				)
+			),
+			// Size Comparison Module
+			dot.div({ class: "size-comparison-module", ref: this.moduleRef },
+				dot.div({ class: "size-comparison-grid" },
+					// DOThtml Stack (4 boxes ~ 20kB)
+					dot.div({ class: "stack-group" },
+						dot.div({ class: "box-stack" },
+							dot.each(new Array(4).fill(0), (v, i) => dot.div({ 
+								class: this.isVisible.bindAs(v => v ? "box dothtml visible" : "box dothtml"),
+								style: `transition-delay: ${i * 100}ms`
+							}))
+						),
+						dot.div({ style: "text-align: center" },
+							dot.div({ class: "stack-label" }, "DOThtml"),
+							dot.div({ class: "stack-value" }, "18.7kB")
+						)
+					),
+					// React Stack (9 boxes ~ 45kB)
+					dot.div({ class: "stack-group" },
+						dot.div({ class: "box-stack" },
+							dot.each(new Array(9).fill(0), (v, i) => dot.div({ 
+								class: this.isVisible.bindAs(v => v ? "box react visible" : "box react"),
+								style: `transition-delay: ${i * 100}ms`
+							}))
+						),
+						dot.div({ style: "text-align: center" },
+							dot.div({ class: "stack-label" }, "React + DOM"),
+							dot.div({ class: "stack-value" }, "42.0kB")
+						)
+					)
+				),
+				dot.p({ class: "subtitle", style: "font-size: 16px" }, "While React requires a heavy runtime to manage its Virtual DOM, DOThtml's lean engine provides more power with less than half the weight.")
 			),
 			dot.div({ class: "cta-group" },
 				dot.a({ href: "#/docs/benchmarks", class: "btn-outline" }, "View Full Benchmarks")
@@ -148,12 +256,12 @@ export default class PerformanceSection extends DotComponent {
 		return dot.div({ class: "bar-item" },
 			dot.div({ class: "bar-label-group" },
 				dot.span(label),
-				dot.span(value + (max > 100 ? "ms" : "kB"))
+				dot.span(value + "ms")
 			),
 			dot.div({ class: "bar-track" },
 				dot.div({ 
 					class: `bar-fill ${isCompetitor ? "competitor" : ""}`,
-					style: `width: ${width}%`
+					style: this.benchmarksVisible.bindAs(v => `width: ${v ? width : 0}%`)
 				})
 			)
 		);

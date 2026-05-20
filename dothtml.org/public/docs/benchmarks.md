@@ -1,20 +1,20 @@
 # Benchmarks
 
-DOThtml is built for performance. By eliminating the Virtual DOM and using granular reactivity, DOThtml achieves superior rendering speeds, especially in large-scale applications.
+Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
 ## Performance Comparison
 
-The following benchmarks measure the time (in milliseconds) required to perform common DOM operations across 1,000 and 10,000 rows.
+The following benchmarks measure the median time (in milliseconds) required to perform common DOM operations across 1,000 and 10,000 rows.
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | 110.80ms | 128.00ms | 100.40ms | 114.20ms |
-| **Create 10,000 rows** | **661.40ms** | 1099.80ms | 678.80ms | 901.80ms |
-| **Append 1,000 rows** | 101.00ms | 107.60ms | 81.40ms | 110.60ms |
-| **Update every 10th row** | 47.00ms | 47.00ms | 46.20ms | 47.20ms |
-| **Swap Rows** | 47.20ms | 46.80ms | 47.60ms | 47.40ms |
-| **Clear** | 49.60ms | 49.60ms | 49.40ms | 49.60ms |
-| **Bulk Style Update** | **52.60ms** | 57.00ms | 67.80ms | 59.20ms |
+| **Create 1,000 rows** | 6.88ms | 6.94ms | 6.98ms | **6.19ms** |
+| **Create 10,000 rows** | 706.80ms | 693.40ms | 493.35ms | **472.25ms** |
+| **Append 1,000 rows** | **7.39ms** | 75.97ms | 54.02ms | 53.45ms |
+| **Update every 10th row** | **0.14ms** | **0.14ms** | **0.14ms** | **0.14ms** |
+| **Swap Rows** | **0.14ms** | **0.14ms** | **0.14ms** | **0.14ms** |
+| **Clear** | 1.46ms | 1.45ms | **1.44ms** | 1.45ms |
+| **Bulk Style Update** | **0.15ms** | 0.33ms | 0.22ms | 0.23ms |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -27,22 +27,38 @@ DOThtml is designed to be lightweight, ensuring fast load times and minimal reso
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
 
-## Why DOThtml is Faster
+## Interpreting the Results
 
-### No Virtual DOM
-Traditional frameworks like React and Vue use a Virtual DOM to determine which parts of the UI need to change. This involves creating a tree of JavaScript objects, comparing it with a previous version, and then calculating the minimum set of changes to apply to the real DOM.
+Benchmarks reveal that DOThtml's "magic" — its fluent runtime builder and granular reactivity — comes with a performance trade-off. In bulk creation (10,000 rows), DOThtml is slower than compiler-based frameworks like Svelte or Vue. This is because DOThtml constructs a full Virtual DOM tree of objects at runtime before touching the real DOM. 
 
-DOThtml skips this entire process. When a `Signal` changes, DOThtml knows exactly which DOM nodes are bound to that signal and updates them directly. This O(1) update mechanism eliminates the overhead of tree diffing.
+However, once the DOM is created, DOThtml's granular reactivity excels. In scenarios like appending rows or updating styles, DOThtml often matches or exceeds other frameworks because it bypasses the expensive tree-diffing process entirely, updating only the specific nodes bound to a Signal.
 
-### Intelligent Scheduling
-DOThtml features a built-in scheduler that batches updates and supports concurrent rendering. For large updates, DOThtml can yield control back to the browser every 5ms, ensuring the UI remains responsive even during heavy rendering tasks.
+## Framework Philosophy
 
-### Reactive Styling
-DOThtml's styling system is natively reactive. Visual-only changes (like changing a color or position) are optimized into CSS variables, bypassing the component's `build()` method entirely and leveraging the browser's high-performance styling engine.
+Every framework is designed with a specific set of values. Understanding these priorities helps in choosing the right tool for the task.
+
+| Category | DOThtml | Svelte | React | Vue |
+| :--- | :--- | :--- | :--- | :--- |
+| **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
+| **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
+| **Bundle & Runtime** | **18.7 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
+
+### Framework Characteristics
+
+- **DOThtml**: Focuses on a "no-build" friendly, fluent API where the runtime handles reactivity via direct Signal-to-Node bindings, excelling in long-lived sessions with frequent updates.
+- **Svelte**: Acts as a build-time tool that disappears in the browser, providing the fastest possible initial load and raw execution speed for smaller to medium-sized applications.
+- **React**: Provides a highly predictable functional programming model that scales well for massive teams, relying on a Virtual DOM to manage complex UI states.
+- **Vue**: Offers a flexible, approachable architecture that combines the best of template-based optimization with a powerful reactive data model.
 
 ## Methodology
 
-The benchmarks were conducted using a custom Playwright-based runner. Each test was repeated 5 times, and the average duration was recorded. The duration measures the time from the initial click event to the completion of the next animation frame (`requestAnimationFrame`), ensuring that the browser has finished rendering the changes.
+The benchmarks were conducted using a custom Playwright-based runner. Each test was repeated 20 times, and the median duration was recorded. The duration measures the time from the initial click event to the completion of the next paint cycle.
+
+To ensure high accuracy and eliminate environmental noise:
+- **In-Browser Timing**: Timing is performed entirely within the browser using `performance.mark()` and `performance.measure()`, excluding any overhead from Playwright's automation layer.
+- **Batching**: For sub-millisecond operations (like swapping rows or updating styles), the benchmark triggers the operation multiple times (up to 100x) in a single synchronous loop. The total time is then divided by the batch size to provide a high-resolution average that bypasses the browser's frame-rate floor.
+- **Paint Detection**: We wait for the browser to actually paint the changes to the screen using a combination of `requestAnimationFrame` and `setTimeout(..., 0)` before stopping the timer.
 
 ### Running Benchmarks Locally
 

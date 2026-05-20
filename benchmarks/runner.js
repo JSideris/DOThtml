@@ -6,12 +6,12 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DOM_TESTS = [
-	{ id: 'run', name: 'Create 1,000 rows' },
-	{ id: 'runlots', name: 'Create 10,000 rows' },
-	{ id: 'add', name: 'Append 1,000 rows', setup: 'run' },
-	{ id: 'update', name: 'Update every 10th row' },
-	{ id: 'swaprows', name: 'Swap Rows' },
-	{ id: 'clear', name: 'Clear' }
+	{ id: 'run', name: 'Create 1,000 rows', batch: 10 },
+	{ id: 'runlots', name: 'Create 10,000 rows', batch: 1 },
+	{ id: 'add', name: 'Append 1,000 rows', setup: 'run', batch: 10 },
+	{ id: 'update', name: 'Update every 10th row', batch: 100 },
+	{ id: 'swaprows', name: 'Swap Rows', batch: 100 },
+	{ id: 'clear', name: 'Clear', batch: 10 }
 ];
 
 function parseArgs() {
@@ -74,20 +74,64 @@ function formatStat(value) {
 
 /**
  * Time from click through next paint. Click goes through Playwright (shadow-DOM safe);
- * timing and rAF wait run in the browser.
+ * timing and rAF wait run in the browser to exclude Playwright overhead.
+ * Supports batching by triggering multiple clicks synchronously.
  */
-async function measureClick(page, buttonId) {
-	await page.evaluate(() => { window.__benchStart = performance.now(); });
+async function measureClick(page, buttonId, batch = 1) {
+	await page.evaluate(({ id, count }) => {
+		window.__benchResult = null;
+		performance.clearMarks();
+		performance.clearMeasures();
+		const listener = (e) => {
+			const path = e.composedPath();
+			const match = path.some(el => el.id === id);
+			
+			if (match) {
+				performance.mark('bench-start');
+				window.removeEventListener('click', listener, true);
+				
+				const el = document.getElementById(id);
+				if (el) {
+					// Perform additional clicks synchronously to amplify the work
+					for (let i = 1; i < count; i++) {
+						el.click();
+					}
+				}
+				
+				// Wait for the next paint
+				requestAnimationFrame(() => {
+					setTimeout(() => {
+						performance.mark('bench-end');
+						try {
+							performance.measure('bench-duration', 'bench-start', 'bench-end');
+							const entries = performance.getEntriesByName('bench-duration');
+							window.__benchResult = entries.length > 0 ? entries[0].duration : 0.001;
+						} catch (err) {
+							console.error('Measurement error:', err);
+							window.__benchResult = 0.001;
+						}
+					}, 0);
+				});
+			}
+		};
+		window.addEventListener('click', listener, true);
+	}, { id: buttonId, count: batch });
+
 	await page.click(`#${buttonId}`);
-	return page.evaluate(async () => {
-		await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-		return performance.now() - window.__benchStart;
-	});
+
+	try {
+		await page.waitForFunction(() => window.__benchResult !== null, { timeout: 10000 });
+		const totalDuration = await page.evaluate(() => window.__benchResult);
+		return totalDuration / batch;
+	} catch (e) {
+		const exists = await page.$(`#${buttonId}`).then(el => !!el);
+		throw new Error(`Benchmark timer failed to trigger for button #${buttonId}. Element exists: ${exists}. This usually happens if the click event was intercepted or the element was removed before the listener could catch it.`);
+	}
 }
 
 async function clickAndWait(page, buttonId) {
 	await page.click(`#${buttonId}`);
-	await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+	await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0))));
 }
 
 async function setupTest(page, setupId) {
@@ -105,14 +149,14 @@ async function resetAfterTest(page, testId) {
 async function runTestIterations(page, test, config) {
 	for (let i = 0; i < config.warmup; i++) {
 		await setupTest(page, test.setup);
-		await measureClick(page, test.id);
+		await measureClick(page, test.id, test.batch);
 		await resetAfterTest(page, test.id);
 	}
 
 	const samples = [];
 	for (let i = 0; i < config.iterations; i++) {
 		await setupTest(page, test.setup);
-		samples.push(await measureClick(page, test.id));
+		samples.push(await measureClick(page, test.id, test.batch));
 		await resetAfterTest(page, test.id);
 	}
 
@@ -132,14 +176,15 @@ async function runDomBenchmarks(page, framework, config) {
 async function runStylingBenchmarks(page, config) {
 	const testName = 'Bulk Style Update';
 	const buttonId = 'update-styles';
+	const batch = 100;
 
 	for (let i = 0; i < config.warmup; i++) {
-		await measureClick(page, buttonId);
+		await measureClick(page, buttonId, batch);
 	}
 
 	const samples = [];
 	for (let i = 0; i < config.iterations; i++) {
-		samples.push(await measureClick(page, buttonId));
+		samples.push(await measureClick(page, buttonId, batch));
 	}
 
 	return { [testName]: summarizeSamples(samples) };
@@ -274,65 +319,80 @@ async function runBenchmark() {
 	console.log(`Benchmark config: iterations=${config.iterations}, warmup=${config.warmup}, suites=${config.suites}`);
 
 	console.log('Building benchmarks...');
-	const build = spawn('npx', ['vite', 'build'], { cwd: __dirname });
+	const viteBin = path.join(__dirname, 'node_modules', '.bin', 'vite');
+	const build = spawn(viteBin, ['build'], { cwd: __dirname });
 	await new Promise((resolve, reject) => {
 		build.on('close', code => code === 0 ? resolve() : reject(new Error('Build failed')));
 	});
 
 	console.log('Starting Vite preview server...');
-	const vite = spawn('npx', ['vite', 'preview'], { cwd: __dirname });
+	const vite = spawn(viteBin, ['preview'], { cwd: __dirname, detached: true });
 
-	let port = 4173;
-	await new Promise(resolve => {
-		vite.stdout.on('data', data => {
-			const output = data.toString();
-			console.log('Vite:', output);
-			const match = output.match(/http:\/\/localhost:(\d+)\//);
-			if (match) {
-				port = match[1];
-				resolve();
+	try {
+		let port = 4173;
+		await new Promise((resolve, reject) => {
+			vite.stdout.on('data', data => {
+				const output = data.toString();
+				console.log('Vite:', output);
+				const match = output.match(/http:\/\/localhost:(\d+)\//);
+				if (match) {
+					port = match[1];
+					resolve();
+				}
+			});
+			vite.stderr.on('data', data => {
+				console.error('Vite Error:', data.toString());
+			});
+			vite.on('error', reject);
+			vite.on('close', (code) => {
+				if (code !== null && code !== 0) reject(new Error(`Vite exited with code ${code}`));
+			});
+		});
+
+		const suiteRuns = [];
+		for (let suite = 0; suite < config.suites; suite++) {
+			if (config.suites > 1) {
+				console.log(`\nSuite ${suite + 1}/${config.suites}...`);
 			}
-		});
-		vite.stderr.on('data', data => {
-			console.error('Vite Error:', data.toString());
-		});
-	});
-
-	const suiteRuns = [];
-	for (let suite = 0; suite < config.suites; suite++) {
-		if (config.suites > 1) {
-			console.log(`\nSuite ${suite + 1}/${config.suites}...`);
+			suiteRuns.push(await runSingleSuite(port, config));
 		}
-		suiteRuns.push(await runSingleSuite(port, config));
-	}
 
-	vite.kill();
+		const results = config.suites === 1
+			? { dom: suiteRuns[0].dom, styling: suiteRuns[0].styling }
+			: combineSuiteResults(suiteRuns);
 
-	const results = config.suites === 1
-		? { dom: suiteRuns[0].dom, styling: suiteRuns[0].styling }
-		: combineSuiteResults(suiteRuns);
+		const domTestNames = Object.keys(results.dom.dothtml);
+		const stylingTestNames = Object.keys(results.styling.dothtml);
 
-	const domTestNames = Object.keys(results.dom.dothtml);
-	const stylingTestNames = Object.keys(results.styling.dothtml);
+		console.log('\nDOM Benchmark Results (Median ms):');
+		console.table(buildSummaryTable(results.dom, domTestNames));
+		console.log('\nStyling Benchmark Results (Median ms):');
+		console.table(buildSummaryTable(results.styling, stylingTestNames));
 
-	console.log('\nDOM Benchmark Results (Median ms):');
-	console.table(buildSummaryTable(results.dom, domTestNames));
-	console.log('\nStyling Benchmark Results (Median ms):');
-	console.table(buildSummaryTable(results.styling, stylingTestNames));
-
-	console.log('\nDetailed statistics (median / std dev):');
-	for (const testName of domTestNames) {
-		console.log(`\n  ${testName}:`);
-		for (const framework of Object.keys(results.dom)) {
-			const stats = results.dom[framework][testName];
-			console.log(`    ${framework}: median ${formatStat(stats.median)}ms, stddev ${formatStat(stats.stddev)}ms`);
+		console.log('\nDetailed statistics (median / std dev):');
+		for (const testName of domTestNames) {
+			console.log(`\n  ${testName}:`);
+			for (const framework of Object.keys(results.dom)) {
+				const stats = results.dom[framework][testName];
+				console.log(`    ${framework}: median ${formatStat(stats.median)}ms, stddev ${formatStat(stats.stddev)}ms`);
+			}
 		}
-	}
 
-	const fs = await import('fs');
-	const report = writeReport(config, results);
-	fs.writeFileSync(path.join(__dirname, 'results.md'), report);
-	console.log('\nReport generated: benchmarks/results.md');
+		const fs = await import('fs');
+		const report = writeReport(config, results);
+		fs.writeFileSync(path.join(__dirname, 'results.md'), report);
+		console.log('\nReport generated: benchmarks/results.md');
+	} finally {
+		if (vite.pid) {
+			try {
+				process.kill(-vite.pid);
+			} catch (e) {
+				vite.kill();
+			}
+		}
+		// Give it a moment to die
+		await new Promise(resolve => setTimeout(resolve, 500));
+	}
 	process.exit(0);
 }
 

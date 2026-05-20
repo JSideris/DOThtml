@@ -21,6 +21,7 @@ export default class Docs extends DotComponent<DocsProps> {
 		{ id: "use-cases", label: "Use Cases" },
 		{ id: "stores", label: "Stores" },
 		{ id: "refs", label: "Refs" },
+		{ id: "scroll-and-visibility", label: "Scroll & Visibility" },
 		{ id: "styling", label: "Stylize & Style" },
 		{ id: "routing", label: "Routing" },
 		{ id: "popups", label: "Popups" },

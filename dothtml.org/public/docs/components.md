@@ -112,9 +112,9 @@ static props = {
 ## Lifecycle Hooks
 
 - `mounting()`: Called before the component is added to the DOM.
-- `mounted()`: Called after the component is added to the DOM.
+- `mounted()`: Called after the component is added to the DOM. Use this to set up **[Scroll & Visibility](./scroll-and-visibility.md)** listeners or observers.
 - `built()`: Called every time the `build()` function completes (including re-renders).
-- `unmounting()`: Called before the component is removed from the DOM.
+- `unmounting()`: Called before the component is removed from the DOM. Always clean up global listeners here.
 - `unmounted()`: Called after the component is removed from the DOM.
 
 ## Custom Events
