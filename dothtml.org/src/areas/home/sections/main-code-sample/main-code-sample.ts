@@ -23,6 +23,80 @@ class SatelliteContent extends DotComponent {
 }
 
 @dot.component
+class Modal extends DotComponent {
+	stylize(s: any) {
+		return s.class("modal-backdrop", mb => mb
+			.position("absolute")
+			.topPx(0)
+			.leftPx(0)
+			.rightPx(0)
+			.bottomPx(0)
+			.backgroundColor("rgba(0, 0, 0, 0.7)")
+			.display("flex")
+			.alignItems("center")
+			.justifyContent("center")
+			.zIndex(100)
+			.backdropFilter("blur(4px)")
+			.animationName("fade-in")
+			.animationDurationS(0.2)
+		).keyframes("fade-in", k => k
+			.from(f => f.opacity(0))
+			.to(t => t.opacity(1))
+		).class("modal-content", mc => mc
+			.backgroundColor("#1a1a1a")
+			.border("1px solid rgba(255, 255, 255, 0.1)")
+			.borderRadiusPx(16)
+			.widthP(80)
+			.maxWidthPx(400)
+			.boxShadow("0 20px 40px rgba(0,0,0,0.4)")
+			.animationName("scale-up")
+			.animationDurationS(0.2)
+		).keyframes("scale-up", k => k
+			.from(f => f.transform({ scale: 0.9 }).opacity(0))
+			.to(t => t.transform({ scale: 1 }).opacity(1))
+		).class("modal-header", mh => mh
+			.paddingPx(20)
+			.borderBottom("1px solid rgba(255, 255, 255, 0.05)")
+			.display("flex")
+			.justifyContent("space-between")
+			.alignItems("center")
+		).class("modal-header h3", h => h
+			.margin(0)
+			.fontSizePx(18)
+			.color(s.v("primary"))
+		).class("modal-close", mc => mc
+			.background("none")
+			.border("none")
+			.color("#fff")
+			.fontSizePx(24)
+			.cursor("pointer")
+			.opacity(0.5)
+			.transition("opacity 0.2s")
+		).class("modal-close:hover", mc => mc
+			.opacity(1)
+		).class("modal-body", mb => mb
+			.paddingPx(20)
+			.color("#d4d4d4")
+			.lineHeight(1.6)
+		);
+	}
+
+	build() {
+		return dot.div({ class: "modal-backdrop", onClick: () => this.emit("close") },
+			dot.div({ class: "modal-content", onClick: (e: any) => e.stopPropagation() },
+				dot.div({ class: "modal-header" },
+					dot.slot("header", dot.h3("Default Header")),
+					dot.button({ class: "modal-close", onClick: () => this.emit("close") }, "×")
+				),
+				dot.div({ class: "modal-body" },
+					dot.slot()
+				)
+			)
+		);
+	}
+}
+
+@dot.component
 export default class MainCodeSample extends DotComponent {
 	private activeExample = dot.state("Counter");
 
@@ -41,6 +115,10 @@ export default class MainCodeSample extends DotComponent {
 	private popupColor = dot.state("#ff6b6b");
 	private satelliteWrapper: any = null;
 	private isSatelliteOpen = dot.state(false);
+
+	// Example 6: Slots
+	private isModalOpen = dot.state(false);
+	private modalType = dot.state("info");
 
 	// Example 3: Store (Notification Service)
 	private static alertStore = dot.store({
@@ -459,6 +537,51 @@ class App extends DotComponent {
 							style: this.isSatelliteOpen.bindAs(open => open ? "background-color: #ff4757" : "display: none"),
 							onClick: () => this.satelliteWrapper?.close()
 						}, "Close")
+					)
+				)
+			},
+			"Slots": {
+				code: `@dot.component
+class Modal extends DotComponent {
+  build() {
+    return dot.div({ class: "modal-backdrop" },
+      dot.div({ class: "modal-content" },
+        dot.div({ class: "modal-header" },
+          dot.slot("header", dot.h3("Info")),
+          dot.button({ onClick: () => this.emit("close") }, "×")
+        ),
+        dot.div({ class: "modal-body" },
+          dot.slot() // Default slot
+        )
+      )
+    );
+  }
+}
+
+// Usage
+dot.mount(new Modal())
+  .slot("header", dot.h3("Warning!"))
+  .slot(dot.p("Are you sure?"));`,
+				preview: () => dot.div(
+					dot.div({ style: "display: flex; gap: 10px;" },
+						dot.button({ 
+							class: "btn",
+							onClick: () => { this.modalType.value = "info"; this.isModalOpen.value = true; }
+						}, "Info Modal"),
+						dot.button({ 
+							class: "btn",
+							style: "background-color: #ff6b6b",
+							onClick: () => { this.modalType.value = "warning"; this.isModalOpen.value = true; }
+						}, "Warning Modal")
+					),
+					dot.when(this.isModalOpen, 
+						dot.mount(new Modal())
+							.on("close", () => this.isModalOpen.value = false)
+							.slot("header", dot.h3(this.modalType.bindAs(t => t === "info" ? "Information" : "System Warning")))
+							.slot(dot.p(this.modalType.bindAs(t => t === "info" 
+								? "This modal uses slots to display dynamic content while keeping the layout consistent." 
+								: "Warning: You are about to enter a high-reactivity zone! Proceed with caution."
+							)))
 					)
 				)
 			}

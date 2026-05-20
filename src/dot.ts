@@ -20,13 +20,14 @@ import RefCollection from "./reactivity/ref-collection";
 import { scheduler } from "./reactivity/scheduler";
 import { createStore, getStore, clearStores, getStores } from "./reactivity/store";
 import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
-import { createElement } from "./dot-helpers";
+import { createElement, isContent } from "./dot-helpers";
 import { allTags, allCoreWrappers, allTagsSet } from "./tags";
 import { DotChain } from "./dot-chain";
 import { HtmlVdom } from "./vdom-nodes/html-vdom";
 import { ConditionalVdom } from "./vdom-nodes/conditional-vdom";
 import CollectionVdom from "./vdom-nodes/collection-vdom";
 import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
+import { SlotVdom } from "./vdom-nodes/slot-vdom";
 
 function reduceReactive(value: any){
 	if(value instanceof Signal) return value.bind();
@@ -58,27 +59,54 @@ function promote(vdom: Vdom): DotChain {
 	return this.text(c);
 };
 
-(Vdom.prototype as any).mount = function(c: any, attrs?: any) {
+(Vdom.prototype as any).slot = function(name?: any, fallback?: any) {
+	let lastChild = this._getLastChild();
+	while (lastChild instanceof DotChain) {
+		lastChild = (lastChild as any)._root;
+	}
+
+	if (lastChild instanceof ComponentVdom) {
+		if (typeof name !== "string" && name !== undefined) {
+			fallback = name;
+			name = "default";
+		}
+		lastChild.addSlot(name || "default", fallback);
+		return this;
+	} else {
+		if (typeof name !== "string" && name !== undefined) {
+			fallback = name;
+			name = undefined;
+		}
+		return this._addChild(new SlotVdom(this._dot, name, fallback));
+	}
+};
+
+(Vdom.prototype as any).mount = function(c: any, ...args: any[]) {
 	let cn = new ComponentVdom(this._dot, c);
-	if(attrs){
-		for(let k in attrs){
-			let val = attrs[k];
-			if(k === "ref"){
-				cn.setRef(val);
-			}
-			else if(k.startsWith("on") && typeof val === "function"){
-				let eventName = k;
-				let modifiers = [];
-				if(k.includes(".")){
-					const parts = k.split(".");
-					eventName = parts[0];
-					modifiers = parts.slice(1);
+	for (let i = 0; i < args.length; i++) {
+		let arg = args[i];
+		if (isContent(arg)) {
+			cn.addSlot("default", arg);
+		} else if (arg && typeof arg === "object") {
+			for (let k in arg) {
+				let val = arg[k];
+				if (k === "ref") {
+					cn.setRef(val);
 				}
-				cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
-			}
-			else{
-				if(!c["props"]) (c as any).props = {};
-				(c as any).props[k] = val;
+				else if (k.startsWith("on") && typeof val === "function") {
+					let eventName = k;
+					let modifiers = [];
+					if (k.includes(".")) {
+						const parts = k.split(".");
+						eventName = parts[0];
+						modifiers = parts.slice(1);
+					}
+					cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
+				}
+				else {
+					if (!c["props"]) (c as any).props = {};
+					(c as any).props[k] = val;
+				}
 			}
 		}
 	}
@@ -227,6 +255,13 @@ const makeDot = ()=>{
 	}
 
 	_dot.component = component;
+	_dot.slot = function(name?: any, fallback?: any) {
+		if (typeof name !== "string" && name !== undefined) {
+			fallback = name;
+			name = undefined;
+		}
+		return new SlotVdom(_dot as any, name, fallback);
+	};
 	_dot.getCurrentComponent = getCurrentComponent;
 
 	_dot.store = createStore;

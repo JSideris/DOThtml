@@ -1,6 +1,8 @@
 import { Vdom } from "./vdom-nodes/vdom";
 import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
 import { IDotCore } from "dothtml-interfaces";
+import { ComponentVdom } from "./vdom-nodes/component-vdom";
+import { SlotVdom } from "./vdom-nodes/slot-vdom";
 
 export class DotChain extends Vdom {
 	_root: Vdom;
@@ -44,5 +46,27 @@ export class DotChain extends Vdom {
 
 	_getLastChild(): Vdom | null {
 		return this._root._getLastChild();
+	}
+
+	slot(name: string | any, content?: any) {
+		let lastChild = this._getLastChild();
+		while (lastChild instanceof DotChain) {
+			lastChild = (lastChild as any)._root;
+		}
+
+		if (lastChild instanceof ComponentVdom) {
+			if (typeof name !== "string") {
+				content = name;
+				name = "default";
+			}
+			lastChild.addSlot(name || "default", content);
+		} else {
+			if (typeof name !== "string") {
+				content = name;
+				name = undefined;
+			}
+			this._addChild(new SlotVdom(this._dot, name, content));
+		}
+		return this;
 	}
 }

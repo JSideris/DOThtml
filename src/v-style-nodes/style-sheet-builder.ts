@@ -61,6 +61,10 @@ export default class StyleSheetBuilder {
 		return this;
 	}
 
+	selector(selector: string, callback: (s: BaseVStyle) => void) {
+		return this.rule(selector, callback);
+	}
+
 	media(condition: string, callback: (s: StyleSheetBuilder) => void) {
 		const builder = new StyleSheetBuilder();
 		callback(builder);

@@ -221,6 +221,105 @@ class ThemeableComponent {
 
 By using `hostStyle` to update a CSS variable, you avoid re-calling the `build()` method for purely visual changes, leading to much better performance in complex applications.
 
+## Component Slots
+
+Slots allow you to pass content from a parent component into a child component's template. This is useful for creating reusable layout components like cards, modals, or page structures.
+
+### 1. Default Slots
+
+To define a slot in a component, use the `dot.slot()` method in the `build()` function.
+
+```javascript
+class MyCard extends DotComponent {
+    build(dot) {
+        return dot.div({ class: "card" },
+            dot.div({ class: "card-content" },
+                dot.slot() // Default slot
+            )
+        );
+    }
+}
+
+// Usage
+dot.mount(new MyCard(), dot.p("This content goes into the slot!"));
+```
+
+### 2. Named Slots
+
+You can have multiple slots by giving them names.
+
+```javascript
+class PageLayout extends DotComponent {
+    build(dot) {
+        return dot.div(
+            dot.header(dot.slot("header")),
+            dot.main(dot.slot()), // Default slot
+            dot.footer(dot.slot("footer"))
+        );
+    }
+}
+
+// Usage using fluent API
+dot.mount(new PageLayout())
+    .slot("header", dot.h1("Welcome"))
+    .slot("footer", dot.p("Copyright 2026"))
+    .slot(dot.div("Main content here"));
+```
+
+### 3. Fallback Content
+
+You can provide default content that will be shown if no content is provided for a slot.
+
+```javascript
+dot.slot("optional", dot.span("Default Fallback Content"))
+```
+
+### 4. Scoped Slots
+
+Scoped slots allow the component to pass data back to the slot content. This is essential for components like lists or tables.
+
+```javascript
+class UserList extends DotComponent {
+    items = [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }];
+    build(dot) {
+        return dot.ul(
+            dot.each(this.items, (user) => 
+                dot.li(dot.slot("user", { data: user }))
+            )
+        );
+    }
+}
+
+// Usage
+dot.mount(new UserList())
+    .slot("user", (scope) => dot.span(`User: ${scope.data.name}`));
+```
+
+### 5. Styling Slotted Content
+
+Since DOThtml uses Shadow DOM, you can style slotted content from within the component using the `::slotted()` pseudo-element in your `stylize()` method.
+
+```javascript
+class StyledCard extends DotComponent {
+    stylize(s) {
+        s.selector("::slotted(h1)", c => c.color("blue"));
+    }
+    build(dot) {
+        return dot.div(dot.slot());
+    }
+}
+```
+
+#### ⚠️ Styling and Encapsulation
+
+Because DOThtml uses **Shadow DOM**, there is a strict boundary between a component's internal structure and the content passed into its slots.
+
+*   **Internal Structure**: Styles for elements defined *inside* your component's `build()` method (like a modal's backdrop or header) **must** be defined in that component's `stylize()` method. A parent component cannot style these elements.
+*   **Slotted Content**: Content passed into a slot retains the styling of the **parent component**. However, the child component can apply additional styles to this content using the `::slotted()` pseudo-element.
+
+**Example Pitfall:**
+If you create a `Modal` component, the parent component can style the `p` tag it passes into the slot, but it **cannot** style the `.modal-backdrop` div defined inside the `Modal` component.
+
 ## Next Steps
 
 Now that you've learned about components, see how to make them interactive with **[Reactivity](./reactivity.md)**.

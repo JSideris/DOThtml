@@ -23,14 +23,14 @@ export const isContent = (arg: any) => {
 		Array.isArray(arg);
 };
 
-export const applyContent = (dot: IDotCore, n: ElementVdom, cont: any) => {
+export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont: any) => {
+	const target = n instanceof ElementVdom ? n.children : n;
 	if(Array.isArray(cont)){
 		for(let i = 0; i < cont.length; i++) applyContent(dot, n, cont[i]);
 	}
 	else if(Array.isArray(cont?._children)){
 		const children = cont._children;
 		if (children && children.length > 0) {
-			const target = n.children;
 			for(let i = 0; i < children.length; i++) target._addChild(children[i]);
 		}
 	}
@@ -38,10 +38,10 @@ export const applyContent = (dot: IDotCore, n: ElementVdom, cont: any) => {
 		applyContent(dot, n, cont._root);
 	}
 	else if(cont instanceof Vdom){
-		n.children._addChild(cont);
+		target._addChild(cont);
 	}
 	else if(typeof cont == "object" && cont?.build){
-		n.children.mount(cont);
+		target.mount(cont);
 	}
 	else{
 		if(cont !== null && cont !== undefined){
@@ -50,10 +50,10 @@ export const applyContent = (dot: IDotCore, n: ElementVdom, cont: any) => {
 				val = val.bind();
 			}
 			if(val instanceof Binding){
-				n.children._addChild(new ReactiveVdom(dot, val));
+				target._addChild(new ReactiveVdom(dot, val));
 			}
 			else{
-				n.children._addChild(new TextVdom(val));
+				target._addChild(new TextVdom(val));
 			}
 		}
 	}

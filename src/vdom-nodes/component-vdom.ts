@@ -1,6 +1,9 @@
 import { IDotComponent, IDotCore } from "dothtml-interfaces";
 import { Vdom } from "./vdom";
 import { ContainerVdom } from "./container-vdom";
+import { applyContent } from "../dot-helpers";
+import { TextVdom } from "./text-vdom";
+import { FragmentVdom } from "./fragment-vdom";
 import renderStylesheet from "../helpers/render-stylesheet";
 import { EventManager } from "../events/event-manager";
 import Signal from "../reactivity/signal";
@@ -31,6 +34,7 @@ export class ComponentVdom extends Vdom{
 	private buildComputedSignals: Computed<any>[] = [];
 	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
+	private slots: Record<string, ContainerVdom> = {};
 	private updateSubscription = {
 		active: true,
 		update: () => {
@@ -172,7 +176,12 @@ export class ComponentVdom extends Vdom{
 
 		// Render new children into the existing shadow root
 		const shadow = (this.component._._meta as any).shadowRoot;
-		this.childShadowVdom._render(shadow);
+		pushComponent(this);
+		try {
+			this.childShadowVdom._render(shadow);
+		} finally {
+			popComponent();
+		}
 
 		this.component.built && this.component.built();
 	}
@@ -358,7 +367,12 @@ export class ComponentVdom extends Vdom{
 							updateDynamicStyle();
 						}
 
-						this.cvdom.childShadowVdom._render(shadow as any);
+						pushComponent(this.cvdom);
+						try {
+							this.cvdom.childShadowVdom._render(shadow as any);
+						} finally {
+							popComponent();
+						}
 					}
 					else{
 						throw new Error("Component build function returned invalid object.");
@@ -369,6 +383,39 @@ export class ComponentVdom extends Vdom{
 			document.defaultView.customElements.define(this.component._._meta.tagName, CustomElementConstructor);
 
 			// return customElementConstructor;
+		}
+	}
+
+	addSlot(name: string, content: any) {
+		if (typeof content === "function") {
+			if (!(this.component as any).slots) (this.component as any).slots = {};
+			(this.component as any).slots[name] = content;
+			if (this.shadowEl) {
+				this.requestUpdate();
+			}
+			return;
+		}
+
+		if (!this.slots[name]) {
+			this.slots[name] = new ContainerVdom(this._dot);
+		}
+		
+		applyContent(this._dot, this.slots[name] as any, content);
+		
+		if (this.shadowEl) {
+			this.slots[name]._render(this.shadowEl);
+			this.applySlotAttribute(name);
+		}
+	}
+
+	private applySlotAttribute(name: string) {
+		if (name !== "default") {
+			const nodes = this.slots[name]._getNodes();
+			for (const node of nodes) {
+				if (node instanceof HTMLElement) {
+					node.setAttribute("slot", name);
+				}
+			}
 		}
 	}
 
@@ -389,7 +436,18 @@ export class ComponentVdom extends Vdom{
 		this.shadowEl = document.createElement(this.component._._meta.tagName);
 		this.shadowEl["cvdom"] = this;
 		this.shadowEl["component"] = this.component;
-		
+
+		// Render slots into the light DOM
+		pushComponent(this);
+		try {
+			for (const name in this.slots) {
+				this.slots[name]._render(this.shadowEl);
+				this.applySlotAttribute(name);
+			}
+		} finally {
+			popComponent();
+		}
+
 		if(this.ref){
 			if (typeof this.ref === "function") {
 				this.ref(this.component);
@@ -461,6 +519,10 @@ export class ComponentVdom extends Vdom{
 		this.component.unmounting && this.component.unmounting();
 
 		this.childShadowVdom._unrender();
+
+		for (const name in this.slots) {
+			this.slots[name]._unrender();
+		}
 
 		const eventManager = EventManager.getForDocument(this.shadowEl.ownerDocument);
 		for(let i = 0; i < this.events.length; i++){
