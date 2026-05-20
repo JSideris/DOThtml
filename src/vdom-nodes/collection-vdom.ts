@@ -3,6 +3,7 @@ import Binding from "../reactivity/binding";
 import Signal from "../reactivity/signal";
 import { TextVdom } from "./text-vdom";
 import { Vdom } from "./vdom";
+import { FragmentVdom } from "./fragment-vdom";
 import { ObservableCollection } from "./vdom-types";
 import { scheduler } from "../reactivity/scheduler";
 import { IDotCore } from "dothtml-interfaces";
@@ -23,7 +24,7 @@ export default class CollectionVdom extends Vdom{
 	private static readonly MAX_BATCH_SIZE = 128;
 
 	value: ObservableCollection;
-	renderCallback: (x: any, i: number|string|Binding, k: string)=>Vdom;
+	renderCallback: (x: any, i: number|string|Binding, k: string)=>any;
 	startNode: Node;
 	endNode: Node;
 	observerId = 0;
@@ -42,7 +43,7 @@ export default class CollectionVdom extends Vdom{
 		step: "diff" | "reorder" | "cleanup";
 	} | null = null;
 
-	constructor(dot: IDotCore, value: ObservableCollection, renderCallback: (x: any, i: number|string, k: string)=>Vdom){
+	constructor(dot: IDotCore, value: ObservableCollection, renderCallback: (x: any, i: number|string, k: string)=>any){
 		super(dot);
 		this.value = value;
 		this.renderCallback = renderCallback;
@@ -124,7 +125,15 @@ export default class CollectionVdom extends Vdom{
 			existing.vdom._unrender();
 			existing.value = value;
 			let vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? existing.observableIndex : index, existing.keyValue);
-			let vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+			let vdom: Vdom;
+			if (vdomOrContent instanceof Vdom) {
+				vdom = vdomOrContent;
+			} else if (typeof vdomOrContent === "object" && vdomOrContent?.build) {
+				vdom = new FragmentVdom(this._dot);
+				(vdom as any).mount(vdomOrContent);
+			} else {
+				vdom = new TextVdom(vdomOrContent as any);
+			}
 			if ((vdom as any)._root) vdom = (vdom as any)._root;
 			existing.vdom = vdom;
 		} else {
@@ -255,7 +264,15 @@ export default class CollectionVdom extends Vdom{
 						observableIndex._set(state.currentIndex);
 						
 						const vdomOrContent = this.renderCallback(value, this.value instanceof Binding ? observableIndex : state.currentIndex, keyValue);
-						let vdom = vdomOrContent instanceof Vdom ? vdomOrContent : new TextVdom(vdomOrContent as any);
+						let vdom: Vdom;
+						if (vdomOrContent instanceof Vdom) {
+							vdom = vdomOrContent;
+						} else if (typeof vdomOrContent === "object" && vdomOrContent?.build) {
+							vdom = new FragmentVdom(this._dot);
+							(vdom as any).mount(vdomOrContent);
+						} else {
+							vdom = new TextVdom(vdomOrContent as any);
+						}
 						if ((vdom as any)._root) vdom = (vdom as any)._root;
 						const afterNode = this.startNode.ownerDocument.createTextNode("");
 						

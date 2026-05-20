@@ -91,6 +91,9 @@ function promote(vdom: Vdom): DotChain {
 	let thenContainer: Vdom;
 	if (then instanceof Vdom) {
 		thenContainer = then;
+	} else if (typeof then === "object" && then?.build) {
+		thenContainer = new FragmentVdom(this._dot);
+		(thenContainer as FragmentVdom).mount(then);
 	} else {
 		thenContainer = new FragmentVdom(this._dot);
 		(thenContainer as FragmentVdom)._children.push(new TextVdom(reduceReactive(then)));
@@ -111,6 +114,9 @@ function promote(vdom: Vdom): DotChain {
 		let thenNode: Vdom;
 		if (then instanceof Vdom) {
 			thenNode = then;
+		} else if (typeof then === "object" && then?.build) {
+			thenNode = new FragmentVdom(this._dot);
+			(thenNode as FragmentVdom).mount(then);
 		} else {
 			thenNode = new TextVdom(reduceReactive(then));
 		}
