@@ -5,7 +5,7 @@ dot.setSync(true);
 
 @dot.component
 class BenchmarkApp extends DotComponent {
-    data = dot.state([]);
+    data = dot.state([], 'id');
     selected = dot.state(null);
 
     run() {

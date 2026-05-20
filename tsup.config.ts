@@ -13,6 +13,7 @@ export default defineConfig({
 	// For IIFE (browser) bundle naming convention preference
 	outExtension({ format }) {
 		if (format === 'iife') return { js: '.global.js' };
+		if (format === 'cjs') return { js: '.cjs' };
 		return { js: '.js' };
 	},
 });

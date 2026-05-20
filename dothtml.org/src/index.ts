@@ -7,6 +7,7 @@
 import { dot, Router } from "dothtml";
 import Home from "./areas/home/home";
 import Docs from "./areas/docs/docs";
+import Profiling from "./areas/profiling/profiling";
 import Navbar from "./components/navbar/navbar";
 import AnimatedBackdrop from "./components/animated-backdrop/animated-backdrop";
 import { theme } from "./store/theme-store";
@@ -76,7 +77,8 @@ dot.useStyles(document, `
 const routes = [
 	{ path: "/", component: Home, title: "DOThtml - The Modern Web Framework" },
 	{ path: "/docs", component: Docs, title: "DOThtml Documentation" },
-	{ path: "/docs/:doc", component: Docs, title: "DOThtml Documentation" }
+	{ path: "/docs/:doc", component: Docs, title: "DOThtml Documentation" },
+	{ path: "/profiling", component: Profiling, title: "DOThtml Profiling" }
 ];
 
 dot(document.body)

@@ -2,8 +2,8 @@
   "name": "dothtml",
   "version": "6.0.0-beta.47",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "unpkg": "./dist/index.global.js",
   "jsdelivr": "./dist/index.global.js",
   "types": "./dist/index.d.ts",
@@ -11,7 +11,7 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     }
   },

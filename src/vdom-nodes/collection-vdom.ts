@@ -19,6 +19,8 @@ type DatumMap = {
  */
 export default class CollectionVdom extends Vdom{
 
+	private static readonly MAX_BATCH_SIZE = 128;
+
 	value: ObservableCollection;
 	renderCallback: (x: any, i: number|string|Binding, k: string)=>Vdom;
 	startNode: Node;
@@ -121,6 +123,37 @@ export default class CollectionVdom extends Vdom{
 		} else {
 			existing.observableIndex._set(index);
 		}
+	}
+
+	private getInsertBeforeAnchor(fromIndex: number, items: DatumMap[]): Node {
+		for (let i = fromIndex; i < items.length; i++) {
+			if (items[i].vdom._isRendered) {
+				const nodes = items[i].vdom._getNodes();
+				if (nodes.length) return nodes[0];
+			}
+		}
+		return this.endNode;
+	}
+
+	private countConsecutiveUnrendered(fromIndex: number, items: DatumMap[]): number {
+		let count = 0;
+		while (
+			fromIndex + count < items.length &&
+			!items[fromIndex + count].vdom._isRendered &&
+			count < CollectionVdom.MAX_BATCH_SIZE
+		) {
+			count++;
+		}
+		return count;
+	}
+
+	private batchRenderNewItems(items: DatumMap[], parent: Node, insertBefore: Node): void {
+		const fragment = parent.ownerDocument.createDocumentFragment();
+		for (const item of items) {
+			item.vdom._render(fragment as unknown as HTMLElement);
+			fragment.appendChild(item.afterNode);
+		}
+		parent.insertBefore(fragment, insertBefore);
 	}
 
 	/**
@@ -248,18 +281,39 @@ export default class CollectionVdom extends Vdom{
 		if (state.step === "reorder") {
 			while (state.currentIndex < state.nextMappedItems.length) {
 				const item = state.nextMappedItems[state.currentIndex];
-				
+
 				if (!item.vdom._isRendered) {
-					item.vdom._renderAfter(state.lastNode);
-					state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+					const runLength = this.countConsecutiveUnrendered(state.currentIndex, state.nextMappedItems);
+
+					if (runLength >= 2) {
+						const batch = state.nextMappedItems.slice(state.currentIndex, state.currentIndex + runLength);
+						const parent = state.lastNode.parentElement;
+						const insertBefore = this.getInsertBeforeAnchor(state.currentIndex + runLength, state.nextMappedItems);
+						this.batchRenderNewItems(batch, parent, insertBefore);
+
+						for (const batchItem of batch) {
+							state.lastNode = batchItem.afterNode;
+							this.mappedItems.push(batchItem);
+						}
+						state.currentIndex += runLength;
+					} else {
+						item.vdom._renderAfter(state.lastNode);
+						state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+						state.lastNode = item.afterNode;
+						this.mappedItems.push(item);
+						state.currentIndex++;
+					}
 				} else if (!this.isItemPositionedAfter(item, state.lastNode)) {
 					item.vdom._moveBefore(state.lastNode.nextSibling, state.lastNode.parentElement);
 					state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+					state.lastNode = item.afterNode;
+					this.mappedItems.push(item);
+					state.currentIndex++;
+				} else {
+					state.lastNode = item.afterNode;
+					this.mappedItems.push(item);
+					state.currentIndex++;
 				}
-
-				state.lastNode = item.afterNode;
-				this.mappedItems.push(item);
-				state.currentIndex++;
 
 				if (scheduler.shouldYield()) {
 					return true; // Yielding
