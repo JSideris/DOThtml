@@ -26,6 +26,9 @@ A type-safe, batched styling system that integrates directly with reactivity. Ap
 ### [Popup Window Management](./popups.md)
 DOThtml provides a unique "Multi-Window Orchestration Layer," allowing you to manage popup windows as seamless extensions of your main app with shared state and inherited styles.
 
+### [Official CLI](./cli.md)
+Start projects in seconds with the official `create-dothtml` CLI, featuring a Vite-powered development environment and built-in component generators.
+
 ### [Performance & Advanced Features](./detailed-features.md)
 DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.
 

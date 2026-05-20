@@ -64,7 +64,7 @@ export default class QuickStartPart extends DotComponent {
 
 	build() {
 		const commands: Record<string, string> = {
-			"CLI": "npx create-dothtml-app MyApp",
+			"CLI": "npm init dothtml my-app",
 			"NPM": "npm install dothtml",
 			"CDN": '<script src="https://unpkg.com/dothtml/dist/index.global.js"></script>'
 		};

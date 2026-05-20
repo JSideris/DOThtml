@@ -1,12 +1,20 @@
 # Quick Start & Installation
 
-## Start Something New in TypeScript
+## Start Something New (Recommended)
+
+The fastest way to build a modern DOThtml application is with the official CLI. It scaffolds a project powered by **Vite**, providing instant Hot Module Replacement (HMR) and a professional build pipeline.
 
 ```bash
-npm i -g create-dothtml-app
-npx create-dothtml-app MyApp
-cd MyApp
-npm start
+npm init dothtml my-app
+cd my-app
+npm install
+npm run dev
+```
+
+By default, this scaffolds a **TypeScript** project. To use JavaScript instead, add the `--js` flag:
+
+```bash
+npm init dothtml my-app -- --js
 ```
 
 ## Add DOThtml to an existing Node.js Project

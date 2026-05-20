@@ -3,6 +3,7 @@
 
 ## Core Documentation
 - [Quick Start & Installation](https://dothtml.org/docs/quick-start.md): Get up and running with DOThtml in minutes.
+- [Official CLI](https://dothtml.org/docs/cli.md): Scaffolding projects and generating components with create-dothtml.
 - [Rendering Basics](https://dothtml.org/docs/rendering-basics.md): Fundamental rendering API, element creation, and nesting.
 - [Main Features](https://dothtml.org/docs/main-features.md): High-level overview of DOThtml's core capabilities and philosophy.
 - [Use Cases](https://dothtml.org/docs/use-cases.md): When to choose DOThtml for your project.
