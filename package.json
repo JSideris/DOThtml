@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "npm run build && jest",
-    "build": "tsup",
+    "build": "tsup && node tools/update-size.js",
     "benchmarks": "npm run build && cd benchmarks && npm run bench --",
     "size": "size-limit",
     "publish-beta": "npm run build && npm run size && npm publish --tag beta",

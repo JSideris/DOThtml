@@ -31,7 +31,7 @@ DOThtml is engineered for high-performance applications. By bypassing the Virtua
 
 | Framework | Render Time | Bundle Size |
 | :--- | :--- | :--- |
-| **DOThtml** | **~660ms** | **18.6kB** |
+| **DOThtml** | **~660ms** | **19.5kB** |
 | React | ~1100ms | ~42kB |
 | Vue | ~680ms | ~33kB |
 | Svelte | ~900ms | ~2kB* |

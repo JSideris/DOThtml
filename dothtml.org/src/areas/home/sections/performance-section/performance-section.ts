@@ -1,4 +1,5 @@
 import { dot, DotComponent, Priority } from "dothtml";
+import { DOTHTML_COMPRESSED_SIZE } from "../../../../generated/size";
 
 @dot.component
 export default class PerformanceSection extends DotComponent {
@@ -226,7 +227,7 @@ export default class PerformanceSection extends DotComponent {
 						),
 						dot.div({ style: "text-align: center" },
 							dot.div({ class: "stack-label" }, "DOThtml"),
-							dot.div({ class: "stack-value" }, "18.7kB")
+							dot.div({ class: "stack-value" }, `${DOTHTML_COMPRESSED_SIZE}kB`)
 						)
 					),
 					// React Stack (9 boxes ~ 45kB)

@@ -1,3 +1,5 @@
+import { DOTHTML_COMPRESSED_SIZE, DOTHTML_COMPRESSED_SIZE_FULL } from "../generated/size";
+
 /**
  * A simple markdown parser that converts markdown strings to HTML.
  * Supports headings, bold, italic, links, lists, and paragraphs.
@@ -11,8 +13,12 @@ export default class MarkdownParser {
 	public static parse(markdown: string): string {
 		if (!markdown) return "";
 
+		// Replace placeholders
+		let html = markdown.replace(/%%DOTHTML_COMPRESSED_SIZE%%/g, DOTHTML_COMPRESSED_SIZE.toString());
+		html = html.replace(/%%DOTHTML_COMPRESSED_SIZE_FULL%%/g, DOTHTML_COMPRESSED_SIZE_FULL.toString());
+
 		// Normalize newlines
-		let html = markdown.replace(/\r\n/g, "\n").trim();
+		html = html.replace(/\r\n/g, "\n").trim();
 
 		// 0. Pre-process: Code Blocks (```language ... ```)
 		// We do this first and replace with placeholders to avoid other rules touching the code content

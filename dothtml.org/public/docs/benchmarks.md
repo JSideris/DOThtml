@@ -8,13 +8,13 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | 6.88ms | 6.94ms | 6.98ms | **6.19ms** |
-| **Create 10,000 rows** | 706.80ms | 693.40ms | 493.35ms | **472.25ms** |
-| **Append 1,000 rows** | **7.39ms** | 75.97ms | 54.02ms | 53.45ms |
-| **Update every 10th row** | **0.14ms** | **0.14ms** | **0.14ms** | **0.14ms** |
-| **Swap Rows** | **0.14ms** | **0.14ms** | **0.14ms** | **0.14ms** |
-| **Clear** | 1.46ms | 1.45ms | **1.44ms** | 1.45ms |
-| **Bulk Style Update** | **0.15ms** | 0.33ms | 0.22ms | 0.23ms |
+| **Create 1,000 rows** | 6.88 ms | 6.94 ms | 6.98 ms | **6.19 ms** |
+| **Create 10,000 rows** | 706.80 ms | 693.40 ms | 493.35 ms | **472.25 ms** |
+| **Append 1,000 rows** | **7.39 ms** | 75.97 ms | 54.02 ms | 53.45 ms |
+| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
+| **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
+| **Clear** | 1.46 ms | 1.45 ms | **1.44 ms** | 1.45 ms |
+| **Bulk Style Update** | **0.15 ms** | 0.33 ms | 0.22 ms | 0.23 ms |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -22,7 +22,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **18.65 kB**
+- **DOThtml**: **%%DOTHTML_COMPRESSED_SIZE%% kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -41,7 +41,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **18.7 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **%%DOTHTML_COMPRESSED_SIZE%% kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
