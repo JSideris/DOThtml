@@ -1,0 +1,463 @@
+# Styling in DOThtml
+
+DOThtml provides a powerful, fluent, and reactive styling system that leverages the browser's native performance while providing a low-friction developer experience.
+
+## Fluent Style Builder
+
+Instead of using string-based styles or plain object literals, DOThtml uses a fluent builder pattern. This provides type safety, IDE autocompletion, and automatic unit formatting.
+
+You can apply styles to any element using the `.style()` method. When passing a raw number to a length-based property (like `width`, `height`, `padding`, etc.), DOThtml defaults the unit to `px`.
+
+```javascript
+dot.div("Hello World")
+  .style(s => s
+    .color("red")
+    .fontWeight("bold")
+    .fontSize(20) // Defaults to 'px'
+  );
+```
+
+### Automatic Unit Formatting
+
+DOThtml automatically generates methods for common CSS units, so you don't have to manually concatenate strings. **We recommend using these explicit unit methods** to ensure your code is clear and to avoid ambiguity.
+
+- **Lengths**: `.widthPx(100)`, `.heightRem(2)`, `.paddingTopP(10)` (P for percent).
+- **Time**: `.animationDurationMs(500)`, `.transitionDelayS(1)`.
+- **Angles**: `.rotateDeg(45)`, `.skewRad(0.1)`.
+
+### Hybrid and Unitless Properties
+
+Some CSS properties are unitless or can behave as hybrids:
+
+- **Unitless**: Properties like `opacity`, `zIndex`, `flexGrow`, and `flexShrink` accept raw numbers as-is.
+- **Hybrids**: `lineHeight` is a special case. It can take a physical length (like `px`) or a unitless multiplier (recommended). 
+
+To ensure the correct behavior for `lineHeight`, use an explicit unit method like `.lineHeightPx(24)` or pass a string for a multiplier: `.lineHeight("1.5")`.
+
+### Technical Note on Precision
+
+Unlike some frameworks that round values to the nearest integer, DOThtml preserves full decimal precision in numeric values. If you set a width to `10.5`, it will be rendered as `10.5px`.
+
+### Nested Style Objects
+
+For complex properties like `filter` and `transform`, you can pass a plain object to the builder. DOThtml will automatically convert it into the correct CSS function syntax. **This also works with reactive Signals and Bindings.**
+
+```javascript
+dot.div("Filtered Content")
+  .style(s => s.filter({ blur: "5px", brightness: 0.8 }));
+  // Renders: filter: blur(5px) brightness(0.8);
+
+// Reactive usage
+const scale = dot.state(1.5);
+dot.div("Zooming Content")
+  .style(s => s.transform({ scale: scale }));
+```
+
+## Reactive Styling
+
+The styling system is fully integrated with DOThtml's reactivity system. You can pass `Signal` or `Binding` objects directly to any style method.
+
+```javascript
+const size = dot.state(20);
+const color = dot.state("blue");
+
+dot.div("I am reactive!")
+  .style(s => s
+    .fontSizePx(size)
+    .color(color)
+  );
+
+// Later...
+size.value = 40; // The font size updates automatically in the DOM.
+```
+
+### Ghost Variable Injection (Auto-CSS Variables)
+
+One of DOThtml's most powerful features is **Ghost Variable Injection**. Traditionally, to make a scoped style reactive, you would have to manually define a CSS variable in one place and use it in another. DOThtml now handles this automatically.
+
+When you use a `Signal` or `Binding` inside the `stylize()` builder, DOThtml:
+1.  Generates a unique, deterministic CSS variable name (e.g., `--dh-v1`).
+2.  Injects that variable into the static CSS rule.
+3.  Automatically updates the variable value on every component instance whenever the signal changes.
+
+```javascript
+class GlowingBox extends IDotComponent {
+  stylize(s) {
+    return s.class("box", b => b
+      // DOThtml sees the signal and handles the CSS variable plumbing!
+      .backgroundColor(theme.primary.bindAs(p => `${p}33`))
+      .border(`1px solid ${theme.primary}`)
+    );
+  }
+}
+```
+
+This provides the performance of native CSS variables with the developer experience of a reactive framework.
+
+### Fluent Template Literals (`s.template`)
+
+When you need to combine static CSS strings with reactive values (like in a `linear-gradient` or `rgba` function), use the `s.template` helper.
+
+```javascript
+stylize(s) {
+  return s.class("overlay", o => o
+    .background(s.template`linear-gradient(${theme.primary}1a, transparent)`)
+  );
+}
+```
+
+### Color Alpha Utility (`dot.alpha`)
+
+CSS variables are powerful, but they have a limitation: you cannot easily append an alpha channel to them (e.g., `var(--primary)88` is invalid). DOThtml provides the `dot.alpha()` utility to safely handle this using modern CSS `color-mix`.
+
+```javascript
+const opacity = dot.state(0.5);
+
+dot.div("Faded Background")
+  .style(s => s
+    .backgroundColor(dot.alpha("var(--primary)", opacity))
+  );
+```
+
+This utility works with static strings, Signals, or Bindings for both the color and the opacity.
+
+### Batching and Performance
+
+Style updates are automatically batched by the DOThtml scheduler. If you update multiple signals that drive styles on the same element (or different elements) in a single task, DOThtml will group those changes and apply them in a single DOM update cycle, minimizing layout thrashing.
+
+## CSS Variables (Custom Properties)
+
+For high-performance theme updates or complex component styling, you can use CSS variables.
+
+```javascript
+dot.div("Themed Content")
+  .style(s => s.variable("accent-color", "orange"));
+```
+
+In your CSS, you can then reference this variable using the `.v()` helper:
+
+```javascript
+stylize(s) {
+  return s.class("themed-content", c => c
+    .border(`2px solid ${s.v("accent-color")}`)
+  );
+}
+```
+
+### The `s.v()` Shortcut
+
+The `.v()` method is a convenient shortcut for referencing CSS variables within any style builder. It automatically handles the `--` prefix if it's missing.
+
+*   **Usage**: `s.v("my-var")` returns `"var(--my-var)"`.
+*   **Usage**: `s.v("--my-var")` returns `"var(--my-var)"`.
+
+This makes your style definitions cleaner and less error-prone.
+
+## Media Queries
+
+DOThtml supports native CSS media queries within the `stylize()` method using the `.media()` builder. This allows you to define responsive styles that are scoped to your component.
+
+```javascript
+class ResponsiveNavbar extends IDotComponent {
+  stylize(s) {
+    return s.class("navbar", n => n
+      .display("flex")
+      .heightPx(70)
+    ).media("screen and (max-width: 600px)", m => m
+      .class("navbar", n => n
+        .heightPx(50)
+        .padding("0px 20px")
+      )
+      .class("nav-links", l => l
+        .display("none")
+      )
+    );
+  }
+
+  build() {
+    return dot.nav({ class: "navbar" },
+      dot.div({ class: "nav-links" }, "...")
+    );
+  }
+}
+```
+
+Media queries in DOThtml are:
+- **Native**: They generate real CSS `@media` rules, so they are handled efficiently by the browser.
+- **Scoped**: Just like other styles in `stylize()`, they are scoped to the component's shadow root.
+- **Nested**: You can even nest media queries if needed.
+
+## Keyframe Animations
+
+Define reusable animations in `stylize()` with `.keyframes()`. Use `.from()`, `.to()`, and `.at()` for keyframe steps:
+
+```javascript
+stylize(s) {
+  return s.class("pulse", p => p
+    .animationName("pulse")
+    .animationDurationS(2)
+    .animationIterationCount("infinite")
+  ).keyframes("pulse", k => k
+    .from(f => f.opacity(0.4))
+    .to(t => t.opacity(1))
+  );
+}
+```
+
+For multi-step animations:
+
+```javascript
+.keyframes("bounce", k => k
+  .at(0, s => s.transform({ translateY: 0 }))
+  .at(50, s => s.transform({ translateY: -20 }))
+  .at("100%", s => s.transform({ translateY: 0 }))
+)
+```
+
+## Container Queries
+
+Container queries let a component respond to its **parent's** size instead of the viewport. Set `container-type` on a host, then use `.container()`:
+
+```javascript
+stylize(s) {
+  return s.class("card-host", h => h.containerType("inline-size"))
+    .container("(min-width: 400px)", c => c
+      .class("card", card => card.flexDirection("row"))
+    );
+}
+```
+
+Named containers:
+
+```javascript
+.class("sidebar", s => s.containerName("sidebar").containerType("inline-size"))
+.container("sidebar (min-width: 300px)", c => c
+  .class("nav", n => n.display("flex"))
+)
+```
+
+## Feature Queries (`@supports`)
+
+Use `.supports()` for progressive enhancement when a CSS feature may be unavailable:
+
+```javascript
+stylize(s) {
+  return s.supports("(display: grid)", sup => sup
+    .class("layout", l => l.display("grid"))
+  ).class("layout", l => l.display("flex")); // fallback
+}
+```
+
+## Global Reactive Variables
+
+DOThtml provides a global `dot.css` builder that is automatically bound to the document root (`<html>`). This is the recommended way to handle application-wide theming.
+
+```javascript
+// In your app initialization
+const themeColor = dot.state("blue");
+dot.css.variable("primary", themeColor);
+
+// Any component can now use this global variable
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("title", t => t.color(s.v("primary")));
+  }
+}
+```
+
+When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
+
+## Reactive Theme Context
+
+DOThtml provides a first-class `Theme` concept that makes design systems easy to implement. By using `dot.setTheme()`, you can make a global reactive object available to all component style builders via `s.theme`.
+
+```javascript
+// 1. Define your theme
+const myTheme = {
+  primary: dot.state("#007bff"),
+  spacing: dot.state(10)
+};
+dot.setTheme(myTheme);
+
+// 2. Use it in any component
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("container", c => c
+      .color(s.theme.primary) // Automatically creates a reactive binding
+      .paddingPx(s.theme.spacing)
+    );
+  }
+}
+```
+
+## Component Styling
+
+DOThtml provides several ways to style components, ranging from instance-specific inline styles to shared, scoped templates.
+
+### Inline Styles
+
+Within a component's `build()` method, you can use the fluent `.style()` API to apply instance-specific styles. This is ideal for styles driven by props or internal state.
+
+```javascript
+class MyButton extends IDotComponent {
+  build() {
+    return dot.button("Click Me")
+      .style(s => s
+        .backgroundColor(this.props.color)
+        .borderRadiusPx(5)
+      );
+  }
+}
+```
+
+### Scoped Styles and Shadow DOM
+
+By default, DOThtml components use **Shadow DOM** for style encapsulation. This means styles defined within a component won't leak out, and global styles won't leak in (unless explicitly allowed).
+
+To define shared styles for all instances of a component, implement the `stylize()` method. DOThtml will automatically create a `CSSStyleSheet` (or a fallback `<style>` tag) and adopt it into the component's shadow root.
+
+```javascript
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("container", c => c
+      .display("flex")
+      .paddingPx(20)
+      .backgroundColor("#f0f0f0")
+    );
+  }
+
+  build() {
+    return dot.div({ class: "container" }, "Hello Shadow DOM!");
+  }
+}
+```
+
+> **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
+
+### Signal Stylesheet Swapping
+
+For advanced use cases like switching between "Light" and "Dark" modes or "Compact" and "Comfortable" layouts, the `stylize()` method can return a `Signal` or `Binding` of styles.
+
+```javascript
+const layoutMode = dot.state("comfortable");
+
+class AppContainer extends IDotComponent {
+  stylize(s) {
+    return layoutMode.bindAs(mode => {
+      if (mode === "compact") {
+        return s.class("main", m => m.paddingPx(5).fontSizePx(12));
+      }
+      return s.class("main", m => m.paddingPx(20).fontSizePx(16));
+    });
+  }
+}
+```
+
+When the `layoutMode` signal changes, DOThtml efficiently swaps the stylesheet for all instances of the component without re-rendering the component's HTML structure.
+
+### Host Variable Binding
+
+Sometimes you want a component to drive its internal styles via CSS variables on its own host element. This is highly performant as it avoids re-rendering the entire component for visual-only changes.
+
+Use the `hostStyle()` method to bind reactive styles to the component's host element.
+
+```javascript
+class ThemeableBox extends IDotComponent {
+  hostStyle(s) {
+    // Bind a reactive signal to a CSS variable on the host element.
+    s.variable("box-color", this.props.color);
+  }
+
+  stylize(s) {
+    return s.class("box", c => c
+      .backgroundColor("var(--box-color)") // Reference the host variable.
+      .paddingPx(10)
+    );
+  }
+
+  build() {
+    return dot.div({ class: "box" }, "I am themed via host variables!");
+  }
+}
+```
+
+## Global Styles
+
+While Shadow DOM provides isolation, you often need global styles (like resets or utility frameworks) to be available inside your components.
+
+Use `dot.useGlobalStyles()` to register styles that should be adopted by every component's shadow root.
+
+```javascript
+// Register a CSS string or a CSSStyleSheet object.
+dot.useGlobalStyles(`
+  :host { font-family: sans-serif; }
+  * { box-sizing: border-box; }
+`);
+```
+
+These global styles are automatically added to the `adoptedStyleSheets` of every component created after the registration.
+
+### Dynamic Global Selectors
+
+While `dot.css` targets the document root, you can create style nodes that target any CSS selector and update them reactively.
+
+```javascript
+import StyleVNode from "dothtml/v-meta-nodes/style-v-node";
+
+const color = dot.state("red");
+const globalStyle = new StyleVNode(dot.css.color(color));
+globalStyle.render(".my-dynamic-class"); 
+
+// Later...
+color.value = "blue"; // Updates the <style> tag targeting .my-dynamic-class
+```
+
+## Performance and Caching
+
+DOThtml's styling system is built for performance:
+
+- **Constructable Stylesheets**: Uses `CSSStyleSheet` and `adoptedStyleSheets` where supported for ultra-fast style sharing.
+- **Deduplication**: `CSSStyleSheet` instances are cached based on their content. If multiple components or global registrations use the same CSS string, they will share the same underlying stylesheet object.
+- **Component Caching**: Component-level styles (from `stylize()`) are cached on the component's constructor, so they are only generated once.
+- **Reactive Batching**: Style updates via `Signals` are batched by the scheduler to prevent layout thrashing.
+
+## Server-Side Rendering (SSR)
+
+DOThtml's styling system is fully compatible with SSR. You can convert any style builder or style node to a CSS string.
+
+```javascript
+const styles = dot.css.color("red").paddingPx(10);
+console.log(styles.toString()); // "color: red; padding: 10px;"
+```
+
+## Testing Styling
+
+When testing styling in environments like JSDOM, you may need to ensure that reactive updates are processed before making assertions.
+
+By default, DOThtml batches updates asynchronously. In your tests, you can use `dot.flushSync()` to force all pending updates to be applied immediately.
+
+```javascript
+test("reactive style update", () => {
+  const color = dot.state("red");
+  dot(document.body).div().style(s => s.color(color));
+
+  color.value = "blue";
+  
+  // Force the style update to apply synchronously.
+  dot.flushSync();
+
+  expect(document.querySelector("div").style.color).toBe("blue");
+});
+```
+
+## Legacy Compatibility
+
+For users migrating from older versions of DOThtml, the `dot.useStyles()` method is still available as a bridge to the modern system. It allows you to register global styles using the familiar v5 syntax.
+
+```javascript
+dot.useStyles(`
+  body { background: #eee; }
+`);
+```
+
+While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.

@@ -1,0 +1,2090 @@
+# DOThtml Full Documentation
+
+> This file contains the complete documentation for DOThtml, concatenated for easy ingestion by LLMs.
+
+
+
+--- FILE: benchmarks.md (Benchmarks) ---
+
+# Benchmarks
+
+Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
+
+## Performance Comparison
+
+The following benchmarks measure the median time (in milliseconds) required to perform common DOM operations across 1,000 and 10,000 rows.
+
+| Test | DOThtml | React | Vue | Svelte |
+| :--- | :--- | :--- | :--- | :--- |
+| **Create 1,000 rows** | 7.92 ms | 7.95 ms | 7.18 ms | **6.35 ms** |
+| **Create 10,000 rows** | 726.30 ms | 685.80 ms | 521.00 ms | **529.70 ms** |
+| **Append 1,000 rows** | **7.01 ms** | 73.50 ms | 56.89 ms | 51.43 ms |
+| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
+| **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
+| **Clear** | 1.44 ms | 1.44 ms | **1.44 ms** | 1.43 ms |
+| **Bulk Style Update** | **0.15 ms** | 0.38 ms | 0.23 ms | 0.21 ms |
+
+*Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
+
+## Bundle Size (Minified + Brotli)
+
+DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
+
+- **DOThtml**: **19.5 kB**
+- **React + ReactDOM**: ~42 kB
+- **Vue**: ~33 kB
+- **Svelte**: ~2 kB (runtime only, grows with component count)
+
+## Interpreting the Results
+
+Benchmarks reveal that DOThtml's "magic" — its fluent runtime builder and granular reactivity — comes with a performance trade-off. In bulk creation (10,000 rows), DOThtml is slower than compiler-based frameworks like Svelte or Vue. This is because DOThtml constructs a full Virtual DOM tree of objects at runtime before touching the real DOM. 
+
+However, once the DOM is created, DOThtml's granular reactivity excels. In scenarios like appending rows or updating styles, DOThtml often matches or exceeds other frameworks because it bypasses the expensive tree-diffing process entirely, updating only the specific nodes bound to a Signal.
+
+## Framework Philosophy
+
+Every framework is designed with a specific set of values. Understanding these priorities helps in choosing the right tool for the task.
+
+| Category | DOThtml | Svelte | React | Vue |
+| :--- | :--- | :--- | :--- | :--- |
+| **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
+| **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
+| **Bundle & Runtime** | **19.5 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
+
+### Framework Characteristics
+
+- **DOThtml**: Focuses on a "no-build" friendly, fluent API where the runtime handles reactivity via direct Signal-to-Node bindings, excelling in long-lived sessions with frequent updates.
+- **Svelte**: Acts as a build-time tool that disappears in the browser, providing the fastest possible initial load and raw execution speed for smaller to medium-sized applications.
+- **React**: Provides a highly predictable functional programming model that scales well for massive teams, relying on a Virtual DOM to manage complex UI states.
+- **Vue**: Offers a flexible, approachable architecture that combines the best of template-based optimization with a powerful reactive data model.
+
+## Methodology
+
+The benchmarks were conducted using a custom Playwright-based runner. Each test was repeated 20 times, and the median duration was recorded. The duration measures the time from the initial click event to the completion of the next paint cycle.
+
+To ensure high accuracy and eliminate environmental noise:
+- **In-Browser Timing**: Timing is performed entirely within the browser using `performance.mark()` and `performance.measure()`, excluding any overhead from Playwright's automation layer.
+- **Batching**: For sub-millisecond operations (like swapping rows or updating styles), the benchmark triggers the operation multiple times (up to 100x) in a single synchronous loop. The total time is then divided by the batch size to provide a high-resolution average that bypasses the browser's frame-rate floor.
+- **Paint Detection**: We wait for the browser to actually paint the changes to the screen using a combination of `requestAnimationFrame` and `setTimeout(..., 0)` before stopping the timer.
+
+### Running Benchmarks Locally
+
+You can run these benchmarks yourself to verify the results. The source code is available on our [GitHub repository](https://github.com/JSideris/DOThtml).
+
+To run the benchmarks:
+
+1. Clone the repository.
+2. Install dependencies: `npm install`.
+3. Run the benchmark script: `npm run benchmarks`.
+
+This will build the latest version of DOThtml and execute the benchmark suite across all supported frameworks.
+
+
+--- FILE: cli.md (Cli) ---
+
+# DOThtml CLI
+
+The official command-line interface for DOThtml is the fastest way to build modern, reactive web applications. It handles project scaffolding and component generation.
+
+## Installation
+
+You don't need to install the CLI globally. You can run it directly using `npm init` or `npx`.
+
+## Creating a New Project
+
+To create a new project, run:
+
+```bash
+npm init dothtml my-app
+```
+
+This will create a new directory called `my-app` with a modern development environment powered by **Vite**.
+
+### Options
+- `--js`: Scaffolds a JavaScript project instead of the default TypeScript.
+- `--no-lint`: Skips adding ESLint to the project.
+
+*Note: When passing options through `npm init`, you must use a double dash `--` to separate npm arguments from CLI arguments:*
+```bash
+npm init dothtml my-app -- --js
+```
+
+## Generating Components
+
+Once inside a project directory, you can use the CLI to generate new components:
+
+```bash
+npx create-dothtml generate component MyNewComponent
+```
+
+This will create a new file in `src/components/` with a standard boilerplate, respecting whether your project is using TypeScript or JavaScript.
+
+## Project Scripts
+
+Projects created with the CLI come with several pre-configured scripts:
+
+- `npm run dev`: Starts the Vite development server with Hot Module Replacement (HMR).
+- `npm run build`: Compiles your project for production.
+- `npm test`: Runs your test suite using Vitest.
+- `npm run lint`: Checks your code for potential errors using ESLint.
+- `npm run preview`: Locally previews your production build.
+
+## Why Vite?
+
+By using Vite as the underlying build engine, DOThtml projects benefit from:
+- **Instant Server Start**: No more waiting for a complex Webpack bundle.
+- **Lightning Fast HMR**: See your changes reflected in the browser immediately.
+- **Optimized Builds**: Rollup-powered production builds for maximum performance.
+
+
+--- FILE: components.md (Components) ---
+
+# Components
+
+Components are the building blocks of DOThtml applications. They are defined as classes that encapsulate structure, style, and logic.
+
+## Defining Components
+
+There are two main ways to define components in DOThtml.
+
+### 1. The Primary Pattern (Recommended)
+
+For most applications, especially those using TypeScript, the preferred way to define a component is by using the `@dot.component` decorator and extending the `DotComponent` base class. This provides the best developer experience, including full type safety and automatic reactivity tracking.
+
+```typescript
+import { dot, DotComponent } from "dothtml";
+
+interface MyProps {
+    name: string;
+}
+
+@dot.component
+class MyComponent extends DotComponent<MyProps> {
+    build(dot) {
+        return dot.div(`Hello, ${this.props.name}!`);
+    }
+}
+
+// Instantiate using the 'new' keyword
+dot(document.body).mount(new MyComponent({ name: "World" }));
+```
+
+**Why use this pattern?**
+*   **Type Safety**: The `DotComponent` base class allows you to type your `props` and `refs`.
+*   **Reactivity Tracking**: The decorator ensures that any reactive signals created in the constructor are properly disposed of when the component is unmounted.
+*   **Clean Syntax**: It feels like standard class-based development.
+
+### 2. The Niche Pattern (Interface-only)
+
+If you need complete separation between implementation and interfaces (e.g., for complex Dependency Injection scenarios) or prefer to avoid decorators, you can implement the `IDotComponent` interface directly.
+
+```typescript
+import { dot, IDotComponent, IDotCore } from "dothtml";
+
+class MyComponent implements IDotComponent {
+    constructor(public props: { name: string }) {}
+
+    build(dot: IDotCore) {
+        return dot.div(`Hello, ${this.props.name}!`);
+    }
+}
+
+// Instantiate using dot.create to ensure reactivity tracking
+dot(document.body).mount(dot.create(MyComponent, { name: "World" }));
+```
+
+**Note**: When using this pattern, you **must** use `dot.create` to instantiate the component if you use any reactive signals in the constructor. Using `new` directly on an undecorated class will result in "orphaned" signals that cause memory leaks.
+
+## Basic Structure (JavaScript)
+
+In plain JavaScript, where decorators might not be available, you can define components as simple classes.
+
+```javascript
+class MyComponent {
+    build(dot) {
+        return dot.div("Hello World");
+    }
+}
+```
+
+## Props and Validation
+
+Components receive data through props. You can define a static `props` schema to enable runtime validation and default values.
+
+```javascript
+class UserProfile {
+    static props = {
+        username: { type: String, required: true },
+        age: { type: Number, default: 18 }
+    };
+
+    build(dot) {
+        return dot.div(
+            dot.h2(this.props.username),
+            dot.p(`Age: ${this.props.age}`)
+        );
+    }
+}
+```
+
+### Validation Rules
+- `type`: One of `String`, `Number`, `Boolean`, `Object`, `Array`.
+- `required`: Boolean. Throws an error if the prop is missing.
+- `default`: The value to use if the prop is not provided. Can be a value or a factory function (e.g., `default: () => []`).
+- `validator`: A custom function that returns `true` if the value is valid.
+
+When a parent passes a `Signal` or `Binding` as a prop, DOThtml automatically unwraps the value for validation and re-validates whenever the reactive value changes.
+
+```javascript
+static props = {
+    score: { 
+        type: Number, 
+        validator: (v) => v >= 0 && v <= 100 
+    },
+    tags: { 
+        type: Array, 
+        default: () => ["new"] 
+    }
+};
+```
+
+> **Note**: Validation errors include the component name (e.g., `[UserProfile] Prop "username" is required`) for easier debugging.
+
+## Lifecycle Hooks
+
+- `mounting()`: Called before the component is added to the DOM.
+- `mounted()`: Called after the component is added to the DOM. Use this to set up **[Scroll & Visibility](./scroll-and-visibility.md)** listeners or observers.
+- `built()`: Called every time the `build()` function completes (including re-renders).
+- `unmounting()`: Called before the component is removed from the DOM. Always clean up global listeners here.
+- `unmounted()`: Called after the component is removed from the DOM.
+
+## Custom Events
+
+Components can emit events that parents can listen to.
+
+```javascript
+class MyButton {
+    build(dot) {
+        return dot.button({ 
+            onClick: () => this.emit("customClick", { time: Date.now() }) 
+        }, "Click Me");
+    }
+}
+```
+
+## Advanced Event Handling
+
+DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.
+
+*   **Synthetic Events**: All event handlers receive a `SyntheticEvent` object, ensuring consistent behavior across different browsers.
+*   **Event Modifiers**: Use dot-notation to apply common event patterns fluently:
+    *   `.stop`: Calls `event.stopPropagation()`.
+    *   `.prevent`: Calls `event.preventDefault()`.
+    *   `.once`: Ensures the event handler only runs once.
+    *   `.self`: Only triggers if the event was dispatched by the element itself, not a child.
+*   **Event Delegation**: For maximum performance, DOThtml uses a single event listener at the document root for each event type. This reduces memory overhead and improves performance when rendering large lists of interactive elements.
+*   **Custom Component Events**: Components can emit custom events that parents can listen to using declarative attributes or fluent syntax.
+
+## Component Styling
+
+DOThtml components use **Shadow DOM** by default, providing strong encapsulation for both structure and style. This isolation ensures that styles defined inside a component don't leak out, and global styles don't accidentally break your component's internal layout.
+
+> **Note**: While Shadow DOM provides strong encapsulation, DOThtml's routing system is designed to work across these boundaries. Standard features like **anchor links** and **hash navigation** work seamlessly even when the target elements are defined inside components.
+
+### Instance Styles
+
+You can apply styles to elements within your component's `build()` method using the fluent `.style()` API. This is ideal for instance-specific styling driven by props or internal state.
+
+```javascript
+class StyledBox {
+    static props = {
+        color: { type: String, default: "gray" }
+    };
+
+    build(dot) {
+        return dot.div("I am a styled box")
+            .style(s => s
+                .backgroundColor(this.props.color)
+                .paddingPx(10)
+            );
+    }
+}
+```
+
+### Component Templates (`stylize`)
+
+To define styles that are shared across all instances of a component, use the `stylize()` method. These styles are scoped to the component's shadow root.
+
+**Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
+
+```javascript
+class MyComponent {
+    stylize(s) {
+        return s.class("header", c => c
+            .fontSizePx(24)
+            .color(theme.primary) // Automatically reactive!
+        );
+    }
+
+    build(dot) {
+        return dot.div({ class: "header" }, "Scoped Header");
+    }
+}
+```
+
+### Host Styling (`hostStyle`)
+
+The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself). 
+
+While `stylize()` is now reactive, `hostStyle()` remains useful for:
+1.  **Layout Control**: Setting `display: block` or `grid` on the custom element itself.
+2.  **Manual Variable Control**: When you want to explicitly name a variable for external use.
+
+```javascript
+class ThemeableComponent {
+    hostStyle(s) {
+        // Explicitly bind a variable to the host element.
+        s.variable("theme-color", this.props.color);
+        s.display("block");
+    }
+
+    stylize(s) {
+        return s.class("content", c => c
+            // Reference the host variable using the .v() helper.
+            .border(`2px solid ${s.v("theme-color")}`)
+        );
+    }
+    build(dot) {
+        return dot.div({ class: "content" }, "Themed Content");
+    }
+}
+```
+
+By using `hostStyle` to update a CSS variable, you avoid re-calling the `build()` method for purely visual changes, leading to much better performance in complex applications.
+
+## Component Slots
+
+Slots allow you to pass content from a parent component into a child component's template. This is useful for creating reusable layout components like cards, modals, or page structures.
+
+### 1. Default Slots
+
+To define a slot in a component, use the `dot.slot()` method in the `build()` function.
+
+```javascript
+class MyCard extends DotComponent {
+    build(dot) {
+        return dot.div({ class: "card" },
+            dot.div({ class: "card-content" },
+                dot.slot() // Default slot
+            )
+        );
+    }
+}
+
+// Usage
+dot.mount(new MyCard(), dot.p("This content goes into the slot!"));
+```
+
+### 2. Named Slots
+
+You can have multiple slots by giving them names.
+
+```javascript
+class PageLayout extends DotComponent {
+    build(dot) {
+        return dot.div(
+            dot.header(dot.slot("header")),
+            dot.main(dot.slot()), // Default slot
+            dot.footer(dot.slot("footer"))
+        );
+    }
+}
+
+// Usage using fluent API
+dot.mount(new PageLayout())
+    .slot("header", dot.h1("Welcome"))
+    .slot("footer", dot.p("Copyright 2026"))
+    .slot(dot.div("Main content here"));
+```
+
+### 3. Fallback Content
+
+You can provide default content that will be shown if no content is provided for a slot.
+
+```javascript
+dot.slot("optional", dot.span("Default Fallback Content"))
+```
+
+### 4. Scoped Slots
+
+Scoped slots allow the component to pass data back to the slot content. This is essential for components like lists or tables.
+
+```javascript
+class UserList extends DotComponent {
+    items = [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }];
+    build(dot) {
+        return dot.ul(
+            dot.each(this.items, (user) => 
+                dot.li(dot.slot("user", { data: user }))
+            )
+        );
+    }
+}
+
+// Usage
+dot.mount(new UserList())
+    .slot("user", (scope) => dot.span(`User: ${scope.data.name}`));
+```
+
+### 5. Styling Slotted Content
+
+Since DOThtml uses Shadow DOM, you can style slotted content from within the component using the `::slotted()` pseudo-element in your `stylize()` method.
+
+```javascript
+class StyledCard extends DotComponent {
+    stylize(s) {
+        s.selector("::slotted(h1)", c => c.color("blue"));
+    }
+    build(dot) {
+        return dot.div(dot.slot());
+    }
+}
+```
+
+#### ⚠️ Styling and Encapsulation
+
+Because DOThtml uses **Shadow DOM**, there is a strict boundary between a component's internal structure and the content passed into its slots.
+
+*   **Internal Structure**: Styles for elements defined *inside* your component's `build()` method (like a modal's backdrop or header) **must** be defined in that component's `stylize()` method. A parent component cannot style these elements.
+*   **Slotted Content**: Content passed into a slot retains the styling of the **parent component**. However, the child component can apply additional styles to this content using the `::slotted()` pseudo-element.
+
+**Example Pitfall:**
+If you create a `Modal` component, the parent component can style the `p` tag it passes into the slot, but it **cannot** style the `.modal-backdrop` div defined inside the `Modal` component.
+
+
+--- FILE: detailed-features.md (Detailed Features) ---
+
+# Detailed Features & Performance
+
+DOThtml is designed for high-performance applications. This document covers the advanced features and internal mechanisms that keep your UI responsive and your codebase maintainable.
+
+## Performance Internals
+
+DOThtml features an intelligent update scheduler, a sophisticated keyed diffing algorithm, and concurrent rendering capabilities to ensure maximum performance and responsiveness.
+
+### Update Batching
+Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
+
+### Keyed Diffing
+When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. By providing a `key` property in your data, DOThtml can:
+*   **Reuse DOM Nodes**: Instead of re-rendering an entire item, DOThtml reuses the existing DOM nodes and only updates the content that changed.
+*   **Efficient Reordering**: If items in your list move, DOThtml moves the corresponding DOM nodes using `insertBefore` instead of unrendering and re-rendering them.
+*   **Minimal DOM Operations**: The reconciliation algorithm ensures that the minimum number of DOM operations are performed to reach the desired state.
+
+### Concurrent Rendering
+For large updates (like rendering long lists), DOThtml uses concurrent rendering to keep the UI responsive. It breaks down large rendering tasks into small chunks and yields control back to the browser every 5ms. This allows the browser to process high-priority events like typing or clicks even while a large update is in progress.
+
+## Advanced APIs
+
+### Priority API
+You can specify the priority of an update using the `setValue` method. This is useful for background tasks that shouldn't block user interaction.
+
+```javascript
+import { Priority } from "dothtml";
+
+const list = dot.state([]);
+// This update will be treated as low priority and will yield to user input.
+list.setValue(largeDataSet, Priority.Background);
+```
+
+### Manual Flushing (`dot.flushSync`)
+If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
+
+```javascript
+const name = dot.state("Josh");
+dot.div(name);
+
+name.value = "Joshua";
+// DOM is not updated yet.
+dot.flushSync();
+// DOM is now updated.
+```
+
+## Other Advanced Features
+
+- **Fluent Style Builder**: A type-safe API for building inline styles with native reactivity and automatic unit formatting.
+- **CSS Variables**: Built-in support for custom properties to enable high-performance theme updates.
+- **Style Batching**: Automatic grouping of style updates via the scheduler to minimize layout thrashing.
+- **DI (Dependency Injection)**: Decouple your application logic from the UI for better testability and modularity.
+- **[Popup Management](./popups.md)**: Manage popup windows and modals directly from your application state.
+- **Polymorphic Components**: Support for components that can render as different HTML elements while preserving logic.
+- **Enhanced Ref System**: Reactive references to elements and components with method proxying and keyed collections.
+
+
+--- FILE: hero-features.md (Hero Features) ---
+
+# Hero Features
+
+## Modern
+Built to be competitive with other modern frameworks. DOThtml is component-based (utilizing the shadow DOM). Components are reactive and mutable. Everything is strongly typed and blazingly fast.
+
+## Nimble
+Zero core dependencies. ~18kb bundle size. Plays nicely with other frameworks. Designed to be extremely modular - as in the entire framework can be decoupled from your app using DI.
+
+## Fun
+DOThtml just works the way you expect it to. It does all the major stuff other modern frameworks can do (and plenty of stuff they can't) with less salt. No more XML-based markup!
+
+
+--- FILE: learn-more.md (Learn More) ---
+
+# Learn More & Contribute
+
+### Resources
+- [Documentation Curriculum](https://github.com/JSideris/DOThtml/blob/master/dothtml.org/readme.md)
+
+### Community & Contribution
+- [Report Bugs](https://github.com/JSideris/DOThtml/issues)
+- [GitHub Repository](https://github.com/JSideris/DOThtml)
+
+
+--- FILE: main-features.md (Main Features) ---
+
+# Main Features & Overview
+
+DOThtml is a lightweight, reactive UI engine designed for both simple drop-in widgets and full-scale web applications. This page provides a high-level overview of the framework's core capabilities.
+
+## A Library, Not a Framework
+Unlike other tools that demand you build your entire app around them, DOThtml is designed to be dropped into **any** project. 
+
+*   **Zero Core Dependencies**: A ~18kb footprint that won't bloat your project.
+*   **Architectural Freedom**: Use it for your entire UI, or just for a single complex widget in a legacy app.
+*   **Shadow DOM Native**: Built-in encapsulation ensures your components work perfectly regardless of the host environment.
+
+## Core Capabilities
+
+### [Component-Based Architecture](./components.md)
+Build complex UIs from small, reusable, and encapsulated pieces. DOThtml components support props, validation, and lifecycle hooks.
+
+### [Reactivity & Signals](./reactivity.md)
+DOThtml uses a powerful, low-salt reactivity system based on **Signals**. Data-driven updates happen automatically and efficiently without a virtual DOM.
+
+### [State Management with Stores](./stores.md)
+For larger applications, DOThtml provides a built-in state management solution called **Stores**. Stores are centralized containers for state, logic, and mutations.
+
+### [Fluent & Reactive Styling](./styling.md)
+A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables and media queries.
+
+### [Popup Window Management](./popups.md)
+DOThtml provides a unique "Multi-Window Orchestration Layer," allowing you to manage popup windows as seamless extensions of your main app with shared state and inherited styles.
+
+### [Official CLI](./cli.md)
+Start projects in seconds with the official `create-dothtml` CLI, featuring a Vite-powered development environment and built-in component generators.
+
+### [Performance & Advanced Features](./detailed-features.md)
+DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.
+
+
+--- FILE: popups.md (Popups) ---
+
+# Popup Window Management
+
+DOThtml provides a powerful "Multi-Window Orchestration Layer" that allows you to treat popup windows as seamless extensions of your main application. Unlike standard `window.open` calls, DOThtml popups support shared state, style inheritance, and robust lifecycle management.
+
+## Basic Usage
+
+To create a new window, use the `dot.window()` factory. This returns a wrapper object that you can use to control the window.
+
+```typescript
+import { dot } from "dothtml";
+import { MyPopupComponent } from "./components/MyPopupComponent";
+
+const myWindow = dot.window({
+	content: new MyPopupComponent(),
+	width: 800,
+	height: 600,
+	title: "Editor Tool"
+});
+
+// The window is not opened until you call .open()
+await myWindow.open();
+```
+
+## Configuration Options
+
+The `dot.window()` method accepts several options to customize the behavior of the popup:
+
+| Option | Type | Description |
+| :--- | :--- | :--- |
+| `content` | `IDotComponent` | The root component to render inside the popup. |
+| `width` | `number` | The width of the window in pixels (default: 600). |
+| `height` | `number` | The height of the window in pixels (default: 400). |
+| `title` | `string` | The title of the window document. |
+| `position` | `string \| object` | Smart positioning: `"center"`, `"parent-center"`, `"beside-parent"`, or `{left, top}`. |
+| `syncStyles` | `boolean` | If `true`, clones all styles and CSS variables from the parent window. |
+| `tether` | `boolean` | If `true`, the popup will automatically close when the parent window is closed. |
+
+## Controlling the Window
+
+The window wrapper provides several methods to manage the popup's lifecycle and state:
+
+```typescript
+// Programmatically close the window
+myWindow.close();
+
+// Focus the window or bring it to the front
+myWindow.focus();
+myWindow.bringToFront();
+
+// Resize or move the window
+myWindow.resizeTo(1024, 768);
+myWindow.moveTo(100, 100);
+```
+
+## Cross-Window Reactivity
+
+One of the most powerful features of DOThtml popups is that they share the same reactive context as the main application.
+
+*   **Signals**: If you pass a `Signal` from the main app into the popup component's props, the popup will reactively update whenever that signal changes.
+*   **Stores**: Global stores are shared across all windows. Updating a store in a popup will instantly reflect in the main window and vice versa.
+
+## Style & Theme Synchronization
+
+When `syncStyles: true` is enabled, DOThtml automatically ensures the popup looks exactly like your main application by:
+1.  Copying the `class` list from the parent `<body>` (perfect for dark mode syncing).
+2.  Cloning all `adoptedStyleSheets`.
+3.  Injecting all `<style>` and `<link rel="stylesheet">` tags from the parent `<head>`.
+4.  Syncing all CSS variables (custom properties) defined on `:root`.
+
+## Event Handling
+
+You can listen for events on the popup window directly from the main application using the `.on()` method.
+
+```typescript
+myWindow.on("click", (e) => {
+	console.log("The popup was clicked!");
+});
+
+// Custom events triggered inside the popup also bubble up
+myWindow.on("save-data", (data) => {
+	saveToDatabase(data);
+});
+```
+
+
+--- FILE: quick-start.md (Quick Start) ---
+
+# Quick Start & Installation
+
+## Start Something New (Recommended)
+
+The fastest way to build a modern DOThtml application is with the official CLI. It scaffolds a project powered by **Vite**, providing instant Hot Module Replacement (HMR) and a professional build pipeline.
+
+```bash
+npm init dothtml my-app
+cd my-app
+npm install
+npm run dev
+```
+
+By default, this scaffolds a **TypeScript** project. To use JavaScript instead, add the `--js` flag:
+
+```bash
+npm init dothtml my-app -- --js
+```
+
+## Add DOThtml to an existing Node.js Project
+
+DOThtml is available via NPM.
+
+```bash
+npm i dothtml
+```
+
+### Manual TypeScript Setup
+
+When using DOThtml in a TypeScript project, you'll want to ensure your `tsconfig.json` is configured correctly to support decorators, which are a core part of the component system.
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true
+  }
+}
+```
+
+### Usage
+
+```typescript
+import { dot } from "dothtml";
+
+dot(document.body)
+.h1("Hello from TypeScript!");
+```
+
+For more advanced TypeScript usage, including component decorators, see the [TypeScript Reference](./typescript.md) guide.
+
+## Use via CDN
+
+If you want to use DOThtml without a build step, you can include it via a script tag:
+
+```html
+<script src="https://unpkg.com/dothtml@latest/dist/index.global.js"></script>
+```
+
+This will expose a global `dot` object that you can use immediately:
+
+```javascript
+dot("#app")
+.div("Ready to go!");
+```
+
+
+--- FILE: reactivity.md (Reactivity) ---
+
+# Reactivity in DOThtml
+
+DOThtml provides a powerful, low-salt reactivity system based on **Signals**.
+
+## Signals
+
+A `Signal` is a wrapper around a value that tracks its changes. You can create one using `dot.state()`.
+
+```javascript
+const count = dot.state(0);
+
+dot.div(count); // Automatically updates when count changes.
+
+count.value++; // Updates the DOM.
+```
+
+## Computed State
+
+Computed signals allow you to derive state from other signals. They automatically track which signals they depend on.
+
+```javascript
+const firstName = dot.state("John");
+const lastName = dot.state("Doe");
+
+const fullName = dot.computed(() => `${firstName.value} ${lastName.value}`);
+
+dot.div(fullName); // Displays "John Doe" and updates if either name changes.
+```
+
+### Lazy Evaluation
+Computed signals are **lazy**. They only re-calculate their value when it is actually accessed (via `.value`) or when the DOM needs to update. This ensures maximum efficiency for complex derivations.
+
+### Dynamic Dependency Tracking
+DOThtml uses dynamic tracking to manage dependencies. If your computed logic contains branches (like `if` statements), the framework will automatically subscribe to and unsubscribe from signals as they enter or leave the execution path.
+
+```javascript
+const useA = dot.state(true);
+const a = dot.state("A");
+const b = dot.state("B");
+
+// Automatically unsubscribes from 'b' when useA is true, 
+// and unsubscribes from 'a' when useA is false.
+const combined = dot.computed(() => useA.value ? a.value : b.value);
+```
+
+### Automatic Resource Management
+When a computed signal is created inside a component's `build()` method, it is automatically registered with that component. When the component is unmounted, all its associated computed signals are disposed of to prevent memory leaks.
+
+### Cycle Detection
+The framework includes built-in protection against circular dependencies. If a computed signal depends on itself (directly or indirectly), DOThtml will throw a descriptive error instead of entering an infinite loop.
+
+## Bindings
+
+You can transform a signal's value for display using `bindAs`.
+
+```javascript
+const count = dot.state(5);
+dot.div(count.bindAs(v => `The count is ${v}`));
+```
+
+## Refs
+
+Refs are specialized reactive signals used to obtain direct access to DOM elements or component instances. See the [Refs Documentation](./refs.md) for more details.
+
+## Reactive Props
+
+When you pass a `Signal` or a `Binding` as a prop to a component, the component automatically subscribes to it. If the value changes, the component's `build()` function is re-called, and the component re-renders.
+
+```javascript
+class MyComponent extends IDotComponent {
+    build() {
+        return dot.div(this.props.title);
+    }
+}
+
+const title = dot.state("Initial Title");
+dot.mount(new MyComponent(), { title: title });
+
+title.value = "New Title"; // MyComponent re-renders automatically.
+```
+
+## Reactive Styles
+
+Reactivity in DOThtml extends to styling, allowing for high-performance, granular updates to an element's appearance without re-rendering the entire component. Reactive styling can be applied at three different levels:
+
+### 1. Inline Reactive Styles
+Pass a `Signal` or `Binding` directly to an element's fluent style builder. This is ideal for element-specific changes.
+
+```javascript
+const opacity = dot.state(1);
+dot.div("I can fade")
+  .style(s => s.opacity(opacity));
+```
+
+### 2. Host Reactive Variables
+Use `hostStyle()` to bind a `Signal` to a CSS variable on the component's host element. This is the recommended way to handle component-specific reactive styling with maximum performance.
+
+```javascript
+hostStyle(s) {
+  s.variable("local-color", this.props.color);
+}
+```
+
+### 3. Global Reactive Variables
+Bind a `Signal` to the global `dot.css` builder. This updates a CSS variable on the document root, making it available to every component in your application.
+
+```javascript
+const theme = dot.state("dark");
+dot.css.variable("theme-mode", theme);
+```
+
+## Two-Way Binding
+
+DOThtml supports explicit two-way binding for form elements using the `bind` attribute. This synchronizes the DOM state with a `Signal` or `Binding` in both directions.
+
+```javascript
+const name = dot.state("John");
+
+dot.input({ bind: name }); // Typing in the input updates the signal.
+dot.div("Hello, ", name);  // The div updates as you type.
+```
+
+### Supported Elements
+- `<input>`: Binds to the `value` property (or `checked` for checkboxes/radios).
+- `<textarea>`: Binds to the `value` property.
+- `<select>`: Binds to the `value` property.
+
+### One-Way vs. Two-Way
+Using the standard `value` or `checked` attributes with a signal provides **one-way binding** (Signal -> DOM). To enable **two-way binding** (Signal <-> DOM), you must use the `bind` attribute.
+
+```javascript
+// One-way: DOM updates when signal changes, but not vice versa.
+dot.input({ value: mySignal }); 
+
+// Two-way: DOM and signal are kept in sync.
+dot.input({ bind: mySignal }); 
+```
+
+
+--- FILE: refs.md (Refs) ---
+
+# Refs
+
+Refs (References) provide a way to obtain direct access to DOM elements or component instances created by the VDOM. In DOThtml, refs are **reactive**, **proxy-aware**, and **lifecycle-integrated**.
+
+## Basic Usage
+
+To create a ref, use the `dot.ref()` factory function. You can then bind it to an element using the `ref` attribute.
+
+```javascript
+const myInput = dot.ref();
+
+dot.div(
+    dot.input({ ref: myInput }),
+    dot.button({ 
+        onClick: () => myInput.focus() // Direct method call via proxy!
+    }, "Focus Input")
+);
+```
+
+## Reactive Nature
+
+A `Ref` is a specialized `Signal`. This means you can use it anywhere a signal is expected, and you can react to its value changing (e.g., when an element is mounted or unmounted).
+
+```javascript
+const myRef = dot.ref();
+
+dot.computed(() => {
+    if (myRef.value) {
+        console.log("Element is now in the DOM:", myRef.value);
+    } else {
+        console.log("Element has been removed.");
+    }
+});
+```
+
+## Method Proxying
+
+DOThtml refs use a JavaScript `Proxy` to allow you to call methods of the underlying element or component directly on the ref object itself.
+
+- **Standard way**: `myRef.value.focus()`
+- **Proxy way**: `myRef.focus()`
+
+If the ref is currently `null` (not mounted), the proxied call will simply do nothing and return `undefined`, preventing "cannot read property of null" errors.
+
+## Component Refs
+
+Refs can also be used to capture instances of DOThtml components.
+
+```javascript
+class MyModal {
+    open() { /* ... */ }
+    build(dot) { return dot.div("Modal Content"); }
+}
+
+const modalRef = dot.ref();
+dot.mount(new MyModal(), { ref: modalRef });
+
+// Later...
+modalRef.open(); // Calls the 'open' method on the MyModal instance.
+```
+
+## Ref Collections
+
+When working with lists, you may need a reference to multiple elements. `dot.refCollection()` provides a keyed Map of refs.
+
+```javascript
+const itemRefs = dot.refCollection();
+
+dot.each(items, (item, i) => {
+    return dot.div({ ref: itemRefs.get(i) }, item.name);
+});
+
+// Access all elements
+itemRefs.forEach((el, key) => {
+    console.log(`Item ${key} is`, el);
+});
+```
+
+## Awaiting Mount (`ready`)
+
+If you need to perform an action as soon as a ref is populated, you can use the `.ready()` method, which returns a Promise.
+
+```javascript
+const myRef = dot.ref();
+dot.div({ ref: myRef });
+
+const el = await myRef.ready();
+console.log("Element is ready:", el);
+```
+
+## Function Refs
+
+If you prefer a callback-based approach, you can pass a function to the `ref` attribute.
+
+```javascript
+dot.div({ 
+    ref: (el) => {
+        if (el) console.log("Mounted:", el);
+        else console.log("Unmounted");
+    }
+});
+```
+
+## Lifecycle Integration
+
+- **Mounting**: Refs are populated immediately after the element is created but before the `mounted()` lifecycle hook is called. This makes them perfect for initializing **[Scroll & Visibility](./scroll-and-visibility.md)** observers.
+
+--- FILE: rendering-basics.md (Rendering Basics) ---
+
+# Rendering Basics
+
+DOThtml provides a fluent, method-based API for building and manipulating the DOM. Instead of writing XML-like markup, you use JavaScript or TypeScript methods to define your UI structure.
+
+## Targeting Elements
+
+To start rendering, you first need to target an existing DOM element. You can do this by passing a DOM element or a CSS selector to the `dot` function.
+
+```javascript
+import { dot } from "dothtml";
+
+// Target by reference
+dot(document.body).h1("Hello World");
+
+// Target by CSS selector
+dot("#app").p("This is appended to the #app element.");
+```
+
+## Creating Elements
+
+Once you have a target, you can create HTML elements by calling their tag names as methods on the `dot` object.
+
+```javascript
+dot(document.body)
+  .div("This is a div.")
+  .span("This is a span.");
+```
+
+Most standard HTML5 tags are supported as methods (e.g., `.div()`, `.p()`, `.button()`, `.input()`, `.section()`, etc.).
+
+## Attributes and Properties
+
+Attributes can be passed as an object. DOThtml is flexible: the attribute object can be the **first** or **second** argument.
+
+```javascript
+// Attributes as the first argument
+dot.div({ id: "header", class: "main-title" }, "Welcome");
+
+// Attributes as the second argument
+dot.div("Welcome", { id: "header", class: "main-title" });
+
+// Elements with no content
+dot.img({ src: "logo.png", alt: "Logo" });
+```
+
+### Special Attribute Handling
+
+- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans.
+  ```javascript
+  dot.div({ class: ["btn", "btn-primary"] });
+  dot.div({ class: { "active": true, "disabled": false } });
+  ```
+- **Styles**: While you can pass a `style` string or object in the attributes, we recommend using the fluent [Styling](./styling.md) API for better performance and reactivity.
+- **Events**: Event listeners can be added by prefixing the event name with `on` (e.g., `onClick`, `onInput`).
+
+## Function Chaining
+
+Every element method returns the `dot` object, allowing you to chain multiple elements together. Chained elements are added as **siblings**.
+
+```javascript
+dot(document.body)
+  .h1("My App")
+  .nav(
+    dot.a("Home", { href: "/" })
+       .a("About", { href: "/about" })
+  )
+  .main("Content goes here...");
+```
+
+## Nesting Elements
+
+To create child elements, pass a `dot` call as an argument to another element method.
+
+```javascript
+dot.div(
+  dot.h2("Section Title")
+     .p("This paragraph is inside the div.")
+);
+```
+
+You can nest as deeply as needed.
+
+## HTML vs. Text
+
+By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper.
+
+```javascript
+// Renders: <div>&lt;b&gt;Hello&lt;/b&gt;</div>
+dot.div("<b>Hello</b>");
+
+// Renders: <div><b>Hello</b></div>
+dot.div(dot.html("<b>Hello</b>"));
+
+// Explicit text (useful if you want to be certain)
+dot.div(dot.text("<b>Hello</b>"));
+```
+
+
+--- FILE: routing.md (Routing) ---
+
+# Routing in DOThtml
+
+DOThtml provides a powerful, reactive routing system that integrates seamlessly with its virtual DOM and signal-based reactivity.
+
+## Basic Usage
+
+To use the router, define your routes and mount the `Router` component.
+
+```javascript
+import { dot, Router } from "dothtml";
+import Home from "./Home";
+import About from "./About";
+
+const routes = [
+    { path: "/", component: Home, title: "Home Page" },
+    { path: "/about", component: About, title: "About Us" },
+    // Declarative redirect
+    { path: "/old-about", redirect: "/about" }
+];
+
+dot(document.body).mount(new Router(), { routes });
+```
+
+## Redirects
+
+Routes can specify a `redirect` property to automatically forward users to another path. This can be a static string or a function that returns a path.
+
+```javascript
+const routes = [
+    { path: "/old-profile", redirect: "/profile" },
+    { 
+        path: "/user/:id", 
+        redirect: (params) => `/profile/${params.id}` 
+    }
+];
+```
+
+## Navigation with Link
+
+Use the `Link` component for declarative navigation. It automatically handles active classes and prevents full page reloads.
+
+```javascript
+import { Link } from "dothtml";
+
+dot.nav(
+    dot.mount(new Link({ to: "/", label: "Home", exact: true })),
+    dot.mount(new Link({ to: "/about", label: "About" }))
+);
+```
+
+## Reactive Params
+
+Routes can have parameters defined with `{paramName}` or `:paramName`. These are passed to the component as `routeParams`.
+
+```javascript
+const routes = [
+    { 
+        path: "/user/{id}", 
+        component: UserProfile 
+    }
+];
+
+class UserProfile {
+    build(dot) {
+        // Access params reactively
+        return dot.div(`User ID: ${this.props.routeParams.id}`);
+    }
+}
+```
+
+## Query and Hash Reactivity
+
+You can access query parameters and the URL hash reactively using `dot.useQueryParams()` and `dot.useHash()`.
+
+```javascript
+const query = dot.useQueryParams();
+const hash = dot.useHash();
+
+dot.div(dot.computed(() => `Search for: ${query.value.q}`));
+dot.div(dot.computed(() => `Section: ${hash.value}`));
+```
+
+## Anchor Navigation (Auto-Scrolling)
+
+DOThtml provides built-in support for standard web anchor navigation. When the URL hash changes (e.g., `#section-1`), the framework automatically finds the element with the matching ID and scrolls it into view.
+
+### Shadow-Aware ID Lookup
+
+Unlike standard browser APIs, DOThtml's anchor navigation is **shadow-aware**. This means that even if your target element is deeply nested inside a component's Shadow DOM, the router will find it and scroll to it automatically.
+
+```javascript
+class MyComponent {
+    build(dot) {
+        return dot.div({ id: "my-target" }, "Scroll to me!");
+    }
+}
+```
+
+### Smooth Scrolling & Accessibility
+
+By default, DOThtml uses **smooth scrolling** for internal navigation to provide a more polished user experience. 
+
+The framework also respects user accessibility settings: if a user has enabled "Reduced Motion" in their operating system, DOThtml will automatically fall back to instant scrolling to ensure a comfortable experience for everyone.
+
+## Lazy Loading
+
+Components can be loaded lazily using dynamic `import()`.
+
+```javascript
+const routes = [
+    { 
+        path: "/admin", 
+        component: () => import("./AdminPanel") 
+    }
+];
+```
+
+## Navigation Guards
+
+You can protect routes using `beforeEnter` on individual routes or global `beforeEach` guards. Guards support synchronous return values, asynchronous promises, and the traditional `next()` callback.
+
+### Return-based API (Recommended)
+
+Guards can return a `boolean` to allow/cancel navigation, or a `string` to redirect.
+
+```javascript
+// Global guard
+dot.Router.beforeEach((to, from) => {
+    if (to === "/admin" && !isLoggedIn()) {
+        return "/login"; // Redirect
+    }
+    if (to === "/forbidden") {
+        return false; // Cancel
+    }
+    return true; // Allow
+});
+```
+
+### Async Guards
+
+Guards can be `async` functions, allowing you to perform checks against an API or database.
+
+```javascript
+dot.Router.beforeEach(async (to) => {
+    const user = await auth.getUser();
+    if (to.startsWith("/admin") && !user?.isAdmin) {
+        return "/unauthorized";
+    }
+});
+```
+
+### Callback-based API
+
+The traditional `next()` callback is still supported for compatibility.
+
+```javascript
+dot.Router.beforeEach((to, from, next) => {
+    if (hasAccess()) next();
+    else next(false);
+});
+```
+
+
+--- FILE: scroll-and-visibility.md (Scroll And Visibility) ---
+
+# Scroll, Visibility & Observers
+
+DOThtml provides full access to standard web APIs like `scroll` events, `IntersectionObserver`, `ResizeObserver`, and `MutationObserver`. By combining these with DOThtml's **Lifecycle Hooks**, **Refs**, and **Signals**, you can create high-performance, responsive, and reactive user experiences.
+
+## Watching Global Scroll
+
+To react to the page's scroll position, use the `mounted()` and `unmounting()` lifecycle hooks to manage a global event listener.
+
+```javascript
+import { dot, DotComponent } from "dothtml";
+
+@dot.component
+class StickyHeader extends DotComponent {
+    isSticky = dot.state(false);
+
+    mounted() {
+        this.scrollHandler = () => {
+            this.isSticky.value = window.scrollY > 100;
+        };
+        window.addEventListener("scroll", this.scrollHandler, { passive: true });
+    }
+
+    unmounting() {
+        window.removeEventListener("scroll", this.scrollHandler);
+    }
+
+    stylize(s) {
+        return s.class("header", c => c
+            .position("fixed")
+            .topPx(0)
+            .widthP(100)
+            .transition("background 0.3s")
+        ).class("header.sticky", c => c
+            .backgroundColor("rgba(0, 0, 0, 0.8)")
+            .boxShadow("0 2px 10px rgba(0,0,0,0.3)")
+        );
+    }
+
+    build(dot) {
+        return dot.header({ 
+            class: this.isSticky.bindAs(v => v ? "header sticky" : "header") 
+        }, "My Awesome App");
+    }
+}
+```
+
+## Element Visibility (IntersectionObserver)
+
+The `IntersectionObserver` API is the most efficient way to detect when an element enters or leaves the viewport. In DOThtml, you use a **Ref** to target the element and a **Signal** to track its visibility.
+
+### Reveal on Scroll
+
+```javascript
+@dot.component
+class RevealBox extends DotComponent {
+    isVisible = dot.state(false);
+    boxRef = dot.ref();
+
+    mounted() {
+        this.observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                this.isVisible.value = true;
+                this.observer.disconnect(); // Only trigger once
+            }
+        }, { threshold: 0.1 });
+
+        if (this.boxRef.value) {
+            this.observer.observe(this.boxRef.value);
+        }
+    }
+
+    unmounting() {
+        this.observer.disconnect();
+    }
+
+    stylize(s) {
+        return s.class("box", b => b
+            .opacity(0)
+            .transform("translateY(30px)")
+            .transition("all 0.6s ease-out")
+        ).class("box.visible", b => b
+            .opacity(1)
+            .transform("translateY(0)")
+        );
+    }
+
+    build(dot) {
+        return dot.div({ 
+            ref: this.boxRef,
+            class: this.isVisible.bindAs(v => v ? "box visible" : "box")
+        }, "I appear when you scroll to me!");
+    }
+}
+```
+
+## Element Size (ResizeObserver)
+
+The `ResizeObserver` API allows you to react to changes in an element's dimensions, which is useful for building components that need to adjust their internal layout based on their own size (rather than the viewport size).
+
+```javascript
+@dot.component
+class ResponsiveWidget extends DotComponent {
+    width = dot.state(0);
+    containerRef = dot.ref();
+
+    mounted() {
+        this.observer = new ResizeObserver(([entry]) => {
+            this.width.value = entry.contentRect.width;
+        });
+
+        if (this.containerRef.value) {
+            this.observer.observe(this.containerRef.value);
+        }
+    }
+
+    unmounting() {
+        this.observer.disconnect();
+    }
+
+    build(dot) {
+        return dot.div({ 
+            ref: this.containerRef,
+            class: "widget-container" 
+        }, 
+            this.width.bindAs(w => w < 400 ? "I am small" : "I am large")
+        );
+    }
+}
+```
+
+## DOM Mutations (MutationObserver)
+
+Use `MutationObserver` to watch for changes to the DOM tree, such as elements being added or removed, or attributes being modified. This is particularly useful when integrating with third-party libraries that manipulate the DOM directly.
+
+```javascript
+@dot.component
+class DOMWatcher extends DotComponent {
+    lastMutation = dot.state("None");
+    targetRef = dot.ref();
+
+    mounted() {
+        this.observer = new MutationObserver((mutations) => {
+            this.lastMutation.value = mutations[0].type;
+        });
+
+        if (this.targetRef.value) {
+            this.observer.observe(this.targetRef.value, { 
+                attributes: true, 
+                childList: true, 
+                subtree: true 
+            });
+        }
+    }
+
+    unmounting() {
+        this.observer.disconnect();
+    }
+
+    build(dot) {
+        return dot.div(
+            dot.div({ ref: this.targetRef }, "Watch me!"),
+            dot.p("Last mutation: ", this.lastMutation)
+        );
+    }
+}
+```
+
+## Performance Best Practices
+
+1.  **Use Signals for Classes**: Instead of manually updating `element.style` inside a scroll listener, update a `Signal` and bind it to a CSS class. This allows DOThtml to batch the update and avoids layout thrashing.
+2.  **Leverage `hostStyle` for High-Frequency Updates**: For high-frequency changes like scroll position or mouse movement, use **[hostStyle](./styling.md#host-variable-binding)** to update a CSS variable. This is significantly more performant than re-rendering the component's HTML structure.
+3.  **Manual Flushing with `dot.flushSync`**: If you need to measure an element's size or position immediately after updating a signal, use **[dot.flushSync()](./reactivity.md#manual-flushing-dotflushsync)** to force the DOM to update synchronously.
+4.  **Clean Up Listeners & Observers**: Always remove event listeners and disconnect observers in `unmounting()` to prevent memory leaks, especially in single-page applications.
+5.  **Passive Listeners**: When adding scroll listeners, use `{ passive: true }` if you don't need to call `preventDefault()`, as it improves scroll performance.
+6.  **Thresholds**: Use appropriate `threshold` values in `IntersectionObserver` to balance responsiveness and performance.
+
+```javascript
+// Example of high-performance scroll tracking using hostStyle
+hostStyle(s) {
+    s.variable("scroll-y", this.scrollY);
+}
+
+mounted() {
+    this.scrollHandler = () => {
+        this.scrollY.value = window.scrollY;
+    };
+    window.addEventListener("scroll", this.scrollHandler, { passive: true });
+}
+```
+
+
+--- FILE: stores.md (Stores) ---
+
+# State Management with Stores
+
+DOThtml Stores provide a centralized, reactive state management system designed for enterprise-scale applications. They allow you to define shared state, derived logic, and mutations in a structured way that feels like a natural extension of the DOThtml fluent API.
+
+## Why Stores?
+
+While `dot.state` and `dot.computed` are powerful for local component state, managing state that needs to be shared across many components can lead to "prop drilling" or manual synchronization issues. Stores solve this by providing:
+
+- **Centralized Source of Truth**: A single place to manage related state.
+- **Implicit Reactivity**: State properties are automatically converted to `Signal`s.
+- **Derived Logic**: Getters are automatically converted to `Computed` signals.
+- **Structured Mutations**: Actions provide a clear way to update state.
+- **Singleton Management**: Easily share state globally using unique IDs.
+
+## Basic Usage
+
+You create a store using `dot.store()`. This function returns a "useStore" hook that you can call to access the store instance.
+
+```javascript
+const useCounterStore = dot.store({
+    id: "counter", // Unique ID makes this a global singleton
+    state: () => ({
+        count: 0,
+        name: "Main Counter"
+    }),
+    getters: {
+        // 'state' is passed as the first argument
+        doubleCount: (state) => state.count.value * 2,
+        // 'this' also refers to the store instance
+        status() {
+            return `${this.name.value} is at ${this.count.value}`;
+        }
+    },
+    actions: {
+        increment() {
+            this.count.value++;
+        },
+        reset() {
+            this.count.value = 0;
+        }
+    }
+});
+
+// Usage in a component
+class CounterComponent extends IDotComponent {
+    counter = useCounterStore();
+
+    build() {
+        return dot.div(
+            dot.h2(this.counter.name),
+            dot.p(this.counter.count.bindAs(v => `Count: ${v}`)),
+            dot.p(this.counter.doubleCount.bindAs(v => `Double: ${v}`)),
+            dot.button("Increment").onClick(() => this.counter.increment()),
+            dot.button("Reset").onClick(() => this.counter.reset())
+        );
+    }
+}
+```
+
+## Reactivity Model
+
+DOThtml Stores are built directly on top of the framework's core reactivity primitives:
+
+1. **State as Signals**: Every property returned by the `state()` function is automatically wrapped in a `Signal`. You access and update them using `.value`.
+2. **Getters as Computeds**: Every function in the `getters` object is converted into a `dot.computed` signal. They are lazy-evaluated and automatically track their dependencies.
+3. **Bound Actions**: Actions are bound to the store instance, so `this` always points to the reactive state and other actions/getters.
+
+## Singleton vs. Local Stores
+
+### Global Singletons
+By providing an `id` in the store options, DOThtml ensures that only one instance of that store exists. Every time you call the "useStore" hook (e.g., `useCounterStore()`), you get back the exact same instance. This is perfect for auth state, user preferences, or shared application data.
+
+### Local Stores
+If you omit the `id`, a new store instance is created every time the "useStore" hook is called. If called within a component's lifecycle, the store is automatically disposed of when the component is unmounted.
+
+## Advanced Features
+
+### Persistence
+While not built-in by default, you can easily add persistence to your stores by subscribing to changes:
+
+```javascript
+const useSettingsStore = dot.store({
+    id: "settings",
+    state: () => ({
+        theme: localStorage.getItem("theme") || "light"
+    }),
+    actions: {
+        setTheme(newTheme) {
+            this.theme.value = newTheme;
+            localStorage.setItem("theme", newTheme);
+        }
+    }
+});
+```
+
+### Debugging
+You can access all active global stores via `dot.stores`. This is useful for debugging in the console:
+
+```javascript
+// In the browser console
+console.log(dot.stores.counter.count.value);
+dot.stores.counter.increment();
+```
+
+## Best Practices
+
+1. **Keep State Flat**: Avoid deeply nested objects in `state()` if possible, as it makes reactivity easier to manage.
+2. **Use Getters for Derivations**: Don't manually calculate values in your components; move that logic into store getters.
+3. **Actions for Logic**: Keep your components focused on UI and move business logic into store actions.
+
+--- FILE: styling.md (Styling) ---
+
+# Styling in DOThtml
+
+DOThtml provides a powerful, fluent, and reactive styling system that leverages the browser's native performance while providing a low-friction developer experience.
+
+## Fluent Style Builder
+
+Instead of using string-based styles or plain object literals, DOThtml uses a fluent builder pattern. This provides type safety, IDE autocompletion, and automatic unit formatting.
+
+You can apply styles to any element using the `.style()` method. When passing a raw number to a length-based property (like `width`, `height`, `padding`, etc.), DOThtml defaults the unit to `px`.
+
+```javascript
+dot.div("Hello World")
+  .style(s => s
+    .color("red")
+    .fontWeight("bold")
+    .fontSize(20) // Defaults to 'px'
+  );
+```
+
+### Automatic Unit Formatting
+
+DOThtml automatically generates methods for common CSS units, so you don't have to manually concatenate strings. **We recommend using these explicit unit methods** to ensure your code is clear and to avoid ambiguity.
+
+- **Lengths**: `.widthPx(100)`, `.heightRem(2)`, `.paddingTopP(10)` (P for percent).
+- **Time**: `.animationDurationMs(500)`, `.transitionDelayS(1)`.
+- **Angles**: `.rotateDeg(45)`, `.skewRad(0.1)`.
+
+### Hybrid and Unitless Properties
+
+Some CSS properties are unitless or can behave as hybrids:
+
+- **Unitless**: Properties like `opacity`, `zIndex`, `flexGrow`, and `flexShrink` accept raw numbers as-is.
+- **Hybrids**: `lineHeight` is a special case. It can take a physical length (like `px`) or a unitless multiplier (recommended). 
+
+To ensure the correct behavior for `lineHeight`, use an explicit unit method like `.lineHeightPx(24)` or pass a string for a multiplier: `.lineHeight("1.5")`.
+
+### Technical Note on Precision
+
+Unlike some frameworks that round values to the nearest integer, DOThtml preserves full decimal precision in numeric values. If you set a width to `10.5`, it will be rendered as `10.5px`.
+
+### Nested Style Objects
+
+For complex properties like `filter` and `transform`, you can pass a plain object to the builder. DOThtml will automatically convert it into the correct CSS function syntax. **This also works with reactive Signals and Bindings.**
+
+```javascript
+dot.div("Filtered Content")
+  .style(s => s.filter({ blur: "5px", brightness: 0.8 }));
+  // Renders: filter: blur(5px) brightness(0.8);
+
+// Reactive usage
+const scale = dot.state(1.5);
+dot.div("Zooming Content")
+  .style(s => s.transform({ scale: scale }));
+```
+
+## Reactive Styling
+
+The styling system is fully integrated with DOThtml's reactivity system. You can pass `Signal` or `Binding` objects directly to any style method.
+
+```javascript
+const size = dot.state(20);
+const color = dot.state("blue");
+
+dot.div("I am reactive!")
+  .style(s => s
+    .fontSizePx(size)
+    .color(color)
+  );
+
+// Later...
+size.value = 40; // The font size updates automatically in the DOM.
+```
+
+### Ghost Variable Injection (Auto-CSS Variables)
+
+One of DOThtml's most powerful features is **Ghost Variable Injection**. Traditionally, to make a scoped style reactive, you would have to manually define a CSS variable in one place and use it in another. DOThtml now handles this automatically.
+
+When you use a `Signal` or `Binding` inside the `stylize()` builder, DOThtml:
+1.  Generates a unique, deterministic CSS variable name (e.g., `--dh-v1`).
+2.  Injects that variable into the static CSS rule.
+3.  Automatically updates the variable value on every component instance whenever the signal changes.
+
+```javascript
+class GlowingBox extends IDotComponent {
+  stylize(s) {
+    return s.class("box", b => b
+      // DOThtml sees the signal and handles the CSS variable plumbing!
+      .backgroundColor(theme.primary.bindAs(p => `${p}33`))
+      .border(`1px solid ${theme.primary}`)
+    );
+  }
+}
+```
+
+This provides the performance of native CSS variables with the developer experience of a reactive framework.
+
+### Fluent Template Literals (`s.template`)
+
+When you need to combine static CSS strings with reactive values (like in a `linear-gradient` or `rgba` function), use the `s.template` helper.
+
+```javascript
+stylize(s) {
+  return s.class("overlay", o => o
+    .background(s.template`linear-gradient(${theme.primary}1a, transparent)`)
+  );
+}
+```
+
+### Color Alpha Utility (`dot.alpha`)
+
+CSS variables are powerful, but they have a limitation: you cannot easily append an alpha channel to them (e.g., `var(--primary)88` is invalid). DOThtml provides the `dot.alpha()` utility to safely handle this using modern CSS `color-mix`.
+
+```javascript
+const opacity = dot.state(0.5);
+
+dot.div("Faded Background")
+  .style(s => s
+    .backgroundColor(dot.alpha("var(--primary)", opacity))
+  );
+```
+
+This utility works with static strings, Signals, or Bindings for both the color and the opacity.
+
+### Batching and Performance
+
+Style updates are automatically batched by the DOThtml scheduler. If you update multiple signals that drive styles on the same element (or different elements) in a single task, DOThtml will group those changes and apply them in a single DOM update cycle, minimizing layout thrashing.
+
+## CSS Variables (Custom Properties)
+
+For high-performance theme updates or complex component styling, you can use CSS variables.
+
+```javascript
+dot.div("Themed Content")
+  .style(s => s.variable("accent-color", "orange"));
+```
+
+In your CSS, you can then reference this variable using the `.v()` helper:
+
+```javascript
+stylize(s) {
+  return s.class("themed-content", c => c
+    .border(`2px solid ${s.v("accent-color")}`)
+  );
+}
+```
+
+### The `s.v()` Shortcut
+
+The `.v()` method is a convenient shortcut for referencing CSS variables within any style builder. It automatically handles the `--` prefix if it's missing.
+
+*   **Usage**: `s.v("my-var")` returns `"var(--my-var)"`.
+*   **Usage**: `s.v("--my-var")` returns `"var(--my-var)"`.
+
+This makes your style definitions cleaner and less error-prone.
+
+## Media Queries
+
+DOThtml supports native CSS media queries within the `stylize()` method using the `.media()` builder. This allows you to define responsive styles that are scoped to your component.
+
+```javascript
+class ResponsiveNavbar extends IDotComponent {
+  stylize(s) {
+    return s.class("navbar", n => n
+      .display("flex")
+      .heightPx(70)
+    ).media("screen and (max-width: 600px)", m => m
+      .class("navbar", n => n
+        .heightPx(50)
+        .padding("0px 20px")
+      )
+      .class("nav-links", l => l
+        .display("none")
+      )
+    );
+  }
+
+  build() {
+    return dot.nav({ class: "navbar" },
+      dot.div({ class: "nav-links" }, "...")
+    );
+  }
+}
+```
+
+Media queries in DOThtml are:
+- **Native**: They generate real CSS `@media` rules, so they are handled efficiently by the browser.
+- **Scoped**: Just like other styles in `stylize()`, they are scoped to the component's shadow root.
+- **Nested**: You can even nest media queries if needed.
+
+## Keyframe Animations
+
+Define reusable animations in `stylize()` with `.keyframes()`. Use `.from()`, `.to()`, and `.at()` for keyframe steps:
+
+```javascript
+stylize(s) {
+  return s.class("pulse", p => p
+    .animationName("pulse")
+    .animationDurationS(2)
+    .animationIterationCount("infinite")
+  ).keyframes("pulse", k => k
+    .from(f => f.opacity(0.4))
+    .to(t => t.opacity(1))
+  );
+}
+```
+
+For multi-step animations:
+
+```javascript
+.keyframes("bounce", k => k
+  .at(0, s => s.transform({ translateY: 0 }))
+  .at(50, s => s.transform({ translateY: -20 }))
+  .at("100%", s => s.transform({ translateY: 0 }))
+)
+```
+
+## Container Queries
+
+Container queries let a component respond to its **parent's** size instead of the viewport. Set `container-type` on a host, then use `.container()`:
+
+```javascript
+stylize(s) {
+  return s.class("card-host", h => h.containerType("inline-size"))
+    .container("(min-width: 400px)", c => c
+      .class("card", card => card.flexDirection("row"))
+    );
+}
+```
+
+Named containers:
+
+```javascript
+.class("sidebar", s => s.containerName("sidebar").containerType("inline-size"))
+.container("sidebar (min-width: 300px)", c => c
+  .class("nav", n => n.display("flex"))
+)
+```
+
+## Feature Queries (`@supports`)
+
+Use `.supports()` for progressive enhancement when a CSS feature may be unavailable:
+
+```javascript
+stylize(s) {
+  return s.supports("(display: grid)", sup => sup
+    .class("layout", l => l.display("grid"))
+  ).class("layout", l => l.display("flex")); // fallback
+}
+```
+
+## Global Reactive Variables
+
+DOThtml provides a global `dot.css` builder that is automatically bound to the document root (`<html>`). This is the recommended way to handle application-wide theming.
+
+```javascript
+// In your app initialization
+const themeColor = dot.state("blue");
+dot.css.variable("primary", themeColor);
+
+// Any component can now use this global variable
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("title", t => t.color(s.v("primary")));
+  }
+}
+```
+
+When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
+
+## Reactive Theme Context
+
+DOThtml provides a first-class `Theme` concept that makes design systems easy to implement. By using `dot.setTheme()`, you can make a global reactive object available to all component style builders via `s.theme`.
+
+```javascript
+// 1. Define your theme
+const myTheme = {
+  primary: dot.state("#007bff"),
+  spacing: dot.state(10)
+};
+dot.setTheme(myTheme);
+
+// 2. Use it in any component
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("container", c => c
+      .color(s.theme.primary) // Automatically creates a reactive binding
+      .paddingPx(s.theme.spacing)
+    );
+  }
+}
+```
+
+## Component Styling
+
+DOThtml provides several ways to style components, ranging from instance-specific inline styles to shared, scoped templates.
+
+### Inline Styles
+
+Within a component's `build()` method, you can use the fluent `.style()` API to apply instance-specific styles. This is ideal for styles driven by props or internal state.
+
+```javascript
+class MyButton extends IDotComponent {
+  build() {
+    return dot.button("Click Me")
+      .style(s => s
+        .backgroundColor(this.props.color)
+        .borderRadiusPx(5)
+      );
+  }
+}
+```
+
+### Scoped Styles and Shadow DOM
+
+By default, DOThtml components use **Shadow DOM** for style encapsulation. This means styles defined within a component won't leak out, and global styles won't leak in (unless explicitly allowed).
+
+To define shared styles for all instances of a component, implement the `stylize()` method. DOThtml will automatically create a `CSSStyleSheet` (or a fallback `<style>` tag) and adopt it into the component's shadow root.
+
+```javascript
+class MyComponent extends IDotComponent {
+  stylize(s) {
+    return s.class("container", c => c
+      .display("flex")
+      .paddingPx(20)
+      .backgroundColor("#f0f0f0")
+    );
+  }
+
+  build() {
+    return dot.div({ class: "container" }, "Hello Shadow DOM!");
+  }
+}
+```
+
+> **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
+
+### Signal Stylesheet Swapping
+
+For advanced use cases like switching between "Light" and "Dark" modes or "Compact" and "Comfortable" layouts, the `stylize()` method can return a `Signal` or `Binding` of styles.
+
+```javascript
+const layoutMode = dot.state("comfortable");
+
+class AppContainer extends IDotComponent {
+  stylize(s) {
+    return layoutMode.bindAs(mode => {
+      if (mode === "compact") {
+        return s.class("main", m => m.paddingPx(5).fontSizePx(12));
+      }
+      return s.class("main", m => m.paddingPx(20).fontSizePx(16));
+    });
+  }
+}
+```
+
+When the `layoutMode` signal changes, DOThtml efficiently swaps the stylesheet for all instances of the component without re-rendering the component's HTML structure.
+
+### Host Variable Binding
+
+Sometimes you want a component to drive its internal styles via CSS variables on its own host element. This is highly performant as it avoids re-rendering the entire component for visual-only changes.
+
+Use the `hostStyle()` method to bind reactive styles to the component's host element.
+
+```javascript
+class ThemeableBox extends IDotComponent {
+  hostStyle(s) {
+    // Bind a reactive signal to a CSS variable on the host element.
+    s.variable("box-color", this.props.color);
+  }
+
+  stylize(s) {
+    return s.class("box", c => c
+      .backgroundColor("var(--box-color)") // Reference the host variable.
+      .paddingPx(10)
+    );
+  }
+
+  build() {
+    return dot.div({ class: "box" }, "I am themed via host variables!");
+  }
+}
+```
+
+## Global Styles
+
+While Shadow DOM provides isolation, you often need global styles (like resets or utility frameworks) to be available inside your components.
+
+Use `dot.useGlobalStyles()` to register styles that should be adopted by every component's shadow root.
+
+```javascript
+// Register a CSS string or a CSSStyleSheet object.
+dot.useGlobalStyles(`
+  :host { font-family: sans-serif; }
+  * { box-sizing: border-box; }
+`);
+```
+
+These global styles are automatically added to the `adoptedStyleSheets` of every component created after the registration.
+
+### Dynamic Global Selectors
+
+While `dot.css` targets the document root, you can create style nodes that target any CSS selector and update them reactively.
+
+```javascript
+import StyleVNode from "dothtml/v-meta-nodes/style-v-node";
+
+const color = dot.state("red");
+const globalStyle = new StyleVNode(dot.css.color(color));
+globalStyle.render(".my-dynamic-class"); 
+
+// Later...
+color.value = "blue"; // Updates the <style> tag targeting .my-dynamic-class
+```
+
+## Performance and Caching
+
+DOThtml's styling system is built for performance:
+
+- **Constructable Stylesheets**: Uses `CSSStyleSheet` and `adoptedStyleSheets` where supported for ultra-fast style sharing.
+- **Deduplication**: `CSSStyleSheet` instances are cached based on their content. If multiple components or global registrations use the same CSS string, they will share the same underlying stylesheet object.
+- **Component Caching**: Component-level styles (from `stylize()`) are cached on the component's constructor, so they are only generated once.
+- **Reactive Batching**: Style updates via `Signals` are batched by the scheduler to prevent layout thrashing.
+
+## Server-Side Rendering (SSR)
+
+DOThtml's styling system is fully compatible with SSR. You can convert any style builder or style node to a CSS string.
+
+```javascript
+const styles = dot.css.color("red").paddingPx(10);
+console.log(styles.toString()); // "color: red; padding: 10px;"
+```
+
+## Testing Styling
+
+When testing styling in environments like JSDOM, you may need to ensure that reactive updates are processed before making assertions.
+
+By default, DOThtml batches updates asynchronously. In your tests, you can use `dot.flushSync()` to force all pending updates to be applied immediately.
+
+```javascript
+test("reactive style update", () => {
+  const color = dot.state("red");
+  dot(document.body).div().style(s => s.color(color));
+
+  color.value = "blue";
+  
+  // Force the style update to apply synchronously.
+  dot.flushSync();
+
+  expect(document.querySelector("div").style.color).toBe("blue");
+});
+```
+
+## Legacy Compatibility
+
+For users migrating from older versions of DOThtml, the `dot.useStyles()` method is still available as a bridge to the modern system. It allows you to register global styles using the familiar v5 syntax.
+
+```javascript
+dot.useStyles(`
+  body { background: #eee; }
+`);
+```
+
+While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.
+
+
+--- FILE: typescript.md (Typescript) ---
+
+# TypeScript Reference
+
+DOThtml is built with TypeScript from the ground up, providing a first-class developer experience with full type safety and autocompletion.
+
+## Core Interfaces
+
+DOThtml exports several interfaces that you can use to type your application:
+
+- `DotComponent<P, R>`: The base class for components, where `P` is the type of props and `R` is the type of refs.
+- `IDotCore`: The type of the `dot` object passed to the `build` method.
+- `IReactive<T>`: The base interface for reactive values (Signals and Bindings).
+- `ISignal<T>`: A reactive value that can be updated.
+
+## Type-Safe Props and Refs
+
+By providing generic arguments to `DotComponent`, you get full type safety for `this.props` and `this.refs` within your component.
+
+```typescript
+interface MyProps {
+    title: string;
+}
+
+interface MyRefs {
+    myInput: HTMLInputElement;
+}
+
+@dot.component
+class MyComponent extends DotComponent<MyProps, MyRefs> {
+    build(dot) {
+        return dot.div(
+            dot.h1(this.props.title),
+            dot.input({ ref: "myInput" })
+        );
+    }
+
+    mounted() {
+        this.refs.myInput.focus();
+    }
+}
+```
+
+
+--- FILE: use-cases.md (Use Cases) ---
+
+# Use Cases
+
+DOThtml is uniquely suited for scenarios where you need modern UI capabilities without the overhead or architectural constraints of a traditional framework.
+
+*   **Game Engines**: Build your HUD, menus, and inventory systems in DOThtml while your engine handles the high-performance canvas rendering.
+*   **Legacy System Modernization**: Add modern, reactive components to jQuery, PHP, or Rails sites without a full rewrite.
+*   **Embedded Widgets & SaaS Snippets**: Build chat bots, feedback tools, or "Buy Now" buttons that are safe to embed on any website thanks to Shadow DOM isolation.
+*   **Browser Extensions**: Create high-performance, low-footprint UIs for the web's most resource-constrained environments.
+*   **Multi-Window Applications**: Build professional-grade tools (editors, dashboards, control panels) that span multiple windows with shared state and consistent styling.
+*   **IoT & Embedded Interfaces**: Build lightweight, reactive configuration portals for devices with limited CPU and memory.

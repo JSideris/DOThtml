@@ -1,5 +1,6 @@
 import { dot, DotComponent, Priority } from "dothtml";
 import { DOTHTML_COMPRESSED_SIZE } from "../../../../generated/size";
+import { BENCHMARK_DATA } from "../../../../generated/benchmarks";
 
 @dot.component
 export default class PerformanceSection extends DotComponent {
@@ -175,6 +176,14 @@ export default class PerformanceSection extends DotComponent {
 	}
 
 	build() {
+		const appendData = BENCHMARK_DATA.APPEND_1000;
+		const styleData = BENCHMARK_DATA.BULK_STYLE;
+
+		const appendMax = Math.max(appendData.DOTHTML, appendData.REACT, appendData.SVELTE, appendData.VUE);
+		const styleMax = Math.max(styleData.DOTHTML, styleData.REACT, styleData.SVELTE, styleData.VUE);
+
+		const appendFasterThanReact = Math.round(appendData.REACT / appendData.DOTHTML);
+
 		return dot.section({ class: "performance-section" },
 			dot.div({ class: "title-group" },
 				dot.h2({ class: "title" }, "Built for Speed"),
@@ -185,29 +194,29 @@ export default class PerformanceSection extends DotComponent {
 				dot.div({ class: "stat-card" },
 					dot.div({ class: "stat-header" },
 						dot.span({ class: "stat-label" }, "Append 1,000 Rows"),
-						dot.span({ class: "stat-value" }, "7.39ms")
+						dot.span({ class: "stat-value" }, `${appendData.DOTHTML}ms`)
 					),
 					dot.div({ class: "bar-container" },
-						this.renderBar("DOThtml", 7.39, 75.97, false),
-						this.renderBar("React", 75.97, 75.97, true),
-						this.renderBar("Svelte", 53.45, 75.97, true),
-						this.renderBar("Vue", 54.02, 75.97, true)
+						this.renderBar("DOThtml", appendData.DOTHTML, appendMax, false),
+						this.renderBar("React", appendData.REACT, appendMax, true),
+						this.renderBar("Svelte", appendData.SVELTE, appendMax, true),
+						this.renderBar("Vue", appendData.VUE, appendMax, true)
 					),
 					dot.p({ style: "font-size: 14px; color: var(--text-dim); margin-top: 10px;" }, 
-						"DOThtml is 10x faster than React when appending new data to an existing list."
+						`DOThtml is ${appendFasterThanReact}x faster than React when appending new data to an existing list.`
 					)
 				),
 				// Bulk Style Update Card
 				dot.div({ class: "stat-card" },
 					dot.div({ class: "stat-header" },
 						dot.span({ class: "stat-label" }, "Bulk Style Update"),
-						dot.span({ class: "stat-value" }, "0.15ms")
+						dot.span({ class: "stat-value" }, `${styleData.DOTHTML}ms`)
 					),
 					dot.div({ class: "bar-container" },
-						this.renderBar("DOThtml", 0.15, 0.33, false),
-						this.renderBar("React", 0.33, 0.33, true),
-						this.renderBar("Svelte", 0.23, 0.33, true),
-						this.renderBar("Vue", 0.22, 0.33, true)
+						this.renderBar("DOThtml", styleData.DOTHTML, styleMax, false),
+						this.renderBar("React", styleData.REACT, styleMax, true),
+						this.renderBar("Svelte", styleData.SVELTE, styleMax, true),
+						this.renderBar("Vue", styleData.VUE, styleMax, true)
 					),
 					dot.p({ style: "font-size: 14px; color: var(--text-dim); margin-top: 10px;" }, 
 						"Granular reactivity allows DOThtml to update styles with zero overhead."

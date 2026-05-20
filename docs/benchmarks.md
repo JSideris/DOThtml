@@ -8,13 +8,13 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | 7.92 ms | 7.95 ms | 7.18 ms | **6.35 ms** |
-| **Create 10,000 rows** | 726.30 ms | 685.80 ms | 521.00 ms | **529.70 ms** |
-| **Append 1,000 rows** | **7.01 ms** | 73.50 ms | 56.89 ms | 51.43 ms |
-| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
-| **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
-| **Clear** | 1.44 ms | 1.44 ms | **1.44 ms** | 1.43 ms |
-| **Bulk Style Update** | **0.15 ms** | 0.38 ms | 0.23 ms | 0.21 ms |
+| **Create 1,000 rows** | %%BENCH_CREATE_1000_DOTHTML%% | %%BENCH_CREATE_1000_REACT%% | %%BENCH_CREATE_1000_VUE%% | **%%BENCH_CREATE_1000_SVELTE%%** |
+| **Create 10,000 rows** | %%BENCH_CREATE_10000_DOTHTML%% | %%BENCH_CREATE_10000_REACT%% | %%BENCH_CREATE_10000_VUE%% | **%%BENCH_CREATE_10000_SVELTE%%** |
+| **Append 1,000 rows** | **%%BENCH_APPEND_1000_DOTHTML%%** | %%BENCH_APPEND_1000_REACT%% | %%BENCH_APPEND_1000_VUE%% | %%BENCH_APPEND_1000_SVELTE%% |
+| **Update every 10th row** | **%%BENCH_UPDATE_10TH_DOTHTML%%** | **%%BENCH_UPDATE_10TH_REACT%%** | **%%BENCH_UPDATE_10TH_VUE%%** | **%%BENCH_UPDATE_10TH_SVELTE%%** |
+| **Swap Rows** | **%%BENCH_SWAP_ROWS_DOTHTML%%** | **%%BENCH_SWAP_ROWS_REACT%%** | **%%BENCH_SWAP_ROWS_VUE%%** | **%%BENCH_SWAP_ROWS_SVELTE%%** |
+| **Clear** | %%BENCH_CLEAR_DOTHTML%% | %%BENCH_CLEAR_REACT%% | **%%BENCH_CLEAR_VUE%%** | %%BENCH_CLEAR_SVELTE%% |
+| **Bulk Style Update** | **%%BENCH_BULK_STYLE_DOTHTML%%** | %%BENCH_BULK_STYLE_REACT%% | %%BENCH_BULK_STYLE_VUE%% | %%BENCH_BULK_STYLE_SVELTE%% |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -22,7 +22,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **19.5 kB**
+- **DOThtml**: **%%DOTHTML_COMPRESSED_SIZE%% kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -41,7 +41,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **19.5 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **%%DOTHTML_COMPRESSED_SIZE%% kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
