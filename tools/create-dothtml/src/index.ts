@@ -66,7 +66,9 @@ export async function cli(args: string[]) {
 	console.log(`\nCreating a new DOThtml app in ${cc.fgBrightBlue}${targetDir}${cc.reset}...`);
 
 	// Template selection (default to TS)
-	const isJs = args.slice(startIndex).includes("--js");
+	const argsList = args.slice(startIndex);
+	const isJs = argsList.includes("--js");
+	const noLint = argsList.includes("--no-lint");
 	const template = isJs ? "vanilla-js" : "vanilla-ts";
 	
 	const currentDir = getDirname();
@@ -99,7 +101,26 @@ export async function cli(args: string[]) {
 			if (fs.existsSync(filePath)) {
 				let content = fs.readFileSync(filePath, "utf-8");
 				content = content.replace(/{{name}}/g, projectName);
+
+				if (file === "package.json" && noLint) {
+					const pkg = JSON.parse(content);
+					delete pkg.scripts.lint;
+					if (pkg.devDependencies) {
+						delete pkg.devDependencies.eslint;
+						delete pkg.devDependencies["@eslint/js"];
+						delete pkg.devDependencies["typescript-eslint"];
+					}
+					content = JSON.stringify(pkg, null, 2);
+				}
+
 				fs.writeFileSync(filePath, content);
+			}
+		}
+
+		if (noLint) {
+			const eslintConfigPath = path.join(targetDir, "eslint.config.js");
+			if (fs.existsSync(eslintConfigPath)) {
+				fs.unlinkSync(eslintConfigPath);
 			}
 		}
 
@@ -111,6 +132,12 @@ export async function cli(args: string[]) {
 		console.log(`    Starts the development server.`);
 		console.log(`\n  ${cc.fgBrightBlue}npm run build${cc.reset}`);
 		console.log(`    Bundles the app into static files for production.`);
+
+		if (!noLint) {
+			console.log(`\n  ${cc.fgBrightBlue}npm run lint${cc.reset}`);
+			console.log(`    Checks the code for potential errors.`);
+		}
+
 		console.log(`\nWe suggest that you begin by typing:`);
 		console.log(`\n  ${cc.fgBrightBlue}cd${cc.reset} ${projectName}`);
 		console.log(`  ${cc.fgBrightBlue}npm install${cc.reset}`);
@@ -127,8 +154,9 @@ function printUsage() {
 	console.log(`${cc.bright}USAGE${cc.reset}`);
 	console.log(`  npx create-dothtml ${cc.fgBrightWhite}<project-name>${cc.reset} [options]\n`);
 	console.log(`${cc.bright}OPTIONS${cc.reset}`);
-	console.log(`  --js    Use JavaScript instead of TypeScript (default)`);
-	console.log(`  --help  Show this help message\n`);
+	console.log(`  --js       Use JavaScript instead of TypeScript (default)`);
+	console.log(`  --no-lint  Skip adding ESLint to the project`);
+	console.log(`  --help     Show this help message\n`);
 }
 
 function printError(msg: string) {
