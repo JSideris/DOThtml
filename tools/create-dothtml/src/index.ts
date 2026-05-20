@@ -130,6 +130,8 @@ export async function cli(args: string[]) {
 		console.log(`    Installs the dependencies.`);
 		console.log(`\n  ${cc.fgBrightBlue}npm run dev${cc.reset}`);
 		console.log(`    Starts the development server.`);
+		console.log(`\n  ${cc.fgBrightBlue}npm test${cc.reset}`);
+		console.log(`    Runs the test suite using Vitest.`);
 		console.log(`\n  ${cc.fgBrightBlue}npm run build${cc.reset}`);
 		console.log(`    Bundles the app into static files for production.`);
 
