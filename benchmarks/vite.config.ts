@@ -24,7 +24,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Ensure we use the local build of dothtml
-      'dothtml': resolve(__dirname, '../dist/index.js'),
+      'dothtml': resolve(__dirname, '../packages/dothtml/dist/index.js'),
       'vue': 'vue/dist/vue.esm-bundler.js',
     },
   },

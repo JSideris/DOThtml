@@ -15,7 +15,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'dothtml': path.resolve(__dirname, '../src/index.ts'), // Pointing to the source of dothtml if it's in the same repo, or just let it resolve from node_modules if not.
+			'dothtml': path.resolve(__dirname, '../packages/dothtml/src/index.ts'), // Pointing to the source of dothtml if it's in the same repo, or just let it resolve from node_modules if not.
 		},
 	},
 	server: {
