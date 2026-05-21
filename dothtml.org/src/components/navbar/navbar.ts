@@ -4,17 +4,14 @@ import SmallLogo from "../small-logo/small-logo";
 
 @dot.component
 export default class Navbar extends DotComponent {
-	private currentPath = dot.state(window.location.hash || "#/");
+	private currentPath = (dot as any).currentPath;
 
 	constructor() {
 		super();
-		window.addEventListener("hashchange", () => {
-			this.currentPath.value = window.location.hash || "#/";
-		});
 	}
 
 	navigate(path: string) {
-		window.location.hash = `#/${path}`;
+		(dot as any).navigate("/" + path);
 	}
 
 	stylize(s: any) {
@@ -57,19 +54,19 @@ export default class Navbar extends DotComponent {
 				dot.div({ class: "nav-links" },
 					dot.mount(new NavBtn({ 
 						text: "Home", 
-						active: this.currentPath.bindAs(p => p === "#/" || p === "")
+						active: dot.computed(() => this.currentPath.value === "/" && !(dot as any).currentHash.value)
 					})).on("click", () => this.navigate("")),
 					dot.mount(new NavBtn({ 
 						text: "Docs", 
-						active: this.currentPath.bindAs(p => p.startsWith("#/docs"))
+						active: this.currentPath.bindAs(p => p.startsWith("/docs"))
 					})).on("click", () => this.navigate("docs")),
 					dot.mount(new NavBtn({ 
 						text: "Examples",
-						active: this.currentPath.bindAs(p => p.includes("#examples"))
+						active: (dot as any).currentHash.bindAs(h => h === "#examples")
 					})).on("click", () => (dot as any).navigate("/#examples")),
 					dot.mount(new NavBtn({ 
 						text: "Blog",
-						active: this.currentPath.bindAs(p => p === "#/blog")
+						active: this.currentPath.bindAs(p => p === "/blog")
 					})).on("click", () => this.navigate("blog")),
 					dot.mount(new NavBtn({ text: "🌐" }))
 				)
