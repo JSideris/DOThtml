@@ -50,11 +50,22 @@ export default class Docs extends DotComponent<DocsProps> {
 			.flexShrink(0)
 			.position("sticky")
 			.topPx(100)
+			.maxHeight("calc(100vh - 140px)")
+			.overflowY("auto")
 			.height("fit-content")
 			.paddingPx(20)
 			.backgroundColor("rgba(255, 255, 255, 0.02)")
 			.borderRadiusPx(12)
 			.border("1px solid rgba(255, 255, 255, 0.05)")
+		).class("sidebar::-webkit-scrollbar", sc => sc
+			.widthPx(6)
+		).class("sidebar::-webkit-scrollbar-track", tr => tr
+			.backgroundColor("transparent")
+		).class("sidebar::-webkit-scrollbar-thumb", th => th
+			.backgroundColor("rgba(255, 255, 255, 0.1)")
+			.borderRadiusPx(3)
+		).class("sidebar::-webkit-scrollbar-thumb:hover", th => th
+			.backgroundColor("rgba(255, 255, 255, 0.2)")
 		).class("sidebar h3", h => h
 			.fontSizePx(18)
 			.marginBottomPx(20)
@@ -116,6 +127,7 @@ export default class Docs extends DotComponent<DocsProps> {
 			).class("sidebar", si => si
 				.widthP(100)
 				.position("static")
+				.maxHeight("none")
 			)
 		);
 	}
