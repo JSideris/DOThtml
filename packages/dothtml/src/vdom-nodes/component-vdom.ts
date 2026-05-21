@@ -596,7 +596,7 @@ export class ComponentVdom extends Vdom{
 		}
 		this.disposables = [];
 
-		(this.component._._meta as any).isRendered = false;
+		delete (this.component._ as any)._meta;
 		
 		pushComponent(this);
 		try {

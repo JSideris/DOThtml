@@ -66,6 +66,41 @@ export default class WindowWrapper implements IDotWindowWrapper{
 			throw new Error("Popup window could not be opened.");
 		}
 
+		this.setupDocument();
+
+		this.isOpen = true;
+
+		if(this.tether){
+			WindowWrapper.tetheredWindows.add(this);
+			if(WindowWrapper.tetheredWindows.size === 1){
+				window.addEventListener("pagehide", WindowWrapper.closeAllTethered);
+				window.addEventListener("beforeunload", WindowWrapper.closeAllTethered);
+				window.addEventListener("unload", WindowWrapper.closeAllTethered);
+			}
+		}
+
+		this.window.addEventListener("unload", () => {
+			if (this.isOpen) {
+				setTimeout(() => {
+					if (this.window && !this.window.closed) {
+						this.setupDocument();
+					} else {
+						this.isOpen = false;
+						if (this.tether) {
+							WindowWrapper.tetheredWindows.delete(this);
+						}
+					}
+				}, 100);
+			}
+		});
+	}
+
+	private setupDocument(){
+		if(this._vdom){
+			this._vdom._unrender();
+			this._vdom = null;
+		}
+
 		this.document = this.window.document;
 		this.document["_dotId"] = `${documentId++}`;
 
@@ -88,24 +123,6 @@ export default class WindowWrapper implements IDotWindowWrapper{
 		}
 
 		this._vdom = dot(body, this.window).mount(this.root) as unknown as ContainerVdom;
-
-		this.isOpen = true;
-
-		if(this.tether){
-			WindowWrapper.tetheredWindows.add(this);
-			if(WindowWrapper.tetheredWindows.size === 1){
-				window.addEventListener("pagehide", WindowWrapper.closeAllTethered);
-				window.addEventListener("beforeunload", WindowWrapper.closeAllTethered);
-				window.addEventListener("unload", WindowWrapper.closeAllTethered);
-			}
-		}
-
-		this.window.addEventListener("beforeunload", () => {
-			this.isOpen = false;
-			if(this.tether){
-				WindowWrapper.tetheredWindows.delete(this);
-			}
-		});
 
 		// Attach event listeners
 		for(const {name, callback} of this.eventListeners){

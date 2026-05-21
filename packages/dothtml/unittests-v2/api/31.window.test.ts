@@ -17,7 +17,8 @@ describe("Window Management.", () => {
 			close: jest.fn(),
 			addEventListener: jest.fn(),
 			removeEventListener: jest.fn(),
-			dispatchEvent: jest.fn()
+			dispatchEvent: jest.fn(),
+			closed: false
 		};
 		// JSDOM's window.open is a bit limited, so we mock it.
 		window.open = jest.fn().mockReturnValue(mockWindow);
@@ -50,20 +51,25 @@ describe("Window Management.", () => {
 	});
 
 	test("Window isOpen updates when child window is closed manually.", async () => {
+		jest.useFakeTimers();
 		const myWindow = dot.window({
 			content: { build: (d: any) => d.div("Hello") }
 		});
 		await myWindow.open();
 		
-		// Find the beforeunload handler attached to the mock window
-		const beforeUnloadCall = (mockWindow.addEventListener as jest.Mock).mock.calls.find(call => call[0] === "beforeunload");
-		expect(beforeUnloadCall).toBeDefined();
-		const beforeUnloadHandler = beforeUnloadCall[1];
+		// Find the unload handler attached to the mock window
+		const unloadCall = (mockWindow.addEventListener as jest.Mock).mock.calls.find(call => call[0] === "unload");
+		expect(unloadCall).toBeDefined();
+		const unloadHandler = unloadCall[1];
 		
 		// Simulate child window closing
-		beforeUnloadHandler();
+		mockWindow.closed = true;
+		unloadHandler();
+
+		jest.advanceTimersByTime(100);
 
 		expect(myWindow.isOpen).toBe(false);
+		jest.useRealTimers();
 	});
 
 	test("tether: true closes child when parent unloads.", async () => {
@@ -122,5 +128,51 @@ describe("Window Management.", () => {
 
 		// If the bug exists, the body might have 2 children now
 		expect(mockWindow.document.body.children.length).toBe(1);
+	});
+
+	test("Popup is rerendered on refresh.", async () => {
+		jest.useFakeTimers();
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") }
+		});
+		await myWindow.open();
+
+		// Find the unload handler
+		const unloadCall = (mockWindow.addEventListener as jest.Mock).mock.calls.find(call => call[0] === "unload");
+		expect(unloadCall).toBeDefined();
+		const unloadHandler = unloadCall[1];
+
+		// Simulate refresh (unload fired, but window not closed)
+		mockWindow.closed = false;
+		unloadHandler();
+
+		// Fast-forward the timeout
+		jest.advanceTimersByTime(100);
+
+		// Verify setupDocument was called again (document.write should be called twice total)
+		expect(mockWindow.document.write).toHaveBeenCalledTimes(2);
+		expect(myWindow.isOpen).toBe(true);
+		
+		jest.useRealTimers();
+	});
+
+	test("Popup isOpen becomes false when closed.", async () => {
+		jest.useFakeTimers();
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") }
+		});
+		await myWindow.open();
+
+		const unloadCall = (mockWindow.addEventListener as jest.Mock).mock.calls.find(call => call[0] === "unload");
+		const unloadHandler = unloadCall[1];
+
+		// Simulate close
+		mockWindow.closed = true;
+		unloadHandler();
+
+		jest.advanceTimersByTime(100);
+
+		expect(myWindow.isOpen).toBe(false);
+		jest.useRealTimers();
 	});
 });
