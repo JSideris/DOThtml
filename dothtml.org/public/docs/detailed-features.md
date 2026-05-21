@@ -46,6 +46,7 @@ dot.flushSync();
 
 ## Other Advanced Features
 
+- **Built-in VDOM Transitions**: Declarative entry and exit animations for elements and components with async lifecycle support.
 - **Fluent Style Builder**: A type-safe API for building inline styles with native reactivity and automatic unit formatting.
 - **CSS Variables**: Built-in support for custom properties to enable high-performance theme updates.
 - **Style Batching**: Automatic grouping of style updates via the scheduler to minimize layout thrashing.

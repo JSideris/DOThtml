@@ -194,6 +194,51 @@ function promote(vdom: Vdom): DotChain {
 	return this;
 };
 
+(Vdom.prototype as any).onEnter = function(callback: (el: HTMLElement)=>void) {
+	let lastChild = this._getLastChild();
+	if (lastChild) {
+		lastChild._onEnterHook = callback;
+		if (lastChild._isRendered) {
+			const nodes = lastChild._getNodes();
+			const el = nodes.find(n => n instanceof HTMLElement) as HTMLElement;
+			if (el) callback(el);
+		}
+	}
+	return this;
+};
+
+(Vdom.prototype as any).onLeave = function(callback: (el: HTMLElement)=>Promise<void>|void) {
+	let lastChild = this._getLastChild();
+	if (lastChild) {
+		lastChild._onLeaveHook = callback;
+	}
+	return this;
+};
+
+(Vdom.prototype as any).fade = function(duration: number = 300) {
+	return this.onEnter((el: HTMLElement) => {
+		el.animate([{ opacity: 0 }, { opacity: 1 }], { duration });
+	}).onLeave(async (el: HTMLElement) => {
+		const anim = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration });
+		await anim.finished;
+	});
+};
+
+(Vdom.prototype as any).slide = function(duration: number = 300) {
+	return this.onEnter((el: HTMLElement) => {
+		el.animate([
+			{ height: '0', opacity: 0, overflow: 'hidden' },
+			{ height: el.scrollHeight + 'px', opacity: 1, overflow: 'hidden' }
+		], { duration });
+	}).onLeave(async (el: HTMLElement) => {
+		const anim = el.animate([
+			{ height: el.scrollHeight + 'px', opacity: 1, overflow: 'hidden' },
+			{ height: '0', opacity: 0, overflow: 'hidden' }
+		], { duration });
+		await anim.finished;
+	});
+};
+
 for (let i = 0; i < allTags.length; i++) {
 	const tag = allTags[i];
 	(Vdom.prototype as any)[tag] = function(...args: any[]) {

@@ -116,6 +116,28 @@ static props = {
 - `built()`: Called every time the `build()` function completes (including re-renders).
 - `unmounting()`: Called before the component is removed from the DOM. Always clean up global listeners here.
 - `unmounted()`: Called after the component is removed from the DOM.
+- `onEnter()`: Called after the component's host element is added to the DOM. This is the ideal place to trigger entry animations.
+- `onLeave()`: Called before the component is removed from the DOM. If this hook returns a `Promise`, the VDOM engine will wait for the promise to resolve before actually removing the element. This is perfect for exit animations.
+
+```javascript
+@dot.component
+class MyModal extends DotComponent {
+    onEnter() {
+        // Simple entry animation using Web Animations API
+        this.el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    }
+
+    async onLeave() {
+        // Delay removal until the fade-out animation finishes
+        const anim = this.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300 });
+        await anim.finished;
+    }
+
+    build(dot) {
+        return dot.div("I am a modal");
+    }
+}
+```
 
 ## Custom Events
 

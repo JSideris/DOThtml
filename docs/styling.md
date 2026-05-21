@@ -214,6 +214,46 @@ For multi-step animations:
 )
 ```
 
+## Transitions and Animations
+
+DOThtml provides built-in support for VDOM transitions, allowing elements to animate smoothly when they enter or leave the DOM (e.g., inside `.when()` or `.each()` blocks).
+
+### High-level Helpers
+
+For common use cases, DOThtml provides fluent helpers that automatically handle entry and exit animations using the native Web Animations API.
+
+- **`.fade(durationMs)`**: Fades the element in and out by animating opacity.
+- **`.slide(durationMs)`**: Slides the element in and out by animating height and opacity.
+
+```javascript
+dot.div()
+  .when(show, 
+    dot.div("I'm fading!").fade(500)
+  );
+```
+
+These helpers are hardware-accelerated and do not require any external CSS.
+
+### Custom Transitions
+
+You can define custom transition logic using the `.onEnter()` and `.onLeave()` fluent methods.
+
+```javascript
+dot.div()
+  .when(show, 
+    dot.div("Custom Transition")
+      .onEnter(el => {
+        el.animate([{ transform: 'translateX(-100%)' }, { transform: 'translateX(0)' }], { duration: 300 });
+      })
+      .onLeave(async el => {
+        const anim = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(100%)' }], { duration: 300 });
+        await anim.finished;
+      })
+  );
+```
+
+If `.onLeave()` returns a `Promise`, the VDOM engine will wait for it to resolve before removing the element from the document.
+
 ## Container Queries
 
 Container queries let a component respond to its **parent's** size instead of the viewport. Set `container-type` on a host, then use `.container()`:

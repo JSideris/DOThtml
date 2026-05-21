@@ -3,6 +3,8 @@ import { IDotCore } from "dothtml-interfaces";
 export abstract class Vdom{
 
 	_dot: IDotCore;
+	_onEnterHook?: (el: HTMLElement) => void;
+	_onLeaveHook?: (el: HTMLElement) => Promise<void> | void;
 
 	constructor(dot?: IDotCore){
 		this._dot = dot;
@@ -12,6 +14,16 @@ export abstract class Vdom{
 
 	abstract _render(target: HTMLElement);
 	abstract _unrender();
+
+	async _unrenderAsync() {
+		const nodes = this._getNodes();
+		const el = nodes.find(n => n instanceof HTMLElement) as HTMLElement;
+		if (this._onLeaveHook && el) {
+			await this._onLeaveHook(el);
+		}
+		this._unrender();
+	}
+
 	abstract _getNodes(): Node[];
 	abstract _getLastChild(): Vdom | null;
 
@@ -88,5 +100,7 @@ export abstract class Vdom{
 	attr(A: string, c: any): this { return null as any; }
 	style(c: any): this { return null as any; }
 	on(event: string, callback: (e: any)=>void): this { return null as any; }
+	onEnter(callback: (el: HTMLElement)=>void): this { return null as any; }
+	onLeave(callback: (el: HTMLElement)=>Promise<void>|void): this { return null as any; }
 	[key: string]: any;
 }

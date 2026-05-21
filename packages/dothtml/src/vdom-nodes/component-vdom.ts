@@ -535,6 +535,14 @@ export class ComponentVdom extends Vdom{
 		} finally {
 			popComponent();
 		}
+
+		if (this._onEnterHook) {
+			this._onEnterHook(this.shadowEl);
+		}
+
+		if (this.component.onEnter) {
+			this.component.onEnter();
+		}
 	}
 
 	_unrender() {
@@ -610,6 +618,16 @@ export class ComponentVdom extends Vdom{
 
 	_getLastChild(): Vdom | null {
 		return this;
+	}
+
+	async _unrenderAsync() {
+		if (this._onLeaveHook && this.shadowEl) {
+			await this._onLeaveHook(this.shadowEl);
+		}
+		if (this.component.onLeave) {
+			await this.component.onLeave();
+		}
+		this._unrender();
 	}
 
 	_moveTo(target: HTMLElement){

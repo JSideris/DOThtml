@@ -78,6 +78,17 @@ export default interface IDotComponent/*<TProps extends Array<string> = [], TEve
     unmounted?(): void;
 
 	/**
+	 * An optional function called after the component has entered the DOM.
+	 */
+	onEnter?(): void;
+
+	/**
+	 * An optional function called before the component leaves the DOM.
+	 * If it returns a Promise, the VDOM engine will wait for it to resolve before removing the component.
+	 */
+	onLeave?(): Promise<void> | void;
+
+	/**
 	 * A function that returns a string containing CSS rules to be applied to all instances of the component.
 	 * It will only be called exactly once per component. We use a function so that you can return a potentially 
 	 * large string containing CSS without introducing a memory leak. The reason it's not static is so that 

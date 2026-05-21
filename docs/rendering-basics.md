@@ -80,6 +80,24 @@ dot.div(
 
 You can nest as deeply as needed.
 
+## Fluent Lifecycle Hooks
+
+DOThtml allows you to attach lifecycle hooks directly to elements using fluent chaining. This is particularly useful for triggering animations when elements are added or removed via `.when()` or `.each()`.
+
+- **`.onEnter(callback)`**: Executes when the element is added to the DOM.
+- **`.onLeave(callback)`**: Executes when the element is about to be removed. Supports returning a `Promise` to delay removal.
+
+```javascript
+dot.div()
+  .when(show, 
+    dot.p("I'm entering and leaving!")
+      .onEnter(el => console.log("Entered:", el))
+      .onLeave(el => console.log("Leaving:", el))
+  );
+```
+
+For common animations, see the **[Transitions & Animations](./styling.md#transitions-and-animations)** section in the styling documentation.
+
 ## HTML vs. Text
 
 By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper.

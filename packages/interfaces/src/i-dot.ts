@@ -90,6 +90,11 @@ export interface IDotDocument {
 	class(name: string, condition?: any): this;
 	attr(name: string, value: any): this;
 	on(event: string, callback: (e: any) => void): this;
+	onEnter(callback: (el: HTMLElement) => void): this;
+	onLeave(callback: (el: HTMLElement) => Promise<void> | void): this;
+
+	fade(duration?: number): this;
+	slide(duration?: number): this;
 
 	/**
 	 * Get the last HTML element added to the targeted document.

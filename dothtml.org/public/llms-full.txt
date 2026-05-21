@@ -30,7 +30,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **19.8 kB**
+- **DOThtml**: **20.2 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -49,7 +49,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **19.8 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **20.2 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -228,6 +228,28 @@ static props = {
 - `built()`: Called every time the `build()` function completes (including re-renders).
 - `unmounting()`: Called before the component is removed from the DOM. Always clean up global listeners here.
 - `unmounted()`: Called after the component is removed from the DOM.
+- `onEnter()`: Called after the component's host element is added to the DOM. This is the ideal place to trigger entry animations.
+- `onLeave()`: Called before the component is removed from the DOM. If this hook returns a `Promise`, the VDOM engine will wait for the promise to resolve before actually removing the element. This is perfect for exit animations.
+
+```javascript
+@dot.component
+class MyModal extends DotComponent {
+    onEnter() {
+        // Simple entry animation using Web Animations API
+        this.el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    }
+
+    async onLeave() {
+        // Delay removal until the fade-out animation finishes
+        const anim = this.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300 });
+        await anim.finished;
+    }
+
+    build(dot) {
+        return dot.div("I am a modal");
+    }
+}
+```
 
 ## Custom Events
 
@@ -482,6 +504,7 @@ dot.flushSync();
 
 ## Other Advanced Features
 
+- **Built-in VDOM Transitions**: Declarative entry and exit animations for elements and components with async lifecycle support.
 - **Fluent Style Builder**: A type-safe API for building inline styles with native reactivity and automatic unit formatting.
 - **CSS Variables**: Built-in support for custom properties to enable high-performance theme updates.
 - **Style Batching**: Automatic grouping of style updates via the scheduler to minimize layout thrashing.
@@ -1016,6 +1039,24 @@ dot.div(
 ```
 
 You can nest as deeply as needed.
+
+## Fluent Lifecycle Hooks
+
+DOThtml allows you to attach lifecycle hooks directly to elements using fluent chaining. This is particularly useful for triggering animations when elements are added or removed via `.when()` or `.each()`.
+
+- **`.onEnter(callback)`**: Executes when the element is added to the DOM.
+- **`.onLeave(callback)`**: Executes when the element is about to be removed. Supports returning a `Promise` to delay removal.
+
+```javascript
+dot.div()
+  .when(show, 
+    dot.p("I'm entering and leaving!")
+      .onEnter(el => console.log("Entered:", el))
+      .onLeave(el => console.log("Leaving:", el))
+  );
+```
+
+For common animations, see the **[Transitions & Animations](./styling.md#transitions-and-animations)** section in the styling documentation.
 
 ## HTML vs. Text
 
@@ -1717,6 +1758,46 @@ For multi-step animations:
   .at("100%", s => s.transform({ translateY: 0 }))
 )
 ```
+
+## Transitions and Animations
+
+DOThtml provides built-in support for VDOM transitions, allowing elements to animate smoothly when they enter or leave the DOM (e.g., inside `.when()` or `.each()` blocks).
+
+### High-level Helpers
+
+For common use cases, DOThtml provides fluent helpers that automatically handle entry and exit animations using the native Web Animations API.
+
+- **`.fade(durationMs)`**: Fades the element in and out by animating opacity.
+- **`.slide(durationMs)`**: Slides the element in and out by animating height and opacity.
+
+```javascript
+dot.div()
+  .when(show, 
+    dot.div("I'm fading!").fade(500)
+  );
+```
+
+These helpers are hardware-accelerated and do not require any external CSS.
+
+### Custom Transitions
+
+You can define custom transition logic using the `.onEnter()` and `.onLeave()` fluent methods.
+
+```javascript
+dot.div()
+  .when(show, 
+    dot.div("Custom Transition")
+      .onEnter(el => {
+        el.animate([{ transform: 'translateX(-100%)' }, { transform: 'translateX(0)' }], { duration: 300 });
+      })
+      .onLeave(async el => {
+        const anim = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(100%)' }], { duration: 300 });
+        await anim.finished;
+      })
+  );
+```
+
+If `.onLeave()` returns a `Promise`, the VDOM engine will wait for it to resolve before removing the element from the document.
 
 ## Container Queries
 

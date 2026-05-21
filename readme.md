@@ -23,6 +23,8 @@ Most modern web frameworks are "all or nothing." DOThtml is different. It is a *
 
 Whether you are building a high-performance game, a browser extension, or modernizing a legacy enterprise app, DOThtml stays out of your way while giving you the power of modern web components. Of course, it also works perfectly as a full-scale framework for building entire web applications from scratch.
 
+DOThtml bridges the feature gap with larger frameworks by providing built-in **VDOM Transitions**, allowing for declarative entry and exit animations without manual state management.
+
 ## Performance
 
 DOThtml is engineered for high-performance applications. By bypassing the Virtual DOM and updating elements directly via Signals, it achieves superior performance at scale while maintaining a tiny footprint.
@@ -31,7 +33,7 @@ DOThtml is engineered for high-performance applications. By bypassing the Virtua
 
 | Framework | Render Time | Bundle Size |
 | :--- | :--- | :--- |
-| **DOThtml** | **~660ms** | **19.8kB** |
+| **DOThtml** | **~660ms** | **20.2kB** |
 | React | ~1100ms | ~42kB |
 | Vue | ~680ms | ~33kB |
 | Svelte | ~900ms | ~2kB* |

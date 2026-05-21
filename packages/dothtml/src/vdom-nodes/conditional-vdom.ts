@@ -10,6 +10,8 @@ export class ConditionalVdom extends Vdom{
 	private conditions: Array<ConditionalNodeItem> = []
 	private sealed = false;
 	private renderedIndex = -1;
+	private currentUpdatePromise: Promise<void> | null = null;
+	private nextIndex: number | null = null;
 
 	constructor(dot: IDotCore){
 		super(dot);
@@ -95,6 +97,8 @@ export class ConditionalVdom extends Vdom{
 		if(!this._isRendered) return;
 		this._isRendered = false;
 		this.renderedIndex = -1;
+		this.nextIndex = null;
+		this.currentUpdatePromise = null;
 
 		for(let i = 0; i < this.conditions.length; i++){
 			let C = this.conditions[i]
@@ -122,7 +126,6 @@ export class ConditionalVdom extends Vdom{
 
 	updateConditions(){
 
-		let node = this.conditions[0].startAnchor.parentElement as HTMLElement;
 		let newIndex = -1;
 		for(let c = 0; c < this.conditions.length; c++){
 			let C = this.conditions[c];
@@ -133,22 +136,48 @@ export class ConditionalVdom extends Vdom{
 			}
 		}
 
-		if(newIndex != this.renderedIndex){
-			{ // Remove old render.
-				if(this.renderedIndex != -1){
-					let C = this.conditions[this.renderedIndex];
-					// We don't want to remove the anchors here, just the content between them.
-					// So we call the unrender method on the vNode.
-					C.vNode._unrender();
-				}
-			}
+		if (this.currentUpdatePromise) {
+			this.nextIndex = newIndex;
+			return;
+		}
 
-			{ // Do the new render.
-				this.renderedIndex = newIndex;
-				if(newIndex != -1){
-					let C = this.conditions[newIndex];
-					C.vNode._renderBefore(C.endAnchor);
-				}
+		if(newIndex != this.renderedIndex){
+			this.performUpdate(newIndex);
+		}
+	}
+
+	private async performUpdate(newIndex: number) {
+		const oldIndex = this.renderedIndex;
+		this.renderedIndex = newIndex;
+
+		if(oldIndex != -1){
+			const C = this.conditions[oldIndex];
+			this.currentUpdatePromise = Promise.resolve(C.vNode._unrenderAsync());
+			await this.currentUpdatePromise;
+			this.currentUpdatePromise = null;
+		}
+
+		// Check if we were interrupted during unrender
+		if (this.nextIndex !== null) {
+			const next = this.nextIndex;
+			this.nextIndex = null;
+			if (next !== this.renderedIndex) {
+				this.performUpdate(next);
+				return;
+			}
+		}
+
+		if(this.renderedIndex != -1){
+			const C = this.conditions[this.renderedIndex];
+			C.vNode._renderBefore(C.endAnchor);
+		}
+
+		// Check if we were interrupted during render
+		if (this.nextIndex !== null) {
+			const next = this.nextIndex;
+			this.nextIndex = null;
+			if (next !== this.renderedIndex) {
+				this.performUpdate(next);
 			}
 		}
 	}

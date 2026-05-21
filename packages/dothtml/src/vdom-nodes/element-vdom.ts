@@ -88,6 +88,10 @@ export default class ElementVdom extends Vdom{
 			if (a === "type") continue;
 			this.renderAttr(a, this.attributes[a], this.element);
 		}
+
+		if (this._onEnterHook) {
+			this._onEnterHook(this.element);
+		}
 	}
 
 	_unrender() {
