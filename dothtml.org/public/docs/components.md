@@ -118,6 +118,7 @@ static props = {
 - `unmounted()`: Called after the component is removed from the DOM.
 - `onEnter()`: Called after the component's host element is added to the DOM. This is the ideal place to trigger entry animations.
 - `onLeave()`: Called before the component is removed from the DOM. If this hook returns a `Promise`, the VDOM engine will wait for the promise to resolve before actually removing the element. This is perfect for exit animations.
+- `errorCaught(error)`: Called when an error occurs in a child component. Implementing this hook turns the component into an **[Error Boundary](./error-handling.md)**. It should return a fallback UI to display.
 
 ```javascript
 @dot.component

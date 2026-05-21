@@ -29,5 +29,8 @@ DOThtml provides a unique "Multi-Window Orchestration Layer," allowing you to ma
 ### [Official CLI](./cli.md)
 Start projects in seconds with the official `create-dothtml` CLI, featuring a Vite-powered development environment and built-in component generators.
 
+### [Error Handling & Boundaries](./error-handling.md)
+Prevent application-level crashes with built-in error boundaries and a resilient update scheduler that keeps your app running even when individual components fail.
+
 ### [Performance & Advanced Features](./detailed-features.md)
 DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.

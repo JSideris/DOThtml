@@ -249,9 +249,9 @@ for (let i = 0; i < allTags.length; i++) {
 const makeCoreWrapper = (d, fn)=>{
 	d[fn] = function(){
 		if (allTagsSet.has(fn)) {
-			return createElement(dot, fn, arguments);
+			return createElement(d, fn, arguments);
 		} else {
-			let n = new ContainerVdom(dot);
+			let n = new ContainerVdom(d);
 			n[fn](...arguments);
 			return n;
 		}
@@ -259,7 +259,7 @@ const makeCoreWrapper = (d, fn)=>{
 }
 
 const makeDot = ()=>{
-	const _dot = function(targetSelector, targetWindow: Window = window){
+	const _dot: any = function(targetSelector, targetWindow: Window = window){
 
 		if(targetSelector?.ownerDocument?.defaultView){
 			let el = (targetSelector as HTMLElement);
@@ -268,7 +268,7 @@ const makeDot = ()=>{
 				return node.children;
 			}
 			else{
-				node = new ElementVdom(dot, el.tagName.toLocaleLowerCase());
+				node = new ElementVdom(_dot, el.tagName.toLocaleLowerCase());
 				node.element = el;
 				node.children._parent = node;
 				node.children._isRendered = true;
@@ -283,6 +283,8 @@ const makeDot = ()=>{
 			throw new Error("Invalid render target.");
 		}
 	}
+
+	_dot.onError = null;
 
 	_dot.state = function<T extends Signal|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Signal<T>{
 		let o = new Signal();
@@ -430,6 +432,14 @@ const makeDot = ()=>{
 	_dot.setSync = (sync: boolean) => {
 		scheduler.setSync(sync);
 	}
+
+	scheduler.onError = (err) => {
+		if (_dot.onError) {
+			_dot.onError(err);
+		} else {
+			console.error("DOThtml Error:", err);
+		}
+	};
 
 	for(let i = 0; i < allTags.length; i++){
 		let E = allTags[i];

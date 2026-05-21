@@ -54,3 +54,4 @@ dot.flushSync();
 - **[Popup Management](./popups.md)**: Manage popup windows and modals directly from your application state.
 - **Polymorphic Components**: Support for components that can render as different HTML elements while preserving logic.
 - **Enhanced Ref System**: Reactive references to elements and components with method proxying and keyed collections.
+- **[Error Handling & Boundaries](./error-handling.md)**: Built-in protection against white-screening with component-level boundaries and a resilient update scheduler.

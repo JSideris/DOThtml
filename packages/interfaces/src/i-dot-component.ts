@@ -102,4 +102,12 @@ export default interface IDotComponent/*<TProps extends Array<string> = [], TEve
 	 * An optional function that allows you to apply styles directly to the component's host element.
 	 */
 	hostStyle?(s: any): void;
+
+	/**
+	 * An optional function that gets called when an error occurs during the component's lifecycle.
+	 * If implemented, the component acts as an error boundary.
+	 * @param error - The error that occurred.
+	 * @returns The DOThtml document to render as a fallback UI.
+	 */
+	errorCaught?(error: any): IDotDocument | void;
 }

@@ -18,6 +18,8 @@ class Scheduler {
 	private isSync: boolean = false;
 	private isSyncing: boolean = false;
 
+	public onError?: (err: any) => void;
+
 	private channel = typeof MessageChannel !== "undefined" ? new MessageChannel() : null;
 
 	constructor() {
@@ -93,11 +95,19 @@ class Scheduler {
 				subscription.isQueued = false;
 
 				if (subscription.active) {
-					const continuation = subscription.update();
-					
-					if (continuation) {
-						subscription.isQueued = true;
-						queue.add(subscription);
+					try {
+						const continuation = subscription.update();
+						
+						if (continuation) {
+							subscription.isQueued = true;
+							queue.add(subscription);
+						}
+					} catch (err) {
+						if (this.onError) {
+							this.onError(err);
+						} else {
+							console.error("Scheduler error:", err);
+						}
 					}
 				}
 
@@ -148,11 +158,19 @@ class Scheduler {
 					for (const subscription of items) {
 						subscription.isQueued = false;
 						if (subscription.active) {
-							const continuation = subscription.update();
-							if (continuation) {
-								subscription.isQueued = true;
-								queue.add(subscription);
-								hasMoreWork = true;
+							try {
+								const continuation = subscription.update();
+								if (continuation) {
+									subscription.isQueued = true;
+									queue.add(subscription);
+									hasMoreWork = true;
+								}
+							} catch (err) {
+								if (this.onError) {
+									this.onError(err);
+								} else {
+									console.error("Scheduler error (sync):", err);
+								}
 							}
 						}
 					}

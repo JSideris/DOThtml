@@ -19,6 +19,7 @@
 - [Styling](https://dothtml.org/docs/styling.md): Fluent, reactive, and high-performance styling system.
 - [Routing](https://dothtml.org/docs/routing.md): Reactive routing with navigation guards and lazy loading.
 - [Popups](https://dothtml.org/docs/popups.md): Multi-window orchestration layer with shared state and style inheritance.
+- [Error Handling](https://dothtml.org/docs/error-handling.md): Component-level error boundaries and global error management.
 - [TypeScript](https://dothtml.org/docs/typescript.md): First-class TypeScript support with full type safety for components, props, and refs.
 
 ## Deep Dives

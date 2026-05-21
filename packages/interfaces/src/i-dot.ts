@@ -351,6 +351,11 @@ export interface IDotCore extends IDotDocument {
 		: new (attrs?: ComponentArgs<TProps, TEvents>) => IDotComponent;
 
 	useStyles(document: Document, styles: Styles): HTMLStyleElement;
+
+	/**
+	 * A global error handler that is called when an error occurs during the rendering or update process.
+	 */
+	onError?: (error: any) => void;
 }
 
 export interface IDotWindowWrapper{

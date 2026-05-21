@@ -11,11 +11,18 @@ import Binding from "../reactivity/binding";
 import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
 import Computed from "../reactivity/computed";
-import { pushComponent, popComponent } from "./component-context";
+import { pushComponent, popComponent, getCurrentComponent } from "./component-context";
 import BaseVStyle from "../v-style-nodes/base-v-style";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import StyleSheetBuilder from "../v-style-nodes/style-sheet-builder";
 import Ref from "../reactivity/ref";
+
+class HandledError extends Error {
+	constructor() {
+		super("Error handled by error boundary.");
+		Object.setPrototypeOf(this, HandledError.prototype);
+	}
+}
 
 let tagId = 0x10000;
 
@@ -36,6 +43,7 @@ export class ComponentVdom extends Vdom{
 	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private slots: Record<string, ContainerVdom> = {};
+	private parentComponent: ComponentVdom | null = null;
 	private updateSubscription = {
 		active: true,
 		update: () => {
@@ -47,6 +55,8 @@ export class ComponentVdom extends Vdom{
 	constructor(dot: IDotCore, component: IDotComponent){
 		super(dot);
 		this.component = component;
+		this.childShadowVdom = new ContainerVdom(dot);
+		this.parentComponent = getCurrentComponent();
 
 		if(component._?._meta){
 			throw new Error("Component has already been added to the VDOM.");
@@ -126,22 +136,65 @@ export class ComponentVdom extends Vdom{
 	}
 
 	init() {
-		this.validateProps();
-
-		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
-		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
-		pushComponent(this);
-		this.isBuilding = true;
 		try {
-			this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
-		} finally {
-			this.isBuilding = false;
-			popComponent();
-		}
-		
-		this.component.built && this.component.built();
+			this.validateProps();
 
-		this.subscribeToProps();
+			// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
+			// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
+			pushComponent(this);
+			this.isBuilding = true;
+			try {
+				this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
+			} finally {
+				this.isBuilding = false;
+				popComponent();
+			}
+			
+			this.component.built && this.component.built();
+
+			this.subscribeToProps();
+		} catch (err) {
+			if (err instanceof HandledError) return;
+			this.handleError(err);
+		}
+	}
+
+	private handleError(err: any) {
+		if (this.component.errorCaught) {
+			try {
+				const fallback = this.component.errorCaught(err);
+				if (fallback) {
+					this.childShadowVdom = new ContainerVdom(this._dot);
+					applyContent(this._dot, this.childShadowVdom as any, fallback);
+
+					if (this.shadowEl) {
+						const shadow = (this.component._._meta as any).shadowRoot;
+						if (shadow) {
+							shadow.innerHTML = ""; // Clear existing content
+							pushComponent(this);
+							try {
+								this.childShadowVdom._render(shadow);
+							} finally {
+								popComponent();
+							}
+						}
+					}
+					throw new HandledError();
+				}
+			} catch (secondErr) {
+				if (secondErr instanceof HandledError) throw secondErr;
+				err = secondErr; // Error in error boundary itself
+			}
+		}
+
+		if (this.parentComponent && (this.parentComponent as any).handleError) {
+			(this.parentComponent as any).handleError(err);
+		} else if ((this._dot as any).onError) {
+			(this._dot as any).onError(err);
+			throw new HandledError();
+		} else {
+			throw err;
+		}
 	}
 
 	private subscribeToProps() {
@@ -165,37 +218,42 @@ export class ComponentVdom extends Vdom{
 	private rebuild() {
 		if (!this.shadowEl) return;
 
-		// Unrender old children
-		this.childShadowVdom._unrender();
-
-		// Dispose of build-time computed signals
-		for (const signal of this.buildComputedSignals) {
-			signal.dispose();
-		}
-		this.buildComputedSignals = [];
-
-		this.validateProps();
-
-		// Re-build
-		pushComponent(this);
-		this.isBuilding = true;
 		try {
-			this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
-		} finally {
-			this.isBuilding = false;
-			popComponent();
-		}
+			// Unrender old children
+			this.childShadowVdom._unrender();
 
-		// Render new children into the existing shadow root
-		const shadow = (this.component._._meta as any).shadowRoot;
-		pushComponent(this);
-		try {
-			this.childShadowVdom._render(shadow);
-		} finally {
-			popComponent();
-		}
+			// Dispose of build-time computed signals
+			for (const signal of this.buildComputedSignals) {
+				signal.dispose();
+			}
+			this.buildComputedSignals = [];
 
-		this.component.built && this.component.built();
+			this.validateProps();
+
+			// Re-build
+			pushComponent(this);
+			this.isBuilding = true;
+			try {
+				this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
+			} finally {
+				this.isBuilding = false;
+				popComponent();
+			}
+
+			// Render new children into the existing shadow root
+			const shadow = (this.component._._meta as any).shadowRoot;
+			pushComponent(this);
+			try {
+				this.childShadowVdom._render(shadow);
+			} finally {
+				popComponent();
+			}
+
+			this.component.built && this.component.built();
+		} catch (err) {
+			if (err instanceof HandledError) return;
+			this.handleError(err);
+		}
 	}
 
 	private validateProps() {
@@ -339,55 +397,60 @@ export class ComponentVdom extends Vdom{
 				cvdom: ComponentVdom;
 
 				_renderComponent(){
-					if(this.cvdom instanceof Vdom){
-						let shadow = this.attachShadow({ mode: 'open' });
-						shadow.adoptedStyleSheets = [...allSharedStylesheets];
-						for(let i = 0; i < allStyleTags.length; i++){
-							shadow.appendChild(allStyleTags[i].cloneNode(true));
-						}
-						(this._component._._meta as any).shadowRoot = shadow;
-
-						if ((this._component.constructor as any)._isDynamicStyle) {
-							const updateDynamicStyle = () => {
-								const builder = new StyleSheetBuilder();
-								if ((this.cvdom._dot as any)._theme) {
-									builder.setTheme((this.cvdom._dot as any)._theme);
-								}
-								const styles = (this._component.stylize as any)(builder);
-								const styleVal = styles instanceof Binding ? styles._get() : (styles instanceof Signal ? styles.value : styles);
-								
-								let finalStyle = styleVal;
-								if (styleVal === builder || (!styleVal && builder.hasRules())) {
-									finalStyle = builder.toString();
-								}
-
-								// For dynamic styles, we'll use a dedicated style tag in the shadow root.
-								let dynamicStyleTag = shadow.getElementById("--dh-dynamic-style") as HTMLStyleElement;
-								if (!dynamicStyleTag) {
-									dynamicStyleTag = document.createElement("style");
-									dynamicStyleTag.id = "--dh-dynamic-style";
-									shadow.appendChild(dynamicStyleTag);
-								}
-								dynamicStyleTag.textContent = finalStyle;
-							};
-
-							const styles = (this._component.stylize as any)(new StyleSheetBuilder());
-							if (styles instanceof Signal || styles instanceof Binding) {
-								const subId = (styles as any).subscribe(updateDynamicStyle);
-								this.cvdom.registerDisposable(() => (styles as any).unsubscribe(subId));
+					try {
+						if(this.cvdom instanceof Vdom){
+							let shadow = this.attachShadow({ mode: 'open' });
+							shadow.adoptedStyleSheets = [...allSharedStylesheets];
+							for(let i = 0; i < allStyleTags.length; i++){
+								shadow.appendChild(allStyleTags[i].cloneNode(true));
 							}
-							updateDynamicStyle();
-						}
+							(this._component._._meta as any).shadowRoot = shadow;
 
-						pushComponent(this.cvdom);
-						try {
-							this.cvdom.childShadowVdom._render(shadow as any);
-						} finally {
-							popComponent();
+							if ((this._component.constructor as any)._isDynamicStyle) {
+								const updateDynamicStyle = () => {
+									const builder = new StyleSheetBuilder();
+									if ((this.cvdom._dot as any)._theme) {
+										builder.setTheme((this.cvdom._dot as any)._theme);
+									}
+									const styles = (this._component.stylize as any)(builder);
+									const styleVal = styles instanceof Binding ? styles._get() : (styles instanceof Signal ? styles.value : styles);
+									
+									let finalStyle = styleVal;
+									if (styleVal === builder || (!styleVal && builder.hasRules())) {
+										finalStyle = builder.toString();
+									}
+
+									// For dynamic styles, we'll use a dedicated style tag in the shadow root.
+									let dynamicStyleTag = shadow.getElementById("--dh-dynamic-style") as HTMLStyleElement;
+									if (!dynamicStyleTag) {
+										dynamicStyleTag = document.createElement("style");
+										dynamicStyleTag.id = "--dh-dynamic-style";
+										shadow.appendChild(dynamicStyleTag);
+									}
+									dynamicStyleTag.textContent = finalStyle;
+								};
+
+								const styles = (this._component.stylize as any)(new StyleSheetBuilder());
+								if (styles instanceof Signal || styles instanceof Binding) {
+									const subId = (styles as any).subscribe(updateDynamicStyle);
+									this.cvdom.registerDisposable(() => (styles as any).unsubscribe(subId));
+								}
+								updateDynamicStyle();
+							}
+
+							pushComponent(this.cvdom);
+							try {
+								this.cvdom.childShadowVdom._render(shadow as any);
+							} finally {
+								popComponent();
+							}
 						}
-					}
-					else{
-						throw new Error("Component build function returned invalid object.");
+						else{
+							throw new Error("Component build function returned invalid object.");
+						}
+					} catch (err) {
+						if (err instanceof HandledError) return;
+						(this.cvdom as any).handleError(err);
 					}
 				}
 			}
@@ -432,116 +495,55 @@ export class ComponentVdom extends Vdom{
 	}
 
 	_render(node: HTMLElement) {
-		if(!this.component._) throw new Error("Invalid component. Ensure components are created through the component factory or through decoration.");
-		if((this.component._ as any)?._meta?.isRendered) throw new Error("Individual component instances cannot be rendered twice at once.");
-		if(!(this.component._ as any)._meta) (this.component._ as any)._meta = {};
-		
-		pushComponent(this);
 		try {
-			this.component.mounting && this.component.mounting();
-		} finally {
-			popComponent();
-		}
-		
-		(this.component._._meta as any).isRendered = true;
-
-		let document = node.ownerDocument;
-
-		// Needs to be run once per component per document.
-		this.setupCustomElement(document);
-
-		this.shadowEl = document.createElement(this.component._._meta.tagName);
-		this.shadowEl["cvdom"] = this;
-		this.shadowEl["component"] = this.component;
-
-		// Render slots into the light DOM
-		pushComponent(this);
-		try {
-			for (const name in this.slots) {
-				this.slots[name]._render(this.shadowEl);
-				this.applySlotAttribute(name);
+			if(!this.component._) throw new Error("Invalid component. Ensure components are created through the component factory or through decoration.");
+			if((this.component._ as any)?._meta?.isRendered) throw new Error("Individual component instances cannot be rendered twice at once.");
+			if(!(this.component._ as any)._meta) (this.component._ as any)._meta = {};
+			
+			pushComponent(this);
+			try {
+				this.component.mounting && this.component.mounting();
+			} finally {
+				popComponent();
 			}
-		} finally {
-			popComponent();
-		}
+			
+			(this.component._._meta as any).isRendered = true;
 
-		if(this.ref){
-			if (typeof this.ref === "function") {
-				this.ref(this.component);
-			} else {
-				this.ref.value = this.component;
+			let document = node.ownerDocument;
+
+			// Needs to be run once per component per document.
+			this.setupCustomElement(document);
+
+			this.shadowEl = document.createElement(this.component._._meta.tagName);
+			this.shadowEl["cvdom"] = this;
+			this.shadowEl.setAttribute("cvdom", "");
+			
+			node.appendChild(this.shadowEl);
+
+			this.shadowEl["component"] = this.component;
+
+			for(let i = 0; i < this.events.length; i++){
+				let e = this.events[i];
+				this.renderEvent(e.name, e.callback, e.modifiers);
 			}
-		}
 
-		// Apply host styles if defined.
-		if ((this.component as any).hostStyle) {
-			const hostStyleBuilder = new BaseVStyle();
-			(this.component as any).hostStyle(hostStyleBuilder);
-			const hostStyleVNode = new StyleVNode(hostStyleBuilder);
-			hostStyleVNode.render(this.shadowEl, document);
-			this.styleVNodes.push(hostStyleVNode);
-		}
-
-		// Sync ghost variables.
-		const cachedStyles = (this.component.constructor as any)._cachedStyles;
-		if (cachedStyles && cachedStyles.ghostVars) {
-			// We need to re-run stylize to get the bindings for THIS instance.
-			const builder = new StyleSheetBuilder();
-			if ((this._dot as any)._theme) {
-				builder.setTheme((this._dot as any)._theme);
+			pushComponent(this);
+			try {
+				this.component.mounted && this.component.mounted();
+			} finally {
+				popComponent();
 			}
-			this.component.stylize && (this.component.stylize as any)(builder);
-			builder.toString(); // Collect ghost variables
-			const instanceGhostVars = builder.getGhostVars();
 
-			for (const gv of instanceGhostVars) {
-				// Register the Computed signal itself for disposal
-				let valToRegister = gv.value;
-				if (valToRegister instanceof Binding) {
-					valToRegister = (valToRegister as any)._source;
-				}
-				if (valToRegister instanceof Computed) {
-					this.registerComputed(valToRegister);
-				}
-
-				const updateSubscription = {
-					active: true,
-					update: () => {
-						if (!this.shadowEl) return;
-						const val = gv.value instanceof Binding ? gv.value._get() : (gv.value as any).value;
-						this.shadowEl.style.setProperty(gv.name, `${val}`);
-					}
-				};
-				const subId = (gv.value as any).subscribe(() => {
-					scheduler.enqueue(updateSubscription as any, Priority.Normal);
-				});
-				this.registerDisposable(() => (gv.value as any).unsubscribe(subId));
-				updateSubscription.update(); // Initial value
+			if (this._onEnterHook) {
+				this._onEnterHook(this.shadowEl);
 			}
-		}
 
-		this.component._.restyle && this.component._.restyle();
-		
-		node.appendChild(this.shadowEl);
-
-		for(let i = 0; i < this.events.length; i++){
-			let e = this.events[i];
-			this.renderEvent(e.name, e.callback, e.modifiers);
-		}
-
-		pushComponent(this);
-		try {
-			this.component.mounted && this.component.mounted();
-		} finally {
-			popComponent();
-		}
-
-		if (this._onEnterHook) {
-			this._onEnterHook(this.shadowEl);
-		}
-
-		if (this.component.onEnter) {
-			this.component.onEnter();
+			if (this.component.onEnter) {
+				this.component.onEnter();
+			}
+		} catch (err) {
+			if (err instanceof HandledError) return;
+			this.handleError(err);
 		}
 	}
 
