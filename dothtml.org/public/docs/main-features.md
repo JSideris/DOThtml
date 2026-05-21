@@ -17,6 +17,9 @@ Build complex UIs from small, reusable, and encapsulated pieces. DOThtml compone
 ### [Reactivity & Signals](./reactivity.md)
 DOThtml uses a powerful, low-salt reactivity system based on **Signals**. Data-driven updates happen automatically and efficiently without a virtual DOM.
 
+### [Transparent Side Effects](./reactivity.md#side-effects)
+Manage complex logic like timers, event listeners, and API calls with automatic dependency tracking and lifecycle-integrated cleanup.
+
 ### [State Management with Stores](./stores.md)
 For larger applications, DOThtml provides a built-in state management solution called **Stores**. Stores are centralized containers for state, logic, and mutations.
 

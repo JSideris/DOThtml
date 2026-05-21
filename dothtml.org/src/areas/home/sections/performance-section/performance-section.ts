@@ -9,25 +9,33 @@ export default class PerformanceSection extends DotComponent {
 	private moduleRef = dot.ref<HTMLElement>();
 	private benchmarksRef = dot.ref<HTMLElement>();
 
-	mounted() {
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
-				if (entry.isIntersecting) {
-					if (entry.target === this.moduleRef.value) {
-						this.isVisible.setValue(true);
-					} else if (entry.target === this.benchmarksRef.value) {
-						this.benchmarksVisible.setValue(true);
-					}
-				}
-			});
-		}, { threshold: 0.5 });
+	constructor() {
+		super();
+		this.effect(() => {
+			const mEl = this.moduleRef.value;
+			const bEl = this.benchmarksRef.value;
+			if (!mEl && !bEl) return;
 
-		if (this.moduleRef.value) {
-			observer.observe(this.moduleRef.value);
-		}
-		if (this.benchmarksRef.value) {
-			observer.observe(this.benchmarksRef.value);
-		}
+			const mObserver = new IntersectionObserver((entries) => {
+				if (entries[0].isIntersecting) {
+					this.isVisible.value = true;
+				}
+			}, { threshold: 0.5 });
+
+			const bObserver = new IntersectionObserver((entries) => {
+				if (entries[0].isIntersecting) {
+					this.benchmarksVisible.value = true;
+				}
+			}, { threshold: 0.75 });
+
+			if (mEl) mObserver.observe(mEl);
+			if (bEl) bObserver.observe(bEl);
+
+			return () => {
+				mObserver.disconnect();
+				bObserver.disconnect();
+			};
+		});
 	}
 
 	stylize(s: any) {
@@ -256,7 +264,7 @@ export default class PerformanceSection extends DotComponent {
 				dot.p({ class: "subtitle", style: "font-size: 16px" }, "While React requires a heavy runtime to manage its Virtual DOM, DOThtml's lean engine provides more power with less than half the weight.")
 			),
 			dot.div({ class: "cta-group" },
-				dot.a({ href: "#/docs/benchmarks", class: "btn-outline" }, "View Full Benchmarks")
+				dot.a({ hRef: "#/docs/benchmarks", class: "btn-outline" }, "View Full Benchmarks")
 			)
 		);
 	}

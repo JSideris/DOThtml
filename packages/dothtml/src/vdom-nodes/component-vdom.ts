@@ -32,6 +32,7 @@ export class ComponentVdom extends Vdom{
 	private isBuilding = false;
 	private computedSignals: Computed<any>[] = [];
 	private buildComputedSignals: Computed<any>[] = [];
+	private effects: any[] = [];
 	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private slots: Record<string, ContainerVdom> = {};
@@ -89,6 +90,13 @@ export class ComponentVdom extends Vdom{
 			delete (component as any)._trackedComputeds;
 		}
 
+		if ((component as any)._trackedEffects) {
+			for (const e of (component as any)._trackedEffects) {
+				this.registerEffect(e);
+			}
+			delete (component as any)._trackedEffects;
+		}
+
 		if ((component as any)._trackedDisposables) {
 			for (const d of (component as any)._trackedDisposables) {
 				this.registerDisposable(d);
@@ -103,6 +111,10 @@ export class ComponentVdom extends Vdom{
 		} else {
 			this.computedSignals.push(signal);
 		}
+	}
+
+	registerEffect(effect: any) {
+		this.effects.push(effect);
 	}
 
 	registerDisposable(disposable: () => void) {
@@ -424,7 +436,12 @@ export class ComponentVdom extends Vdom{
 		if((this.component._ as any)?._meta?.isRendered) throw new Error("Individual component instances cannot be rendered twice at once.");
 		if(!(this.component._ as any)._meta) (this.component._ as any)._meta = {};
 		
-		this.component.mounting && this.component.mounting();
+		pushComponent(this);
+		try {
+			this.component.mounting && this.component.mounting();
+		} finally {
+			popComponent();
+		}
 		
 		(this.component._._meta as any).isRendered = true;
 
@@ -512,11 +529,21 @@ export class ComponentVdom extends Vdom{
 			this.renderEvent(e.name, e.callback, e.modifiers);
 		}
 
-		this.component.mounted && this.component.mounted();
+		pushComponent(this);
+		try {
+			this.component.mounted && this.component.mounted();
+		} finally {
+			popComponent();
+		}
 	}
 
 	_unrender() {
-		this.component.unmounting && this.component.unmounting();
+		pushComponent(this);
+		try {
+			this.component.unmounting && this.component.unmounting();
+		} finally {
+			popComponent();
+		}
 
 		this.childShadowVdom._unrender();
 
@@ -549,13 +576,24 @@ export class ComponentVdom extends Vdom{
 		}
 		this.buildComputedSignals = [];
 
+		for (const effect of this.effects) {
+			effect.dispose();
+		}
+		this.effects = [];
+
 		for (const disposable of this.disposables) {
 			disposable();
 		}
 		this.disposables = [];
 
 		(this.component._._meta as any).isRendered = false;
-		this.component.unmounted && this.component.unmounted();
+		
+		pushComponent(this);
+		try {
+			this.component.unmounted && this.component.unmounted();
+		} finally {
+			popComponent();
+		}
 
 		if(this.ref){
 			if (typeof this.ref === "function") {

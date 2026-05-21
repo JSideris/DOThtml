@@ -48,7 +48,8 @@
 		"useDefineForClassFields": false, // Important. Without this default values of undefined are auto-assigned after the factory setter.
 		"baseUrl": ".",
 		"paths": {
-			"dothtml": ["../src/index.ts"]
+			"dothtml": ["../packages/dothtml/src/index.ts"],
+			"dothtml-interfaces": ["../packages/interfaces/src/index.ts"]
 		}
 	},
 

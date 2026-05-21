@@ -1,4 +1,5 @@
 import { IDotComponent, IDotCore, FrameworkItems } from "dothtml-interfaces";
+import dot from "./dot";
 
 /**
  * Base class for DOThtml components.
@@ -33,6 +34,14 @@ export abstract class DotComponent<P = any, R = any> implements IDotComponent {
 	 */
 	public emit(name: string, detail?: any): void {
 		// Implementation is provided by ComponentVdom at runtime.
+	}
+
+	/**
+	 * Registers a side effect that is automatically cleaned up when the component is unmounted.
+	 * @param callback The side effect to run. Can return a cleanup function.
+	 */
+	public effect(callback: () => void | (() => void)): void {
+		dot.effect(callback);
 	}
 
 	/**

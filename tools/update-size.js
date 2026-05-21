@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const BUNDLE_PATH = path.join(__dirname, '../dist/index.global.js');
+const BUNDLE_PATH = path.join(__dirname, '../packages/dothtml/dist/index.global.js');
 const SIZE_TS_PATH = path.join(__dirname, '../dothtml.org/src/generated/size.ts');
 const README_PATH = path.join(__dirname, '../readme.md');
 

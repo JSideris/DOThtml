@@ -112,10 +112,44 @@ static props = {
 ## Lifecycle Hooks
 
 - `mounting()`: Called before the component is added to the DOM.
-- `mounted()`: Called after the component is added to the DOM. Use this to set up **[Scroll & Visibility](./scroll-and-visibility.md)** listeners or observers.
+- `mounted()`: Called after the component is added to the DOM.
 - `built()`: Called every time the `build()` function completes (including re-renders).
-- `unmounting()`: Called before the component is removed from the DOM. Always clean up global listeners here.
+- `unmounting()`: Called before the component is removed from the DOM.
 - `unmounted()`: Called after the component is removed from the DOM.
+
+### Modern Side Effects (`this.effect`)
+
+While lifecycle hooks are useful for one-off actions, the recommended way to handle side effects in DOThtml 6.0 is using `this.effect()`. This method allows you to group setup and cleanup logic together in a single declarative block.
+
+```typescript
+@dot.component
+class MyComponent extends DotComponent {
+    private timer = dot.state(0);
+
+    constructor() {
+        super();
+        
+        // This effect starts immediately and is automatically 
+        // cleaned up when the component is unmounted.
+        this.effect(() => {
+            const interval = setInterval(() => {
+                this.timer.value++;
+            }, 1000);
+
+            return () => clearInterval(interval);
+        });
+    }
+
+    build(dot) {
+        return dot.div(`Seconds: ${this.timer}`);
+    }
+}
+```
+
+**Benefits over Lifecycle Hooks:**
+1.  **Safety**: Cleanup is co-located with setup, making it harder to forget (preventing memory leaks).
+2.  **Reactivity**: Effects automatically re-run if they depend on props or internal state.
+3.  **Conciseness**: No need to create private class properties just to store cleanup IDs or observer instances.
 
 ## Custom Events
 

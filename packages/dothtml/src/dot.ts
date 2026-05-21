@@ -7,6 +7,7 @@ import { Vdom } from "./vdom-nodes/vdom";
 import { DOT_VDOM_PROP_NAME } from "./constants";
 import Signal from "./reactivity/signal";
 import Computed from "./reactivity/computed";
+import Effect from "./reactivity/effect";
 import { component } from "./decoration/component";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import renderStylesheet from "./helpers/render-stylesheet";
@@ -254,6 +255,15 @@ const makeDot = ()=>{
 		return c;
 	}
 
+	_dot.effect = function(callback: () => void | (() => void)): () => void {
+		const e = new Effect(callback);
+		const currentComponent = getCurrentComponent();
+		if (currentComponent) {
+			(currentComponent as any).registerEffect ? (currentComponent as any).registerEffect(e) : currentComponent.registerComputed(e as any);
+		}
+		return () => e.dispose();
+	}
+
 	_dot.component = component;
 	_dot.slot = function(name?: any, fallback?: any) {
 		if (typeof name !== "string" && name !== undefined) {
@@ -272,8 +282,10 @@ const makeDot = ()=>{
 	_dot.create = function<T extends IDotComponent>(Ctor: { new(...args: any[]): T }, ...args: any[]): T {
 		const tracker = {
 			computedSignals: [],
+			effects: [],
 			disposables: [],
 			registerComputed(w: any) { this.computedSignals.push(w); },
+			registerEffect(e: any) { this.effects.push(e); },
 			registerDisposable(d: any) { this.disposables.push(d); }
 		};
 		pushComponent(tracker as any);
@@ -288,6 +300,12 @@ const makeDot = ()=>{
 			(instance as any)._trackedComputeds.push(...tracker.computedSignals);
 		} else {
 			(instance as any)._trackedComputeds = tracker.computedSignals;
+		}
+
+		if ((instance as any)._trackedEffects) {
+			(instance as any)._trackedEffects.push(...tracker.effects);
+		} else {
+			(instance as any)._trackedEffects = tracker.effects;
 		}
 
 		if ((instance as any)._trackedDisposables) {

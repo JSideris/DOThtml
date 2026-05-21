@@ -1,6 +1,6 @@
 import Signal from "./signal";
 import Computed from "./computed";
-import { getCurrentComponent } from "../vdom-nodes/component-context";
+import { getCurrentComponent, pushComponent, popComponent } from "../vdom-nodes/component-context";
 
 const storeRegistry = new Map<string, any>();
 
@@ -26,60 +26,97 @@ export function createStore<
 		const store: any = {
 			$id: id,
 			_state: {} as Record<string, Signal>,
-			_getters: {} as Record<string, Computed<any>>
+			_getters: {} as Record<string, Computed<any>>,
+			_effects: [] as any[]
 		};
 
-		// Initialize state
-		if (stateFn) {
-			const rawState = stateFn();
-			for (const key in rawState) {
-				const val = rawState[key];
-				const signal = (val as any) instanceof Signal ? (val as Signal) : new Signal();
-				if (signal !== (val as any)) {
-					signal.value = val;
+		const tracker = {
+			computedSignals: [],
+			effects: [],
+			disposables: [],
+			registerComputed(w: any) { this.computedSignals.push(w); },
+			registerEffect(e: any) { this.effects.push(e); },
+			registerDisposable(d: any) { this.disposables.push(d); }
+		};
+
+		pushComponent(tracker as any);
+
+		try {
+			// Initialize state
+			if (stateFn) {
+				const rawState = stateFn();
+				for (const key in rawState) {
+					const val = rawState[key];
+					const signal = (val as any) instanceof Signal ? (val as Signal) : new Signal();
+					if (signal !== (val as any)) {
+						signal.value = val;
+					}
+					store._state[key] = signal;
+					
+					Object.defineProperty(store, key, {
+						get: () => store._state[key],
+						enumerable: true,
+						configurable: true
+					});
 				}
-				store._state[key] = signal;
-				
-				Object.defineProperty(store, key, {
-					get: () => store._state[key],
-					enumerable: true,
-					configurable: true
-				});
-			}
-		}
-
-		// Initialize getters - first define them as undefined so they can be accessed
-		if (getters) {
-			for (const key in getters) {
-				Object.defineProperty(store, key, {
-					get: () => store._getters[key],
-					enumerable: true,
-					configurable: true
-				});
 			}
 
-			for (const key in getters) {
-				const computed = new Computed(() => getters[key].call(store, store));
-				store._getters[key] = computed;
+			// Initialize getters - first define them as undefined so they can be accessed
+			if (getters) {
+				for (const key in getters) {
+					Object.defineProperty(store, key, {
+						get: () => store._getters[key],
+						enumerable: true,
+						configurable: true
+					});
+				}
+
+				for (const key in getters) {
+					const computed = new Computed(() => getters[key].call(store, store));
+					store._getters[key] = computed;
+				}
 			}
+
+			// Bind actions
+			if (actions) {
+				for (const key in actions) {
+					store[key] = (...args: any[]) => {
+						pushComponent(tracker as any);
+						try {
+							return actions[key].apply(store, args);
+						} finally {
+							popComponent();
+						}
+					};
+				}
+			}
+		} finally {
+			popComponent();
 		}
 
-		// Bind actions
-		if (actions) {
-			for (const key in actions) {
-				store[key] = actions[key].bind(store);
-			}
-		}
+		store._getters_list = tracker.computedSignals;
+		store._effects = tracker.effects;
+		store._disposables = tracker.disposables;
 
 		store.$dispose = () => {
 			for (const key in store._getters) {
 				store._getters[key].dispose();
+			}
+			for (const computed of store._getters_list || []) {
+				computed.dispose();
+			}
+			for (const effect of store._effects || []) {
+				effect.dispose();
+			}
+			for (const disposable of store._disposables || []) {
+				disposable();
 			}
 			if (id) {
 				storeRegistry.delete(id);
 			}
 			store._state = {};
 			store._getters = {};
+			store._effects = [];
 		};
 
 		if (id) {
