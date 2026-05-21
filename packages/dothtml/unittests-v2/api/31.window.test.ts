@@ -175,4 +175,78 @@ describe("Window Management.", () => {
 		expect(myWindow.isOpen).toBe(false);
 		jest.useRealTimers();
 	});
+
+	test("Popup is rerendered on multiple refreshes.", async () => {
+		jest.useFakeTimers();
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") }
+		});
+		await myWindow.open();
+
+		for (let i = 0; i < 3; i++) {
+			// Find the LATEST unload handler (it should be re-attached every time)
+			const unloadCalls = (mockWindow.addEventListener as jest.Mock).mock.calls.filter(call => call[0] === "unload");
+			const latestUnloadHandler = unloadCalls[unloadCalls.length - 1][1];
+
+			// Simulate refresh
+			mockWindow.closed = false;
+			latestUnloadHandler();
+
+			// Fast-forward
+			jest.advanceTimersByTime(100);
+
+			// Verify it's still open and document was written to again
+			expect(myWindow.isOpen).toBe(true);
+			expect(mockWindow.document.write).toHaveBeenCalledTimes(i + 2); // 1 (initial) + (i+1) refreshes
+		}
+		
+		jest.useRealTimers();
+	});
+
+	test("'close' event fires on manual closure but not on refresh.", async () => {
+		jest.useFakeTimers();
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") }
+		});
+		const closeHandler = jest.fn();
+		myWindow.on("close", closeHandler);
+		await myWindow.open();
+
+		// 1. Simulate Refresh
+		const unloadCall = (mockWindow.addEventListener as jest.Mock).mock.calls.find(call => call[0] === "unload");
+		const unloadHandler = unloadCall[1];
+		mockWindow.closed = false;
+		unloadHandler();
+		jest.advanceTimersByTime(100);
+
+		expect(closeHandler).not.toHaveBeenCalled();
+		expect(myWindow.isOpen).toBe(true);
+
+		// 2. Simulate Manual Close
+		// Get the LATEST unload handler (it was re-attached)
+		const unloadCalls = (mockWindow.addEventListener as jest.Mock).mock.calls.filter(call => call[0] === "unload");
+		const latestUnloadHandler = unloadCalls[unloadCalls.length - 1][1];
+		mockWindow.closed = true;
+		latestUnloadHandler();
+		jest.advanceTimersByTime(100);
+
+		expect(closeHandler).toHaveBeenCalledTimes(1);
+		expect(myWindow.isOpen).toBe(false);
+
+		jest.useRealTimers();
+	});
+
+	test("'close' event fires when close() is called.", async () => {
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") }
+		});
+		const closeHandler = jest.fn();
+		myWindow.on("close", closeHandler);
+		await myWindow.open();
+
+		myWindow.close();
+
+		expect(closeHandler).toHaveBeenCalledTimes(1);
+		expect(myWindow.isOpen).toBe(false);
+	});
 });

@@ -20,6 +20,7 @@ export default class WindowWrapper implements IDotWindowWrapper{
 
 	private static tetheredWindows = new Set<WindowWrapper>();
 	private eventListeners: Array<{name: string, callback: (e: any) => void}> = [];
+	private wrapperEventListeners: Array<{name: string, callback: (e: any) => void}> = [];
 
 	constructor(options: {content: IDotComponent, width?: number, height?: number, title?: string, tether?: boolean, syncStyles?: boolean, position?: "center" | "parent-center" | "beside-parent" | {left: number, top: number}}){
 		this.root = options.content;
@@ -78,21 +79,6 @@ export default class WindowWrapper implements IDotWindowWrapper{
 				window.addEventListener("unload", WindowWrapper.closeAllTethered);
 			}
 		}
-
-		this.window.addEventListener("unload", () => {
-			if (this.isOpen) {
-				setTimeout(() => {
-					if (this.window && !this.window.closed) {
-						this.setupDocument();
-					} else {
-						this.isOpen = false;
-						if (this.tether) {
-							WindowWrapper.tetheredWindows.delete(this);
-						}
-					}
-				}, 100);
-			}
-		});
 	}
 
 	private setupDocument(){
@@ -128,14 +114,42 @@ export default class WindowWrapper implements IDotWindowWrapper{
 		for(const {name, callback} of this.eventListeners){
 			this.document.addEventListener(name, callback);
 		}
+
+		this.window.addEventListener("unload", () => {
+			if (this.isOpen) {
+				setTimeout(() => {
+					if (this.window && !this.window.closed) {
+						this.setupDocument();
+					} else {
+						this.isOpen = false;
+						if (this.tether) {
+							WindowWrapper.tetheredWindows.delete(this);
+						}
+						this.emit("close");
+					}
+				}, 100);
+			}
+		});
 	}
 
 	on(event: string, callback: (e: any) => void): this {
-		this.eventListeners.push({name: event, callback});
-		if(this.document){
-			this.document.addEventListener(event, callback);
+		if (event === "close") {
+			this.wrapperEventListeners.push({ name: event, callback });
+		} else {
+			this.eventListeners.push({ name: event, callback });
+			if (this.document) {
+				this.document.addEventListener(event, callback);
+			}
 		}
 		return this;
+	}
+
+	private emit(event: string, detail?: any) {
+		for (const { name, callback } of this.wrapperEventListeners) {
+			if (name === event) {
+				callback(detail);
+			}
+		}
 	}
 
 	focus(): void {
@@ -218,6 +232,8 @@ export default class WindowWrapper implements IDotWindowWrapper{
 			if(this.tether){
 				WindowWrapper.tetheredWindows.delete(this);
 			}
+
+			this.emit("close");
 		}
 	}
 }

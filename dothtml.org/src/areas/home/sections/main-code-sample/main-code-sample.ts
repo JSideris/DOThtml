@@ -157,7 +157,7 @@ export default class MainCodeSample extends DotComponent {
 
 		this.satelliteWrapper.open().then(() => {
 			this.isSatelliteOpen.value = true;
-			this.satelliteWrapper.window.addEventListener("beforeunload", () => {
+			this.satelliteWrapper.on("close", () => {
 				this.isSatelliteOpen.value = false;
 			});
 		});
@@ -494,7 +494,11 @@ class App extends DotComponent {
       syncStyles: true
     });
     
-    this.satellite.open();
+    this.satellite.open().then(() => {
+      this.satellite.on("close", () => {
+        // Handle closure (e.g. update state)
+      });
+    });
   }
 
   teleport() {
