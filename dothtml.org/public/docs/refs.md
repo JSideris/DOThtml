@@ -103,31 +103,4 @@ dot.div({
 
 ## Lifecycle Integration
 
-- **Mounting**: Refs are populated immediately after the element is created but before the `mounted()` lifecycle hook is called. 
-- **Reactivity**: Because refs are signals, you can use `this.effect()` to perform actions as soon as an element becomes available.
-
-```typescript
-@dot.component
-class ScrollReveal extends DotComponent {
-    private myRef = dot.ref();
-
-    constructor() {
-        super();
-        this.effect(() => {
-            const el = this.myRef.value;
-            if (!el) return;
-
-            const observer = new IntersectionObserver((entries) => {
-                // ... logic ...
-            });
-            observer.observe(el);
-
-            return () => observer.disconnect();
-        });
-    }
-
-    build(dot) {
-        return dot.div({ ref: this.myRef }, "Reveal me!");
-    }
-}
-```
+- **Mounting**: Refs are populated immediately after the element is created but before the `mounted()` lifecycle hook is called. This makes them perfect for initializing **[Scroll & Visibility](./scroll-and-visibility.md)** observers.

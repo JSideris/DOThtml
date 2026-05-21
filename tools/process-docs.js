@@ -93,6 +93,7 @@ if (!fs.existsSync(srcDir)) {
 }
 
 const files = fs.readdirSync(srcDir).filter(f => f.endsWith('.md'));
+const EXCLUDE_FROM_LLM = ['hero-features.md', 'learn-more.md'];
 let fullContent = "# DOThtml Full Documentation\n\n> This file contains the complete documentation for DOThtml, concatenated for easy ingestion by LLMs.\n\n";
 
 // Sort files to ensure consistent order in llms-full.txt
@@ -116,8 +117,13 @@ files.sort().forEach(file => {
 	fs.writeFileSync(path.join(distDir, file), content);
 	
 	// Add to the "Big File"
-	const title = file.replace('.md', '').split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-	fullContent += `\n\n--- FILE: ${file} (${title}) ---\n\n` + content;
+	if (!EXCLUDE_FROM_LLM.includes(file)) {
+		// Surgical stripping for LLM output
+		const llmContent = content.replace(/<!-- llm-exclude-start -->[\s\S]*?<!-- llm-exclude-end -->/g, '').trim();
+		
+		const title = file.replace('.md', '').split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+		fullContent += `\n\n--- FILE: ${file} (${title}) ---\n\n` + llmContent;
+	}
 });
 
 // Save the concatenated file

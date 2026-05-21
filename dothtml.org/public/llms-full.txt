@@ -59,28 +59,6 @@ Every framework is designed with a specific set of values. Understanding these p
 - **React**: Provides a highly predictable functional programming model that scales well for massive teams, relying on a Virtual DOM to manage complex UI states.
 - **Vue**: Offers a flexible, approachable architecture that combines the best of template-based optimization with a powerful reactive data model.
 
-## Methodology
-
-The benchmarks were conducted using a custom Playwright-based runner. Each test was repeated 20 times, and the median duration was recorded. The duration measures the time from the initial click event to the completion of the next paint cycle.
-
-To ensure high accuracy and eliminate environmental noise:
-- **In-Browser Timing**: Timing is performed entirely within the browser using `performance.mark()` and `performance.measure()`, excluding any overhead from Playwright's automation layer.
-- **Batching**: For sub-millisecond operations (like swapping rows or updating styles), the benchmark triggers the operation multiple times (up to 100x) in a single synchronous loop. The total time is then divided by the batch size to provide a high-resolution average that bypasses the browser's frame-rate floor.
-- **Paint Detection**: We wait for the browser to actually paint the changes to the screen using a combination of `requestAnimationFrame` and `setTimeout(..., 0)` before stopping the timer.
-
-### Running Benchmarks Locally
-
-You can run these benchmarks yourself to verify the results. The source code is available on our [GitHub repository](https://github.com/JSideris/DOThtml).
-
-To run the benchmarks:
-
-1. Clone the repository.
-2. Install dependencies: `npm install`.
-3. Run the benchmark script: `npm run benchmarks`.
-
-This will build the latest version of DOThtml and execute the benchmark suite across all supported frameworks.
-
-
 --- FILE: cli.md (Cli) ---
 
 # DOThtml CLI
@@ -129,14 +107,6 @@ Projects created with the CLI come with several pre-configured scripts:
 - `npm test`: Runs your test suite using Vitest.
 - `npm run lint`: Checks your code for potential errors using ESLint.
 - `npm run preview`: Locally previews your production build.
-
-## Why Vite?
-
-By using Vite as the underlying build engine, DOThtml projects benefit from:
-- **Instant Server Start**: No more waiting for a complex Webpack bundle.
-- **Lightning Fast HMR**: See your changes reflected in the browser immediately.
-- **Optimized Builds**: Rollup-powered production builds for maximum performance.
-
 
 --- FILE: components.md (Components) ---
 
@@ -462,7 +432,6 @@ Because DOThtml uses **Shadow DOM**, there is a strict boundary between a compon
 **Example Pitfall:**
 If you create a `Modal` component, the parent component can style the `p` tag it passes into the slot, but it **cannot** style the `.modal-backdrop` div defined inside the `Modal` component.
 
-
 --- FILE: detailed-features.md (Detailed Features) ---
 
 # Detailed Features & Performance
@@ -521,33 +490,6 @@ dot.flushSync();
 - **Polymorphic Components**: Support for components that can render as different HTML elements while preserving logic.
 - **Enhanced Ref System**: Reactive references to elements and components with method proxying and keyed collections.
 
-
---- FILE: hero-features.md (Hero Features) ---
-
-# Hero Features
-
-## Modern
-Built to be competitive with other modern frameworks. DOThtml is component-based (utilizing the shadow DOM). Components are reactive and mutable. Everything is strongly typed and blazingly fast.
-
-## Nimble
-Zero core dependencies. ~18kb bundle size. Plays nicely with other frameworks. Designed to be extremely modular - as in the entire framework can be decoupled from your app using DI.
-
-## Fun
-DOThtml just works the way you expect it to. It does all the major stuff other modern frameworks can do (and plenty of stuff they can't) with less salt. No more XML-based markup!
-
-
---- FILE: learn-more.md (Learn More) ---
-
-# Learn More & Contribute
-
-### Resources
-- [Documentation Curriculum](https://github.com/JSideris/DOThtml/blob/master/dothtml.org/readme.md)
-
-### Community & Contribution
-- [Report Bugs](https://github.com/JSideris/DOThtml/issues)
-- [GitHub Repository](https://github.com/JSideris/DOThtml)
-
-
 --- FILE: main-features.md (Main Features) ---
 
 # Main Features & Overview
@@ -583,7 +525,6 @@ Start projects in seconds with the official `create-dothtml` CLI, featuring a Vi
 
 ### [Performance & Advanced Features](./detailed-features.md)
 DOThtml features an intelligent update scheduler, keyed diffing, and concurrent rendering to ensure maximum responsiveness even in complex applications.
-
 
 --- FILE: popups.md (Popups) ---
 
@@ -671,7 +612,6 @@ myWindow.on("save-data", (data) => {
 });
 ```
 
-
 --- FILE: quick-start.md (Quick Start) ---
 
 # Quick Start & Installation
@@ -743,7 +683,6 @@ This will expose a global `dot` object that you can use immediately:
 dot("#app")
 .div("Ready to go!");
 ```
-
 
 --- FILE: reactivity.md (Reactivity) ---
 
@@ -884,7 +823,6 @@ dot.input({ value: mySignal });
 // Two-way: DOM and signal are kept in sync.
 dot.input({ bind: mySignal }); 
 ```
-
 
 --- FILE: refs.md (Refs) ---
 
@@ -1094,7 +1032,6 @@ dot.div(dot.html("<b>Hello</b>"));
 dot.div(dot.text("<b>Hello</b>"));
 ```
 
-
 --- FILE: routing.md (Routing) ---
 
 # Routing in DOThtml
@@ -1258,7 +1195,6 @@ dot.Router.beforeEach((to, from, next) => {
     else next(false);
 });
 ```
-
 
 --- FILE: scroll-and-visibility.md (Scroll And Visibility) ---
 
@@ -1451,7 +1387,6 @@ mounted() {
     window.addEventListener("scroll", this.scrollHandler, { passive: true });
 }
 ```
-
 
 --- FILE: stores.md (Stores) ---
 
@@ -2019,19 +1954,6 @@ test("reactive style update", () => {
 });
 ```
 
-## Legacy Compatibility
-
-For users migrating from older versions of DOThtml, the `dot.useStyles()` method is still available as a bridge to the modern system. It allows you to register global styles using the familiar v5 syntax.
-
-```javascript
-dot.useStyles(`
-  body { background: #eee; }
-`);
-```
-
-While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.
-
-
 --- FILE: typescript.md (Typescript) ---
 
 # TypeScript Reference
@@ -2074,7 +1996,6 @@ class MyComponent extends DotComponent<MyProps, MyRefs> {
     }
 }
 ```
-
 
 --- FILE: use-cases.md (Use Cases) ---
 

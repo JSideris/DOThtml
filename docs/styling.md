@@ -449,15 +449,3 @@ test("reactive style update", () => {
   expect(document.querySelector("div").style.color).toBe("blue");
 });
 ```
-
-## Legacy Compatibility
-
-For users migrating from older versions of DOThtml, the `dot.useStyles()` method is still available as a bridge to the modern system. It allows you to register global styles using the familiar v5 syntax.
-
-```javascript
-dot.useStyles(`
-  body { background: #eee; }
-`);
-```
-
-While functional, we recommend moving to `dot.useGlobalStyles()` or the `dot.css` builder for better integration with the v6 reactivity and Shadow DOM systems.

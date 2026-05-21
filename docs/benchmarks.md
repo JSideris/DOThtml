@@ -51,6 +51,7 @@ Every framework is designed with a specific set of values. Understanding these p
 - **React**: Provides a highly predictable functional programming model that scales well for massive teams, relying on a Virtual DOM to manage complex UI states.
 - **Vue**: Offers a flexible, approachable architecture that combines the best of template-based optimization with a powerful reactive data model.
 
+<!-- llm-exclude-start -->
 ## Methodology
 
 The benchmarks were conducted using a custom Playwright-based runner. Each test was repeated 20 times, and the median duration was recorded. The duration measures the time from the initial click event to the completion of the next paint cycle.
@@ -71,3 +72,4 @@ To run the benchmarks:
 3. Run the benchmark script: `npm run benchmarks`.
 
 This will build the latest version of DOThtml and execute the benchmark suite across all supported frameworks.
+<!-- llm-exclude-end -->
