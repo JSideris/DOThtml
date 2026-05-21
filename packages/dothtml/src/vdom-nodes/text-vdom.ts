@@ -29,8 +29,9 @@ export class TextVdom extends Vdom{
 
 	_unrender() {
 		if(this.textNode){
-
-			this.textNode.parentElement.removeChild(this.textNode);
+			if (this.textNode.parentElement) {
+				this.textNode.parentElement.removeChild(this.textNode);
+			}
 			this.textNode = null;
 		}
 

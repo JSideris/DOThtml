@@ -140,4 +140,164 @@ describe("HMR Phase 2 Swap Logic", () => {
 		dot.flushSync();
 		expect(el2.shadowRoot?.innerHTML).toContain("Count: 10 (V2)");
 	});
+
+	test("dot.hmr.swap updates multiple instances", () => {
+		const hmrId = "src/components/Multi.ts:Multi";
+
+		class MultiV1 implements IDotComponent {
+			static __hmrId = hmrId;
+			build() { return dot.div("V1"); }
+		}
+
+		class MultiV2 implements IDotComponent {
+			static __hmrId = hmrId;
+			build() { return dot.div("V2"); }
+		}
+
+		dot(document.body).mount(new MultiV1());
+		dot(document.body).mount(new MultiV1());
+
+		const elements = document.body.querySelectorAll("[cvdom]");
+		expect(elements.length).toBe(2);
+		expect(elements[0].shadowRoot?.innerHTML).toContain("V1");
+		expect(elements[1].shadowRoot?.innerHTML).toContain("V1");
+
+		(dot as any).hmr.swap(hmrId, MultiV2);
+
+		expect(elements[0].shadowRoot?.innerHTML).toContain("V2");
+		expect(elements[1].shadowRoot?.innerHTML).toContain("V2");
+	});
+
+	test("dot.hmr.swap preserves event listeners", () => {
+		const hmrId = "src/components/Events.ts:Events";
+		let clickCount = 0;
+
+		class EventsV1 implements IDotComponent {
+			static __hmrId = hmrId;
+			build() {
+				return dot.button("Click Me").on("click", () => clickCount++);
+			}
+		}
+
+		class EventsV2 implements IDotComponent {
+			static __hmrId = hmrId;
+			build() {
+				// Version 2 has different text but should still handle clicks if we want it to
+				return dot.button("Clicked Me").on("click", () => clickCount++);
+			}
+		}
+
+		dot(document.body).mount(new EventsV1());
+		const btn = document.body.querySelector("[cvdom]")?.shadowRoot?.querySelector("button") as HTMLButtonElement;
+		
+		btn.click();
+		expect(clickCount).toBe(1);
+
+		(dot as any).hmr.swap(hmrId, EventsV2);
+		dot.flushSync();
+
+		const btn2 = document.body.querySelector("[cvdom]")?.shadowRoot?.querySelector("button") as HTMLButtonElement;
+		expect(btn2.innerHTML).toBe("Clicked Me");
+		
+		btn2.click();
+		expect(clickCount).toBe(2);
+	});
+
+	test("dot.hmr.swap invalidates and updates styles", () => {
+		const hmrId = "src/components/Styled.ts:Styled";
+
+		class StyledV1 implements IDotComponent {
+			static __hmrId = hmrId;
+			stylize(css) {
+				css.rule(".box", s => s.color("red"));
+			}
+			build() {
+				return dot.div().attr("class", "box").text("Styled");
+			}
+		}
+
+		class StyledV2 implements IDotComponent {
+			static __hmrId = hmrId;
+			stylize(css) {
+				css.rule(".box", s => s.color("blue"));
+			}
+			build() {
+				return dot.div().attr("class", "box").text("Styled");
+			}
+		}
+
+		dot(document.body).mount(new StyledV1());
+		const el = document.body.querySelector("[cvdom]") as HTMLElement;
+		
+		// We can't easily check computed styles in this test environment without a full browser,
+		// but we can check if _cachedStyles was cleared and rebuilt.
+		expect((StyledV1 as any)._cachedStyles).toBeDefined();
+
+		(dot as any).hmr.swap(hmrId, StyledV2);
+		
+		expect((StyledV2 as any)._cachedStyles).toBeDefined();
+		// The new styles should be applied to the shadow root.
+		// In a real browser we'd check computed styles, but here we just check if it didn't crash.
+	});
+
+	test("dot.hmr.swap triggers built() lifecycle hook", () => {
+		const hmrId = "src/components/Lifecycle.ts:Lifecycle";
+		let builtCalled = 0;
+
+		class LifecycleV1 implements IDotComponent {
+			static __hmrId = hmrId;
+			build() { return dot.div("V1"); }
+			built() { builtCalled++; }
+		}
+
+		class LifecycleV2 implements IDotComponent {
+			static __hmrId = hmrId;
+			build() { return dot.div("V2"); }
+			built() { builtCalled++; }
+		}
+
+		dot(document.body).mount(new LifecycleV1());
+		expect(builtCalled).toBe(1);
+
+		(dot as any).hmr.swap(hmrId, LifecycleV2);
+		expect(builtCalled).toBe(2);
+	});
+
+	test("dot.hmr.swap handles nested component swapping", () => {
+		const parentHmrId = "src/components/Parent.ts:Parent";
+		const childHmrId = "src/components/Child.ts:Child";
+
+		class ChildV1 implements IDotComponent {
+			static __hmrId = childHmrId;
+			build() { return dot.div("Child V1"); }
+		}
+
+		class ChildV2 implements IDotComponent {
+			static __hmrId = childHmrId;
+			build() { return dot.div("Child V2"); }
+		}
+
+		class Parent implements IDotComponent {
+			static __hmrId = parentHmrId;
+			build() {
+				return dot.div(
+					"Parent",
+					new ChildV1()
+				);
+			}
+		}
+
+		dot(document.body).mount(new Parent());
+		const el = document.body.querySelector("[cvdom]");
+		const getChildContent = () => el?.shadowRoot?.querySelector("[cvdom]")?.shadowRoot?.innerHTML || "";
+		
+		expect(getChildContent()).toContain("Child V1");
+
+		// Swap child
+		(dot as any).hmr.swap(childHmrId, ChildV2);
+		dot.flushSync();
+
+		expect(getChildContent()).toContain("Child V2");
+		expect(getChildContent()).not.toContain("Child V1");
+	});
 });

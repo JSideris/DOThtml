@@ -224,7 +224,7 @@ export class ComponentVdom extends Vdom{
 		}
 	}
 
-	private rebuild() {
+	public rebuild() {
 		if (!this.shadowEl) return;
 
 		try {
@@ -330,71 +330,8 @@ export class ComponentVdom extends Vdom{
 		let CustomElementConstructor = document.defaultView.customElements.get(this.component._._meta.tagName);
 		if(CustomElementConstructor == undefined){
 			
-			// Check for cached styles on the constructor.
-			let cachedStyles = (this.component.constructor as any)._cachedStyles;
-			let sharedStylesheets = [];
-			let styleTags = [];
-
-			if (cachedStyles) {
-				sharedStylesheets = cachedStyles.sharedStylesheets;
-				styleTags = cachedStyles.styleTags;
-			} else {
-				// Constructed stylesheets.
-				const builder = new StyleSheetBuilder();
-				if ((this._dot as any)._theme) {
-					builder.setTheme((this._dot as any)._theme);
-				}
-				let styles: any = this.component.stylize && (this.component.stylize as any)(builder) || [];
-
-				if (styles instanceof Signal || styles instanceof Binding) {
-					// Dynamic stylesheet. We'll handle this per-instance.
-					(this.component.constructor as any)._isDynamicStyle = true;
-					styles = null; 
-				}
-
-				if (styles === builder || (!styles && builder.hasRules())) {
-					styles = builder.toString();
-				}
-
-				if(typeof styles == "string") styles = [styles];
-				
-				if(styles){
-					for(let i = 0; i < styles.length; i++){
-						let styleItem = renderStylesheet(styles[i], document);
-						if(styleItem instanceof (document.defaultView as any).CSSStyleSheet){
-							sharedStylesheets.push(styleItem);
-						}
-						else{
-							styleTags.push(styleItem);
-						}
-					}
-				}
-				const ghostVars = builder.getGhostVars();
-				// Cache them.
-				(this.component.constructor as any)._cachedStyles = { sharedStylesheets, styleTags, ghostVars };
-				builder.dispose();
-			}
-
-			// Add global styles.
-			let allSharedStylesheets = [...sharedStylesheets];
-			let allStyleTags = [...styleTags];
-			let globalStyles = (this._dot as any).globalStyles || [];
-			for (let gs of globalStyles) {
-				if (gs instanceof (document.defaultView as any).CSSStyleSheet) {
-					allSharedStylesheets.push(gs);
-				} else if (typeof gs === "string") {
-					// Transform html/body to :host for shadow dom.
-					const transformedGs = gs.replace(/\b(html|body)(?=[\s,{.#[:]|$)/g, ':host');
-					let styleItem = renderStylesheet(transformedGs, document);
-					if (styleItem instanceof (document.defaultView as any).CSSStyleSheet) {
-						allSharedStylesheets.push(styleItem);
-					} else {
-						allStyleTags.push(styleItem);
-					}
-				}
-			}
-
 			let DocSpecificHtmlEl = document.defaultView.HTMLElement;
+			const cvdom = this;
 			
 			CustomElementConstructor = class extends DocSpecificHtmlEl{
 				private _component: IDotComponent;
@@ -408,11 +345,25 @@ export class ComponentVdom extends Vdom{
 				_renderComponent(){
 					try {
 						if(this.cvdom instanceof Vdom){
-							let shadow = this.attachShadow({ mode: 'open' });
-							shadow.adoptedStyleSheets = [...allSharedStylesheets];
-							for(let i = 0; i < allStyleTags.length; i++){
-								shadow.appendChild(allStyleTags[i].cloneNode(true));
+							let shadow = this.shadowRoot || this.attachShadow({ mode: 'open' });
+							
+							// Collect styles
+							let cachedStyles = (this._component.constructor as any)._cachedStyles;
+							if (!cachedStyles) {
+								cachedStyles = cvdom.generateStyles(document);
+								(this._component.constructor as any)._cachedStyles = cachedStyles;
 							}
+
+							shadow.adoptedStyleSheets = [...cachedStyles.allSharedStylesheets];
+							
+							// Clear old style tags if any (except dynamic one)
+							const oldTags = shadow.querySelectorAll("style:not(#--dh-dynamic-style)");
+							for (const t of Array.from(oldTags)) t.remove();
+
+							for(let i = 0; i < cachedStyles.allStyleTags.length; i++){
+								shadow.appendChild(cachedStyles.allStyleTags[i].cloneNode(true));
+							}
+
 							(this._component._._meta as any).shadowRoot = shadow;
 
 							if ((this._component.constructor as any)._isDynamicStyle) {
@@ -447,11 +398,15 @@ export class ComponentVdom extends Vdom{
 								updateDynamicStyle();
 							}
 
-							pushComponent(this.cvdom);
-							try {
-								this.cvdom.childShadowVdom._render(shadow as any);
-							} finally {
-								popComponent();
+							if (this.cvdom.childShadowVdom._isRendered) {
+								this.cvdom.rebuild();
+							} else {
+								pushComponent(this.cvdom);
+								try {
+									this.cvdom.childShadowVdom._render(shadow as any);
+								} finally {
+									popComponent();
+								}
 							}
 						}
 						else{
@@ -465,9 +420,66 @@ export class ComponentVdom extends Vdom{
 			}
 
 			document.defaultView.customElements.define(this.component._._meta.tagName, CustomElementConstructor);
-
-			// return customElementConstructor;
 		}
+	}
+
+	private generateStyles(document: Document) {
+		// Constructed stylesheets.
+		const builder = new StyleSheetBuilder();
+		if ((this._dot as any)._theme) {
+			builder.setTheme((this._dot as any)._theme);
+		}
+		let styles: any = this.component.stylize && (this.component.stylize as any)(builder) || [];
+
+		if (styles instanceof Signal || styles instanceof Binding) {
+			// Dynamic stylesheet. We'll handle this per-instance.
+			(this.component.constructor as any)._isDynamicStyle = true;
+			styles = null; 
+		}
+
+		if (styles === builder || (!styles && builder.hasRules())) {
+			styles = builder.toString();
+		}
+
+		if(typeof styles == "string") styles = [styles];
+		
+		let sharedStylesheets = [];
+		let styleTags = [];
+
+		if(styles){
+			for(let i = 0; i < styles.length; i++){
+				let styleItem = renderStylesheet(styles[i], document);
+				if(styleItem instanceof (document.defaultView as any).CSSStyleSheet){
+					sharedStylesheets.push(styleItem);
+				}
+				else{
+					styleTags.push(styleItem);
+				}
+			}
+		}
+		const ghostVars = builder.getGhostVars();
+		builder.dispose();
+
+		// Add global styles.
+		let allSharedStylesheets = [...sharedStylesheets];
+		let allStyleTags = [...styleTags];
+		let globalStyles = (this._dot as any).globalStyles || [];
+		for (let gs of globalStyles) {
+			if (gs instanceof (document.defaultView as any).CSSStyleSheet) {
+				allSharedStylesheets.push(gs);
+			} else if (typeof gs === "string") {
+				// Transform html/body to :host for shadow dom.
+				const transformedGs = gs.replace(/\b(html|body)(?=[\s,{.#[:]|$)/g, ':host');
+				let styleItem = renderStylesheet(transformedGs, document);
+				if (styleItem instanceof (document.defaultView as any).CSSStyleSheet) {
+					allSharedStylesheets.push(styleItem);
+				} else {
+					allStyleTags.push(styleItem);
+				}
+			}
+		}
+
+		return { allSharedStylesheets, allStyleTags, ghostVars };
 	}
 
 	addSlot(name: string, content: any) {
@@ -570,15 +582,16 @@ export class ComponentVdom extends Vdom{
 			this.slots[name]._unrender();
 		}
 
-		const eventManager = EventManager.getForDocument(this.shadowEl.ownerDocument);
-		for(let i = 0; i < this.events.length; i++){
-			let e = this.events[i];
-			eventManager.removeListener(this.shadowEl, e.name.toLowerCase(), e.callback);
-		}
+		if (this.shadowEl) {
+			const eventManager = EventManager.getForDocument(this.shadowEl.ownerDocument);
+			for(let i = 0; i < this.events.length; i++){
+				let e = this.events[i];
+				eventManager.removeListener(this.shadowEl, e.name.toLowerCase(), e.callback);
+			}
 
-		// this.childShadowVdom = null; // This makes sense only if shadow dom creation happens inside the render function (which it probably should?).
-		this.shadowEl.remove();
-		this.shadowEl = null;
+			this.shadowEl.remove();
+			this.shadowEl = null;
+		}
 
 		for (let i = 0; i < this.styleVNodes.length; i++) {
 			this.styleVNodes[i].unrender();
@@ -654,7 +667,11 @@ export class ComponentVdom extends Vdom{
 			delete (NewClass as any)._cachedStyles;
 		}
 
-		this.rebuild();
+		if (this.shadowEl) {
+			(this.shadowEl as any).component = newComponent;
+		} else {
+			this.rebuild();
+		}
 	}
 
 	_getNodes(): Node[] {
