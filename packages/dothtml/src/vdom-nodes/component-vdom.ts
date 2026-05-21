@@ -16,6 +16,7 @@ import BaseVStyle from "../v-style-nodes/base-v-style";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import StyleSheetBuilder from "../v-style-nodes/style-sheet-builder";
 import Ref from "../reactivity/ref";
+import RefCollection from "../reactivity/ref-collection";
 import { IS_DEV } from "../constants";
 import { registerInstance, unregisterInstance } from "../hmr-registry";
 
@@ -335,6 +336,7 @@ export class ComponentVdom extends Vdom{
 			
 			CustomElementConstructor = class extends DocSpecificHtmlEl{
 				private _component: IDotComponent;
+				get component(){ return this._component; }
 				set component(value: IDotComponent){
 					this._component = value;
 					this._renderComponent();
@@ -648,6 +650,30 @@ export class ComponentVdom extends Vdom{
 		const props = (oldComponent as any).props;
 		const refs = (oldComponent as any).refs;
 
+		// 1. Lifecycle: unmounting
+		pushComponent(this);
+		try {
+			oldComponent.unmounting && oldComponent.unmounting();
+		} finally {
+			popComponent();
+		}
+
+		// 2. Cleanup
+		for (const signal of this.computedSignals) {
+			signal.dispose();
+		}
+		this.computedSignals = [];
+
+		for (const effect of this.effects) {
+			effect.dispose();
+		}
+		this.effects = [];
+
+		for (const disposable of this.disposables) {
+			disposable();
+		}
+		this.disposables = [];
+
 		// Create new instance
 		// Note: we don't use dot.create here because we want to manually manage the transition
 		const newComponent = new NewClass();
@@ -656,11 +682,48 @@ export class ComponentVdom extends Vdom{
 		(newComponent as any).props = props;
 		(newComponent as any).refs = refs;
 		
+		// Phase 3: Preserve internal state (Signals and RefCollections not in props)
+		for (const key in oldComponent) {
+			if (key === "props" || key === "refs" || key === "_") continue;
+			const oldVal = (oldComponent as any)[key];
+			const newVal = (newComponent as any)[key];
+			
+			if (oldVal instanceof Signal && newVal instanceof Signal) {
+				if (newVal.isWritable) {
+					newVal.value = oldVal.value;
+				}
+			} else if (oldVal instanceof RefCollection && newVal instanceof RefCollection) {
+				(newComponent as any)[key] = oldVal;
+			}
+		}
+		
 		// Transfer framework internal state
 		newComponent._ = oldComponent._;
 		(newComponent._ as any).cvdom = this;
 
 		this.component = newComponent;
+
+		// 3. Register new tracked items
+		if ((newComponent as any)._trackedComputeds) {
+			for (const w of (newComponent as any)._trackedComputeds) {
+				this.registerComputed(w);
+			}
+			delete (newComponent as any)._trackedComputeds;
+		}
+
+		if ((newComponent as any)._trackedEffects) {
+			for (const e of (newComponent as any)._trackedEffects) {
+				this.registerEffect(e);
+			}
+			delete (newComponent as any)._trackedEffects;
+		}
+
+		if ((newComponent as any)._trackedDisposables) {
+			for (const d of (newComponent as any)._trackedDisposables) {
+				this.registerDisposable(d);
+			}
+			delete (newComponent as any)._trackedDisposables;
+		}
 		
 		// Invalidate style cache on the new constructor if it exists
 		if ((NewClass as any)._cachedStyles) {
@@ -669,6 +732,14 @@ export class ComponentVdom extends Vdom{
 
 		if (this.shadowEl) {
 			(this.shadowEl as any).component = newComponent;
+
+			// 4. Lifecycle: mounted
+			pushComponent(this);
+			try {
+				this.component.mounted && this.component.mounted();
+			} finally {
+				popComponent();
+			}
 		} else {
 			this.rebuild();
 		}
