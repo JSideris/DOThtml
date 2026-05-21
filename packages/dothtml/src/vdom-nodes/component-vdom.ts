@@ -474,6 +474,42 @@ export class ComponentVdom extends Vdom{
 									this.cvdom.registerDisposable(() => (styles as any).unsubscribe(subId));
 								}
 								updateDynamicStyle();
+							} else if (this._component.stylize) {
+								const builder = new StyleSheetBuilder();
+								if ((this.cvdom._dot as any)._theme) {
+									builder.setTheme((this.cvdom._dot as any)._theme);
+								}
+								(this._component.stylize as any)(builder);
+								builder.toString(); // Trigger ghost variable generation
+								const ghostVars = builder.getGhostVars();
+								if (ghostVars.length > 0) {
+									const ghostStyleSource: any = {};
+									for (const gv of ghostVars) {
+										ghostStyleSource[gv.name] = gv.value;
+									}
+									const ghostVNode = new StyleVNode(ghostStyleSource);
+									ghostVNode.render(this); 
+									this.cvdom.styleVNodes.push(ghostVNode);
+									this.cvdom.registerDisposable(() => builder.dispose());
+								}
+							} else if (this._component.stylize) {
+								const builder = new StyleSheetBuilder();
+								if ((this.cvdom._dot as any)._theme) {
+									builder.setTheme((this.cvdom._dot as any)._theme);
+								}
+								(this._component.stylize as any)(builder);
+								builder.toString(); // Trigger ghost variable generation
+								const ghostVars = builder.getGhostVars();
+								if (ghostVars.length > 0) {
+									const ghostStyleSource: any = {};
+									for (const gv of ghostVars) {
+										ghostStyleSource[gv.name] = gv.value;
+									}
+									const ghostVNode = new StyleVNode(ghostStyleSource);
+									ghostVNode.render(this); 
+									this.cvdom.styleVNodes.push(ghostVNode);
+									this.cvdom.registerDisposable(() => builder.dispose());
+								}
 							}
 
 							if (this.cvdom.childShadowVdom._isRendered) {
