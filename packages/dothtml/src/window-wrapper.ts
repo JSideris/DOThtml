@@ -1,6 +1,7 @@
 import { IDotComponent, IDotCore, IDotDocument, IDotWindowWrapper } from "dothtml-interfaces";
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
 import dot from "./dot";
+import { DOT_VDOM_PROP_NAME } from "./constants";
 
 let documentId = 1;
 
@@ -71,19 +72,30 @@ export default class WindowWrapper implements IDotWindowWrapper{
 		let tempElement = document.createElement("div");
 		tempElement.textContent = this.title;
 		let encodedTitle = tempElement.innerHTML;
+		
+		this.document.open();
 		this.document.write(`<!DOCTYPE html><html><head><title>${encodedTitle}</title></head><body></body></html>`);
+		this.document.close();
+
+		// Re-acquire the document and body as document.write can replace the document object
+		this.document = this.window.document;
+		const body = this.document.body;
+		body.innerHTML = "";
+		delete body[DOT_VDOM_PROP_NAME];
 
 		if(this.syncStyles){
 			this.syncStylesWithParent();
 		}
 
-		this._vdom = dot(this.document.body, this.window).mount(this.root) as unknown as ContainerVdom;
+		this._vdom = dot(body, this.window).mount(this.root) as unknown as ContainerVdom;
 
 		this.isOpen = true;
 
 		if(this.tether){
 			WindowWrapper.tetheredWindows.add(this);
 			if(WindowWrapper.tetheredWindows.size === 1){
+				window.addEventListener("pagehide", WindowWrapper.closeAllTethered);
+				window.addEventListener("beforeunload", WindowWrapper.closeAllTethered);
 				window.addEventListener("unload", WindowWrapper.closeAllTethered);
 			}
 		}

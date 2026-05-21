@@ -8,6 +8,8 @@ describe("Window Management.", () => {
 		originalOpen = window.open;
 		mockWindow = {
 			document: {
+				open: jest.fn(),
+				close: jest.fn(),
 				write: jest.fn(),
 				body: document.createElement("body"),
 				createElement: (tag: string) => document.createElement(tag)
@@ -76,5 +78,49 @@ describe("Window Management.", () => {
 
 		expect(mockWindow.close).toHaveBeenCalled();
 		expect(myWindow.isOpen).toBe(false);
+	});
+
+	test("tether: true closes child when parent fires pagehide.", async () => {
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") },
+			tether: true
+		});
+		await myWindow.open();
+
+		// Simulate parent window pagehide
+		window.dispatchEvent(new Event("pagehide"));
+
+		expect(mockWindow.close).toHaveBeenCalled();
+		expect(myWindow.isOpen).toBe(false);
+	});
+
+	test("tether: true closes child when parent fires beforeunload.", async () => {
+		const myWindow = dot.window({
+			content: { build: (d: any) => d.div("Hello") },
+			tether: true
+		});
+		await myWindow.open();
+
+		// Simulate parent window beforeunload
+		window.dispatchEvent(new Event("beforeunload"));
+
+		expect(mockWindow.close).toHaveBeenCalled();
+		expect(myWindow.isOpen).toBe(false);
+	});
+
+	test("UI is not duplicated when window is reopened.", async () => {
+		const getContent = () => ({ build: (d: any) => d.div("Hello") });
+		
+		// First open
+		const myWindow1 = dot.window({ content: getContent() as any });
+		await myWindow1.open();
+		expect(mockWindow.document.body.children.length).toBe(1);
+
+		// Simulate refresh - we reuse the same mockWindow but create a new WindowWrapper
+		const myWindow2 = dot.window({ content: getContent() as any });
+		await myWindow2.open();
+
+		// If the bug exists, the body might have 2 children now
+		expect(mockWindow.document.body.children.length).toBe(1);
 	});
 });
