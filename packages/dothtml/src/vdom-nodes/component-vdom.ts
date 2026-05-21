@@ -16,6 +16,8 @@ import BaseVStyle from "../v-style-nodes/base-v-style";
 import StyleVNode from "../v-meta-nodes/style-v-node";
 import StyleSheetBuilder from "../v-style-nodes/style-sheet-builder";
 import Ref from "../reactivity/ref";
+import { IS_DEV } from "../constants";
+import { registerInstance, unregisterInstance } from "../hmr-registry";
 
 class HandledError extends Error {
 	constructor() {
@@ -112,6 +114,13 @@ export class ComponentVdom extends Vdom{
 				this.registerDisposable(d);
 			}
 			delete (component as any)._trackedDisposables;
+		}
+
+		if (IS_DEV) {
+			const hmrId = (component.constructor as any).__hmrId;
+			if (hmrId) {
+				registerInstance(hmrId, this);
+			}
 		}
 	}
 
@@ -610,6 +619,13 @@ export class ComponentVdom extends Vdom{
 				this.ref(null);
 			} else {
 				this.ref.value = null;
+			}
+		}
+
+		if (IS_DEV) {
+			const hmrId = (this.component.constructor as any).__hmrId;
+			if (hmrId) {
+				unregisterInstance(hmrId, this);
 			}
 		}
 	}
