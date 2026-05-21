@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"target": "ESNEXT",
+		"declaration": true,
+		"module": "CommonJS",
+		"outDir": "./src",
+		"rootDir": "./src",
+		"sourceMap": true,
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+        "removeComments": true,
+		"strictPropertyInitialization": false,
+		"useDefineForClassFields": false,
+	},
+	"include": [
+		 "./src/**/*",
+	],
+	"exclude": [
+		"./node_modules",
+	]
+}
