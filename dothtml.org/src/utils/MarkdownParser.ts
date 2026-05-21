@@ -20,6 +20,9 @@ export default class MarkdownParser {
 		// Normalize newlines
 		html = html.replace(/\r\n/g, "\n").trim();
 
+		// Remove HTML comments so they aren't escaped and rendered
+		html = html.replace(/<!--[\s\S]*?-->/g, "");
+
 		// 0. Pre-process: Code Blocks (```language ... ```)
 		// We do this first and replace with placeholders to avoid other rules touching the code content
 		const codeBlocks: string[] = [];
@@ -239,10 +242,10 @@ export default class MarkdownParser {
 
 		// Links ([text](url))
 		html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-			// Convert relative .md links to hashes for our docs viewer
+			// Convert relative .md links to paths for our docs viewer
 			if (url.endsWith(".md") && !url.startsWith("http") && !url.startsWith("//") && !url.startsWith("/")) {
-				const hash = url.replace(".md", "").replace("./", "");
-				return `<a href="#/docs/${hash}">${text}</a>`;
+				const path = url.replace(".md", "").replace("./", "");
+				return `<a href="/docs/${path}">${text}</a>`;
 			}
 			return `<a href="${url}">${text}</a>`;
 		});

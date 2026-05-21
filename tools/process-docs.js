@@ -114,7 +114,8 @@ files.sort().forEach(file => {
 	content = content.replace(/%%BENCH_[A-Z0-9_]+%%/g, 'N/A');
 	
 	// Save individual "compiled" file
-	fs.writeFileSync(path.join(distDir, file), content);
+	const cleanContent = content.replace(/<!--\s*llm-exclude-(start|end)\s*-->/g, '');
+	fs.writeFileSync(path.join(distDir, file), cleanContent);
 	
 	// Add to the "Big File"
 	if (!EXCLUDE_FROM_LLM.includes(file)) {

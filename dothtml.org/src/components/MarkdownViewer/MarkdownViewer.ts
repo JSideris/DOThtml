@@ -97,7 +97,17 @@ export default class MarkdownViewer extends DotComponent<MarkdownViewerProps> {
 	}
 
 	build() {
-		return dot.div({ class: "markdown-body" }, 
+		return dot.div({ 
+			class: "markdown-body",
+			onClick: (e: MouseEvent) => {
+				const target = e.target as HTMLElement;
+				const anchor = target.closest("a");
+				if (anchor && anchor.getAttribute("href")?.startsWith("/docs/")) {
+					e.preventDefault();
+					(dot as any).navigate(anchor.getAttribute("href"));
+				}
+			}
+		}, 
 			dot.html(this.content) 
 		);
 	}

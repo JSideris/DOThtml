@@ -132,8 +132,12 @@ export default class Docs extends DotComponent<DocsProps> {
 					dot.each(this.docs, doc => 
 						dot.li(
 							dot.a({ 
-								href: `#/docs/${doc.id}`,
-								class: currentDoc === doc.id ? "active" : ""
+								href: `/docs/${doc.id}`,
+								class: currentDoc === doc.id ? "active" : "",
+								onClick: (e: MouseEvent) => {
+									e.preventDefault();
+									(dot as any).navigate(`/docs/${doc.id}`);
+								}
 							}, doc.label)
 						)
 					)
@@ -142,11 +146,25 @@ export default class Docs extends DotComponent<DocsProps> {
 			dot.main({ class: "docs-content" },
 				dot.mount(new MarkdownViewer({ src: `/docs/${currentDoc}.md` })),
 				dot.div({ class: "docs-pagination" },
-					prevDoc ? dot.a({ href: `#/docs/${prevDoc.id}`, class: "pagination-link prev" },
+					prevDoc ? dot.a({ 
+						href: `/docs/${prevDoc.id}`, 
+						class: "pagination-link prev",
+						onClick: (e: MouseEvent) => {
+							e.preventDefault();
+							(dot as any).navigate(`/docs/${prevDoc.id}`);
+						}
+					},
 						dot.span({ class: "pagination-label" }, "← Previous"),
 						dot.span({ class: "pagination-title" }, prevDoc.label)
 					) : dot.div(),
-					nextDoc ? dot.a({ href: `#/docs/${nextDoc.id}`, class: "pagination-link next" },
+					nextDoc ? dot.a({ 
+						href: `/docs/${nextDoc.id}`, 
+						class: "pagination-link next",
+						onClick: (e: MouseEvent) => {
+							e.preventDefault();
+							(dot as any).navigate(`/docs/${nextDoc.id}`);
+						}
+					},
 						dot.span({ class: "pagination-label" }, "Next →"),
 						dot.span({ class: "pagination-title" }, nextDoc.label)
 					) : dot.div()
