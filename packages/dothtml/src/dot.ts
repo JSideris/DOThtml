@@ -4,7 +4,7 @@ import { TextVdom } from "./vdom-nodes/text-vdom";
 import { ReactiveVdom } from "./vdom-nodes/reactive-vdom";
 import ElementVdom from "./vdom-nodes/element-vdom";
 import { Vdom } from "./vdom-nodes/vdom";
-import { DOT_VDOM_PROP_NAME } from "./constants";
+import { DOT_VDOM_PROP_NAME, IS_DEV } from "./constants";
 import Signal from "./reactivity/signal";
 import Computed from "./reactivity/computed";
 import Effect from "./reactivity/effect";
@@ -21,6 +21,7 @@ import RefCollection from "./reactivity/ref-collection";
 import { scheduler } from "./reactivity/scheduler";
 import { createStore, getStore, clearStores, getStores } from "./reactivity/store";
 import { getCurrentComponent, pushComponent, popComponent } from "./vdom-nodes/component-context";
+import { registerInstance, unregisterInstance, getInstances } from "./hmr-registry";
 import { createElement, isContent } from "./dot-helpers";
 import { allTags, allCoreWrappers, allTagsSet } from "./tags";
 import { DotChain } from "./dot-chain";
@@ -312,6 +313,14 @@ const makeDot = ()=>{
 	}
 
 	_dot.component = component;
+	_dot.hmr = {
+		swap(id: string, NewClass: any) {
+			const instances = getInstances(id);
+			for (const instance of instances) {
+				(instance as any)._hmrSwap(NewClass);
+			}
+		}
+	};
 	_dot.slot = function(name?: any, fallback?: any) {
 		if (typeof name !== "string" && name !== undefined) {
 			fallback = name;
@@ -455,5 +464,9 @@ const makeDot = ()=>{
 }
 
 const dot = makeDot();
+
+if (IS_DEV && typeof window !== "undefined") {
+	(window as any).dot = dot;
+}
 
 export default dot;

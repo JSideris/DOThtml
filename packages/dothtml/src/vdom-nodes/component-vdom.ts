@@ -630,6 +630,33 @@ export class ComponentVdom extends Vdom{
 		}
 	}
 
+	_hmrSwap(NewClass: any) {
+		const oldComponent = this.component;
+		const props = (oldComponent as any).props;
+		const refs = (oldComponent as any).refs;
+
+		// Create new instance
+		// Note: we don't use dot.create here because we want to manually manage the transition
+		const newComponent = new NewClass();
+		
+		// Transfer state
+		(newComponent as any).props = props;
+		(newComponent as any).refs = refs;
+		
+		// Transfer framework internal state
+		newComponent._ = oldComponent._;
+		(newComponent._ as any).cvdom = this;
+
+		this.component = newComponent;
+		
+		// Invalidate style cache on the new constructor if it exists
+		if ((NewClass as any)._cachedStyles) {
+			delete (NewClass as any)._cachedStyles;
+		}
+
+		this.rebuild();
+	}
+
 	_getNodes(): Node[] {
 		return this.shadowEl ? [this.shadowEl] : [];
 	}
