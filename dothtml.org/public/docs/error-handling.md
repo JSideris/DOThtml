@@ -76,3 +76,17 @@ This ensures that a bug in one part of your dashboard won't stop the rest of you
 1.  **Use Granular Boundaries**: Wrap major UI sections (like a sidebar, a main content area, or individual widgets) in their own error boundaries. This localizes crashes.
 2.  **Always Log**: Even if you show a fallback UI, always log the error to the console or an external service so you can fix the underlying issue.
 3.  **Provide a Reset**: When possible, give users a way to recover from the error (e.g., a "Reload Widget" button) by resetting the state that triggered the boundary.
+
+## Development Error Overlay
+
+To further enhance the development experience, DOThtml includes an implicit **Development Error Overlay** (often called a "Red Box").
+
+In development mode (`IS_DEV`), if a component's `build()` method or any of its lifecycle hooks throw an error, and that component is not already wrapped in an explicit `errorCaught` boundary, DOThtml will automatically render a beautiful, informative error overlay directly into the component's Shadow DOM.
+
+### Features of the Dev Overlay:
+
+- **Instant Feedback**: See exactly what went wrong without checking the console.
+- **Stack Traces**: The overlay includes a full stack trace to help you pinpoint the error in your source code.
+- **HMR Recovery**: When you fix the error in your editor and save, the Hot Module Replacement system will automatically clear the overlay and restore the component's UI, preserving its state where possible.
+
+This system ensures that a small syntax error or logic bug during development doesn't break your entire application or force a full page refresh.

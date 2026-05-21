@@ -30,7 +30,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **20.9 kB**
+- **DOThtml**: **21.3 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -49,7 +49,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **20.9 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **21.3 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -107,6 +107,28 @@ Projects created with the CLI come with several pre-configured scripts:
 - `npm test`: Runs your test suite using Vitest.
 - `npm run lint`: Checks your code for potential errors using ESLint.
 - `npm run preview`: Locally previews your production build.
+
+## Development Experience
+
+DOThtml is designed to provide a world-class developer experience, leveraging modern tooling to make building and debugging as seamless as possible.
+
+### Hot Module Replacement (HMR)
+
+When running `npm run dev`, DOThtml uses **Vite** to provide instant Hot Module Replacement. This means that when you save a file, the changed component is updated in the browser almost instantly without a full page refresh.
+
+### State Preservation
+
+DOThtml's HMR implementation is "state-aware." When a component is hot-swapped, the framework attempts to preserve its internal state, including:
+
+- **Signals**: Values stored in `dot.state` or `this.count = dot.state(0)` are migrated to the new version of the component.
+- **Props**: Data passed from parent components is maintained.
+- **RefCollections**: Any references to DOM elements or other components are kept intact.
+
+This allows you to tweak your component's structure or styles without losing your place in a complex UI flow.
+
+### Stable Tag Names
+
+In development mode, DOThtml generates stable, sanitized custom element tag names based on the component's file path (e.g., `<dothtml-src-components-mycomp-ts-mycomp>`). This ensures consistency across reloads and makes it easier to identify components when inspecting the DOM. In production, these are replaced with shorter, optimized IDs for performance.
 
 --- FILE: components.md (Components) ---
 
@@ -595,6 +617,20 @@ This ensures that a bug in one part of your dashboard won't stop the rest of you
 1.  **Use Granular Boundaries**: Wrap major UI sections (like a sidebar, a main content area, or individual widgets) in their own error boundaries. This localizes crashes.
 2.  **Always Log**: Even if you show a fallback UI, always log the error to the console or an external service so you can fix the underlying issue.
 3.  **Provide a Reset**: When possible, give users a way to recover from the error (e.g., a "Reload Widget" button) by resetting the state that triggered the boundary.
+
+## Development Error Overlay
+
+To further enhance the development experience, DOThtml includes an implicit **Development Error Overlay** (often called a "Red Box").
+
+In development mode (`IS_DEV`), if a component's `build()` method or any of its lifecycle hooks throw an error, and that component is not already wrapped in an explicit `errorCaught` boundary, DOThtml will automatically render a beautiful, informative error overlay directly into the component's Shadow DOM.
+
+### Features of the Dev Overlay:
+
+- **Instant Feedback**: See exactly what went wrong without checking the console.
+- **Stack Traces**: The overlay includes a full stack trace to help you pinpoint the error in your source code.
+- **HMR Recovery**: When you fix the error in your editor and save, the Hot Module Replacement system will automatically clear the overlay and restore the component's UI, preserving its state where possible.
+
+This system ensures that a small syntax error or logic bug during development doesn't break your entire application or force a full page refresh.
 
 --- FILE: main-features.md (Main Features) ---
 
