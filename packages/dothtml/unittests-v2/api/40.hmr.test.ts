@@ -88,7 +88,7 @@ describe("HMR Phase 2 Swap Logic", () => {
 
 		// Mount V1
 		dot(document.body).mount(new TestComponentV1(), { name: "World" });
-		const el1 = document.body.querySelector("dothtml-10001") as HTMLElement;
+		const el1 = document.body.querySelector("[cvdom]") as HTMLElement;
 		expect(el1.shadowRoot?.innerHTML).toContain("Hello World (V1)");
 
 		// Perform HMR swap to V2
@@ -120,7 +120,7 @@ describe("HMR Phase 2 Swap Logic", () => {
 
 		const count = dot.state(0);
 		dot(document.body).mount(new CounterV1(), { count });
-		const el2 = document.body.querySelector("dothtml-10002") as HTMLElement;
+		const el2 = document.body.querySelector("[cvdom]") as HTMLElement;
 		expect(el2.shadowRoot?.innerHTML).toContain("Count: 0 (V1)");
 
 		// Increment state
@@ -299,5 +299,42 @@ describe("HMR Phase 2 Swap Logic", () => {
 
 		expect(getChildContent()).toContain("Child V2");
 		expect(getChildContent()).not.toContain("Child V1");
+	});
+
+	test("dot.hmr.swap preserves internal state (signals not in props)", () => {
+		const hmrId = "src/components/InternalState.ts:InternalState";
+
+		class InternalStateV1 implements IDotComponent {
+			static __hmrId = hmrId;
+			count = dot.state(0);
+			build() {
+				return dot.div("Count: ", this.count, " (V1)");
+			}
+		}
+
+		class InternalStateV2 implements IDotComponent {
+			static __hmrId = hmrId;
+			count = dot.state(0);
+			build() {
+				return dot.div("Count: ", this.count, " (V2)");
+			}
+		}
+
+		const instance = new InternalStateV1();
+		dot(document.body).mount(instance);
+		const el = document.body.querySelector("[cvdom]") as HTMLElement;
+		expect(el.shadowRoot?.innerHTML).toContain("Count: 0 (V1)");
+
+		// Increment internal state
+		instance.count.value = 7;
+		dot.flushSync();
+		expect(el.shadowRoot?.innerHTML).toContain("Count: 7 (V1)");
+
+		// Swap to V2
+		(dot as any).hmr.swap(hmrId, InternalStateV2);
+		dot.flushSync();
+
+		// This is expected to FAIL currently because count will be reset to 0
+		expect(el.shadowRoot?.innerHTML).toContain("Count: 7 (V2)");
 	});
 });

@@ -20,7 +20,7 @@ import RefCollection from "../reactivity/ref-collection";
 import { IS_DEV } from "../constants";
 import { registerInstance, unregisterInstance } from "../hmr-registry";
 
-class HandledError extends Error {
+export class HandledError extends Error {
 	constructor() {
 		super("Error handled by error boundary.");
 		Object.setPrototypeOf(this, HandledError.prototype);
@@ -28,6 +28,18 @@ class HandledError extends Error {
 }
 
 let tagId = 0x10000;
+
+function getStableTagName(hmrId: string): string {
+	// Sanitize hmrId to be a valid custom element name
+	// Custom element names must contain a hyphen and consist of lowercase letters, digits, and some symbols.
+	// We'll replace non-alphanumeric characters with hyphens and ensure it starts with 'dothtml-'
+	const sanitized = hmrId
+		.toLowerCase()
+		.replace(/[^a-z0-9]/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+	return `dothtml-${sanitized}`;
+}
 
 // dot["_addTimestamp"] = true; // Turn off for testing.
 
@@ -47,6 +59,7 @@ export class ComponentVdom extends Vdom{
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private slots: Record<string, ContainerVdom> = {};
 	private parentComponent: ComponentVdom | null = null;
+	private lastError: any = null;
 	private updateSubscription = {
 		active: true,
 		update: () => {
@@ -68,9 +81,14 @@ export class ComponentVdom extends Vdom{
 		if(!component.constructor["_dotHtmlComponent"]){
 			component.constructor["_dotHtmlComponent"] = {};
 			// set up the global component properties (if they haven't been set yet).
-			let ts = (Math.floor(performance.now()*10000000000000)).toString(16);
-			let tId = (tagId++).toString(16);
-			component.constructor["_dotHtmlComponent"].tagName = `dothtml-${tId}${dot["_addTimestamp"] ? `-${ts}` : ""}`;
+			const hmrId = (component.constructor as any).__hmrId;
+			if (IS_DEV && hmrId) {
+				component.constructor["_dotHtmlComponent"].tagName = getStableTagName(hmrId);
+			} else {
+				let ts = (Math.floor(performance.now()*10000000000000)).toString(16);
+				let tId = (tagId++).toString(16);
+				component.constructor["_dotHtmlComponent"].tagName = `dothtml-${tId}${dot["_addTimestamp"] ? `-${ts}` : ""}`;
+			}
 		}
 
 		if(!component._){
@@ -170,6 +188,14 @@ export class ComponentVdom extends Vdom{
 	}
 
 	private handleError(err: any) {
+		this.lastError = err;
+		if (IS_DEV && !this.component.errorCaught) {
+			if (this.shadowEl) {
+				this.renderErrorBox(err);
+			}
+			throw new HandledError();
+		}
+
 		if (this.component.errorCaught) {
 			try {
 				const fallback = this.component.errorCaught(err);
@@ -252,6 +278,9 @@ export class ComponentVdom extends Vdom{
 
 			// Render new children into the existing shadow root
 			const shadow = (this.component._._meta as any).shadowRoot;
+			if (shadow && this.lastError) {
+				shadow.innerHTML = "";
+			}
 			pushComponent(this);
 			try {
 				this.childShadowVdom._render(shadow);
@@ -259,11 +288,58 @@ export class ComponentVdom extends Vdom{
 				popComponent();
 			}
 
+			this.lastError = null;
 			this.component.built && this.component.built();
 		} catch (err) {
 			if (err instanceof HandledError) return;
 			this.handleError(err);
 		}
+	}
+
+	private renderErrorBox(err: any) {
+		if (!this.shadowEl) return;
+		const shadow = (this.component._._meta as any).shadowRoot;
+		if (!shadow) return;
+
+		shadow.innerHTML = ""; // Clear existing content
+		
+		const errorBox = document.createElement("div");
+		errorBox.setAttribute("style", `
+			background-color: rgba(255, 0, 0, 0.9);
+			color: white;
+			padding: 20px;
+			margin: 10px;
+			border-radius: 8px;
+			font-family: monospace;
+			white-space: pre-wrap;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+			z-index: 10000;
+			position: relative;
+			overflow: auto;
+			max-height: 90vh;
+		`);
+
+		const title = document.createElement("h2");
+		title.textContent = "DOThtml HMR Error";
+		title.style.marginTop = "0";
+		errorBox.appendChild(title);
+
+		const message = document.createElement("div");
+		message.style.fontWeight = "bold";
+		message.style.fontSize = "1.2em";
+		message.style.marginBottom = "10px";
+		message.textContent = err.message || err;
+		errorBox.appendChild(message);
+
+		if (err.stack) {
+			const stack = document.createElement("pre");
+			stack.style.fontSize = "0.9em";
+			stack.style.opacity = "0.8";
+			stack.textContent = err.stack;
+			errorBox.appendChild(stack);
+		}
+
+		shadow.appendChild(errorBox);
 	}
 
 	private validateProps() {
@@ -544,6 +620,10 @@ export class ComponentVdom extends Vdom{
 			node.appendChild(this.shadowEl);
 
 			this.shadowEl["component"] = this.component;
+
+			if (IS_DEV && this.lastError) {
+				this.renderErrorBox(this.lastError);
+			}
 
 			for(let i = 0; i < this.events.length; i++){
 				let e = this.events[i];

@@ -9,7 +9,7 @@ import Signal from "./reactivity/signal";
 import Computed from "./reactivity/computed";
 import Effect from "./reactivity/effect";
 import { component } from "./decoration/component";
-import { ComponentVdom } from "./vdom-nodes/component-vdom";
+import { ComponentVdom, HandledError } from "./vdom-nodes/component-vdom";
 import renderStylesheet from "./helpers/render-stylesheet";
 import BaseVStyle from "./v-style-nodes/base-v-style";
 import StyleVNode from "./v-meta-nodes/style-v-node";
@@ -112,7 +112,11 @@ function promote(vdom: Vdom): DotChain {
 			}
 		}
 	}
-	cn.init();
+	try {
+		cn.init();
+	} catch (e) {
+		if (!(e instanceof HandledError)) throw e;
+	}
 	return this._addChild(cn);
 };
 
