@@ -37,9 +37,9 @@ export interface IDotDocument {
 	/**
 	 * Cast any document to any other element type. This can be used to access attributes when dotHTML doesn't know the type.
 	 * @example
-	 * dot("#my-input").as(dot.input).value("Hello, world!")
+	 * dot("#my-input").as(dot.input).attr("value", "Hello, world!")
 	 * @example
-	 * dot.h("<a>Click me!</a>").as(dot.a).hRef("https://dothtml.com/")
+	 * dot.h("<a>Click me!</a>").as(dot.a).attr("href", "https://dothtml.com/")
 	*/
 	as<T extends IDotDocument>(dotElement: (...props: any[]) => T): T;
 	/**
@@ -87,7 +87,6 @@ export interface IDotDocument {
 	remove(): void;
 
 	style(c: string | ISignal<any> | IBinding<any, any> | IDotCss | ((s: IDotCss) => void)): this;
-	class(name: string, condition?: any): this;
 	attr(name: string, value: any): this;
 	on(event: string, callback: (e: any) => void): this;
 	onEnter(callback: (el: HTMLElement) => void): this;

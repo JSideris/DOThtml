@@ -7,40 +7,40 @@ export const BENCHMARK_DATA = {
     "SVELTE": 28
   },
   "DOM_INTERACTIVE": {
-    "DOTHTML": 5.2,
-    "REACT": 5.3,
-    "VUE": 4.9,
-    "SVELTE": 5.1
+    "DOTHTML": 4.75,
+    "REACT": 4.7,
+    "VUE": 4.65,
+    "SVELTE": 4.8
   },
   "FRAMEWORK_READY": {
-    "DOTHTML": 18.8,
-    "REACT": 8.2,
-    "VUE": 7.9,
-    "SVELTE": 5.8
+    "DOTHTML": 14.35,
+    "REACT": 6.35,
+    "VUE": 7.85,
+    "SVELTE": 5.6
   },
   "CREATE_1000": {
-    "DOTHTML": 7.05,
-    "REACT": 7.4,
-    "VUE": 6.77,
-    "SVELTE": 5.91
+    "DOTHTML": 6.93,
+    "REACT": 6.69,
+    "VUE": 6.14,
+    "SVELTE": 5.93
   },
   "CREATE_10000": {
-    "DOTHTML": 675.1,
-    "REACT": 662.3,
-    "VUE": 508.2,
-    "SVELTE": 458.1
+    "DOTHTML": 721.85,
+    "REACT": 624.95,
+    "VUE": 473.35,
+    "SVELTE": 465.85
   },
   "APPEND_1000": {
-    "DOTHTML": 7.26,
-    "REACT": 72.78,
-    "VUE": 51.65,
-    "SVELTE": 49.94
+    "DOTHTML": 7.64,
+    "REACT": 70.08,
+    "VUE": 51.99,
+    "SVELTE": 50.07
   },
   "UPDATE_10TH": {
     "DOTHTML": 0.14,
     "REACT": 0.14,
     "VUE": 0.14,
-    "SVELTE": 0.14
+    "SVELTE": 0.15
   },
   "SWAP_ROWS": {
     "DOTHTML": 0.14,
@@ -50,14 +50,14 @@ export const BENCHMARK_DATA = {
   },
   "CLEAR": {
     "DOTHTML": 1.45,
-    "REACT": 1.44,
-    "VUE": 1.43,
-    "SVELTE": 1.44
+    "REACT": 1.45,
+    "VUE": 1.45,
+    "SVELTE": 1.46
   },
   "BULK_STYLE": {
     "DOTHTML": 0.15,
-    "REACT": 0.4,
-    "VUE": 0.25,
+    "REACT": 0.31,
+    "VUE": 0.21,
     "SVELTE": 0.21
   }
 };

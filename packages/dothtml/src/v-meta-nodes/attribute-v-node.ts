@@ -54,7 +54,11 @@ export default class AttributeVNode extends VMetaNode{
 				}
 			}
 		}
-		this.target.setAttribute(this.attr, tokens.join(" "));
+		if (tokens.length > 0) {
+			this.target.setAttribute(this.attr, tokens.join(" "));
+		} else {
+			this.target.removeAttribute(this.attr);
+		}
 	}
 
 	unrender(){

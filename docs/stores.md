@@ -50,8 +50,8 @@ class CounterComponent extends IDotComponent {
             dot.h2(this.counter.name),
             dot.p(this.counter.count.bindAs(v => `Count: ${v}`)),
             dot.p(this.counter.doubleCount.bindAs(v => `Double: ${v}`)),
-            dot.button("Increment").onClick(() => this.counter.increment()),
-            dot.button("Reset").onClick(() => this.counter.reset())
+            dot.button({ onClick: () => this.counter.increment() }, "Increment"),
+            dot.button({ onClick: () => this.counter.reset() }, "Reset")
         );
     }
 }

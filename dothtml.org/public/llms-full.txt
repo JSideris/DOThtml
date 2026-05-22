@@ -16,16 +16,16 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | 7.05 ms | 7.40 ms | 6.77 ms | **5.91 ms** |
-| **Create 10,000 rows** | 675.10 ms | 662.30 ms | 508.20 ms | **458.10 ms** |
-| **Append 1,000 rows** | **7.26 ms** | 72.78 ms | 51.65 ms | 49.94 ms |
-| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
+| **Create 1,000 rows** | 6.93 ms | 6.69 ms | 6.14 ms | **5.93 ms** |
+| **Create 10,000 rows** | 721.85 ms | 624.95 ms | 473.35 ms | **465.85 ms** |
+| **Append 1,000 rows** | **7.64 ms** | 70.08 ms | 51.99 ms | 50.07 ms |
+| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.15 ms** |
 | **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
-| **Clear** | 1.45 ms | 1.44 ms | **1.43 ms** | 1.44 ms |
-| **Bulk Style Update** | **0.15 ms** | 0.40 ms | 0.25 ms | 0.21 ms |
+| **Clear** | 1.45 ms | 1.45 ms | **1.45 ms** | 1.46 ms |
+| **Bulk Style Update** | **0.15 ms** | 0.31 ms | 0.21 ms | 0.21 ms |
 | **First Contentful Paint** | 28.00 ms | 28.00 ms | 28.00 ms | 28.00 ms |
-| **DOM Interactive** | 5.20 ms | 5.30 ms | 4.90 ms | 5.10 ms |
-| **Framework Ready** | 18.80 ms | 8.20 ms | 7.90 ms | **5.80 ms** |
+| **DOM Interactive** | 4.75 ms | 4.70 ms | 4.65 ms | 4.80 ms |
+| **Framework Ready** | 14.35 ms | 6.35 ms | 7.85 ms | **5.60 ms** |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -1664,8 +1664,8 @@ class CounterComponent extends IDotComponent {
             dot.h2(this.counter.name),
             dot.p(this.counter.count.bindAs(v => `Count: ${v}`)),
             dot.p(this.counter.doubleCount.bindAs(v => `Double: ${v}`)),
-            dot.button("Increment").onClick(() => this.counter.increment()),
-            dot.button("Reset").onClick(() => this.counter.reset())
+            dot.button({ onClick: () => this.counter.increment() }, "Increment"),
+            dot.button({ onClick: () => this.counter.reset() }, "Reset")
         );
     }
 }

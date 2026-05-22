@@ -160,28 +160,25 @@ describe("Special attributes.", ()=>{
 		dot(document.body).div({ class: ["my-class", "your-class"] });
 		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=my-class your-class></div>`);
 	});
+
+	test("Reactive class object.", () => {
+		const isActive = dot.state(true);
+		dot(document.body).div({ class: { active: isActive } });
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div class=active></div>`);
+		
+		isActive.value = false;
+		dot.flushSync();
+		expect(formatHTML(document.body.innerHTML)).toBe(`<div></div>`);
+	});
+
+	test("Event listener in object syntax.", () => {
+		let clicked = false;
+		dot(document.body).button({ onClick: () => clicked = true }, "Click Me");
+		const btn = document.querySelector("button");
+		btn?.click();
+		expect(clicked).toBe(true);
+	});
 });
-
-// TODO: these may or may not be legitimate. 
-// describe("Updating attributes on the target.", ()=>{
-// 	test("Set class name on target.", ()=>{
-// 		dot(document.body).div().id("my-div");
-// 		dot("#my-div").class("d-class");
-// 		expect(formatHTML(document.body.innerHTML)).toBe(`<div id=my-div class=d-class></div>`);
-// 	});
-
-// 	test("Set class name on target then add elements.", ()=>{
-// 		dot(document.body).div().id("my-div");
-// 		dot("#my-div").class("d-class").p("").class("p-class");
-// 		expect(formatHTML(document.body.innerHTML)).toBe(`<div id=my-div class=d-class><p class=p-class></p></div>`);
-// 	});
-
-// 	test("Set class name on target that has children.", ()=>{
-// 		dot(document.body).div(dot.p()).id("my-div");
-// 		dot("#my-div").class("d-class");
-// 		expect(formatHTML(document.body.innerHTML)).toBe(`<div id=my-div class=d-class><p></p></div>`);
-// 	});
-// });
 
 describe("Nuanced rendering.", ()=>{
 	test("Appending content.", () => {
