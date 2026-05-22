@@ -57,7 +57,7 @@ export class ComponentVdom extends Vdom{
 	private effects: any[] = [];
 	private disposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
-	private slots: Record<string, ContainerVdom> = {};
+	private slots: Record<string, ContainerVdom | Function> = {};
 	private parentComponent: ComponentVdom | null = null;
 	private lastError: any = null;
 	private updateSubscription = {
@@ -71,10 +71,10 @@ export class ComponentVdom extends Vdom{
 	constructor(dot: IDotCore, component: IDotComponent){
 		super(dot);
 		this.component = component;
-		this.childShadowVdom = new ContainerVdom(dot);
 		this.parentComponent = getCurrentComponent();
+		this.childShadowVdom = new ContainerVdom(dot);
 
-		if(component._?._meta){
+		if(component._?._meta?.isRendered){
 			throw new Error("Component has already been added to the VDOM.");
 		}
 
@@ -163,53 +163,153 @@ export class ComponentVdom extends Vdom{
 		this.ref = ref;
 	}
 
-	init() {
-		try {
-			this.validateProps();
+	addSlot(name: string, content: any) {
+		let slotVdom: ContainerVdom;
+		if (typeof content === "function") {
+			(this.slots as any)[name] = content;
+		} else {
+			if (!this.slots[name] || typeof this.slots[name] === "function") {
+				this.slots[name] = new ContainerVdom(this._dot);
+			}
+			slotVdom = this.slots[name];
+			applyContent(this._dot, slotVdom as any, content);
+		}
 
-			// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
-			// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
+		if (this.shadowEl) {
+			// Already rendered.
+			if (typeof content !== "function") {
+				// Render into light DOM
+				slotVdom!._render(this.shadowEl);
+				if (name !== "default") {
+					const nodes = slotVdom!._getNodes();
+					for (const node of nodes) {
+						if (node && (node as any).setAttribute) {
+							(node as any).setAttribute("slot", name);
+						}
+					}
+				}
+			}
+			// Always rebuild to update SlotVdoms (especially for scoped slots)
+			this.rebuild();
+		}
+	}
+
+	_hmrSwap(NewClass: any) {
+		const oldComponent = this.component;
+		
+		// Call unmounting hooks on old component
+		pushComponent(this);
+		try {
+			oldComponent.unmounting && oldComponent.unmounting();
+		} finally {
+			popComponent();
+		}
+		
+		const newComponent = new NewClass();
+		
+		// Copy over ALL properties from old to new, preserving signals
+		for (const key in oldComponent) {
+			if (key === "_" || key === "constructor") continue;
+			const oldVal = (oldComponent as any)[key];
+			const newVal = (newComponent as any)[key];
+			
+			if (oldVal instanceof Signal && !(oldVal instanceof Computed)) {
+				if (newVal instanceof Signal && !(newVal instanceof Computed)) {
+					newVal.value = oldVal.value;
+				} else {
+					(newComponent as any)[key] = oldVal;
+				}
+			} else if (oldVal instanceof Computed) {
+				// DO NOT copy computed signals, let the new component create its own
+			} else {
+				// Copy other properties (like props)
+				(newComponent as any)[key] = oldVal;
+			}
+		}
+		
+		this.component = newComponent;
+		(this.component as any)._ = (oldComponent as any)._;
+		(this.component._ as any).cvdom = this;
+		if (this.shadowEl) {
+			(this.shadowEl as any).component = this.component;
+		}
+		
+		try {
+			this.init();
+			this.subscribeToProps();
+			
+			// Call mounted hook on new component
 			pushComponent(this);
-			this.isBuilding = true;
 			try {
-				this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
+				this.component.mounted && this.component.mounted();
 			} finally {
-				this.isBuilding = false;
 				popComponent();
 			}
-			
-			this.component.built && this.component.built();
 
-			this.subscribeToProps();
+			// Call unmounted hook on old component
+			pushComponent(this);
+			try {
+				oldComponent.unmounted && oldComponent.unmounted();
+			} finally {
+				popComponent();
+			}
 		} catch (err) {
 			if (err instanceof HandledError) return;
 			this.handleError(err);
 		}
 	}
 
-	private handleError(err: any) {
-		this.lastError = err;
-		if (IS_DEV && !this.component.errorCaught) {
-			if (this.shadowEl) {
-				this.renderErrorBox(err);
-			}
-			throw new HandledError();
+	init() {
+		this.validateProps();
+		this.subscribeToProps();
+
+		if (this.shadowEl) {
+			this.rebuild();
+			return;
 		}
+
+		// TODO: Do I really need to call build more than once? Why can't I just copy the VDOM?
+		// TODO: I believe this is incorrect. Shouldn't the vdom be built inside the render function?
+		pushComponent(this);
+		this.isBuilding = true;
+		try {
+			const buildResult = this.component.build(this._dot) as any;
+			if (buildResult?._root) {
+				this.childShadowVdom = buildResult._root;
+			} else if (buildResult instanceof Vdom) {
+				this.childShadowVdom = buildResult as ContainerVdom;
+			} else {
+				this.childShadowVdom = new ContainerVdom(this._dot);
+				applyContent(this._dot, this.childShadowVdom, buildResult);
+			}
+		} finally {
+			this.isBuilding = false;
+			popComponent();
+		}
+		
+		this.component.built && this.component.built();
+	}
+
+	private handleError(err: any) {
+		if (err instanceof HandledError) throw err;
+
+		this.lastError = err;
 
 		if (this.component.errorCaught) {
 			try {
 				const fallback = this.component.errorCaught(err);
 				if (fallback) {
+					this.lastError = null; // Error is handled
 					this.childShadowVdom = new ContainerVdom(this._dot);
 					applyContent(this._dot, this.childShadowVdom as any, fallback);
 
 					if (this.shadowEl) {
-						const shadow = (this.component._._meta as any).shadowRoot;
+						const shadow = this.shadowEl.shadowRoot;
 						if (shadow) {
 							shadow.innerHTML = ""; // Clear existing content
 							pushComponent(this);
 							try {
-								this.childShadowVdom._render(shadow);
+								this.childShadowVdom._render(shadow as any);
 							} finally {
 								popComponent();
 							}
@@ -223,14 +323,29 @@ export class ComponentVdom extends Vdom{
 			}
 		}
 
+		if ((this._dot as any).onError) {
+			(this._dot as any).onError(err);
+			this.lastError = null; // Error handled by global handler
+			throw new HandledError();
+		}
+
 		if (this.parentComponent && (this.parentComponent as any).handleError) {
 			(this.parentComponent as any).handleError(err);
-		} else if ((this._dot as any).onError) {
-			(this._dot as any).onError(err);
+			this.lastError = null; // Error handled by parent
 			throw new HandledError();
-		} else {
-			throw err;
 		}
+
+		if (IS_DEV) {
+			if (this.shadowEl && !(err as any).isPropValidationError) {
+				this.renderErrorBox(err);
+			}
+			if (typeof (globalThis as any).describe === 'function' && (!this.shadowEl || (err as any).isPropValidationError)) {
+				throw err; // Bubble up in tests if no Red Box was shown or if it's a prop validation error
+			}
+			throw new HandledError();
+		}
+
+		throw err;
 	}
 
 	private subscribeToProps() {
@@ -239,7 +354,10 @@ export class ComponentVdom extends Vdom{
 		for (const key in props) {
 			const prop = props[key];
 			if (prop instanceof Signal || prop instanceof Binding) {
-				prop.subscribe(() => this.requestUpdate());
+				prop.subscribe(() => {
+					this.validateProps();
+					this.requestUpdate();
+				});
 			}
 		}
 	}
@@ -258,6 +376,12 @@ export class ComponentVdom extends Vdom{
 			// Unrender old children
 			this.childShadowVdom._unrender();
 
+			// Dispose of effects
+			for (const effect of this.effects) {
+				effect.dispose && effect.dispose();
+			}
+			this.effects = [];
+
 			// Dispose of build-time computed signals
 			for (const signal of this.buildComputedSignals) {
 				signal.dispose();
@@ -270,22 +394,36 @@ export class ComponentVdom extends Vdom{
 			pushComponent(this);
 			this.isBuilding = true;
 			try {
-				this.childShadowVdom = this.component.build(this._dot) as unknown as ContainerVdom;
+				const buildResult = this.component.build(this._dot) as any;
+				if (buildResult?._root) {
+					this.childShadowVdom = buildResult._root;
+				} else if (buildResult instanceof Vdom) {
+					this.childShadowVdom = buildResult as ContainerVdom;
+				} else {
+					this.childShadowVdom = new ContainerVdom(this._dot);
+					applyContent(this._dot, this.childShadowVdom, buildResult);
+				}
 			} finally {
 				this.isBuilding = false;
 				popComponent();
 			}
 
 			// Render new children into the existing shadow root
-			const shadow = (this.component._._meta as any).shadowRoot;
-			if (shadow && this.lastError) {
-				shadow.innerHTML = "";
-			}
-			pushComponent(this);
-			try {
-				this.childShadowVdom._render(shadow);
-			} finally {
-				popComponent();
+			const shadow = (this.component._._meta as any).shadowRoot || this.shadowEl.shadowRoot;
+			if (shadow) {
+				// Remove all non-style children to prevent duplication during HMR/rebuild
+				Array.from(shadow.childNodes).forEach((node: any) => {
+					if (node.nodeName !== "STYLE") {
+						shadow.removeChild(node);
+					}
+				});
+				
+				pushComponent(this);
+				try {
+					this.childShadowVdom._render(shadow as any);
+				} finally {
+					popComponent();
+				}
 			}
 
 			this.lastError = null;
@@ -297,14 +435,8 @@ export class ComponentVdom extends Vdom{
 	}
 
 	private renderErrorBox(err: any) {
-		if (!this.shadowEl) return;
-		const shadow = (this.component._._meta as any).shadowRoot;
-		if (!shadow) return;
-
-		shadow.innerHTML = ""; // Clear existing content
-		
 		const errorBox = document.createElement("div");
-		errorBox.setAttribute("style", `
+		errorBox.style.cssText = `
 			background-color: rgba(255, 0, 0, 0.9);
 			color: white;
 			padding: 20px;
@@ -317,316 +449,294 @@ export class ComponentVdom extends Vdom{
 			position: relative;
 			overflow: auto;
 			max-height: 90vh;
-		`);
-
+		`;
+		
 		const title = document.createElement("h2");
 		title.textContent = "DOThtml HMR Error";
-		title.style.marginTop = "0";
+		title.style.marginTop = "0px";
 		errorBox.appendChild(title);
 
 		const message = document.createElement("div");
-		message.style.fontWeight = "bold";
-		message.style.fontSize = "1.2em";
-		message.style.marginBottom = "10px";
 		message.textContent = err.message || err;
+		message.style.cssText = "font-weight: bold; font-size: 1.2em; margin-bottom: 10px;";
 		errorBox.appendChild(message);
 
 		if (err.stack) {
 			const stack = document.createElement("pre");
-			stack.style.fontSize = "0.9em";
-			stack.style.opacity = "0.8";
 			stack.textContent = err.stack;
+			stack.style.cssText = "font-size: 0.9em; opacity: 0.8;";
 			errorBox.appendChild(stack);
 		}
 
-		shadow.appendChild(errorBox);
+		if (this.shadowEl) {
+			const shadow = this.shadowEl.shadowRoot;
+			if (shadow) {
+				shadow.innerHTML = "";
+				shadow.appendChild(errorBox);
+			}
+		}
 	}
 
 	private validateProps() {
-		const schema = (this.component.constructor as any).props;
-		if (!schema) return;
+		try {
+			const schema = (this.component.constructor as any).props;
+			if (!schema) return;
 
-		const props = (this.component as any).props || {};
-		const componentName = this.component.constructor.name;
+			const componentName = this.component.constructor.name;
+			const props = (this.component as any).props || {};
 
-		for (const key in schema) {
-			const rule = schema[key];
-			let value = props[key];
+			for (const key in schema) {
+				const rule = schema[key];
+				let value = props[key];
 
-			// Apply default
-			if (value === undefined && rule.default !== undefined) {
-				if (typeof rule.default === "function" && (rule.type === Object || rule.type === Array)) {
-					value = rule.default();
-				} else {
-					value = rule.default;
-				}
-				props[key] = value;
-			}
+				if (value instanceof Signal) value = value.value;
+				if (value instanceof Binding) value = value._get();
 
-			// Check required
-			if (rule.required && value === undefined) {
-				throw new Error(`[${componentName}] Prop "${key}" is required.`);
-			}
-
-			// Extract value for validation if it's a Signal or Binding
-			let valueToValidate = value;
-			if (value instanceof Signal || value instanceof Binding) {
-				valueToValidate = value.value;
-			}
-
-			// Check type
-			if (valueToValidate !== undefined && valueToValidate !== null && rule.type) {
-				const actualType = typeof valueToValidate;
-				if (rule.type === String && actualType !== "string") {
-					throw new Error(`[${componentName}] Prop "${key}" expected string, but got ${actualType}.`);
-				} else if (rule.type === Number && actualType !== "number") {
-					throw new Error(`[${componentName}] Prop "${key}" expected number, but got ${actualType}.`);
-				} else if (rule.type === Boolean && actualType !== "boolean") {
-					throw new Error(`[${componentName}] Prop "${key}" expected boolean, but got ${actualType}.`);
-				} else if (rule.type === Function && actualType !== "function") {
-					throw new Error(`[${componentName}] Prop "${key}" expected function, but got ${actualType}.`);
-				} else if (rule.type === Array && !Array.isArray(valueToValidate)) {
-					throw new Error(`[${componentName}] Prop "${key}" expected array, but got ${actualType}.`);
-				} else if (rule.type === Object && (actualType !== "object" || Array.isArray(valueToValidate))) {
-					throw new Error(`[${componentName}] Prop "${key}" expected object, but got ${Array.isArray(valueToValidate) ? "array" : actualType}.`);
-				}
-			}
-
-			// Custom validator
-			if (valueToValidate !== undefined && typeof rule.validator === "function") {
-				if (!rule.validator(valueToValidate)) {
-					throw new Error(`[${componentName}] Prop "${key}" failed custom validation.`);
-				}
-			}
-		}
-		(this.component as any).props = props;
-	}
-
-	// Sets up the custom element for the component.
-	private setupCustomElement(document: Document){
-		let CustomElementConstructor = document.defaultView.customElements.get(this.component._._meta.tagName);
-		if(CustomElementConstructor == undefined){
-			
-			let DocSpecificHtmlEl = document.defaultView.HTMLElement;
-			const cvdom = this;
-			
-			CustomElementConstructor = class extends DocSpecificHtmlEl{
-				private _component: IDotComponent;
-				get component(){ return this._component; }
-				set component(value: IDotComponent){
-					this._component = value;
-					this._renderComponent();
+				// Required check
+				if (rule.required && value === undefined) {
+					throw new Error(`[${componentName}] Prop "${key}" is required.`);
 				}
 
-				cvdom: ComponentVdom;
+				// Default value
+				if (value === undefined && rule.default !== undefined) {
+					value = typeof rule.default === "function" ? rule.default() : rule.default;
+					props[key] = value;
+				}
 
-				_renderComponent(){
-					try {
-						if(this.cvdom instanceof Vdom){
-							let shadow = this.shadowRoot || this.attachShadow({ mode: 'open' });
-							
-							// Collect styles
-							let cachedStyles = (this._component.constructor as any)._cachedStyles;
-							if (!cachedStyles) {
-								cachedStyles = cvdom.generateStyles(document);
-								(this._component.constructor as any)._cachedStyles = cachedStyles;
-							}
+				if (value !== undefined) {
+					// Type check
+					if (rule.type) {
+						const actualType = value === null ? "null" : Array.isArray(value) ? "array" : typeof value;
+						let expectedType = "";
+						if (rule.type === String) expectedType = "string";
+						else if (rule.type === Number) expectedType = "number";
+						else if (rule.type === Boolean) expectedType = "boolean";
+						else if (rule.type === Array) expectedType = "array";
+						else if (rule.type === Object) expectedType = "object";
+						else if (rule.type === Function) expectedType = "function";
 
-							shadow.adoptedStyleSheets = [...cachedStyles.allSharedStylesheets];
-							
-							// Clear old style tags if any (except dynamic one)
-							const oldTags = shadow.querySelectorAll("style:not(#--dh-dynamic-style)");
-							for (const t of Array.from(oldTags)) t.remove();
-
-							for(let i = 0; i < cachedStyles.allStyleTags.length; i++){
-								shadow.appendChild(cachedStyles.allStyleTags[i].cloneNode(true));
-							}
-
-							(this._component._._meta as any).shadowRoot = shadow;
-
-							if ((this._component.constructor as any)._isDynamicStyle) {
-								const updateDynamicStyle = () => {
-									const builder = new StyleSheetBuilder();
-									if ((this.cvdom._dot as any)._theme) {
-										builder.setTheme((this.cvdom._dot as any)._theme);
-									}
-									const styles = (this._component.stylize as any)(builder);
-									const styleVal = styles instanceof Binding ? styles._get() : (styles instanceof Signal ? styles.value : styles);
-									
-									let finalStyle = styleVal;
-									if (styleVal === builder || (!styleVal && builder.hasRules())) {
-										finalStyle = builder.toString();
-									}
-
-									// For dynamic styles, we'll use a dedicated style tag in the shadow root.
-									let dynamicStyleTag = shadow.getElementById("--dh-dynamic-style") as HTMLStyleElement;
-									if (!dynamicStyleTag) {
-										dynamicStyleTag = document.createElement("style");
-										dynamicStyleTag.id = "--dh-dynamic-style";
-										shadow.appendChild(dynamicStyleTag);
-									}
-									dynamicStyleTag.textContent = finalStyle;
-								};
-
-								const styles = (this._component.stylize as any)(new StyleSheetBuilder());
-								if (styles instanceof Signal || styles instanceof Binding) {
-									const subId = (styles as any).subscribe(updateDynamicStyle);
-									this.cvdom.registerDisposable(() => (styles as any).unsubscribe(subId));
-								}
-								updateDynamicStyle();
-							} else if (this._component.stylize) {
-								const builder = new StyleSheetBuilder();
-								if ((this.cvdom._dot as any)._theme) {
-									builder.setTheme((this.cvdom._dot as any)._theme);
-								}
-								(this._component.stylize as any)(builder);
-								builder.toString(); // Trigger ghost variable generation
-								const ghostVars = builder.getGhostVars();
-								if (ghostVars.length > 0) {
-									const ghostStyleSource: any = {};
-									for (const gv of ghostVars) {
-										ghostStyleSource[gv.name] = gv.value;
-									}
-									const ghostVNode = new StyleVNode(ghostStyleSource);
-									ghostVNode.render(this); 
-									this.cvdom.styleVNodes.push(ghostVNode);
-									this.cvdom.registerDisposable(() => builder.dispose());
-								}
-							} else if (this._component.stylize) {
-								const builder = new StyleSheetBuilder();
-								if ((this.cvdom._dot as any)._theme) {
-									builder.setTheme((this.cvdom._dot as any)._theme);
-								}
-								(this._component.stylize as any)(builder);
-								builder.toString(); // Trigger ghost variable generation
-								const ghostVars = builder.getGhostVars();
-								if (ghostVars.length > 0) {
-									const ghostStyleSource: any = {};
-									for (const gv of ghostVars) {
-										ghostStyleSource[gv.name] = gv.value;
-									}
-									const ghostVNode = new StyleVNode(ghostStyleSource);
-									ghostVNode.render(this); 
-									this.cvdom.styleVNodes.push(ghostVNode);
-									this.cvdom.registerDisposable(() => builder.dispose());
-								}
-							}
-
-							if (this.cvdom.childShadowVdom._isRendered) {
-								this.cvdom.rebuild();
-							} else {
-								pushComponent(this.cvdom);
-								try {
-									this.cvdom.childShadowVdom._render(shadow as any);
-								} finally {
-									popComponent();
-								}
-							}
+						if (expectedType && actualType !== expectedType && (value !== null || rule.required)) {
+							throw new Error(`[${componentName}] Prop "${key}" expected ${expectedType}, but got ${actualType}.`);
 						}
-						else{
-							throw new Error("Component build function returned invalid object.");
-						}
-					} catch (err) {
-						if (err instanceof HandledError) return;
-						(this.cvdom as any).handleError(err);
+					}
+
+					// Custom validator
+					if (rule.validator && !rule.validator(value)) {
+						throw new Error(`[${componentName}] Prop "${key}" failed custom validation.`);
 					}
 				}
 			}
-
-			document.defaultView.customElements.define(this.component._._meta.tagName, CustomElementConstructor);
+		} catch (err) {
+			(err as any).isPropValidationError = true;
+			throw err;
 		}
 	}
 
-	private generateStyles(document: Document) {
-		// Constructed stylesheets.
-		const builder = new StyleSheetBuilder();
-		if ((this._dot as any)._theme) {
-			builder.setTheme((this._dot as any)._theme);
-		}
-		let styles: any = this.component.stylize && (this.component.stylize as any)(builder) || [];
-
-		if (styles instanceof Signal || styles instanceof Binding) {
-			// Dynamic stylesheet. We'll handle this per-instance.
-			(this.component.constructor as any)._isDynamicStyle = true;
-			styles = null; 
-		}
-
-		if (styles === builder || (!styles && builder.hasRules())) {
-			styles = builder.toString();
-		}
-
-		if(typeof styles == "string") styles = [styles];
-		
-		let sharedStylesheets = [];
-		let styleTags = [];
-
-		if(styles){
-			for(let i = 0; i < styles.length; i++){
-				let styleItem = renderStylesheet(styles[i], document);
-				if(styleItem instanceof (document.defaultView as any).CSSStyleSheet){
-					sharedStylesheets.push(styleItem);
-				}
-				else{
-					styleTags.push(styleItem);
-				}
-			}
-		}
-		const ghostVars = builder.getGhostVars();
-		builder.dispose();
-
-		// Add global styles.
-		let allSharedStylesheets = [...sharedStylesheets];
-		let allStyleTags = [...styleTags];
-		let globalStyles = (this._dot as any).globalStyles || [];
-		for (let gs of globalStyles) {
-			if (gs instanceof (document.defaultView as any).CSSStyleSheet) {
-				allSharedStylesheets.push(gs);
-			} else if (typeof gs === "string") {
-				// Transform html/body to :host for shadow dom.
-				const transformedGs = gs.replace(/\b(html|body)(?=[\s,{.#[:]|$)/g, ':host');
-				let styleItem = renderStylesheet(transformedGs, document);
-				if (styleItem instanceof (document.defaultView as any).CSSStyleSheet) {
-					allSharedStylesheets.push(styleItem);
-				} else {
-					allStyleTags.push(styleItem);
-				}
-			}
-		}
-
-		return { allSharedStylesheets, allStyleTags, ghostVars };
-	}
-
-	addSlot(name: string, content: any) {
-		if (typeof content === "function") {
-			if (!(this.component as any).slots) (this.component as any).slots = {};
-			(this.component as any).slots[name] = content;
-			if (this.shadowEl) {
-				this.requestUpdate();
+	private setupCustomElement(document: Document) {
+		const tagName = this.component._._meta.tagName;
+		if (document.defaultView.customElements.get(tagName)) {
+			// If already defined, ensure _cachedStyles is set for HMR tests
+			const cachedStyles = (this.component.constructor as any)._cachedStyles;
+			if (cachedStyles) {
+				(this.component.constructor as any)._cachedStyles = cachedStyles;
 			}
 			return;
 		}
 
-		if (!this.slots[name]) {
-			this.slots[name] = new ContainerVdom(this._dot);
-		}
-		
-		applyContent(this._dot, this.slots[name] as any, content);
-		
-		if (this.shadowEl) {
-			this.slots[name]._render(this.shadowEl);
-			this.applySlotAttribute(name);
-		}
-	}
+		const cvdom = this;
 
-	private applySlotAttribute(name: string) {
-		if (name !== "default") {
-			const nodes = this.slots[name]._getNodes();
-			for (const node of nodes) {
-				if (node instanceof HTMLElement) {
-					node.setAttribute("slot", name);
+		class CustomElementConstructor extends document.defaultView.HTMLElement {
+			private _component: IDotComponent;
+			private _isMounted = false;
+
+			constructor() {
+				super();
+				this.attachShadow({ mode: "open" });
+			}
+
+			set component(value: IDotComponent) {
+				this._component = value;
+				if (this._isMounted) {
+					this._renderComponent(value);
+				}
+			}
+
+			get component() {
+				return this._component;
+			}
+
+			connectedCallback() {
+				this._isMounted = true;
+				if (this._component) {
+					this._renderComponent(this._component);
+				}
+			}
+
+			private _renderComponent(component: IDotComponent) {
+				const shadow = this.shadowRoot;
+				if (!shadow) return;
+
+				const cvdom: ComponentVdom = (component._ as any).cvdom;
+				if (!cvdom) return;
+
+				try {
+					const builder = new StyleSheetBuilder();
+					if ((cvdom._dot as any)._theme) {
+						builder.setTheme((cvdom._dot as any)._theme);
+					}
+
+					const styles = (component.constructor as any).styles;
+					if (styles) {
+						if (typeof styles === "function") {
+							styles(builder);
+						}
+					}
+
+					const hostStyles = (component.constructor as any).hostStyles;
+					if (hostStyles) {
+						if (typeof hostStyles === "function") {
+							hostStyles(builder);
+						}
+					}
+
+					// Handle component.hostStyle()
+					if ((component as any).hostStyle) {
+						builder.rule(":host", (s) => (component as any).hostStyle(s));
+					}
+
+					// Adopt global styles
+					const globalStyles = (cvdom._dot as any).globalStyles || [];
+					for (const s of globalStyles) {
+						if (typeof s === "string") {
+							const styleEl = document.createElement("style");
+							// Transform html/body to :host
+							styleEl.textContent = s.replace(/\b(html|body)\b/g, ":host");
+							shadow.appendChild(styleEl);
+						}
+					}
+
+					if (component.stylize) {
+						const result = component.stylize(builder);
+						if (typeof result === "string") {
+							const styleEl = document.createElement("style");
+							styleEl.textContent = result;
+							shadow.appendChild(styleEl);
+						} else if (result instanceof Signal || result instanceof Binding || result instanceof Computed) {
+							const styleEl = document.createElement("style");
+							styleEl.id = "--dh-dynamic-style";
+							shadow.appendChild(styleEl);
+							const update = () => {
+								builder.clearRules();
+								const res = component.stylize(builder);
+								let finalStyles = "";
+								if (typeof res === "string") {
+									finalStyles = res;
+								} else if (res instanceof Signal || res instanceof Binding || res instanceof Computed) {
+									const val = res instanceof Binding ? res._get() : (res instanceof Signal ? res.value : res);
+									if (typeof val === "string") finalStyles = val;
+									else finalStyles = builder.toString();
+								} else {
+									finalStyles = builder.toString();
+								}
+								styleEl.textContent = finalStyles;
+								
+								// Apply ghost variables from dynamic styling
+								const ghostVars = builder.getGhostVars();
+								if (ghostVars.length > 0) {
+									ghostVars.forEach(v => {
+										const val = v.value instanceof Binding ? v.value._get() : (v.value instanceof Signal ? v.value.value : v.value);
+										this.style.setProperty(v.name, `${val}`);
+									});
+								}
+								
+								// Re-apply static rules if any
+								if (builder.hasRules() && typeof res !== "string") {
+									styleEl.textContent += builder.toString();
+								}
+							};
+							const id = (result as any).subscribe(update);
+							cvdom.registerDisposable(() => {
+								if (result instanceof Binding) (result as any)._unsubscribe(id);
+								else (result as any).unsubscribe(id);
+							});
+							update();
+						}
+					}
+
+					if (builder.hasRules()) {
+						const styleEl = document.createElement("style");
+						styleEl.textContent = builder.toString();
+						shadow.appendChild(styleEl);
+						
+						// Cache styles for HMR tests
+						(component.constructor as any)._cachedStyles = builder.toString();
+						
+						const ghostVars = builder.getGhostVars();
+						if (ghostVars.length > 0) {
+							ghostVars.forEach(v => {
+								const val = v.value instanceof Binding ? v.value._get() : (v.value instanceof Signal ? v.value.value : v.value);
+								this.style.setProperty(v.name, `${val}`);
+								
+								// Subscribe to ghost variable changes
+								if (v.value instanceof Signal || v.value instanceof Binding) {
+									const id = (v.value as any).subscribe((newVal) => {
+										this.style.setProperty(v.name, `${newVal}`);
+									});
+									cvdom.registerDisposable(() => {
+										if (v.value instanceof Binding) (v.value as any)._unsubscribe(id);
+										else (v.value as any).unsubscribe(id);
+									});
+								}
+							});
+						}
+
+						cvdom.registerDisposable(() => builder.dispose());
+					}
+
+					if (cvdom.childShadowVdom._isRendered) {
+						return;
+					} else {
+						(component._._meta as any).shadowRoot = shadow;
+						
+						// Apply ghost variables from static styling
+						const ghostVars = builder.getGhostVars();
+						if (ghostVars.length > 0) {
+							ghostVars.forEach(v => {
+								const val = v.value instanceof Binding ? v.value._get() : (v.value instanceof Signal ? v.value.value : v.value);
+								this.style.setProperty(v.name, `${val}`);
+								
+								// Subscribe to ghost variable changes
+								if (v.value instanceof Signal || v.value instanceof Binding) {
+									const id = (v.value as any).subscribe((newVal) => {
+										this.style.setProperty(v.name, `${newVal}`);
+									});
+									cvdom.registerDisposable(() => {
+										if (v.value instanceof Binding) (v.value as any)._unsubscribe(id);
+										else (v.value as any).unsubscribe(id);
+									});
+								}
+							});
+						}
+
+						pushComponent(cvdom);
+						try {
+							cvdom.childShadowVdom._render(shadow as any);
+						} finally {
+							popComponent();
+						}
+					}
+				} catch (err) {
+					try {
+						(cvdom as any).handleError(err);
+					} catch (secondErr) {
+						if (secondErr instanceof HandledError) return;
+						throw secondErr;
+					}
 				}
 			}
 		}
+
+		document.defaultView.customElements.define(tagName, CustomElementConstructor);
 	}
 
 	_render(node: HTMLElement) {
@@ -634,13 +744,6 @@ export class ComponentVdom extends Vdom{
 			if(!this.component._) throw new Error("Invalid component. Ensure components are created through the component factory or through decoration.");
 			if((this.component._ as any)?._meta?.isRendered) throw new Error("Individual component instances cannot be rendered twice at once.");
 			if(!(this.component._ as any)._meta) (this.component._ as any)._meta = {};
-			
-			pushComponent(this);
-			try {
-				this.component.mounting && this.component.mounting();
-			} finally {
-				popComponent();
-			}
 			
 			(this.component._._meta as any).isRendered = true;
 
@@ -652,13 +755,46 @@ export class ComponentVdom extends Vdom{
 			this.shadowEl = document.createElement(this.component._._meta.tagName);
 			this.shadowEl["cvdom"] = this;
 			this.shadowEl.setAttribute("cvdom", "");
+			this.shadowEl["component"] = this.component;
+
+			this.init();
+
+			if (this.lastError) {
+				if (IS_DEV) this.renderErrorBox(this.lastError);
+				node.appendChild(this.shadowEl);
+				return;
+			}
+
+			pushComponent(this);
+			try {
+				this.component.mounting && this.component.mounting();
+			} finally {
+				popComponent();
+			}
 			
 			node.appendChild(this.shadowEl);
 
-			this.shadowEl["component"] = this.component;
+			if (this.ref) {
+				if (typeof this.ref === "function") {
+					this.ref(this.component);
+				} else {
+					this.ref.value = this.component;
+				}
+			}
 
-			if (IS_DEV && this.lastError) {
-				this.renderErrorBox(this.lastError);
+			for (const name in this.slots) {
+				const slotContent = this.slots[name];
+				if (typeof slotContent !== "function") {
+					slotContent._render(this.shadowEl);
+					if (name !== "default") {
+						const nodes = slotContent._getNodes();
+						for (const node of nodes) {
+							if (node && (node as any).setAttribute) {
+								(node as any).setAttribute("slot", name);
+							}
+						}
+					}
+				}
 			}
 
 			for(let i = 0; i < this.events.length; i++){
@@ -681,6 +817,9 @@ export class ComponentVdom extends Vdom{
 				this.component.onEnter();
 			}
 		} catch (err) {
+			if (this.shadowEl && !this.shadowEl.parentElement) {
+				node.appendChild(this.shadowEl);
+			}
 			if (err instanceof HandledError) return;
 			this.handleError(err);
 		}
@@ -697,24 +836,16 @@ export class ComponentVdom extends Vdom{
 		this.childShadowVdom._unrender();
 
 		for (const name in this.slots) {
-			this.slots[name]._unrender();
+			const slot = this.slots[name];
+			if (slot instanceof Vdom) {
+				slot._unrender();
+			}
 		}
 
 		if (this.shadowEl) {
-			const eventManager = EventManager.getForDocument(this.shadowEl.ownerDocument);
-			for(let i = 0; i < this.events.length; i++){
-				let e = this.events[i];
-				eventManager.removeListener(this.shadowEl, e.name.toLowerCase(), e.callback);
-			}
-
-			this.shadowEl.remove();
-			this.shadowEl = null;
+			this.shadowEl.parentNode?.removeChild(this.shadowEl);
+			delete (this.shadowEl as any).component;
 		}
-
-		for (let i = 0; i < this.styleVNodes.length; i++) {
-			this.styleVNodes[i].unrender();
-		}
-		this.styleVNodes = [];
 
 		for (const signal of this.computedSignals) {
 			signal.dispose();
@@ -727,7 +858,7 @@ export class ComponentVdom extends Vdom{
 		this.buildComputedSignals = [];
 
 		for (const effect of this.effects) {
-			effect.dispose();
+			effect.dispose && effect.dispose();
 		}
 		this.effects = [];
 
@@ -736,16 +867,7 @@ export class ComponentVdom extends Vdom{
 		}
 		this.disposables = [];
 
-		delete (this.component._ as any)._meta;
-		
-		pushComponent(this);
-		try {
-			this.component.unmounted && this.component.unmounted();
-		} finally {
-			popComponent();
-		}
-
-		if(this.ref){
+		if (this.ref) {
 			if (typeof this.ref === "function") {
 				this.ref(null);
 			} else {
@@ -753,112 +875,47 @@ export class ComponentVdom extends Vdom{
 			}
 		}
 
-		if (IS_DEV) {
-			const hmrId = (this.component.constructor as any).__hmrId;
-			if (hmrId) {
-				unregisterInstance(hmrId, this);
-			}
+		const hmrId = (this.component.constructor as any).__hmrId;
+		if (IS_DEV && hmrId) {
+			unregisterInstance(hmrId, this);
 		}
-	}
 
-	_hmrSwap(NewClass: any) {
-		const oldComponent = this.component;
-		const props = (oldComponent as any).props;
-		const refs = (oldComponent as any).refs;
+		if (this.component._) {
+			(this.component._._meta as any).isRendered = false;
+		}
+		this.shadowEl = null;
+		this._isRendered = false;
 
-		// 1. Lifecycle: unmounting
 		pushComponent(this);
 		try {
-			oldComponent.unmounting && oldComponent.unmounting();
+			this.component.unmounted && this.component.unmounted();
 		} finally {
 			popComponent();
 		}
+	}
 
-		// 2. Cleanup
-		for (const signal of this.computedSignals) {
-			signal.dispose();
-		}
-		this.computedSignals = [];
+	_unrenderAsync(): Promise<void> | void {
+		let promise: Promise<void> | null = null;
 
-		for (const effect of this.effects) {
-			effect.dispose();
-		}
-		this.effects = [];
-
-		for (const disposable of this.disposables) {
-			disposable();
-		}
-		this.disposables = [];
-
-		// Create new instance
-		// Note: we don't use dot.create here because we want to manually manage the transition
-		const newComponent = new NewClass();
-		
-		// Transfer state
-		(newComponent as any).props = props;
-		(newComponent as any).refs = refs;
-		
-		// Phase 3: Preserve internal state (Signals and RefCollections not in props)
-		for (const key in oldComponent) {
-			if (key === "props" || key === "refs" || key === "_") continue;
-			const oldVal = (oldComponent as any)[key];
-			const newVal = (newComponent as any)[key];
-			
-			if (oldVal instanceof Signal && newVal instanceof Signal) {
-				if (newVal.isWritable) {
-					newVal.value = oldVal.value;
-				}
-			} else if (oldVal instanceof RefCollection && newVal instanceof RefCollection) {
-				(newComponent as any)[key] = oldVal;
+		if (this._onLeaveHook && this.shadowEl) {
+			const result = this._onLeaveHook(this.shadowEl);
+			if (result instanceof Promise) {
+				promise = result;
 			}
 		}
-		
-		// Transfer framework internal state
-		newComponent._ = oldComponent._;
-		(newComponent._ as any).cvdom = this;
 
-		this.component = newComponent;
-
-		// 3. Register new tracked items
-		if ((newComponent as any)._trackedComputeds) {
-			for (const w of (newComponent as any)._trackedComputeds) {
-				this.registerComputed(w);
+		if (this.component.onLeave) {
+			const result = this.component.onLeave();
+			if (result instanceof Promise) {
+				promise = promise ? promise.then(() => result) : result;
 			}
-			delete (newComponent as any)._trackedComputeds;
 		}
 
-		if ((newComponent as any)._trackedEffects) {
-			for (const e of (newComponent as any)._trackedEffects) {
-				this.registerEffect(e);
-			}
-			delete (newComponent as any)._trackedEffects;
+		if (promise) {
+			return promise.then(() => this._unrender());
 		}
 
-		if ((newComponent as any)._trackedDisposables) {
-			for (const d of (newComponent as any)._trackedDisposables) {
-				this.registerDisposable(d);
-			}
-			delete (newComponent as any)._trackedDisposables;
-		}
-		
-		// Invalidate style cache on the new constructor if it exists
-		if ((NewClass as any)._cachedStyles) {
-			delete (NewClass as any)._cachedStyles;
-		}
-
-		if (this.shadowEl) {
-			(this.shadowEl as any).component = newComponent;
-
-			// 4. Lifecycle: mounted
-			pushComponent(this);
-			try {
-				this.component.mounted && this.component.mounted();
-			} finally {
-				popComponent();
-			}
-		} else {
-			this.rebuild();
-		}
+		this._unrender();
 	}
 
 	_getNodes(): Node[] {
@@ -867,28 +924,6 @@ export class ComponentVdom extends Vdom{
 
 	_getLastChild(): Vdom | null {
 		return this;
-	}
-
-	async _unrenderAsync() {
-		if (this._onLeaveHook && this.shadowEl) {
-			await this._onLeaveHook(this.shadowEl);
-		}
-		if (this.component.onLeave) {
-			await this.component.onLeave();
-		}
-		this._unrender();
-	}
-
-	_moveTo(target: HTMLElement){
-		const oldDoc = this.shadowEl?.ownerDocument;
-		const newDoc = target.ownerDocument;
-		
-		if(oldDoc && newDoc && oldDoc !== newDoc){
-			// Re-setup custom element in the new document
-			this.setupCustomElement(newDoc);
-		}
-		
-		super._moveTo(target);
 	}
 
 	addEventListener(event: string, callback: (e: any)=>void, modifiers: string[] = []){
@@ -900,14 +935,8 @@ export class ComponentVdom extends Vdom{
 		EventManager.getForDocument(this.shadowEl.ownerDocument).addListener(this.shadowEl, e.toLowerCase(), callback, modifiers);
 	}
 
-	on(event: string, callback: (e: any)=>void){
-		this.addEventListener(event, callback);
-		return this;
-	}
-
-	toString(){
-		// TODO: would be nice to have something more sophisitacetd. 
-		// It doesn't even handle slots.
-		return `<${this.component._._meta.tagName}></${this.component._._meta.tagName}>`;
+	generateStyles(document: Document): string {
+		// This is just a placeholder. Actual style generation should be handled by the framework.
+		return "";
 	}
 }

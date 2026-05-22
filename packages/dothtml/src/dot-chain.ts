@@ -35,8 +35,8 @@ export class DotChain extends Vdom {
 		this._root._unrender();
 	}
 
-	async _unrenderAsync() {
-		await this._root._unrenderAsync();
+	_unrenderAsync(): Promise<void> | void {
+		return this._root._unrenderAsync();
 	}
 
 	_renderBefore(reference: Node) {
@@ -65,6 +65,16 @@ export class DotChain extends Vdom {
 
 	_getLastChild(): Vdom | null {
 		return this._root._getLastChild();
+	}
+
+	get _children() {
+		if (this._root instanceof ContainerVdom) {
+			return this._root._children;
+		}
+		if (this._root instanceof FragmentVdom) {
+			return this._root._children;
+		}
+		return [];
 	}
 
 	slot(name: string | any, content?: any) {

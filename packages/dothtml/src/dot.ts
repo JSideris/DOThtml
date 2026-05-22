@@ -106,16 +106,19 @@ function promote(vdom: Vdom): DotChain {
 					cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
 				}
 				else {
-					if (!c["props"]) (c as any).props = {};
-					(c as any).props[k] = val;
+					const propsDef = (c.constructor as any).props;
+					if (propsDef && propsDef[k]) {
+						if (!c["props"]) (c as any).props = {};
+						(c as any).props[k] = val;
+					} else if (typeof val === "function" || val instanceof Vdom || val?._root || val?._children) {
+						cn.addSlot(k, val);
+					} else {
+						if (!c["props"]) (c as any).props = {};
+						(c as any).props[k] = val;
+					}
 				}
 			}
 		}
-	}
-	try {
-		cn.init();
-	} catch (e) {
-		if (!(e instanceof HandledError)) throw e;
 	}
 	return this._addChild(cn);
 };

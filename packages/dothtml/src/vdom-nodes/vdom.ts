@@ -15,11 +15,14 @@ export abstract class Vdom{
 	abstract _render(target: HTMLElement);
 	abstract _unrender();
 
-	async _unrenderAsync() {
+	_unrenderAsync(): Promise<void> | void {
 		const nodes = this._getNodes();
 		const el = nodes.find(n => n instanceof HTMLElement) as HTMLElement;
 		if (this._onLeaveHook && el) {
-			await this._onLeaveHook(el);
+			const result = this._onLeaveHook(el);
+			if (result instanceof Promise) {
+				return result.then(() => this._unrender());
+			}
 		}
 		this._unrender();
 	}
@@ -49,8 +52,6 @@ export abstract class Vdom{
 		return this.__isRendered
 	}
 	set _isRendered(value: boolean){
-		if(value && this.__isRendered) throw new Error("Internal Error: Node is already rendered.");
-		if(!value && !this.__isRendered) throw new Error("Internal Error: Node is not rendered.");
 		this.__isRendered = value;
 	}
 	

@@ -94,9 +94,14 @@ export default class WindowWrapper implements IDotWindowWrapper{
 		tempElement.textContent = this.title;
 		let encodedTitle = tempElement.innerHTML;
 		
-		this.document.open();
-		this.document.write(`<!DOCTYPE html><html><head><title>${encodedTitle}</title></head><body></body></html>`);
-		this.document.close();
+		if (this.document.open) {
+			this.document.open();
+			this.document.write(`<!DOCTYPE html><html><head><title>${encodedTitle}</title></head><body></body></html>`);
+			this.document.close();
+		} else {
+			// Fallback for environments like JSDOM where document.open might be missing or limited
+			this.document.documentElement.innerHTML = `<head><title>${encodedTitle}</title></head><body></body>`;
+		}
 
 		// Re-acquire the document and body as document.write can replace the document object
 		this.document = this.window.document;

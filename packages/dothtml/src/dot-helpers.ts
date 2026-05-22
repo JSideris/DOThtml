@@ -28,14 +28,14 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 	if(Array.isArray(cont)){
 		for(let i = 0; i < cont.length; i++) applyContent(dot, n, cont[i]);
 	}
+	else if(cont?._root){
+		applyContent(dot, n, cont._root);
+	}
 	else if(Array.isArray(cont?._children)){
 		const children = cont._children;
 		if (children && children.length > 0) {
 			for(let i = 0; i < children.length; i++) target._addChild(children[i]);
 		}
-	}
-	else if(cont?._root){
-		applyContent(dot, n, cont._root);
 	}
 	else if(cont instanceof Vdom){
 		target._addChild(cont);

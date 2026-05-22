@@ -175,8 +175,15 @@ export default class CollectionVdom extends Vdom{
 	/**
 	 * Removes a single item from the DOM, including anchors.
 	 */
-	private async removeItem(item: DatumMap){
-		await item.vdom._unrenderAsync();
+	private removeItem(item: DatumMap): Promise<void> | void {
+		const result = item.vdom._unrenderAsync();
+		if (result instanceof Promise) {
+			return result.then(() => {
+				if (item.afterNode.parentElement) {
+					item.afterNode.parentElement.removeChild(item.afterNode);
+				}
+			});
+		}
 		if (item.afterNode.parentElement) {
 			item.afterNode.parentElement.removeChild(item.afterNode);
 		}

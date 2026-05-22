@@ -10,19 +10,21 @@ export class SlotVdom extends Vdom {
 	fallback: ContainerVdom | null = null;
 	scopedContent: ContainerVdom | null = null;
 	element: HTMLElement | null = null;
+	component: any;
 
 	constructor(dot: IDotCore, name?: string, fallbackOrScope?: any) {
 		super(dot);
 		this.name = name || "default";
 		this.fallbackOrScope = fallbackOrScope;
+		this.component = getCurrentComponent();
 	}
 
 	_render(node: HTMLElement) {
 		this._isRendered = true;
 		const document = node.ownerDocument;
 
-		const currentComp = getCurrentComponent() as any;
-		const slotContent = currentComp?.component?.slots?.[this.name];
+		const currentComp = this.component || getCurrentComponent();
+		const slotContent = currentComp?.slots?.[this.name];
 
 		if (typeof slotContent === "function") {
 			this.scopedContent = new ContainerVdom(this._dot);

@@ -20,6 +20,7 @@ type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
 export class ContainerVdom extends Vdom{
 	_children: Array<Vdom> = [];
 	_parent: ParentVdom = null;
+	element: HTMLElement | null = null;
 
 	constructor(dot: IDotCore){
 		super(dot);
@@ -27,12 +28,14 @@ export class ContainerVdom extends Vdom{
 
 	_addChild(content: Vdom){
 		this._children.push(content);
-		if(this._parent && this._parent instanceof ElementVdom && this._parent.element) content._render(this._parent.element);
+		if(this.element) content._render(this.element);
+		else if(this._parent && this._parent instanceof ElementVdom && this._parent.element) content._render(this._parent.element);
 		return this;
 	}
 
 	_render(node: HTMLElement){	
 		this._isRendered = true;
+		this.element = node;
 		for(let c = 0; c < this._children.length; c++){
 			this._children[c]._render(node);
 		}
@@ -41,6 +44,7 @@ export class ContainerVdom extends Vdom{
 	_unrender() {
 		if(!this._isRendered) return;
 		this._isRendered = false;
+		this.element = null;
 		for(let c = 0; c < this._children.length; c++){
 			this._children[c]._unrender();
 		}

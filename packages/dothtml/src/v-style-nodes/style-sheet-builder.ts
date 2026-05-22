@@ -32,6 +32,12 @@ export default class StyleSheetBuilder {
 		return this;
 	}
 
+	clearRules() {
+		this.rules = [];
+		this.ghostVars = [];
+		this.varCounter = 0;
+	}
+
 	template(strings: TemplateStringsArray, ...values: any[]) {
 		return new Computed(() => {
 			let result = "";
@@ -160,7 +166,12 @@ export default class StyleSheetBuilder {
 				}
 
 				if (isReactive) {
-					const varName = `--dh-v${++this.varCounter}`;
+					let varName: string;
+					if (p.prop.startsWith("--")) {
+						varName = p.prop;
+					} else {
+						varName = `--dh-v${++this.varCounter}`;
+					}
 					const reactiveSource = cssValue;
 					let reactiveValue: any = cssValue;
 

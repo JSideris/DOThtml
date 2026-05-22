@@ -140,7 +140,7 @@ describe("Component Slots", () => {
 		});
 		
 		// If using adoptedStyleSheets, we should check those too
-		if (shadow.adoptedStyleSheets.length > 0) {
+		if (shadow.adoptedStyleSheets && shadow.adoptedStyleSheets.length > 0) {
 			shadow.adoptedStyleSheets.forEach(sheet => {
 				for (let i = 0; i < sheet.cssRules.length; i++) {
 					if (sheet.cssRules[i].cssText.includes("::slotted(p)")) {
@@ -192,7 +192,7 @@ describe("Component Slots", () => {
 
 		const host = document.body.children[0];
 		// InnerComp should be in light DOM
-		expect(host.innerHTML).toMatch(/<dothtml-[0-9a-f]+><\/dothtml-[0-9a-f]+>/);
+		expect(host.innerHTML).toMatch(/<dothtml-[0-9a-f]+( cvdom(=("")?)?)?><\/dothtml-[0-9a-f]+>/);
 		const innerHost = host.children[0];
 		expect(formatHTML(innerHost.shadowRoot?.innerHTML)).toBe("<span>inner</span>");
 	});

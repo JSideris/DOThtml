@@ -41,7 +41,7 @@ describe("Error Boundaries", () => {
 		expect(errorCaught).toBeInstanceOf(Error);
 		expect(errorCaught.message).toBe("Render failed");
 		
-		const boundaryEl = document.body.querySelector('[cvdom]') as HTMLElement;
+		const boundaryEl = document.body.children[0] as HTMLElement;
 		expect(boundaryEl).not.toBeNull();
 		const shadowRoot = boundaryEl.shadowRoot;
 		expect(shadowRoot.innerHTML).toContain("Fallback UI");
@@ -77,7 +77,7 @@ describe("Error Boundaries", () => {
 		expect(errorCaught).toBeInstanceOf(Error);
 		expect(errorCaught.message).toBe("Mount failed");
 
-		const boundaryEl = document.body.querySelector('[cvdom]') as HTMLElement;
+		const boundaryEl = document.body.children[0] as HTMLElement;
 		const shadowRoot = boundaryEl.shadowRoot;
 		expect(shadowRoot.innerHTML).toContain("Fallback UI");
 	});

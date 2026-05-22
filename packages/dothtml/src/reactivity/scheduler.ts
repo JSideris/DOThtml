@@ -70,10 +70,13 @@ class Scheduler {
 		this.startTime = performance.now();
 		this.isPending = false;
 
-		let hasMoreWork = this.flushQueues();
-
-		if (hasMoreWork) {
-			this.scheduleFlush();
+		while (true) {
+			let hasMoreWork = this.flushQueues();
+			if (!hasMoreWork) break;
+			if (this.shouldYield()) {
+				this.scheduleFlush();
+				break;
+			}
 		}
 	}
 
@@ -168,9 +171,8 @@ class Scheduler {
 							} catch (err) {
 								if (this.onError) {
 									this.onError(err);
-								} else {
-									console.error("Scheduler error (sync):", err);
 								}
+								throw err;
 							}
 						}
 					}

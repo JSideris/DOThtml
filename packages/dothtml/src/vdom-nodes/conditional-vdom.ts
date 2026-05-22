@@ -146,26 +146,39 @@ export class ConditionalVdom extends Vdom{
 		}
 	}
 
-	private async performUpdate(newIndex: number) {
+	private performUpdate(newIndex: number) {
 		const oldIndex = this.renderedIndex;
-		this.renderedIndex = newIndex;
 
 		if(oldIndex != -1){
 			const C = this.conditions[oldIndex];
-			this.currentUpdatePromise = Promise.resolve(C.vNode._unrenderAsync());
-			await this.currentUpdatePromise;
-			this.currentUpdatePromise = null;
+			const result = C.vNode._unrenderAsync();
+			if (result instanceof Promise) {
+				this.currentUpdatePromise = result;
+				result.then(() => {
+					this.currentUpdatePromise = null;
+					this.renderedIndex = -1; // Mark as nothing rendered during transition
+					this.finishUpdate(newIndex);
+				});
+				return;
+			}
 		}
 
-		// Check if we were interrupted during unrender
+		this.renderedIndex = -1;
+		this.finishUpdate(newIndex);
+	}
+
+	private finishUpdate(newIndex: number) {
+		// Check if we were interrupted
 		if (this.nextIndex !== null) {
 			const next = this.nextIndex;
 			this.nextIndex = null;
-			if (next !== this.renderedIndex) {
+			if (next !== newIndex) {
 				this.performUpdate(next);
 				return;
 			}
 		}
+
+		this.renderedIndex = newIndex;
 
 		if(this.renderedIndex != -1){
 			const C = this.conditions[this.renderedIndex];
