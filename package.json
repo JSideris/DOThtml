@@ -10,11 +10,14 @@
     "build": "npm run build -w dothtml",
     "test": "npm test -w dothtml",
     "dev": "npm run dev -w dothtml.org",
-    "benchmarks": "npm run benchmarks -w dothtml"
+    "benchmarks": "npm run benchmarks -w dothtml",
+    "version-packages": "changeset version",
+    "release": "npm run build && changeset publish"
   },
   "devDependencies": {
-    "typescript": "^5.0.2",
+    "@changesets/cli": "^2.31.0",
+    "jest": "^29.7.0",
     "tsup": "^8.5.1",
-    "jest": "^29.7.0"
+    "typescript": "^5.0.2"
   }
 }
