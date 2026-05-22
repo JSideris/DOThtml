@@ -221,7 +221,12 @@ function promote(vdom: Vdom): DotChain {
 };
 
 (Vdom.prototype as any).empty = function() {
-	let lastChild = this._getLastChild();
+	let root = this;
+	while (root instanceof DotChain) {
+		root = (root as any)._root;
+	}
+
+	let lastChild = root._getLastChild();
 	while (lastChild instanceof DotChain) {
 		lastChild = (lastChild as any)._root;
 	}
@@ -231,29 +236,34 @@ function promote(vdom: Vdom): DotChain {
 		lastChild.children._unrender();
 		lastChild.children._children = [];
 		lastChild.children._isRendered = true;
-	} else if (this instanceof ContainerVdom) {
-		this._unrender();
-		this._children = [];
-		this._isRendered = true;
-		if (this._parent instanceof ElementVdom && this._parent.element) {
-			this._parent.element.innerHTML = "";
+	} else if (root instanceof ContainerVdom) {
+		root._unrender();
+		root._children = [];
+		root._isRendered = true;
+		if (root._parent instanceof ElementVdom && root._parent.element) {
+			root._parent.element.innerHTML = "";
 		}
 	}
 	return this;
 };
 
 (Vdom.prototype as any).remove = function() {
-	let lastChild = this._getLastChild();
+	let root = this;
+	while (root instanceof DotChain) {
+		root = (root as any)._root;
+	}
+
+	let lastChild = root._getLastChild();
 	while (lastChild instanceof DotChain) {
 		lastChild = (lastChild as any)._root;
 	}
 
 	if (lastChild instanceof ElementVdom || lastChild instanceof ComponentVdom) {
 		lastChild._unrender();
-	} else if (this instanceof ContainerVdom && this._parent instanceof ElementVdom) {
-		this._parent._unrender();
-	} else if (this instanceof Vdom) {
-		this._unrender();
+	} else if (root instanceof ContainerVdom && root._parent instanceof ElementVdom) {
+		root._parent._unrender();
+	} else if (root instanceof Vdom) {
+		root._unrender();
 	}
 };
 
@@ -291,11 +301,11 @@ for (let i = 0; i < allTags.length; i++) {
 const makeCoreWrapper = (d, fn)=>{
 	d[fn] = function(){
 		if (allTagsSet.has(fn)) {
-			return createElement(d, fn, arguments);
+			return promote(createElement(d, fn, arguments));
 		} else {
 			let n = new ContainerVdom(d);
 			n[fn](...arguments);
-			return n;
+			return promote(n);
 		}
 	}
 }
@@ -307,7 +317,7 @@ const makeDot = ()=>{
 			let el = (targetSelector as HTMLElement);
 			let node = el[DOT_VDOM_PROP_NAME] as ElementVdom;
 			if(node){
-				return node.children;
+				return promote(node.children);
 			}
 			else{
 				node = new ElementVdom(_dot, el.tagName.toLocaleLowerCase());
@@ -316,7 +326,7 @@ const makeDot = ()=>{
 				node.children._parent = node;
 				node.children._isRendered = true;
 				el[DOT_VDOM_PROP_NAME] = node;
-				return node.children;
+				return promote(node.children);
 			}
 		}
 		else if(typeof targetSelector == "string"){

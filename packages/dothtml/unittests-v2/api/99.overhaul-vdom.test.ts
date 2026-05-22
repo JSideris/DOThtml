@@ -9,9 +9,10 @@ import { FragmentVdom } from "../../src/vdom-nodes/fragment-vdom";
 
 describe("VDOM Overhaul Baseline.", () => {
 
-	test("dot.div() returns an ElementVdom directly (lazy wrapping).", () => {
-		const result = dot.div("hello");
-		expect(result).toBeInstanceOf(ElementVdom);
+	test("dot.div() returns a DotChain wrapping an ElementVdom.", () => {
+		const result = dot.div("hello") as any;
+		expect(result).toBeInstanceOf(DotChain);
+		expect(result._root).toBeInstanceOf(ElementVdom);
 	});
 
 	test("dot.div().p() promotes to DotChain wrapping a FragmentVdom.", () => {

@@ -3,6 +3,7 @@ import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
 import { IDotCore } from "dothtml-interfaces";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import { SlotVdom } from "./vdom-nodes/slot-vdom";
+import { ContainerVdom } from "./vdom-nodes/container-vdom";
 
 export class DotChain extends Vdom {
 	_root: Vdom;
@@ -13,7 +14,9 @@ export class DotChain extends Vdom {
 	}
 
 	_addChild(node: Vdom) {
-		if (!(this._root instanceof FragmentVdom)) {
+		if (this._root instanceof ContainerVdom) {
+			this._root._addChild(node);
+		} else if (!(this._root instanceof FragmentVdom)) {
 			const frag = new FragmentVdom(this._dot);
 			frag._children.push(this._root);
 			frag._children.push(node);
@@ -30,6 +33,22 @@ export class DotChain extends Vdom {
 
 	_unrender() {
 		this._root._unrender();
+	}
+
+	async _unrenderAsync() {
+		await this._root._unrenderAsync();
+	}
+
+	_renderBefore(reference: Node) {
+		this._root._renderBefore(reference);
+	}
+
+	_renderAfter(reference: Node) {
+		this._root._renderAfter(reference);
+	}
+
+	_moveBefore(reference: Node, parent?: Node) {
+		this._root._moveBefore(reference, parent);
 	}
 
 	get _isRendered() {

@@ -55,7 +55,7 @@ dot.img({ src: "logo.png", alt: "Logo" });
 
 ## Function Chaining
 
-Every element method returns the `dot` object, allowing you to chain multiple elements together. Chained elements are added as **siblings**.
+Every element method returns a builder object, allowing you to chain multiple elements together. Chained elements are added as **siblings**.
 
 ```javascript
 dot(document.body)
@@ -65,6 +65,34 @@ dot(document.body)
        .a("About", { href: "/about" })
   )
   .main("Content goes here...");
+```
+
+## Fluent API and Chaining
+
+DOThtml is designed with a consistent fluent API. Whether you are targeting an existing element or creating a new one, the returned object always supports the full suite of DOThtml methods.
+
+### Targeted vs. Standalone Builders
+
+- **`dot(target)`**: Returns a builder that operates **inside** the target element. Methods called on this builder will append children to the target.
+- **`dot.tag()`**: Returns a builder for a **new** element. Methods called on this builder will add siblings to that new element.
+
+```javascript
+// Appends <p> inside #app
+dot("#app").p("Inside app");
+
+// Creates <div> and <p> as siblings
+const fragment = dot.div("A").p("B"); 
+```
+
+### Chaining Consistency
+
+All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. This allows for powerful imperative patterns:
+
+```javascript
+dot("#app")
+  .empty()
+  .mount(new MyComponent())
+  .p("Appended after the component!");
 ```
 
 ## Nesting Elements

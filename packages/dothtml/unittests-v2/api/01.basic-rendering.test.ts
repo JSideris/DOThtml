@@ -265,7 +265,8 @@ describe("To string.", ()=>{
 
 describe("Under the hood.", ()=>{
 	test("Appending existing element extends VDOM.", () => {
-		let original = dot(document.body).div({id: "my-div"}) as unknown as ContainerVdom;
+		let originalResult = dot(document.body).div({id: "my-div"}) as any;
+		let original = originalResult._root as ContainerVdom;
 		dot("#my-div").div().div().div();
 		expect((original._children[0] as ElementVdom).children._children.length).toBe(3);
 	});
