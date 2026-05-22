@@ -1,12 +1,21 @@
 {
   "name": "dothtml-interfaces",
-  "version": "0.4.6",
+  "version": "1.0.0",
   "description": "Dependency injection interfaces for DOTHtml.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {},
-  "author": "",
+  "author": "Joshua Sideris",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JSideris/DOThtml.git",
+    "directory": "packages/interfaces"
+  },
+  "homepage": "https://dothtml.org/",
+  "bugs": {
+    "url": "https://github.com/JSideris/DOThtml/issues"
+  },
   "devDependencies": {
     "typescript": "^5.3.2"
   },

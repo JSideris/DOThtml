@@ -14,6 +14,17 @@
     "lint": "eslint src --ext .ts",
     "test": "jest"
   },
+  "author": "Joshua Sideris",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JSideris/DOThtml.git",
+    "directory": "packages/vite-plugin-dothtml"
+  },
+  "homepage": "https://dothtml.org/",
+  "bugs": {
+    "url": "https://github.com/JSideris/DOThtml/issues"
+  },
   "peerDependencies": {
     "vite": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0"
   },

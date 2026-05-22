@@ -20,7 +20,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/JSideris/DOThtml.git"
+    "url": "https://github.com/JSideris/DOThtml.git",
+    "directory": "packages/create-dothtml"
+  },
+  "homepage": "https://dothtml.org/",
+  "bugs": {
+    "url": "https://github.com/JSideris/DOThtml/issues"
   },
   "keywords": [
     "dothtml",
