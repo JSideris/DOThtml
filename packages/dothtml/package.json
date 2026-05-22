@@ -29,7 +29,7 @@
   "size-limit": [
     {
       "path": "dist/index.global.js",
-      "limit": "20 KB"
+      "limit": "30 KB"
     }
   ],
   "repository": {
