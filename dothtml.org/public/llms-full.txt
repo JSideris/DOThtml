@@ -19,12 +19,12 @@ The following benchmarks measure the median time (in milliseconds) required to p
 | **Create 1,000 rows** | 6.93 ms | 6.69 ms | 6.14 ms | **5.93 ms** |
 | **Create 10,000 rows** | 721.85 ms | 624.95 ms | 473.35 ms | **465.85 ms** |
 | **Append 1,000 rows** | **7.64 ms** | 70.08 ms | 51.99 ms | 50.07 ms |
-| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.15 ms** |
+| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | 0.15 ms |
 | **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
-| **Clear** | 1.45 ms | 1.45 ms | **1.45 ms** | 1.46 ms |
+| **Clear** | **1.45 ms** | **1.45 ms** | **1.45 ms** | 1.46 ms |
 | **Bulk Style Update** | **0.15 ms** | 0.31 ms | 0.21 ms | 0.21 ms |
-| **First Contentful Paint** | 28.00 ms | 28.00 ms | 28.00 ms | 28.00 ms |
-| **DOM Interactive** | 4.75 ms | 4.70 ms | 4.65 ms | 4.80 ms |
+| **First Contentful Paint** | **28.00 ms** | **28.00 ms** | **28.00 ms** | **28.00 ms** |
+| **DOM Interactive** | 4.75 ms | 4.70 ms | **4.65 ms** | 4.80 ms |
 | **Framework Ready** | 14.35 ms | 6.35 ms | 7.85 ms | **5.60 ms** |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*

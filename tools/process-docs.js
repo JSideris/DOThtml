@@ -50,17 +50,26 @@ if (fs.existsSync(benchResultsPath)) {
 			if (testMapping[testName]) {
 				const testKey = testMapping[testName];
 				rawBenchData[testKey] = {};
+				
+				const testValues = [];
 				frameworks.forEach((fw, index) => {
 					const value = cells[index + 1]; // DOThtml is at index 1, React at 2, etc.
 					if (value) {
-						// value is like "6.88ms", we want "6.88 ms" for docs
-						const formattedValue = value.replace('ms', ' ms');
-						benchMap[`BENCH_${testKey}_${fw.toUpperCase()}`] = formattedValue;
-						
-						// Extract raw number for TS file
 						const numValue = parseFloat(value.replace('ms', ''));
+						testValues.push({ fw, numValue, originalValue: value });
 						rawBenchData[testKey][fw.toUpperCase()] = numValue;
 					}
+				});
+
+				const minVal = Math.min(...testValues.map(v => v.numValue));
+
+				testValues.forEach(({ fw, numValue, originalValue }) => {
+					// value is like "6.88ms", we want "6.88 ms" for docs
+					let formattedValue = originalValue.replace('ms', ' ms');
+					if (numValue === minVal) {
+						formattedValue = `**${formattedValue}**`;
+					}
+					benchMap[`BENCH_${testKey}_${fw.toUpperCase()}`] = formattedValue;
 				});
 			}
 		}

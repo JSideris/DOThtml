@@ -8,16 +8,16 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | %%BENCH_CREATE_1000_DOTHTML%% | %%BENCH_CREATE_1000_REACT%% | %%BENCH_CREATE_1000_VUE%% | **%%BENCH_CREATE_1000_SVELTE%%** |
-| **Create 10,000 rows** | %%BENCH_CREATE_10000_DOTHTML%% | %%BENCH_CREATE_10000_REACT%% | %%BENCH_CREATE_10000_VUE%% | **%%BENCH_CREATE_10000_SVELTE%%** |
-| **Append 1,000 rows** | **%%BENCH_APPEND_1000_DOTHTML%%** | %%BENCH_APPEND_1000_REACT%% | %%BENCH_APPEND_1000_VUE%% | %%BENCH_APPEND_1000_SVELTE%% |
-| **Update every 10th row** | **%%BENCH_UPDATE_10TH_DOTHTML%%** | **%%BENCH_UPDATE_10TH_REACT%%** | **%%BENCH_UPDATE_10TH_VUE%%** | **%%BENCH_UPDATE_10TH_SVELTE%%** |
-| **Swap Rows** | **%%BENCH_SWAP_ROWS_DOTHTML%%** | **%%BENCH_SWAP_ROWS_REACT%%** | **%%BENCH_SWAP_ROWS_VUE%%** | **%%BENCH_SWAP_ROWS_SVELTE%%** |
-| **Clear** | %%BENCH_CLEAR_DOTHTML%% | %%BENCH_CLEAR_REACT%% | **%%BENCH_CLEAR_VUE%%** | %%BENCH_CLEAR_SVELTE%% |
-| **Bulk Style Update** | **%%BENCH_BULK_STYLE_DOTHTML%%** | %%BENCH_BULK_STYLE_REACT%% | %%BENCH_BULK_STYLE_VUE%% | %%BENCH_BULK_STYLE_SVELTE%% |
+| **Create 1,000 rows** | %%BENCH_CREATE_1000_DOTHTML%% | %%BENCH_CREATE_1000_REACT%% | %%BENCH_CREATE_1000_VUE%% | %%BENCH_CREATE_1000_SVELTE%% |
+| **Create 10,000 rows** | %%BENCH_CREATE_10000_DOTHTML%% | %%BENCH_CREATE_10000_REACT%% | %%BENCH_CREATE_10000_VUE%% | %%BENCH_CREATE_10000_SVELTE%% |
+| **Append 1,000 rows** | %%BENCH_APPEND_1000_DOTHTML%% | %%BENCH_APPEND_1000_REACT%% | %%BENCH_APPEND_1000_VUE%% | %%BENCH_APPEND_1000_SVELTE%% |
+| **Update every 10th row** | %%BENCH_UPDATE_10TH_DOTHTML%% | %%BENCH_UPDATE_10TH_REACT%% | %%BENCH_UPDATE_10TH_VUE%% | %%BENCH_UPDATE_10TH_SVELTE%% |
+| **Swap Rows** | %%BENCH_SWAP_ROWS_DOTHTML%% | %%BENCH_SWAP_ROWS_REACT%% | %%BENCH_SWAP_ROWS_VUE%% | %%BENCH_SWAP_ROWS_SVELTE%% |
+| **Clear** | %%BENCH_CLEAR_DOTHTML%% | %%BENCH_CLEAR_REACT%% | %%BENCH_CLEAR_VUE%% | %%BENCH_CLEAR_SVELTE%% |
+| **Bulk Style Update** | %%BENCH_BULK_STYLE_DOTHTML%% | %%BENCH_BULK_STYLE_REACT%% | %%BENCH_BULK_STYLE_VUE%% | %%BENCH_BULK_STYLE_SVELTE%% |
 | **First Contentful Paint** | %%BENCH_FCP_DOTHTML%% | %%BENCH_FCP_REACT%% | %%BENCH_FCP_VUE%% | %%BENCH_FCP_SVELTE%% |
 | **DOM Interactive** | %%BENCH_DOM_INTERACTIVE_DOTHTML%% | %%BENCH_DOM_INTERACTIVE_REACT%% | %%BENCH_DOM_INTERACTIVE_VUE%% | %%BENCH_DOM_INTERACTIVE_SVELTE%% |
-| **Framework Ready** | %%BENCH_FRAMEWORK_READY_DOTHTML%% | %%BENCH_FRAMEWORK_READY_REACT%% | %%BENCH_FRAMEWORK_READY_VUE%% | **%%BENCH_FRAMEWORK_READY_SVELTE%%** |
+| **Framework Ready** | %%BENCH_FRAMEWORK_READY_DOTHTML%% | %%BENCH_FRAMEWORK_READY_REACT%% | %%BENCH_FRAMEWORK_READY_VUE%% | %%BENCH_FRAMEWORK_READY_SVELTE%% |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
