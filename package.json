@@ -4,8 +4,7 @@
   "workspaces": [
     "packages/*",
     "dothtml.org",
-    "benchmarks",
-    "tools/create-dothtml"
+    "benchmarks"
   ],
   "scripts": {
     "build": "npm run build -w dothtml",
