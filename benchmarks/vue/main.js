@@ -91,3 +91,4 @@ const BenchmarkApp = {
 };
 
 createApp(BenchmarkApp).mount('#app');
+performance.mark('framework-ready');

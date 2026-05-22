@@ -96,3 +96,4 @@ const BenchmarkApp = () => {
 };
 
 ReactDOM.createRoot(document.getElementById('app')).render(<BenchmarkApp />);
+performance.mark('framework-ready');

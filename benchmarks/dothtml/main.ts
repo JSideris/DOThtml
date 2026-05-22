@@ -93,3 +93,4 @@ class BenchmarkApp extends DotComponent {
 }
 
 dot('#app').mount(new BenchmarkApp());
+performance.mark('framework-ready');

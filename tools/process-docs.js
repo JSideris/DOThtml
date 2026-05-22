@@ -27,6 +27,9 @@ if (fs.existsSync(benchResultsPath)) {
 	const benchContent = fs.readFileSync(benchResultsPath, 'utf8');
 	
 	const testMapping = {
+		'First Contentful Paint': 'FCP',
+		'DOM Interactive': 'DOM_INTERACTIVE',
+		'Framework Ready': 'FRAMEWORK_READY',
 		'Create 1,000 rows': 'CREATE_1000',
 		'Create 10,000 rows': 'CREATE_10000',
 		'Append 1,000 rows': 'APPEND_1000',

@@ -163,6 +163,41 @@ async function runTestIterations(page, test, config) {
 	return summarizeSamples(samples);
 }
 
+async function runColdStartBenchmarks(page, url, config) {
+	const samples = {
+		fcp: [],
+		domInteractive: [],
+		frameworkReady: []
+	};
+
+	for (let i = 0; i < config.iterations; i++) {
+		await page.goto('about:blank'); // Ensure a fresh start
+		await page.goto(url, { waitUntil: 'networkidle' });
+
+		const timings = await page.evaluate(() => {
+			const [nav] = performance.getEntriesByType('navigation');
+			const [fcpEntry] = performance.getEntriesByType('paint').filter(e => e.name === 'first-contentful-paint');
+			const [readyEntry] = performance.getEntriesByName('framework-ready');
+
+			return {
+				fcp: fcpEntry ? fcpEntry.startTime : null,
+				domInteractive: nav ? nav.domInteractive : null,
+				frameworkReady: readyEntry ? readyEntry.startTime : null
+			};
+		});
+
+		if (timings.fcp) samples.fcp.push(timings.fcp);
+		if (timings.domInteractive) samples.domInteractive.push(timings.domInteractive);
+		if (timings.frameworkReady) samples.frameworkReady.push(timings.frameworkReady);
+	}
+
+	return {
+		'First Contentful Paint': summarizeSamples(samples.fcp),
+		'DOM Interactive': summarizeSamples(samples.domInteractive),
+		'Framework Ready': summarizeSamples(samples.frameworkReady)
+	};
+}
+
 async function runDomBenchmarks(page, framework, config) {
 	const results = {};
 
@@ -192,9 +227,24 @@ async function runStylingBenchmarks(page, config) {
 
 function combineSuiteResults(suiteRuns) {
 	const frameworks = Object.keys(suiteRuns[0].dom);
-	const combined = { dom: {}, styling: {} };
+	const combined = { coldStart: {}, dom: {}, styling: {} };
 
 	for (const framework of frameworks) {
+		combined.coldStart[framework] = {};
+		const coldStartTestNames = Object.keys(suiteRuns[0].coldStart[framework]);
+		for (const testName of coldStartTestNames) {
+			const suiteMedians = suiteRuns.map(run => run.coldStart[framework][testName].median);
+			combined.coldStart[framework][testName] = {
+				mean: median(suiteRuns.map(run => run.coldStart[framework][testName].mean)),
+				median: median(suiteMedians),
+				stddev: mean(suiteRuns.map(run => run.coldStart[framework][testName].stddev)),
+				min: Math.min(...suiteRuns.flatMap(run => run.coldStart[framework][testName].samples)),
+				max: Math.max(...suiteRuns.flatMap(run => run.coldStart[framework][testName].samples)),
+				samples: suiteRuns.flatMap(run => run.coldStart[framework][testName].samples),
+				suiteMedians
+			};
+		}
+
 		combined.dom[framework] = {};
 		const domTestNames = Object.keys(suiteRuns[0].dom[framework]);
 		for (const testName of domTestNames) {
@@ -241,13 +291,21 @@ function buildSummaryTable(results, testNames) {
 }
 
 function writeReport(config, results) {
+	const coldStartTestNames = Object.keys(results.coldStart.dothtml);
 	const domTestNames = Object.keys(results.dom.dothtml);
 	const stylingTestNames = Object.keys(results.styling.dothtml);
 
 	let report = '# Framework Benchmark Results\n\n';
 	report += `Configuration: ${config.iterations} iterations, ${config.warmup} warmup, ${config.suites} suite(s). Timings measured in-browser with \`performance.now()\`.\n\n`;
 
-	report += '## DOM Operations (Median ms)\n\n';
+	report += '## Cold Start & Initialization (Median ms)\n\n';
+	report += '| Test | DOThtml | React | Vue | Svelte |\n';
+	report += '| --- | --- | --- | --- | --- |\n';
+	for (const testName of coldStartTestNames) {
+		report += `| ${testName} | ${formatStat(results.coldStart.dothtml[testName].median)}ms | ${formatStat(results.coldStart.react[testName].median)}ms | ${formatStat(results.coldStart.vue[testName].median)}ms | ${formatStat(results.coldStart.svelte[testName].median)}ms |\n`;
+	}
+
+	report += '\n## DOM Operations (Median ms)\n\n';
 	report += '| Test | DOThtml | React | Vue | Svelte |\n';
 	report += '| --- | --- | --- | --- | --- |\n';
 	for (const testName of domTestNames) {
@@ -263,6 +321,7 @@ function writeReport(config, results) {
 
 	report += '\n## Detailed Statistics\n\n';
 	for (const section of [
+		{ title: 'Cold Start', data: results.coldStart, tests: coldStartTestNames },
 		{ title: 'DOM Operations', data: results.dom, tests: domTestNames },
 		{ title: 'Styling', data: results.styling, tests: stylingTestNames }
 	]) {
@@ -285,10 +344,19 @@ function writeReport(config, results) {
 async function runSingleSuite(port, config) {
 	const browser = await chromium.launch();
 	const frameworks = ['dothtml', 'react', 'vue', 'svelte'];
+	const coldStart = {};
 	const dom = {};
 	const styling = {};
 
 	try {
+		for (const framework of frameworks) {
+			console.log(`Benchmarking ${framework} (Cold Start)...`);
+			const page = await browser.newPage();
+			const url = `http://localhost:${port}/${framework}/index.html`;
+			coldStart[framework] = await runColdStartBenchmarks(page, url, config);
+			await page.close();
+		}
+
 		for (const framework of frameworks) {
 			console.log(`Benchmarking ${framework} (DOM)...`);
 			const page = await browser.newPage();
@@ -311,7 +379,7 @@ async function runSingleSuite(port, config) {
 		await browser.close();
 	}
 
-	return { dom, styling };
+	return { coldStart, dom, styling };
 }
 
 async function runBenchmark() {
@@ -319,14 +387,14 @@ async function runBenchmark() {
 	console.log(`Benchmark config: iterations=${config.iterations}, warmup=${config.warmup}, suites=${config.suites}`);
 
 	console.log('Building benchmarks...');
-	const viteBin = path.join(__dirname, 'node_modules', '.bin', 'vite');
-	const build = spawn(viteBin, ['build'], { cwd: __dirname });
+	const viteBin = 'vite';
+	const build = spawn(viteBin, ['build'], { cwd: __dirname, shell: true });
 	await new Promise((resolve, reject) => {
 		build.on('close', code => code === 0 ? resolve() : reject(new Error('Build failed')));
 	});
 
 	console.log('Starting Vite preview server...');
-	const vite = spawn(viteBin, ['preview'], { cwd: __dirname, detached: true });
+	const vite = spawn(viteBin, ['preview'], { cwd: __dirname, detached: true, shell: true });
 
 	try {
 		let port = 4173;
@@ -358,12 +426,15 @@ async function runBenchmark() {
 		}
 
 		const results = config.suites === 1
-			? { dom: suiteRuns[0].dom, styling: suiteRuns[0].styling }
+			? { coldStart: suiteRuns[0].coldStart, dom: suiteRuns[0].dom, styling: suiteRuns[0].styling }
 			: combineSuiteResults(suiteRuns);
 
+		const coldStartTestNames = Object.keys(results.coldStart.dothtml);
 		const domTestNames = Object.keys(results.dom.dothtml);
 		const stylingTestNames = Object.keys(results.styling.dothtml);
 
+		console.log('\nCold Start Benchmark Results (Median ms):');
+		console.table(buildSummaryTable(results.coldStart, coldStartTestNames));
 		console.log('\nDOM Benchmark Results (Median ms):');
 		console.table(buildSummaryTable(results.dom, domTestNames));
 		console.log('\nStyling Benchmark Results (Median ms):');

@@ -16,13 +16,16 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | 7.92 ms | 7.95 ms | 7.18 ms | **6.35 ms** |
-| **Create 10,000 rows** | 726.30 ms | 685.80 ms | 521.00 ms | **529.70 ms** |
-| **Append 1,000 rows** | **7.01 ms** | 73.50 ms | 56.89 ms | 51.43 ms |
+| **Create 1,000 rows** | 7.05 ms | 7.40 ms | 6.77 ms | **5.91 ms** |
+| **Create 10,000 rows** | 675.10 ms | 662.30 ms | 508.20 ms | **458.10 ms** |
+| **Append 1,000 rows** | **7.26 ms** | 72.78 ms | 51.65 ms | 49.94 ms |
 | **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
 | **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
-| **Clear** | 1.44 ms | 1.44 ms | **1.44 ms** | 1.43 ms |
-| **Bulk Style Update** | **0.15 ms** | 0.38 ms | 0.23 ms | 0.21 ms |
+| **Clear** | 1.45 ms | 1.44 ms | **1.43 ms** | 1.44 ms |
+| **Bulk Style Update** | **0.15 ms** | 0.40 ms | 0.25 ms | 0.21 ms |
+| **First Contentful Paint** | 28.00 ms | 28.00 ms | 28.00 ms | 28.00 ms |
+| **DOM Interactive** | 5.20 ms | 5.30 ms | 4.90 ms | 5.10 ms |
+| **Framework Ready** | 18.80 ms | 8.20 ms | 7.90 ms | **5.80 ms** |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -37,7 +40,17 @@ DOThtml is designed to be lightweight, ensuring fast load times and minimal reso
 
 ## Interpreting the Results
 
-Benchmarks reveal that DOThtml's "magic" — its fluent runtime builder and granular reactivity — comes with a performance trade-off. In bulk creation (10,000 rows), DOThtml is slower than compiler-based frameworks like Svelte or Vue. This is because DOThtml constructs a full Virtual DOM tree of objects at runtime before touching the real DOM. 
+Benchmarks reveal that DOThtml's "magic" — its fluent runtime builder and granular reactivity — comes with a performance trade-off. 
+
+### Cold Start and Initialization
+
+In the **Cold Start** metrics, you'll notice that DOThtml has a higher **Framework Ready** time than its competitors. This is because DOThtml is a runtime-heavy framework; it performs significant work during initialization to set up its fluent API, register custom elements, and prepare the granular reactivity system.
+
+However, notice that **First Contentful Paint (FCP)** remains highly competitive. This is because DOThtml's initialization work often fits within the browser's natural idle windows during the loading process. Users see the page at the same time, even if the framework takes a few extra milliseconds to become fully "ready" behind the scenes.
+
+### Runtime Performance
+
+In bulk creation (10,000 rows), DOThtml is slower than compiler-based frameworks like Svelte or Vue. This is because DOThtml constructs a full Virtual DOM tree of objects at runtime before touching the real DOM. 
 
 However, once the DOM is created, DOThtml's granular reactivity excels. In scenarios like appending rows or updating styles, DOThtml often matches or exceeds other frameworks because it bypasses the expensive tree-diffing process entirely, updating only the specific nodes bound to a Signal.
 
