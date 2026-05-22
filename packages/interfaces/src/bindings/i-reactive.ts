@@ -1,4 +1,4 @@
 import { IBinding } from "./i-binding";
 import { IWatcher } from "./i-watcher";
 
-export type IReactive = IBinding|IWatcher;
+export type IReactive<T = any> = IBinding<any, T>|IWatcher<T>;

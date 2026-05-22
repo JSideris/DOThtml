@@ -7,6 +7,8 @@ export interface IWatcher<T = any>{
 	 */
 	get value(): T;
 	set value(v: T|null|undefined);
+	getValue(): T;
+	getValue(): T;
 
 	// Key is used for observable array proxy bindings.
 	// If a key is provided, it's used to uniquely identify array elements.

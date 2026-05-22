@@ -2,6 +2,7 @@ import Binding from "../reactivity/binding";
 import Ref from "../reactivity/ref";
 import Signal from "../reactivity/signal";
 import { ContainerVdom } from "./container-vdom";
+import { Vdom } from "./vdom";
 
 export type PrimativeAttributeValueType = string|number|boolean;
 export type AttributeValueType = PrimativeAttributeValueType|Binding|Ref|((el: any) => void)|(()=>AttributeValueType);

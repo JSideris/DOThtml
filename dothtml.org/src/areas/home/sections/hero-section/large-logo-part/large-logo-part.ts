@@ -1,10 +1,10 @@
-import { dot, DotComponent, IReactive } from "dothtml";
+import { dot, DotComponent, ISignal } from "dothtml";
 import { theme } from "../../../../../store/theme-store";
 
 type Orbiter = {
-	x: IReactive<number>
-	y: IReactive<number>
-	z: IReactive<number>
+	x: ISignal<number>
+	y: ISignal<number>
+	z: ISignal<number>
 };
 
 @dot.component
