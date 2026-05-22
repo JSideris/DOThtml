@@ -102,5 +102,7 @@ export abstract class Vdom{
 	on(event: string, callback: (e: any)=>void): this { return null as any; }
 	onEnter(callback: (el: HTMLElement)=>void): this { return null as any; }
 	onLeave(callback: (el: HTMLElement)=>Promise<void>|void): this { return null as any; }
+	empty(): this { return null as any; }
+	remove(): void { }
 	[key: string]: any;
 }

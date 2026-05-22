@@ -98,6 +98,24 @@ dot.div()
 
 For common animations, see the **[Transitions & Animations](./styling.md#transitions-and-animations)** section in the styling documentation.
 
+## Clearing and Removing Elements
+
+You can imperatively clear or remove elements using the `.empty()` and `.remove()` methods.
+
+- **`.empty()`**: Removes all children from the targeted element.
+- **`.remove()`**: Removes the targeted element itself from the DOM.
+
+```javascript
+// Clear all content inside #app
+dot("#app").empty();
+
+// Clear #app and then add new content
+dot("#app").empty().p("All gone, here is something new!");
+
+// Remove the #sidebar element entirely
+dot("#sidebar").remove();
+```
+
 ## HTML vs. Text
 
 By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper.

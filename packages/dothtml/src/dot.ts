@@ -220,6 +220,43 @@ function promote(vdom: Vdom): DotChain {
 	return this;
 };
 
+(Vdom.prototype as any).empty = function() {
+	let lastChild = this._getLastChild();
+	while (lastChild instanceof DotChain) {
+		lastChild = (lastChild as any)._root;
+	}
+
+	if (lastChild instanceof ElementVdom) {
+		if (lastChild.element) lastChild.element.innerHTML = "";
+		lastChild.children._unrender();
+		lastChild.children._children = [];
+		lastChild.children._isRendered = true;
+	} else if (this instanceof ContainerVdom) {
+		this._unrender();
+		this._children = [];
+		this._isRendered = true;
+		if (this._parent instanceof ElementVdom && this._parent.element) {
+			this._parent.element.innerHTML = "";
+		}
+	}
+	return this;
+};
+
+(Vdom.prototype as any).remove = function() {
+	let lastChild = this._getLastChild();
+	while (lastChild instanceof DotChain) {
+		lastChild = (lastChild as any)._root;
+	}
+
+	if (lastChild instanceof ElementVdom || lastChild instanceof ComponentVdom) {
+		lastChild._unrender();
+	} else if (this instanceof ContainerVdom && this._parent instanceof ElementVdom) {
+		this._parent._unrender();
+	} else if (this instanceof Vdom) {
+		this._unrender();
+	}
+};
+
 (Vdom.prototype as any).fade = function(duration: number = 300) {
 	return this.onEnter((el: HTMLElement) => {
 		el.animate([{ opacity: 0 }, { opacity: 1 }], { duration });
@@ -275,6 +312,7 @@ const makeDot = ()=>{
 			else{
 				node = new ElementVdom(_dot, el.tagName.toLocaleLowerCase());
 				node.element = el;
+				node._isRendered = true;
 				node.children._parent = node;
 				node.children._isRendered = true;
 				el[DOT_VDOM_PROP_NAME] = node;
