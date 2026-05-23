@@ -42,10 +42,14 @@ function promote(vdom: Vdom): DotChain {
 }
 
 function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
-	if (c instanceof Vdom || c?._root) {
-		return promote(c);
+	let val = reduceReactive(c);
+	if (val instanceof Vdom || val?._root) {
+		return promote(val);
 	}
-	let cn = new ComponentVdom(dot, c);
+	if (typeof val === "string" || val instanceof Binding || typeof val === "number" || typeof val === "boolean" || val === null || val === undefined || Array.isArray(val)) {
+		return new HtmlVdom(val, dot);
+	}
+	let cn = new ComponentVdom(dot, val);
 	for (let i = 0; i < args.length; i++) {
 		let arg = args[i];
 		if (isContent(arg)) {
@@ -101,7 +105,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).html = function(c: any) {
-	return this._addChild(new HtmlVdom(reduceReactive(c)));
+	return this.mount(c);
 };
 
 (Vdom.prototype as any).md = function(c: any) {

@@ -2,7 +2,6 @@ import { IBinding, IDotDocument, IReactive, IWatcher } from "dothtml-interfaces"
 import { DOT_VDOM_PROP_NAME } from "../constants";
 import ElementVdom from "../vdom-nodes/element-vdom";
 import { TextVdom } from "../vdom-nodes/text-vdom";
-import { HtmlVdom } from "../vdom-nodes/html-vdom";
 import { ConditionalVdom } from "../vdom-nodes/conditional-vdom";
 import CollectionVdom from "../vdom-nodes/collection-vdom";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";

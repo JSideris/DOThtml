@@ -1,57 +1,91 @@
 import { removeNodesBetween } from "../helpers/tools";
 import Binding from "../reactivity/binding";
-import Signal from "../reactivity/signal";
 import { Vdom } from "./vdom";
+import { IDotCore } from "dothtml-interfaces";
 
 export class HtmlVdom extends Vdom{
 
 	beforeNode: Node;
 	afterNode: Node;
 
-	_html: string|Binding;
+	_content: any;
+	private currentVdom: Vdom | null = null;
 	observerId: number = 0;
 
-	constructor(html: string|Binding){
-		super();
-		this._html = html;
+	constructor(content: any, dot?: IDotCore){
+		super(dot);
+		this._content = content;
 	}
 
-	updateHtml(html){
+	private _toVdom(value: any): Vdom | null {
+		if (value === null || value === undefined) {
+			return null;
+		}
+		if (value instanceof Vdom || value?._root) {
+			return value?._root || value;
+		}
+		
+		if (this._dot) {
+			if ((typeof value === "object" && value.build) || Array.isArray(value)) {
+				// Use the dot factory to create a container and mount the content.
+				// This avoids circular dependencies on ComponentVdom/ContainerVdom.
+				return (this._dot as any).mount(value)._root;
+			}
+		}
+		
+		return null;
+	}
+
+	updateHtml(content: any){
 		if(this.beforeNode){
+			if (this.currentVdom) {
+				this.currentVdom._unrender();
+				this.currentVdom = null;
+			}
 			removeNodesBetween(this.beforeNode, this.afterNode);
 			
-			// Need to render everything to a temporary div them move everything to the target.
-			let temp = this.beforeNode.ownerDocument.createElement("div");
-			temp.innerHTML = html;
+			const vdom = this._toVdom(content);
+			if (vdom) {
+				this.currentVdom = vdom;
+				this.currentVdom._renderBefore(this.afterNode);
+			} else if (content !== null && content !== undefined) {
+				// Need to render everything to a temporary div them move everything to the target.
+				let temp = this.beforeNode.ownerDocument.createElement("div");
+				temp.innerHTML = content;
 
-			while (temp.firstChild) {
-				this.afterNode.parentElement.insertBefore(temp.firstChild, this.afterNode);
+				while (temp.firstChild) {
+					this.afterNode.parentElement.insertBefore(temp.firstChild, this.afterNode);
+				}
 			}
 		}
 	}
 
 	_render(target: HTMLElement) {
-		let html = "";
-		if(this._html instanceof Binding){
-			html = this._html._get() ?? "";
-			this.observerId = this._html._subscribe(this);
+		let val = "";
+		if(this._content instanceof Binding){
+			val = this._content._get();
+			this.observerId = this._content._subscribe(this);
 		}
 		else{
-			html = this._html;
+			val = this._content;
 		}
 
 		this.beforeNode = target.ownerDocument.createTextNode("");
 		this.afterNode = target.ownerDocument.createTextNode("");
 		target.appendChild(this.beforeNode);
 		target.appendChild(this.afterNode);
-		this.updateHtml(html ?? "");
+		this.updateHtml(val);
 	}
 
 	_unrender() {
 		if(this.beforeNode){
+			if (this.currentVdom) {
+				this.currentVdom._unrender();
+				this.currentVdom = null;
+			}
+
 			let parent = this.beforeNode.parentElement;
 
-			// TODO: once we set up bindings, need the ability to clear them.
 			removeNodesBetween(this.beforeNode, this.afterNode);
 
 			parent.removeChild(this.beforeNode);
@@ -60,10 +94,14 @@ export class HtmlVdom extends Vdom{
 			this.afterNode = null;
 		}
 
-		if(this.observerId && this._html instanceof Binding){
-			this._html._unsubscribe(this.observerId);
+		if(this.observerId && this._content instanceof Binding){
+			this._content._unsubscribe(this.observerId);
 			this.observerId = 0;
 		}
+	}
+
+	update(value: any) {
+		this.updateHtml(value);
 	}
 
 	_getNodes(): Node[] {
@@ -83,6 +121,7 @@ export class HtmlVdom extends Vdom{
 	}
 
 	toString(){
-		return this._html instanceof Binding ? this._html._get() : this._html;
+		if (this.currentVdom) return this.currentVdom.toString();
+		return this._content instanceof Binding ? this._content._get() : this._content;
 	}
 }

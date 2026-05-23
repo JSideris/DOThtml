@@ -51,15 +51,15 @@ export interface IDotDocument {
 	/**
 	 * Creates a generic HTML node that can render a string, HTML nodes, or dotHTML content.
 	*/
-	html(content: DotContentPrimitive | IReactive): IDotDocument;
+	html(content: DotContent): IDotDocument;
 	/**
 	 * Creates a text node that will render as a string, rather than being parsed as markup.
 	*/
-	text(content: DotContentPrimitive | IReactive): IDotDocument;
+	text(content: DotContent): IDotDocument;
 	/**
 	 * Creates a text node that will render as a string, rather than being parsed as markup.
 	*/
-	md(content: DotContentPrimitive | IReactive): IDotDocument;
+	md(content: DotContent): IDotDocument;
 	/**
 	 * Mounts a component or appends content.
 	 */
