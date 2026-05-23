@@ -186,7 +186,7 @@ DOThtml components use **Shadow DOM** by default, providing strong encapsulation
 
 ### Instance Styles
 
-You can apply styles to elements within your component's `build()` method using the fluent `.style()` API. This is ideal for instance-specific styling driven by props or internal state.
+You can apply styles to elements within your component's `build()` method using the fluent `.style()` API. This uses a **Property Builder** and is ideal for instance-specific styling driven by props or internal state.
 
 ```javascript
 class StyledBox {
@@ -196,7 +196,7 @@ class StyledBox {
 
     build(dot) {
         return dot.div("I am a styled box")
-            .style(s => s
+            .style(b => b
                 .backgroundColor(this.props.color)
                 .paddingPx(10)
             );
@@ -206,14 +206,16 @@ class StyledBox {
 
 ### Component Templates (`stylize`)
 
-To define styles that are shared across all instances of a component, use the `stylize()` method. These styles are scoped to the component's shadow root.
+To define styles that are shared across all instances of a component, use the `stylize()` method. This method receives a **Stylesheet Builder**, which you use to define rules and classes. See **[Styling](./styling.md)** for a detailed explanation of the different builder types.
 
 **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
 
 ```javascript
 class MyComponent {
     stylize(s) {
-        return s.class("header", c => c
+        // s is a Stylesheet Builder
+        return s.class("header", b => b
+            // b is a Property Builder
             .fontSizePx(24)
             .color(theme.primary) // Automatically reactive!
         );
@@ -227,7 +229,7 @@ class MyComponent {
 
 ### Host Styling (`hostStyle`)
 
-The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself). 
+The `hostStyle()` method allows you to apply styles or bind reactive variables directly to the component's host element (the custom element itself). This method receives a **Stylesheet Builder** pre-scoped to the `:host` rule.
 
 While `stylize()` is now reactive, `hostStyle()` remains useful for:
 1.  **Layout Control**: Setting `display: block` or `grid` on the custom element itself.
@@ -236,13 +238,15 @@ While `stylize()` is now reactive, `hostStyle()` remains useful for:
 ```javascript
 class ThemeableComponent {
     hostStyle(s) {
+        // s is a Stylesheet Builder
         // Explicitly bind a variable to the host element.
         s.variable("theme-color", this.props.color);
         s.display("block");
     }
 
     stylize(s) {
-        return s.class("content", c => c
+        return s.class("content", b => b
+            // b is a Property Builder
             // Reference the host variable using the .v() helper.
             .border(`2px solid ${s.v("theme-color")}`)
         );
@@ -336,7 +340,8 @@ Since DOThtml uses Shadow DOM, you can style slotted content from within the com
 ```javascript
 class StyledCard extends DotComponent {
     stylize(s) {
-        s.selector("::slotted(h1)", c => c.color("blue"));
+        // s is a Stylesheet Builder
+        s.selector("::slotted(h1)", b => b.color("blue"));
     }
     build(dot) {
         return dot.div(dot.slot());

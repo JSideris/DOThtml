@@ -1,4 +1,5 @@
 import { DOTHTML_COMPRESSED_SIZE, DOTHTML_COMPRESSED_SIZE_FULL } from "../generated/size";
+import { DOTHTML_VERSION } from "../generated/version";
 
 /**
  * A simple markdown parser that converts markdown strings to HTML.
@@ -16,6 +17,7 @@ export default class MarkdownParser {
 		// Replace placeholders
 		let html = markdown.replace(/%%DOTHTML_COMPRESSED_SIZE%%/g, DOTHTML_COMPRESSED_SIZE.toString());
 		html = html.replace(/%%DOTHTML_COMPRESSED_SIZE_FULL%%/g, DOTHTML_COMPRESSED_SIZE_FULL.toString());
+		html = html.replace(/%%DOTHTML_VERSION%%/g, DOTHTML_VERSION);
 
 		// Normalize newlines
 		html = html.replace(/\r\n/g, "\n").trim();

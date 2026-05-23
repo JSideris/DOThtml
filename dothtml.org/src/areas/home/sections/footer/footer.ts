@@ -1,4 +1,5 @@
 import { dot, DotComponent } from "dothtml";
+import { DOTHTML_VERSION } from "../../../../generated/version";
 
 @dot.component
 export default class Footer extends DotComponent {
@@ -15,7 +16,7 @@ export default class Footer extends DotComponent {
 
 	build() {
 		return dot.footer({ class: "footer" },
-			dot.p(`© ${new Date().getFullYear()} DOThtml. Built with DOThtml 6.`),
+			dot.p(`© ${new Date().getFullYear()} DOThtml. Built with DOThtml ${DOTHTML_VERSION}.`),
 			dot.p(
 				dot.span("Released under the ISC License. "),
 				dot.a({ href: "https://github.com/JSideris/DOThtml", target: "_blank" }, "View on GitHub")
