@@ -15,7 +15,7 @@ import {
 } from "./routing";
 import { initScrollManager } from "./routing/scroll-manager";
 
-dot.version = "6.0.0";
+dot.version = "6.0.0-debug";
 
 // Initialize scroll manager
 initScrollManager();

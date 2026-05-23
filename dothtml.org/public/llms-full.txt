@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **21.7 kB**
+- **DOThtml**: **22.1 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **21.7 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **22.1 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -173,6 +173,17 @@ class MyComponent extends DotComponent<MyProps> {
 
 // Instantiate using the 'new' keyword
 dot(document.body).mount(new MyComponent({ name: "World" }));
+```
+
+### Polymorphic Mounting
+
+The `.mount()` method is polymorphic. In addition to component instances, it can also accept VDOM nodes or pre-built DOThtml fragments. This makes it a universal entry point for adding content to a container.
+
+```javascript
+const myFragment = dot.div("A").p("B");
+
+// Mount a fragment directly
+dot("#app").mount(myFragment);
 ```
 
 **Why use this pattern?**
@@ -1074,6 +1085,20 @@ const el = await myRef.ready();
 console.log("Element is ready:", el);
 ```
 
+## Appending and Prepending
+
+Refs support `.append()` and `.prepend()` methods, allowing you to add content to the referenced element without needing to manually check if `value` is null.
+
+```javascript
+const myContainer = dot.ref();
+
+dot.div({ ref: myContainer });
+
+// Later...
+myContainer.append(dot.p("New content at the end"));
+myContainer.prepend(dot.p("New content at the start"));
+```
+
 ## Function Refs
 
 If you prefer a callback-based approach, you can pass a function to the `ref` attribute.
@@ -1220,6 +1245,24 @@ dot.div()
 ```
 
 For common animations, see the **[Transitions & Animations](./styling.md#transitions-and-animations)** section in the styling documentation.
+
+## Appending and Prepending
+
+You can imperatively add content to an existing element or a builder using `.append()` and `.prepend()`.
+
+- **`.append(content)`**: Adds the content to the **end** of the targeted element's children.
+- **`.prepend(content)`**: Adds the content to the **beginning** of the targeted element's children.
+
+```javascript
+const list = dot.ul().li("Item 2");
+
+list.append(dot.li("Item 3"));
+list.prepend(dot.li("Item 1"));
+
+// Result: <ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>
+```
+
+These methods are particularly useful when working with **Refs** (see [Refs](./refs.md)).
 
 ## Clearing and Removing Elements
 

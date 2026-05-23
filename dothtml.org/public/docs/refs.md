@@ -88,6 +88,20 @@ const el = await myRef.ready();
 console.log("Element is ready:", el);
 ```
 
+## Appending and Prepending
+
+Refs support `.append()` and `.prepend()` methods, allowing you to add content to the referenced element without needing to manually check if `value` is null.
+
+```javascript
+const myContainer = dot.ref();
+
+dot.div({ ref: myContainer });
+
+// Later...
+myContainer.append(dot.p("New content at the end"));
+myContainer.prepend(dot.p("New content at the start"));
+```
+
 ## Function Refs
 
 If you prefer a callback-based approach, you can pass a function to the `ref` attribute.

@@ -8,7 +8,7 @@ import { IWatcher } from "./bindings/i-watcher";
 import IDotcssProp from "./styles/i-css-prop";
 import { IRef } from "./bindings/i-ref";
 
-type DotContentPrimitive = string | number | boolean | undefined | null;
+export type DotContentPrimitive = string | number | boolean | undefined | null;
 type DotContentBasic = DotContentPrimitive | Node | Element | NodeList | IDotComponent | IDotDocument//typeof DotDocument;
 export type DotContent = DotContentBasic | Array<DotContent> | IReactive;//|(()=>DotContent);
 
@@ -51,19 +51,27 @@ export interface IDotDocument {
 	/**
 	 * Creates a generic HTML node that can render a string, HTML nodes, or dotHTML content.
 	*/
-	html(content: string | number | boolean | IReactive): IDotDocument;
+	html(content: DotContentPrimitive | IReactive): IDotDocument;
 	/**
 	 * Creates a text node that will render as a string, rather than being parsed as markup.
 	*/
-	text(content: string | number | boolean | IReactive): IDotDocument;
+	text(content: DotContentPrimitive | IReactive): IDotDocument;
 	/**
 	 * Creates a text node that will render as a string, rather than being parsed as markup.
 	*/
-	md(content: string | number | boolean | IReactive): IDotDocument;
+	md(content: DotContentPrimitive | IReactive): IDotDocument;
 	/**
-	 * Mounts a component.
+	 * Mounts a component or appends content.
 	 */
-	mount<T extends IDotComponent>(component: T, ...args: any[]): IDotDocument;
+	mount(content: DotContent, ...args: any[]): IDotDocument;
+	/**
+	 * Appends content to the current document.
+	 */
+	append(content: DotContent): this;
+	/**
+	 * Prepends content to the current document.
+	 */
+	prepend(content: DotContent): this;
 	slot(name?: string | any, fallback?: any): IDotDocument;
 	// mount<T extends IComponent>(init: (c: IMountedComponent<T>) => IMountedComponent<T> | void, component: T): IDotDocument;
 	// mount(component: IComponent, init: (init=>IMountedComponent): IMountedComponent|void): IDotDocument;

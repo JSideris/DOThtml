@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.0.5
+
+### Patch Changes
+
+- Polymorphic mounting.
+- Updated dependencies
+  - dothtml-interfaces@6.0.5
+
 ## 6.0.4
 
 ### Patch Changes

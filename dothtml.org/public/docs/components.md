@@ -28,6 +28,17 @@ class MyComponent extends DotComponent<MyProps> {
 dot(document.body).mount(new MyComponent({ name: "World" }));
 ```
 
+### Polymorphic Mounting
+
+The `.mount()` method is polymorphic. In addition to component instances, it can also accept VDOM nodes or pre-built DOThtml fragments. This makes it a universal entry point for adding content to a container.
+
+```javascript
+const myFragment = dot.div("A").p("B");
+
+// Mount a fragment directly
+dot("#app").mount(myFragment);
+```
+
 **Why use this pattern?**
 *   **Type Safety**: The `DotComponent` base class allows you to type your `props` and `refs`.
 *   **Reactivity Tracking**: The decorator ensures that any reactive signals created in the constructor are properly disposed of when the component is unmounted.

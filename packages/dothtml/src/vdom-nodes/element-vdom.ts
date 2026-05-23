@@ -207,7 +207,7 @@ export default class ElementVdom extends Vdom{
 			}
 		}
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || value instanceof Signal || value instanceof BaseVStyle)){
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || (value as any)?._isBinding || value instanceof Signal || (value as any)?._isSignal || value instanceof BaseVStyle)){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){
@@ -299,18 +299,18 @@ export default class ElementVdom extends Vdom{
 			// Like a space-separated class list.
 			node.setAttribute(attr, value.join(" "));
 		}
-		else if (value instanceof Binding){
-			this.renderAttr(attr, value._get(), node, isExplicitBind);
+		else if (value instanceof Binding || (value as any)?._isBinding){
+			this.renderAttr(attr, (value as any)._get(), node, isExplicitBind);
 			
 			// Only subscribe if we haven't already for this attribute.
 			if (!this.attributeObserverIds.some(item => item.attr === attr && item.observable === value)) {
-				let id = value._subscribe(new ReactiveAttr(this, attr));
-				this.attributeObserverIds.push({id: id, observable: value, attr: attr});
+				let id = (value as any)._subscribe(new ReactiveAttr(this, attr));
+				this.attributeObserverIds.push({id: id, observable: value as any, attr: attr});
 			}
 
 			// If it's a value prop, update the observable on change.
-			if((attr == "value" || attr == "checked") && value.isWritable && isExplicitBind){
-				this.activeBindings[attr] = value;
+			if((attr == "value" || attr == "checked") && (value as any).isWritable && isExplicitBind){
+				this.activeBindings[attr] = value as any;
 				if(!this.inputListener){
 					this.inputListener = (e)=>{
 						if (this.isComposing) return;

@@ -41,8 +41,55 @@ function promote(vdom: Vdom): DotChain {
 	return new DotChain(vdom._dot, vdom);
 }
 
+function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
+	if (c instanceof Vdom || c?._root) {
+		return promote(c);
+	}
+	let cn = new ComponentVdom(dot, c);
+	for (let i = 0; i < args.length; i++) {
+		let arg = args[i];
+		if (isContent(arg)) {
+			cn.addSlot("default", arg);
+		} else if (arg && typeof arg === "object") {
+			for (let k in arg) {
+				let val = arg[k];
+				if (k === "ref") {
+					cn.setRef(val);
+				}
+				else if (k.startsWith("on") && typeof val === "function") {
+					let eventName = k;
+					let modifiers = [];
+					if (k.includes(".")) {
+						const parts = k.split(".");
+						eventName = parts[0];
+						modifiers = parts.slice(1);
+					}
+					cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
+				}
+				else {
+					const propsDef = (c.constructor as any).props;
+					if (propsDef && propsDef[k]) {
+						if (!c["props"]) (c as any).props = {};
+						(c as any).props[k] = val;
+					} else if (typeof val === "function" || val instanceof Vdom || val?._root || val?._children) {
+						cn.addSlot(k, val);
+					} else {
+						if (!c["props"]) (c as any).props = {};
+						(c as any).props[k] = val;
+					}
+				}
+			}
+		}
+	}
+	return cn;
+}
+
 (Vdom.prototype as any)._addChild = function(node: Vdom) {
 	return promote(this)._addChild(node);
+};
+
+(Vdom.prototype as any)._prependChild = function(node: Vdom) {
+	return promote(this)._prependChild(node);
 };
 
 (Vdom.prototype as any).text = function(c: any) {
@@ -84,43 +131,31 @@ function promote(vdom: Vdom): DotChain {
 };
 
 (Vdom.prototype as any).mount = function(c: any, ...args: any[]) {
-	let cn = new ComponentVdom(this._dot, c);
-	for (let i = 0; i < args.length; i++) {
-		let arg = args[i];
-		if (isContent(arg)) {
-			cn.addSlot("default", arg);
-		} else if (arg && typeof arg === "object") {
-			for (let k in arg) {
-				let val = arg[k];
-				if (k === "ref") {
-					cn.setRef(val);
-				}
-				else if (k.startsWith("on") && typeof val === "function") {
-					let eventName = k;
-					let modifiers = [];
-					if (k.includes(".")) {
-						const parts = k.split(".");
-						eventName = parts[0];
-						modifiers = parts.slice(1);
-					}
-					cn.addEventListener(eventName.substring(2).toLowerCase(), val, modifiers);
-				}
-				else {
-					const propsDef = (c.constructor as any).props;
-					if (propsDef && propsDef[k]) {
-						if (!c["props"]) (c as any).props = {};
-						(c as any).props[k] = val;
-					} else if (typeof val === "function" || val instanceof Vdom || val?._root || val?._children) {
-						cn.addSlot(k, val);
-					} else {
-						if (!c["props"]) (c as any).props = {};
-						(c as any).props[k] = val;
-					}
-				}
-			}
-		}
+	return this._addChild(createMountable(this._dot, c, args));
+};
+
+(Vdom.prototype as any).append = function(c: any) {
+	let target = this;
+	while (target instanceof DotChain) {
+		target = (target as any)._root;
 	}
-	return this._addChild(cn);
+	if (target instanceof ElementVdom) {
+		target.children.mount(c);
+		return this;
+	}
+	return this.mount(c);
+};
+
+(Vdom.prototype as any).prepend = function(c: any) {
+	let target = this;
+	while (target instanceof DotChain) {
+		target = (target as any)._root;
+	}
+	if (target instanceof ElementVdom) {
+		target.children.prepend(c);
+		return this;
+	}
+	return this._prependChild(createMountable(this._dot, c, []));
 };
 
 (Vdom.prototype as any).when = function(condition: any, then: any) {
@@ -429,11 +464,11 @@ const makeDot = ()=>{
 	}
 
 	_dot.ref = function<T extends HTMLElement | IDotComponent = HTMLElement>(){
-		return new Ref<T>();
+		return new Ref<T>(_dot);
 	}
 
 	_dot.refCollection = function<T extends HTMLElement | IDotComponent = HTMLElement>(){
-		return new RefCollection<T>();
+		return new RefCollection<T>(_dot);
 	}
 
 	_dot.alpha = function(color: string | Signal<string> | Binding<string>, opacity: number | Signal<number> | Binding<number>) {

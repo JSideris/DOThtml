@@ -2,10 +2,15 @@ import Ref from "./ref";
 
 export default class RefCollection<T = any> {
 	private _refs: Map<string | number, Ref<T>> = new Map();
+	private _dot: any;
+
+	constructor(dotInstance?: any) {
+		this._dot = dotInstance;
+	}
 
 	get(key: string | number): Ref<T> {
 		if (!this._refs.has(key)) {
-			this._refs.set(key, new Ref<T>());
+			this._refs.set(key, new Ref<T>(this._dot));
 		}
 		return this._refs.get(key)!;
 	}

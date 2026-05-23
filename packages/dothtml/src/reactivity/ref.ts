@@ -6,9 +6,13 @@ import Signal from "./signal";
  * Supports method proxying, allowing direct calls like `myRef.focus()`.
  */
 export default class Ref<T = any> extends Signal<T | null> implements IRef<any>{
-	constructor() {
+	private _dot: any;
+	_isRef = true;
+
+	constructor(dotInstance?: any) {
 		super();
 		this._value = null;
+		this._dot = dotInstance;
 
 		return new Proxy(this, {
 			get(target, prop, receiver) {
@@ -20,6 +24,12 @@ export default class Ref<T = any> extends Signal<T | null> implements IRef<any>{
 					return (...args: any[]) => (val as any)[prop].apply(val, args);
 				}
 				return undefined;
+			},
+			set(target, prop, value, receiver) {
+				if (prop in target) {
+					return Reflect.set(target, prop, value);
+				}
+				return Reflect.set(target, prop, value, receiver);
 			}
 		}) as any;
 	}
@@ -44,5 +54,29 @@ export default class Ref<T = any> extends Signal<T | null> implements IRef<any>{
 				}
 			});
 		});
+	}
+
+	/**
+	 * Appends content to the referenced element.
+	 */
+	append(content: any): this {
+		if (this.value instanceof HTMLElement) {
+			const d = this._dot || (globalThis as any).dot;
+			if (d) d(this.value).append(content);
+			else console.warn("DOThtml: Ref.append called but dot instance is not available.");
+		}
+		return this;
+	}
+
+	/**
+	 * Prepends content to the referenced element.
+	 */
+	prepend(content: any): this {
+		if (this.value instanceof HTMLElement) {
+			const d = this._dot || (globalThis as any).dot;
+			if (d) d(this.value).prepend(content);
+			else console.warn("DOThtml: Ref.prepend called but dot instance is not available.");
+		}
+		return this;
 	}
 }

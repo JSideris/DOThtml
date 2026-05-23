@@ -16,7 +16,9 @@ export const isContent = (arg: any) => {
 		arg?._children || // FragmentVdom or ContainerVdom
 		(typeof arg == "object" && arg?.build) || 
 		arg instanceof Signal || 
+		arg?._isSignal ||
 		arg instanceof Binding || 
+		arg?._isBinding ||
 		typeof arg === "string" || 
 		typeof arg === "number" || 
 		typeof arg === "boolean" || 
@@ -46,11 +48,11 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 	else{
 		if(cont !== null && cont !== undefined){
 			let val = cont;
-			if(val instanceof Signal){
+			if(val instanceof Signal || val?._isSignal){
 				val = val.bind();
 			}
-			if(val instanceof Binding){
-				target._addChild(new ReactiveVdom(dot, val));
+			if(val instanceof Binding || val?._isBinding){
+				target._addChild(new ReactiveVdom(dot, val as any));
 			}
 			else{
 				target._addChild(new TextVdom(val));
@@ -62,7 +64,7 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 export const applyAttributes = (n: ElementVdom, attrs: any) => {
 	for(let k in attrs) {
 		let attr = attrs[k];
-		if(attr instanceof Signal && !(attr instanceof Ref)) attr = attr.bind();
+		if((attr instanceof Signal || attr?._isSignal) && !attr?._isRef) attr = attr.bind();
 		let eventName = k;
 		let modifiers = [];
 		if(k.includes(".")){

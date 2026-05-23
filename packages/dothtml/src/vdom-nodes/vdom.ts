@@ -94,6 +94,8 @@ export abstract class Vdom{
 	html(c: any): this { return null as any; }
 	md(c: any): this { return null as any; }
 	mount(c: any, attrs?: any): this { return null as any; }
+	append(c: any): this { return null as any; }
+	prepend(c: any): this { return null as any; }
 	when(condition: any, then: any): this { return null as any; }
 	each(collection: any, callback: any): this { return null as any; }
 	otherwiseWhen(condition: any, then: any, seal?: boolean): this { return null as any; }

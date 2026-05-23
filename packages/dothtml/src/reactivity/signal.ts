@@ -28,6 +28,8 @@ const CB_OFFSET = 7; // Always last. User callbacks happen after the DOM is upda
 const CATEGORIES = CB_OFFSET + 1;
 
 export default class Signal<T = any> implements IWatcher<T>{
+	_isSignal = true;
+	_isRef = false;
 
 	bindAs<Td>(transform: ((v:T)=>Td)|{
 		display?: (v: T)=>Td;

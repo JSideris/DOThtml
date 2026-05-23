@@ -126,6 +126,24 @@ dot.div()
 
 For common animations, see the **[Transitions & Animations](./styling.md#transitions-and-animations)** section in the styling documentation.
 
+## Appending and Prepending
+
+You can imperatively add content to an existing element or a builder using `.append()` and `.prepend()`.
+
+- **`.append(content)`**: Adds the content to the **end** of the targeted element's children.
+- **`.prepend(content)`**: Adds the content to the **beginning** of the targeted element's children.
+
+```javascript
+const list = dot.ul().li("Item 2");
+
+list.append(dot.li("Item 3"));
+list.prepend(dot.li("Item 1"));
+
+// Result: <ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>
+```
+
+These methods are particularly useful when working with **Refs** (see [Refs](./refs.md)).
+
 ## Clearing and Removing Elements
 
 You can imperatively clear or remove elements using the `.empty()` and `.remove()` methods.

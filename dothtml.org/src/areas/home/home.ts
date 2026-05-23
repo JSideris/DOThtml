@@ -9,6 +9,9 @@ import Footer from "./sections/footer/footer";
 
 @dot.component
 export default class Home extends DotComponent {
+	constructor() {
+		super();
+	}
 	stylize(s: any) {
 		return s.class("home-container", h => h
 			.maxWidthPx(1200)

@@ -33,6 +33,25 @@ export class ContainerVdom extends Vdom{
 		return this;
 	}
 
+	_prependChild(content: Vdom){
+		this._children.unshift(content);
+		if(this.element) {
+			if (this.element.firstChild) {
+				content._renderBefore(this.element.firstChild);
+			} else {
+				content._render(this.element);
+			}
+		}
+		else if(this._parent && this._parent instanceof ElementVdom && this._parent.element) {
+			if (this._parent.element.firstChild) {
+				content._renderBefore(this._parent.element.firstChild);
+			} else {
+				content._render(this._parent.element);
+			}
+		}
+		return this;
+	}
+
 	_render(node: HTMLElement){	
 		this._isRendered = true;
 		this.element = node;

@@ -55,7 +55,9 @@ export class ComponentVdom extends Vdom{
 	private computedSignals: Computed<any>[] = [];
 	private buildComputedSignals: Computed<any>[] = [];
 	private effects: any[] = [];
+	private buildEffects: any[] = [];
 	private disposables: Array<() => void> = [];
+	private buildDisposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private slots: Record<string, ContainerVdom | Function> = {};
 	private parentComponent: ComponentVdom | null = null;
@@ -152,11 +154,19 @@ export class ComponentVdom extends Vdom{
 	}
 
 	registerEffect(effect: any) {
-		this.effects.push(effect);
+		if (this.isBuilding) {
+			this.buildEffects.push(effect);
+		} else {
+			this.effects.push(effect);
+		}
 	}
 
 	registerDisposable(disposable: () => void) {
-		this.disposables.push(disposable);
+		if (this.isBuilding) {
+			this.buildDisposables.push(disposable);
+		} else {
+			this.disposables.push(disposable);
+		}
 	}
 
 	setRef(ref: Ref<any> | ((comp: IDotComponent | null) => void)) {
@@ -376,17 +386,23 @@ export class ComponentVdom extends Vdom{
 			// Unrender old children
 			this.childShadowVdom._unrender();
 
-			// Dispose of effects
-			for (const effect of this.effects) {
+			// Dispose of build-time effects
+			for (const effect of this.buildEffects) {
 				effect.dispose && effect.dispose();
 			}
-			this.effects = [];
+			this.buildEffects = [];
 
 			// Dispose of build-time computed signals
 			for (const signal of this.buildComputedSignals) {
 				signal.dispose();
 			}
 			this.buildComputedSignals = [];
+
+			// Dispose of build-time disposables
+			for (const disposable of this.buildDisposables) {
+				disposable();
+			}
+			this.buildDisposables = [];
 
 			this.validateProps();
 
@@ -862,10 +878,20 @@ export class ComponentVdom extends Vdom{
 		}
 		this.effects = [];
 
+		for (const effect of this.buildEffects) {
+			effect.dispose && effect.dispose();
+		}
+		this.buildEffects = [];
+
 		for (const disposable of this.disposables) {
 			disposable();
 		}
 		this.disposables = [];
+
+		for (const disposable of this.buildDisposables) {
+			disposable();
+		}
+		this.buildDisposables = [];
 
 		if (this.ref) {
 			if (typeof this.ref === "function") {

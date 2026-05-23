@@ -27,6 +27,20 @@ export class DotChain extends Vdom {
 		return this;
 	}
 
+	_prependChild(node: Vdom) {
+		if (this._root instanceof ContainerVdom) {
+			this._root._prependChild(node);
+		} else if (!(this._root instanceof FragmentVdom)) {
+			const frag = new FragmentVdom(this._dot);
+			frag._children.push(node);
+			frag._children.push(this._root);
+			this._root = frag;
+		} else {
+			this._root._children.unshift(node);
+		}
+		return this;
+	}
+
 	_render(target: HTMLElement) {
 		this._root._render(target);
 	}
