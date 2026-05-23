@@ -1,6 +1,7 @@
 {
   "name": "vite-plugin-dothtml",
   "version": "1.0.0",
+  "private": true,
   "description": "Vite plugin for DOThtml HMR support",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -6,8 +6,13 @@
     ["dothtml", "dothtml-interfaces"]
   ],
   "linked": [],
-  "access": "restricted",
+  "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": [
+    "benchmarks",
+    "dothtml.org",
+    "create-dothtml",
+    "vite-plugin-dothtml"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "name": "create-dothtml",
   "version": "0.1.3",
+  "private": true,
   "description": "The official project initializer for DOThtml.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
