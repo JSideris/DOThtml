@@ -13,6 +13,22 @@ describe("Empty and Remove", () => {
 		expect(target.innerHTML).toBe("");
 	});
 
+	test("Empty a container with DOThtml-managed children.", () => {
+		dot(document.body).div({ id: "target2" }, dot.p("Hello").span("World"));
+		dot("#target2").empty();
+		expect(document.getElementById("target2")?.innerHTML).toBe("");
+	});
+
+	test("Empty nested elements.", () => {
+		dot(document.body).div({ id: "outer" }, 
+			dot.div({ id: "inner" }, dot.p("Inside"))
+		);
+		
+		dot("#inner").empty();
+		expect(document.getElementById("inner")?.innerHTML).toBe("");
+		expect(document.getElementById("outer")?.contains(document.getElementById("inner")!)).toBe(true);
+	});
+
 	test("Emptying a created element.", () => {
 		const el = dot.div(dot.span("Content"));
 		const container = document.createElement("div");
@@ -44,5 +60,15 @@ describe("Empty and Remove", () => {
 		const target = document.getElementById("target")!;
 		dot("#target").remove();
 		expect(document.getElementById("target")).toBeNull();
+	});
+
+	test("Remove a container with children.", () => {
+		dot(document.body).div({ id: "outer" }, 
+			dot.div({ id: "to-remove" }, dot.p("Inside"))
+		);
+		
+		dot("#to-remove").remove();
+		expect(document.getElementById("to-remove")).toBeNull();
+		expect(document.getElementById("outer")?.innerHTML).toBe("");
 	});
 });

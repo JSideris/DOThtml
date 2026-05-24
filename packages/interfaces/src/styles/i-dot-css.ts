@@ -6,6 +6,7 @@ import IAtFontPaletteValues from "./at-rules/i-at-font-palette-values";
 import IAtKeyframesBuilder from "./at-rules/i-at-keyframes-builder";
 import IAtPageBuilder from "./at-rules/i-at-page-builder";
 import IDotcssProp from "./i-css-prop";
+import { IDotStyleBuilder } from "./i-dot-style-builder";
 
 
 
@@ -148,7 +149,7 @@ type Flex = `${number}fr`;
 // type FlexFlowShorthand = BasicCommonValues|`${FlexDirectionNames} ${FlexWrapNames}`;
 // type FlexShorthand = BasicCommonValues|`${BasicCommonValues|number} ${BasicCommonValues|number} ${BasicCommonValues|`${number}${AllLengthUnits}`}`;
 
-export default interface IDotCss extends IDotcssProp{
+export default interface IDotCss extends IDotStyleBuilder{
 	// TODO: ensure each of these has test cases.
 	// Right now, most of these don't actually work. But they're typed so that they can progressively be added to the librrary.
 	(selector: "@charset", charset: string): void;
@@ -176,10 +177,6 @@ export default interface IDotCss extends IDotcssProp{
 
 	(selector: Array<HTMLElement>|HTMLElement|string, styles: IDotcssProp): void;
 	(styles: IDotcssProp): void;
-
-	variable(name: string, value: any): this;
-	v(name: string): string;
-	[prop: string]: any;
 
 	version: string;
 }

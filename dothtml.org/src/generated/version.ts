@@ -1,2 +1,2 @@
 /* GENERATED CONTENT */
-export const DOTHTML_VERSION = "6.0.5";
+export const DOTHTML_VERSION = "6.0.6";

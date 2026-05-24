@@ -6,6 +6,7 @@ import {IReactive} from "./bindings/i-reactive";
 import { IBinding } from "./bindings/i-binding";
 import { IWatcher } from "./bindings/i-watcher";
 import IDotcssProp from "./styles/i-css-prop";
+import { IDotStyleBuilder } from "./styles/i-dot-style-builder";
 import { IRef } from "./bindings/i-ref";
 
 export type DotContentPrimitive = string | number | boolean | undefined | null;
@@ -94,7 +95,7 @@ export interface IDotDocument {
 	*/
 	remove(): void;
 
-	style(c: string | ISignal<any> | IBinding<any, any> | IDotCss | ((s: IDotCss) => void)): this;
+	style(c: string | ISignal<any> | IBinding<any, any> | IDotcssProp | IDotStyleBuilder | ((s: IDotStyleBuilder) => void)): this;
 	attr(name: string, value: any): this;
 	on(event: string, callback: (e: any) => void): this;
 	onEnter(callback: (el: HTMLElement) => void): this;
@@ -460,7 +461,7 @@ export interface IDotGlobalAttrs<T extends HTMLElement = HTMLElement> {
 	part?: AttrVal<string>;
 	role?: AttrVal<string>;
 	spellCheck?: AttrVal<"true"> | AttrVal<"false">;
-	style?: AttrVal<string> | IDotcssProp | ((s: IDotCss) => void);
+	style?: AttrVal<string> | IDotcssProp | IDotStyleBuilder | ((s: IDotStyleBuilder) => void);
 	tabIndex?: AttrVal<number>;
 	title?: AttrVal<string>;
 	translate?: AttrVal<string>;

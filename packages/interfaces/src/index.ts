@@ -4,6 +4,8 @@ export * from "./i-dot";
 
 export { default as IDotCss } from "./styles/i-dot-css";
 export * from "./styles/i-dot-css";
+export { default as IDotcssProp } from "./styles/i-css-prop";
+export { IDotStyleBuilder } from "./styles/i-dot-style-builder";
 
 
 export { default as IDotComponent, FrameworkItems } from "./i-dot-component";

@@ -65,3 +65,28 @@ The Style builder is powerful and useful, but still not fully developed. Conside
 - CSS @font-face is not yet supported in the style builder. Use `dot.useGlobalStyles()` or external stylesheets for custom fonts.
 
 - Support for header elements (including stylesheets) is planned.
+
+## 🚀 Release Process
+
+DOThtml uses a monorepo structure and leverages [Changesets](https://github.com/changesets/changesets) to coordinate versioning and publishing between `dothtml` and `dothtml-interfaces`.
+
+### 1. Create a Changeset
+When you make changes that should be included in the next release, run:
+```bash
+npx changeset
+```
+Follow the prompts to select which packages have changed and whether the change is a `patch`, `minor`, or `major` bump. This will create a temporary markdown file in the `.changeset` directory.
+
+### 2. Versioning (Bumping)
+When you are ready to prepare a release, run the following command from the root:
+```bash
+npm run version-packages
+```
+This command will consolidate all pending changesets, bump the version numbers in both `dothtml` and `dothtml-interfaces` (keeping them in sync), and update the changelogs.
+
+### 3. Publishing
+Finally, to build the packages and publish them to NPM, run:
+```bash
+npm run release
+```
+This command will run the build script for the framework and execute `changeset publish` to upload the new versions to the NPM registry.

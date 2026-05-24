@@ -268,22 +268,14 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		root = (root as any)._root;
 	}
 
-	let lastChild = root._getLastChild();
-	while (lastChild instanceof DotChain) {
-		lastChild = (lastChild as any)._root;
-	}
+	let container = root instanceof ContainerVdom ? root : (root instanceof ElementVdom ? root.children : null);
 
-	if (lastChild instanceof ElementVdom) {
-		if (lastChild.element) lastChild.element.innerHTML = "";
-		lastChild.children._unrender();
-		lastChild.children._children = [];
-		lastChild.children._isRendered = true;
-	} else if (root instanceof ContainerVdom) {
-		root._unrender();
-		root._children = [];
-		root._isRendered = true;
-		if (root._parent instanceof ElementVdom && root._parent.element) {
-			root._parent.element.innerHTML = "";
+	if (container) {
+		container._unrender();
+		container._children = [];
+		container._isRendered = true;
+		if (container._parent instanceof ElementVdom && container._parent.element) {
+			container._parent.element.innerHTML = "";
 		}
 	}
 	return this;
@@ -295,16 +287,9 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		root = (root as any)._root;
 	}
 
-	let lastChild = root._getLastChild();
-	while (lastChild instanceof DotChain) {
-		lastChild = (lastChild as any)._root;
-	}
-
-	if (lastChild instanceof ElementVdom || lastChild instanceof ComponentVdom) {
-		lastChild._unrender();
-	} else if (root instanceof ContainerVdom && root._parent instanceof ElementVdom) {
+	if (root instanceof ContainerVdom && root._parent instanceof ElementVdom) {
 		root._parent._unrender();
-	} else if (root instanceof Vdom) {
+	} else {
 		root._unrender();
 	}
 };
