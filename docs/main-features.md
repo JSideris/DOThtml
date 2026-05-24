@@ -9,6 +9,14 @@ Unlike other tools that demand you build your entire app around them, DOThtml is
 *   **Architectural Freedom**: Use it for your entire UI, or just for a single complex widget in a legacy app.
 *   **Shadow DOM Native**: Built-in encapsulation ensures your components work perfectly regardless of the host environment.
 
+## The DOThtml Philosophy
+
+DOThtml is built on the idea that web development should be straightforward and, above all, **fun**.
+
+*   **No XML-Based Markup**: Stop wrestling with angle brackets in your logic. DOThtml uses a pure, fluent JavaScript/TypeScript API that feels natural and stays out of your way.
+*   **Less Salt**: We've stripped away the boilerplate and "magic" that makes other frameworks frustrating. DOThtml just works the way you expect it to.
+*   **Built for Humans**: All the power of a modern component-based framework, but designed to be intuitive and blazingly fast without the complexity of a virtual DOM.
+
 ## Core Capabilities
 
 ### [Component-Based Architecture](./components.md)

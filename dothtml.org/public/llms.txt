@@ -25,7 +25,6 @@
 ## Deep Dives
 - [Benchmarks](https://dothtml.org/docs/benchmarks.md): Performance comparisons against React, Vue, and Svelte.
 - [Detailed Features](https://dothtml.org/docs/detailed-features.md): Technical deep-dive into performance internals, update batching, and advanced APIs.
-- [Hero Features](https://dothtml.org/docs/hero-features.md): Key highlights and unique selling points.
 
 ## Community
 - [Learn More & Contribute](https://dothtml.org/docs/learn-more.md): Additional resources and information on how to contribute to the project.

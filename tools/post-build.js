@@ -146,7 +146,7 @@ if (!fs.existsSync(DOCS_SRC_DIR)) {
 }
 
 const files = fs.readdirSync(DOCS_SRC_DIR).filter(f => f.endsWith('.md'));
-const EXCLUDE_FROM_LLM = ['hero-features.md', 'learn-more.md'];
+const EXCLUDE_FROM_LLM = ['learn-more.md'];
 let fullContent = "# DOThtml Full Documentation\n\n> This file contains the complete documentation for DOThtml, concatenated for easy ingestion by LLMs.\n\n";
 
 files.sort().forEach(file => {
