@@ -71,4 +71,28 @@ describe("Empty and Remove", () => {
 		expect(document.getElementById("to-remove")).toBeNull();
 		expect(document.getElementById("outer")?.innerHTML).toBe("");
 	});
+
+	test("Setting attribute on selected element.", () => {
+		document.body.innerHTML = '<div id="target"></div>';
+		dot("#target").attr("class", "new-class");
+		expect(document.getElementById("target")?.className).toBe("new-class");
+	});
+
+	test("Emptying after adding a child.", () => {
+		document.body.innerHTML = '<div id="ui-container"></div>';
+		dot("#ui-container").div({ id: "inner" }, "Inner Content").empty();
+		expect(document.getElementById("inner")).toBeNull();
+		expect(document.getElementById("ui-container")?.innerHTML).toBe("");
+	});
+
+	test("Emptying a fragment from siblings.", () => {
+		const container = document.createElement("div");
+		const el = dot.div("A").div("B");
+		(el as any)._render(container);
+		expect(container.innerHTML).toBe("<div>A</div><div>B</div>");
+
+		el.empty();
+		// Now it targets the last child (B), so B should be empty.
+		expect(container.innerHTML).toBe("<div>A</div><div></div>");
+	});
 });

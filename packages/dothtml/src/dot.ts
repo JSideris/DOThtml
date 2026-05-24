@@ -41,6 +41,14 @@ function promote(vdom: Vdom): DotChain {
 	return new DotChain(vdom._dot, vdom);
 }
 
+function resolveRoot(vdom: any): Vdom {
+	let root = vdom;
+	while (root instanceof DotChain) {
+		root = (root as any)._root;
+	}
+	return root;
+}
+
 function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 	let val = reduceReactive(c);
 	if (val instanceof Vdom || val?._root) {
@@ -113,10 +121,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).slot = function(name?: any, fallback?: any) {
-	let lastChild = this._getLastChild();
-	while (lastChild instanceof DotChain) {
-		lastChild = (lastChild as any)._root;
-	}
+	let lastChild = resolveRoot(this._getLastChild());
 
 	if (lastChild instanceof ComponentVdom) {
 		if (typeof name !== "string" && name !== undefined) {
@@ -139,10 +144,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).append = function(c: any) {
-	let target = this;
-	while (target instanceof DotChain) {
-		target = (target as any)._root;
-	}
+	let target = resolveRoot(this);
 	if (target instanceof ElementVdom) {
 		target.children.mount(c);
 		return this;
@@ -151,10 +153,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).prepend = function(c: any) {
-	let target = this;
-	while (target instanceof DotChain) {
-		target = (target as any)._root;
-	}
+	let target = resolveRoot(this);
 	if (target instanceof ElementVdom) {
 		target.children.prepend(c);
 		return this;
@@ -208,10 +207,14 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).attr = function(A: string, c: any) {
-	let lastChild = this._getLastChild();
+	let target = resolveRoot(this._getLastChild() || this);
 
-	if (lastChild instanceof ElementVdom) {
-		lastChild.setAttr(A, c);
+	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
+		target = target._parent;
+	}
+
+	if (target instanceof ElementVdom) {
+		target.setAttr(A, c);
 	} else {
 		throw new Error(`Invalid node to set ${A} attribute.`);
 	}
@@ -230,10 +233,14 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).on = function(event: string, callback: (e: any)=>void) {
-	let lastChild = this._getLastChild();
+	let target = resolveRoot(this._getLastChild() || this);
 
-	if(lastChild && (lastChild instanceof ElementVdom || lastChild instanceof ComponentVdom)){
-		lastChild.addEventListener(event, callback);
+	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
+		target = target._parent;
+	}
+
+	if(target && (target instanceof ElementVdom || target instanceof ComponentVdom)){
+		target.addEventListener(event, callback);
 	}
 	else{
 		throw new Error(`Invalid node to set ${event} listener.`);
@@ -242,11 +249,16 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).onEnter = function(callback: (el: HTMLElement)=>void) {
-	let lastChild = this._getLastChild();
-	if (lastChild) {
-		lastChild._onEnterHook = callback;
-		if (lastChild._isRendered) {
-			const nodes = lastChild._getNodes();
+	let target = resolveRoot(this._getLastChild() || this);
+
+	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
+		target = target._parent;
+	}
+
+	if (target) {
+		target._onEnterHook = callback;
+		if (target._isRendered) {
+			const nodes = target._getNodes();
 			const el = nodes.find(n => n instanceof HTMLElement) as HTMLElement;
 			if (el) callback(el);
 		}
@@ -255,42 +267,61 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).onLeave = function(callback: (el: HTMLElement)=>Promise<void>|void) {
-	let lastChild = this._getLastChild();
-	if (lastChild) {
-		lastChild._onLeaveHook = callback;
+	let target = resolveRoot(this._getLastChild() || this);
+
+	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
+		target = target._parent;
+	}
+
+	if (target) {
+		target._onLeaveHook = callback;
 	}
 	return this;
 };
 
 (Vdom.prototype as any).empty = function() {
-	let root = this;
-	while (root instanceof DotChain) {
-		root = (root as any)._root;
+	let root = resolveRoot(this);
+
+	let target = root;
+	if (!(root instanceof ContainerVdom)) {
+		target = resolveRoot(this._getLastChild() || root);
 	}
 
-	let container = root instanceof ContainerVdom ? root : (root instanceof ElementVdom ? root.children : null);
+	let container = target instanceof ContainerVdom ? target : (target instanceof ElementVdom ? target.children : (target instanceof FragmentVdom ? target : null));
 
 	if (container) {
 		container._unrender();
-		container._children = [];
+		if (container instanceof ContainerVdom || container instanceof FragmentVdom) {
+			container._children = [];
+		}
 		container._isRendered = true;
-		if (container._parent instanceof ElementVdom && container._parent.element) {
-			container._parent.element.innerHTML = "";
+		if (container instanceof ContainerVdom) {
+			if (container.element) {
+				container.element.innerHTML = "";
+			} else if (container._parent instanceof ElementVdom && container._parent.element) {
+				container._parent.element.innerHTML = "";
+			}
+		} else if (container instanceof ElementVdom) {
+			if ((container as ElementVdom).element) {
+				(container as ElementVdom).element.innerHTML = "";
+			}
 		}
 	}
 	return this;
 };
 
 (Vdom.prototype as any).remove = function() {
-	let root = this;
-	while (root instanceof DotChain) {
-		root = (root as any)._root;
+	let root = resolveRoot(this);
+
+	let target = root;
+	if (!(root instanceof ContainerVdom)) {
+		target = resolveRoot(this._getLastChild() || root);
 	}
 
-	if (root instanceof ContainerVdom && root._parent instanceof ElementVdom) {
-		root._parent._unrender();
+	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
+		target._parent._unrender();
 	} else {
-		root._unrender();
+		target._unrender();
 	}
 };
 
