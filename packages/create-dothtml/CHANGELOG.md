@@ -1,5 +1,11 @@
 # create-dothtml
 
+## 6.1.0
+
+### Minor Changes
+
+- New feature on Signals, making them proxy-aware, and automatic array reactivity.
+
 ## 6.0.9
 
 ### Patch Changes

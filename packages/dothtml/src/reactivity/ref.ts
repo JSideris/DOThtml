@@ -15,24 +15,7 @@ export default class Ref<T = any> extends Signal<T | null> implements IRef<any>{
 		this._value = null;
 		this._dot = dotInstance;
 
-		return new Proxy(this, {
-			get(target, prop, receiver) {
-				if (prop in target) {
-					return Reflect.get(target, prop, receiver);
-				}
-				const val = target.value;
-				if (val && typeof (val as any)[prop] === "function") {
-					return (...args: any[]) => (val as any)[prop].apply(val, args);
-				}
-				return undefined;
-			},
-			set(target, prop, value, receiver) {
-				if (prop in target) {
-					return Reflect.set(target, prop, value);
-				}
-				return Reflect.set(target, prop, value, receiver);
-			}
-		}) as any;
+		return this._proxy();
 	}
 
 	/**

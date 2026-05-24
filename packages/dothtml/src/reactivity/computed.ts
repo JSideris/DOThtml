@@ -31,6 +31,8 @@ export default class Computed<T> extends Signal<T> {
 		this.getter = getter;
 		// Initial evaluation is done immediately to set up initial dependencies.
 		this._update();
+
+		return this._proxy();
 	}
 
 	get value(): T {

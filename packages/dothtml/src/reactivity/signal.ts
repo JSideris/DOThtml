@@ -63,6 +63,46 @@ export default class Signal<T = any> implements IWatcher<T>{
 	}
 
 	constructor() {
+		if (new.target === (Signal as any)) {
+			return this._proxy();
+		}
+	}
+
+	protected _proxy() {
+		return new Proxy(this, {
+			get(target, prop, receiver) {
+				if (prop in target) {
+					return Reflect.get(target, prop, receiver);
+				}
+				const val = target.value;
+				if (val && typeof (val as any)[prop] === "function") {
+					return (...args: any[]) => {
+						const result = (val as any)[prop].apply(val, args);
+						const mutatingMethods = ["push", "pop", "shift", "unshift", "splice", "sort", "reverse"];
+						if (Array.isArray(val) && mutatingMethods.includes(prop as string)) {
+							target.refresh();
+						}
+						return result;
+					};
+				}
+				return val ? (val as any)[prop] : undefined;
+			},
+			set(target, prop, value, receiver) {
+				if (prop in target || (typeof prop === "string" && prop.startsWith("_"))) {
+					return Reflect.set(target, prop, value, receiver);
+				}
+				const val = target.value;
+				if (val && typeof val === "object" && target.isWritable) {
+					const success = Reflect.set(val as any, prop, value);
+					if (success) target.refresh();
+					return success;
+				}
+				return Reflect.set(target, prop, value, receiver);
+			},
+			defineProperty(target, prop, descriptor) {
+				return Reflect.defineProperty(target, prop, descriptor);
+			}
+		}) as any;
 	}
 
 	get value(): T {

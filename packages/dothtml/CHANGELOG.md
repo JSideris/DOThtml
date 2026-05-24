@@ -1,5 +1,16 @@
 # dothtml
 
+## 6.1.0
+
+### Minor Changes
+
+- New feature on Signals, making them proxy-aware, and automatic array reactivity.
+
+### Patch Changes
+
+- Updated dependencies
+  - dothtml-interfaces@6.1.0
+
 ## 6.0.9
 
 ### Patch Changes
