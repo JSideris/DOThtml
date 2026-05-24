@@ -6,6 +6,7 @@ export type EffectCallback = () => (void | (() => void));
 
 export default class Effect {
 	private callback: EffectCallback;
+	_vtype = "effect";
 	private cleanup?: () => void;
 	private dependencies = new Map<Signal, number>();
 	private isQueued = false;

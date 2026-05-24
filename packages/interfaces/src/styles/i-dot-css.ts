@@ -1,5 +1,6 @@
 
 
+
 import IAtColorProfileBuilder from "./at-rules/i-at-color-profile-builder";
 import IAtCounterStyleBuilder from "./at-rules/i-at-counter-style-builder";
 import IAtFontPaletteValues from "./at-rules/i-at-font-palette-values";
@@ -44,9 +45,6 @@ import { IDotStyleBuilder } from "./i-dot-style-builder";
 // })`;
 // type HueRotateFunction = `hue-rotate(${Angle|""})`;
 // type FilterFunction = SaturateFunction|SepiaFunction|OpacityFunction|InvertFunction|GrayscaleFunction|ContrastFunction|BrightnessFunction|BlurFunction|DropShadowFunction|HueRotateFunction;
-
-// FLEX
-type Flex = `${number}fr`;
 
 // FONT
 

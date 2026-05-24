@@ -1,11 +1,11 @@
 
 export default interface IEventBus{
     
-    on (event, callback);
+    on (event: string, callback: Function): void;
     
-    off (event, callback);
+    off (event: string, callback: Function): void;
     
-    emit (event, ...args);
+    emit (event: string, ...args: any[]): void;
     
-    flush (event);
+    flush (event: string): void;
 }

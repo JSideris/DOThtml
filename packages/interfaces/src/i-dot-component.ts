@@ -9,7 +9,7 @@ export interface FrameworkItems {
 	 * The shadow root element of the component.
 	 */
 	readonly refs: { [key: string]: HTMLElement };
-	emit<T>(event: string, ...args: Array<any>): void;
+	emit(event: string, ...args: Array<any>): void;
 	restyle(): void;
 	readonly props: Record<string, any>;
 	readonly cvdom: any;

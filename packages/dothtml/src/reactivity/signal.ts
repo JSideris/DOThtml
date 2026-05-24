@@ -29,6 +29,7 @@ const CATEGORIES = CB_OFFSET + 1;
 export default class Signal<T = any> implements IWatcher<T>{
 	_isSignal = true;
 	_isRef = false;
+	_vtype = "signal";
 
 	bindAs<Td>(transform: ((v:T)=>Td)|{
 		display?: (v: T)=>Td;

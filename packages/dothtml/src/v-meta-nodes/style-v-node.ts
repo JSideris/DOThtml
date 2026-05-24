@@ -9,6 +9,7 @@ import Binding from "../reactivity/binding";
 import BaseVStyle from "../v-style-nodes/base-v-style";
 import { scheduler } from "../reactivity/scheduler";
 import { Priority } from "../reactivity/priority";
+import { isVType } from "../helpers/tools";
 
 import Signal from "../reactivity/signal";
 
@@ -17,6 +18,7 @@ export default class StyleVNode extends VMetaNode {
 	document: Document;
 	shadowRoot: ShadowRoot;
 	styleSource: IDotCss | BaseVStyle;
+	_vtype = "style-v-node";
 	private styleElement: HTMLStyleElement;
 
 	private observables: Array<Binding> = [];
@@ -34,15 +36,15 @@ export default class StyleVNode extends VMetaNode {
 		super();
 		this.styleSource = styleSource;
 
-		if (this.styleSource instanceof BaseVStyle) {
-			this.styleSource._setOnUpdate(() => this.update());
+		if (this.styleSource instanceof BaseVStyle || isVType(this.styleSource, "base-v-style")) {
+			(this.styleSource as any)._setOnUpdate(() => this.update());
 		}
 
 		this.extractObservables();
 	}
 
 	private extractObservables() {
-		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+		const source = (this.styleSource instanceof BaseVStyle || isVType(this.styleSource, "base-v-style")) ? (this.styleSource as any).getProps() : this.styleSource;
 
 		if (Array.isArray(source)) {
 			// It's from BaseVStyle.getProps()
@@ -103,7 +105,7 @@ export default class StyleVNode extends VMetaNode {
 	}
 
 	private tryExtractObservable(value: any): boolean {
-		if (value instanceof Binding || value instanceof Signal) {
+		if (value instanceof Binding || isVType(value, "binding") || value instanceof Signal || isVType(value, "signal")) {
 			if (this.observables.indexOf(value as any) === -1) {
 				this.observables.push(value as any);
 				if (this.target) {
@@ -156,16 +158,16 @@ export default class StyleVNode extends VMetaNode {
 		} else {
 			this.extractObservables();
 
-			const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+			const source = (this.styleSource instanceof BaseVStyle || isVType(this.styleSource, "base-v-style")) ? (this.styleSource as any).getProps() : this.styleSource;
 
 			if (Array.isArray(source)) {
 				for (const p of source) {
-					const value = p.value instanceof Binding ? p.value._get() : (p.value instanceof Signal ? p.value.value : p.value);
+					const value = (p.value instanceof Binding || isVType(p.value, "binding")) ? (p.value as any)._get() : ((p.value instanceof Signal || isVType(p.value, "signal")) ? (p.value as any).value : p.value);
 					this.applySingleStyle(p.prop, value);
 				}
 			} else {
 				for (let prop in source) {
-					const value = source[prop] instanceof Binding ? source[prop]._get() : (source[prop] instanceof Signal ? source[prop].value : source[prop]);
+					const value = (source[prop] instanceof Binding || isVType(source[prop], "binding")) ? (source[prop] as any)._get() : ((source[prop] instanceof Signal || isVType(source[prop], "signal")) ? (source[prop] as any).value : source[prop]);
 					this.applySingleStyle(prop, value);
 				}
 			}
@@ -209,7 +211,7 @@ export default class StyleVNode extends VMetaNode {
 
 	private getStyleString(): string {
 		let styles = "";
-		const source = this.styleSource instanceof BaseVStyle ? this.styleSource.getProps() : this.styleSource;
+		const source = (this.styleSource instanceof BaseVStyle || isVType(this.styleSource, "base-v-style")) ? (this.styleSource as any).getProps() : this.styleSource;
 
 		if (Array.isArray(source)) {
 			for (const p of source) {
@@ -241,7 +243,7 @@ export default class StyleVNode extends VMetaNode {
 	}
 
 	private formatSingleStyle(prop: string, value: any): string {
-		let cssValue = value instanceof Binding ? value._get() : (value instanceof Signal ? value.value : value);
+		let cssValue = (value instanceof Binding || isVType(value, "binding")) ? (value as any)._get() : ((value instanceof Signal || isVType(value, "signal")) ? (value as any).value : value);
 		if (cssValue instanceof CssFunctionBuilderVStyle) {
 			cssValue = cssValue.toString();
 		} else if (typeof cssValue === "object" && cssValue !== null && (prop === "transform" || prop === "filter")) {
@@ -274,7 +276,7 @@ export default class StyleVNode extends VMetaNode {
 		for (let i = 0; i < this.observableIds.length; i++) {
 			let id = this.observableIds[i];
 			let observable = this.observables[i];
-			if (observable instanceof Binding) {
+			if (observable instanceof Binding || isVType(observable, "binding")) {
 				(observable as any)._unsubscribe(id);
 			} else {
 				(observable as any).unsubscribe(id);

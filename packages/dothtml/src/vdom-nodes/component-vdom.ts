@@ -19,8 +19,10 @@ import Ref from "../reactivity/ref";
 import RefCollection from "../reactivity/ref-collection";
 import { IS_DEV } from "../constants";
 import { registerInstance, unregisterInstance } from "../hmr-registry";
+import { isVType } from "../helpers/tools";
 
 export class HandledError extends Error {
+	_vtype = "handled-error";
 	constructor() {
 		super("Error handled by error boundary.");
 		Object.setPrototypeOf(this, HandledError.prototype);
@@ -224,13 +226,13 @@ export class ComponentVdom extends Vdom{
 			const oldVal = (oldComponent as any)[key];
 			const newVal = (newComponent as any)[key];
 			
-			if (oldVal instanceof Signal && !(oldVal instanceof Computed)) {
-				if (newVal instanceof Signal && !(newVal instanceof Computed)) {
-					newVal.value = oldVal.value;
+			if ((oldVal instanceof Signal || isVType(oldVal, "signal")) && !(oldVal instanceof Computed || isVType(oldVal, "computed"))) {
+				if ((newVal instanceof Signal || isVType(newVal, "signal")) && !(newVal instanceof Computed || isVType(newVal, "computed"))) {
+					newVal.value = (oldVal as any).value;
 				} else {
 					(newComponent as any)[key] = oldVal;
 				}
-			} else if (oldVal instanceof Computed) {
+			} else if (oldVal instanceof Computed || isVType(oldVal, "computed")) {
 				// DO NOT copy computed signals, let the new component create its own
 			} else {
 				// Copy other properties (like props)
@@ -265,7 +267,7 @@ export class ComponentVdom extends Vdom{
 				popComponent();
 			}
 		} catch (err) {
-			if (err instanceof HandledError) return;
+			if (err instanceof HandledError || isVType(err, "handled-error")) return;
 			this.handleError(err);
 		}
 	}
@@ -285,9 +287,9 @@ export class ComponentVdom extends Vdom{
 		this.isBuilding = true;
 		try {
 			const buildResult = this.component.build(this._dot) as any;
-			if (buildResult?._root) {
+			if (buildResult?._root || isVType(buildResult, "dotchain")) {
 				this.childShadowVdom = buildResult._root;
-			} else if (buildResult instanceof Vdom) {
+			} else if (buildResult instanceof Vdom || isVType(buildResult, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
 				this.childShadowVdom = buildResult as ContainerVdom;
 			} else {
 				this.childShadowVdom = new ContainerVdom(this._dot);
@@ -302,7 +304,7 @@ export class ComponentVdom extends Vdom{
 	}
 
 	private handleError(err: any) {
-		if (err instanceof HandledError) throw err;
+		if (err instanceof HandledError || isVType(err, "handled-error")) throw err;
 
 		this.lastError = err;
 
@@ -329,7 +331,7 @@ export class ComponentVdom extends Vdom{
 					throw new HandledError();
 				}
 			} catch (secondErr) {
-				if (secondErr instanceof HandledError) throw secondErr;
+				if (secondErr instanceof HandledError || isVType(secondErr, "handled-error")) throw secondErr;
 				err = secondErr; // Error in error boundary itself
 			}
 		}
@@ -364,8 +366,8 @@ export class ComponentVdom extends Vdom{
 		if (!props) return;
 		for (const key in props) {
 			const prop = props[key];
-			if (prop instanceof Signal || prop instanceof Binding) {
-				prop.subscribe(() => {
+			if (prop instanceof Signal || isVType(prop, "signal") || prop instanceof Binding || isVType(prop, "binding")) {
+				(prop as any).subscribe(() => {
 					this.validateProps();
 					this.requestUpdate();
 				});
@@ -412,9 +414,9 @@ export class ComponentVdom extends Vdom{
 			this.isBuilding = true;
 			try {
 				const buildResult = this.component.build(this._dot) as any;
-				if (buildResult?._root) {
+				if (buildResult?._root || isVType(buildResult, "dotchain")) {
 					this.childShadowVdom = buildResult._root;
-				} else if (buildResult instanceof Vdom) {
+				} else if (buildResult instanceof Vdom || isVType(buildResult, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
 					this.childShadowVdom = buildResult as ContainerVdom;
 				} else {
 					this.childShadowVdom = new ContainerVdom(this._dot);
@@ -506,8 +508,8 @@ export class ComponentVdom extends Vdom{
 				const rule = schema[key];
 				let value = props[key];
 
-				if (value instanceof Signal) value = value.value;
-				if (value instanceof Binding) value = value._get();
+				if (value instanceof Signal || isVType(value, "signal")) value = (value as any).value;
+				if (value instanceof Binding || isVType(value, "binding")) value = (value as any)._get();
 
 				// Required check
 				if (rule.required && value === undefined) {
@@ -638,7 +640,7 @@ export class ComponentVdom extends Vdom{
 							const styleEl = document.createElement("style");
 							styleEl.textContent = result;
 							shadow.appendChild(styleEl);
-						} else if (result instanceof Signal || result instanceof Binding || result instanceof Computed) {
+						} else if (result instanceof Signal || isVType(result, "signal") || result instanceof Binding || isVType(result, "binding") || result instanceof Computed || isVType(result, "computed")) {
 							const styleEl = document.createElement("style");
 							styleEl.id = "--dh-dynamic-style";
 							shadow.appendChild(styleEl);
@@ -648,8 +650,8 @@ export class ComponentVdom extends Vdom{
 								let finalStyles = "";
 								if (typeof res === "string") {
 									finalStyles = res;
-								} else if (res instanceof Signal || res instanceof Binding || res instanceof Computed) {
-									const val = res instanceof Binding ? res._get() : (res instanceof Signal ? res.value : res);
+								} else if (res instanceof Signal || isVType(res, "signal") || res instanceof Binding || isVType(res, "binding") || res instanceof Computed || isVType(res, "computed")) {
+									const val = (res instanceof Binding || isVType(res, "binding")) ? (res as any)._get() : (res as any).value;
 									if (typeof val === "string") finalStyles = val;
 									else finalStyles = builder.toString();
 								} else {
@@ -661,7 +663,7 @@ export class ComponentVdom extends Vdom{
 								const ghostVars = builder.getGhostVars();
 								if (ghostVars.length > 0) {
 									ghostVars.forEach(v => {
-										const val = v.value instanceof Binding ? v.value._get() : (v.value instanceof Signal ? v.value.value : v.value);
+										const val = (v.value instanceof Binding || isVType(v.value, "binding")) ? (v.value as any)._get() : (v.value as any).value;
 										this.style.setProperty(v.name, `${val}`);
 									});
 								}
@@ -673,7 +675,7 @@ export class ComponentVdom extends Vdom{
 							};
 							const id = (result as any).subscribe(update);
 							cvdom.registerDisposable(() => {
-								if (result instanceof Binding) (result as any)._unsubscribe(id);
+								if (result instanceof Binding || isVType(result, "binding")) (result as any)._unsubscribe(id);
 								else (result as any).unsubscribe(id);
 							});
 							update();
@@ -691,16 +693,16 @@ export class ComponentVdom extends Vdom{
 						const ghostVars = builder.getGhostVars();
 						if (ghostVars.length > 0) {
 							ghostVars.forEach(v => {
-								const val = v.value instanceof Binding ? v.value._get() : (v.value instanceof Signal ? v.value.value : v.value);
+								const val = (v.value instanceof Binding || isVType(v.value, "binding")) ? (v.value as any)._get() : (v.value as any).value;
 								this.style.setProperty(v.name, `${val}`);
 								
 								// Subscribe to ghost variable changes
-								if (v.value instanceof Signal || v.value instanceof Binding) {
+								if (v.value instanceof Signal || isVType(v.value, "signal") || v.value instanceof Binding || isVType(v.value, "binding")) {
 									const id = (v.value as any).subscribe((newVal) => {
 										this.style.setProperty(v.name, `${newVal}`);
 									});
 									cvdom.registerDisposable(() => {
-										if (v.value instanceof Binding) (v.value as any)._unsubscribe(id);
+										if (v.value instanceof Binding || isVType(v.value, "binding")) (v.value as any)._unsubscribe(id);
 										else (v.value as any).unsubscribe(id);
 									});
 								}
@@ -719,16 +721,16 @@ export class ComponentVdom extends Vdom{
 						const ghostVars = builder.getGhostVars();
 						if (ghostVars.length > 0) {
 							ghostVars.forEach(v => {
-								const val = v.value instanceof Binding ? v.value._get() : (v.value instanceof Signal ? v.value.value : v.value);
+								const val = (v.value instanceof Binding || isVType(v.value, "binding")) ? (v.value as any)._get() : (v.value as any).value;
 								this.style.setProperty(v.name, `${val}`);
 								
 								// Subscribe to ghost variable changes
-								if (v.value instanceof Signal || v.value instanceof Binding) {
+								if (v.value instanceof Signal || isVType(v.value, "signal") || v.value instanceof Binding || isVType(v.value, "binding")) {
 									const id = (v.value as any).subscribe((newVal) => {
 										this.style.setProperty(v.name, `${newVal}`);
 									});
 									cvdom.registerDisposable(() => {
-										if (v.value instanceof Binding) (v.value as any)._unsubscribe(id);
+										if (v.value instanceof Binding || isVType(v.value, "binding")) (v.value as any)._unsubscribe(id);
 										else (v.value as any).unsubscribe(id);
 									});
 								}
@@ -837,7 +839,7 @@ export class ComponentVdom extends Vdom{
 			if (this.shadowEl && !this.shadowEl.parentElement) {
 				node.appendChild(this.shadowEl);
 			}
-			if (err instanceof HandledError) return;
+			if (err instanceof HandledError || isVType(err, "handled-error")) return;
 			this.handleError(err);
 		}
 	}
@@ -854,8 +856,8 @@ export class ComponentVdom extends Vdom{
 
 		for (const name in this.slots) {
 			const slot = this.slots[name];
-			if (slot instanceof Vdom) {
-				slot._unrender();
+			if (slot instanceof Vdom || isVType(slot, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
+				(slot as any)._unrender();
 			}
 		}
 

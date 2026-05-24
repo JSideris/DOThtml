@@ -4,6 +4,7 @@ import { Priority } from "./priority";
 
 export default class Computed<T> extends Signal<T> {
 	private getter: () => T;
+	_vtype = "computed";
 	private dependencies = new Map<Signal, number>();
 	private isQueued = false;
 	private isEvaluating = false;

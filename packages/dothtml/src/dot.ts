@@ -31,20 +31,24 @@ import CollectionVdom from "./vdom-nodes/collection-vdom";
 import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
 import { SlotVdom } from "./vdom-nodes/slot-vdom";
 import { VERSION } from "./version";
+import { isVType } from "./helpers/tools";
 
 function reduceReactive(value: any){
-	if(value instanceof Signal) return value.bind();
+	if(isVType(value, "signal")) return (value as Signal).bind();
 	else return value;
 }
 
 function promote(vdom: Vdom): DotChain {
-	if (vdom instanceof DotChain) return vdom;
+	if (vdom instanceof DotChain || isVType(vdom, "dotchain")) return vdom as DotChain;
 	return new DotChain(vdom._dot, vdom);
 }
 
 function resolveRoot(vdom: any): Vdom {
 	let root = vdom;
-	while (root && (root instanceof DotChain || root._vtype === "dotchain")) {
+	while (root && (root instanceof DotChain || isVType(root, "dotchain"))) {
+		if (IS_DEV && !(root instanceof DotChain)) {
+			console.warn("⚠️ DOThtml Warning: Multiple instances of DOThtml detected. This can lead to unexpected behavior. Ensure all plugins and your main app share the same dependency instance.");
+		}
 		root = (root as any)._root;
 	}
 	return root;
@@ -52,10 +56,10 @@ function resolveRoot(vdom: any): Vdom {
 
 function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 	let val = reduceReactive(c);
-	if (val instanceof Vdom || val?._root) {
+	if (val instanceof Vdom || isVType(val, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"]) || val?._root) {
 		return promote(val);
 	}
-	if (typeof val === "string" || val instanceof Binding || typeof val === "number" || typeof val === "boolean" || val === null || val === undefined || Array.isArray(val)) {
+	if (typeof val === "string" || isVType(val, "binding") || typeof val === "number" || typeof val === "boolean" || val === null || val === undefined || Array.isArray(val)) {
 		return new HtmlVdom(val, dot);
 	}
 	let cn = new ComponentVdom(dot, val);
@@ -124,7 +128,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).slot = function(name?: any, fallback?: any) {
 	let lastChild = resolveRoot(this._getLastChild());
 
-	if (lastChild && (lastChild instanceof ComponentVdom || lastChild._vtype === "component")) {
+	if (lastChild && (lastChild instanceof ComponentVdom || isVType(lastChild, "component"))) {
 		if (typeof name !== "string" && name !== undefined) {
 			fallback = name;
 			name = "default";
@@ -146,7 +150,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 
 (Vdom.prototype as any).append = function(c: any) {
 	let target = resolveRoot(this);
-	if (target && (target instanceof ElementVdom || target._vtype === "element")) {
+	if (target && (target instanceof ElementVdom || isVType(target, "element"))) {
 		(target as any).children.mount(c);
 		return this;
 	}
@@ -155,7 +159,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 
 (Vdom.prototype as any).prepend = function(c: any) {
 	let target = resolveRoot(this);
-	if (target && (target instanceof ElementVdom || target._vtype === "element")) {
+	if (target && (target instanceof ElementVdom || isVType(target, "element"))) {
 		(target as any).children.prepend(c);
 		return this;
 	}
@@ -165,7 +169,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).when = function(condition: any, then: any) {
 	let condNode = new ConditionalVdom(this._dot);
 	let thenContainer: Vdom;
-	if (then instanceof Vdom || (then as any)?._vtype) {
+	if (then instanceof Vdom || isVType(then, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
 		thenContainer = then;
 	} else if (typeof then === "object" && then?.build) {
 		thenContainer = new FragmentVdom(this._dot);
@@ -186,9 +190,9 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).otherwiseWhen = function(condition: any, then: any, seal = false) {
 	let lastChild = this._getLastChild();
 
-	if (lastChild && (lastChild instanceof ConditionalVdom || lastChild._vtype === "conditional")) {
+	if (lastChild && (lastChild instanceof ConditionalVdom || isVType(lastChild, "conditional"))) {
 		let thenNode: Vdom;
-		if (then instanceof Vdom || (then as any)?._vtype) {
+		if (then instanceof Vdom || isVType(then, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
 			thenNode = then;
 		} else if (typeof then === "object" && then?.build) {
 			thenNode = new FragmentVdom(this._dot);
@@ -210,11 +214,11 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).attr = function(A: string, c: any) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+	if (target && (target instanceof ContainerVdom || isVType(target, "container")) && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || isVType((target as any)._parent, "element"))) {
 		target = (target as any)._parent;
 	}
 
-	if (target && (target instanceof ElementVdom || target._vtype === "element")) {
+	if (target && (target instanceof ElementVdom || isVType(target, "element"))) {
 		(target as any).setAttr(A, c);
 	} else {
 		throw new Error(`Invalid node to set ${A} attribute.`);
@@ -236,11 +240,11 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).on = function(event: string, callback: (e: any)=>void) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+	if (target && (target instanceof ContainerVdom || isVType(target, "container")) && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || isVType((target as any)._parent, "element"))) {
 		target = (target as any)._parent;
 	}
 
-	if(target && (target instanceof ElementVdom || target._vtype === "element" || target instanceof ComponentVdom || target._vtype === "component")){
+	if(target && (target instanceof ElementVdom || isVType(target, "element") || target instanceof ComponentVdom || isVType(target, "component"))){
 		(target as any).addEventListener(event, callback);
 	}
 	else{
@@ -252,7 +256,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).onEnter = function(callback: (el: HTMLElement)=>void) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+	if (target && (target instanceof ContainerVdom || isVType(target, "container")) && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || isVType((target as any)._parent, "element"))) {
 		target = (target as any)._parent;
 	}
 
@@ -270,7 +274,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).onLeave = function(callback: (el: HTMLElement)=>Promise<void>|void) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+	if (target && (target instanceof ContainerVdom || isVType(target, "container")) && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || isVType((target as any)._parent, "element"))) {
 		target = (target as any)._parent;
 	}
 
@@ -283,21 +287,21 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).empty = function() {
 	let root = resolveRoot(this);
 
-	let container = (root instanceof ContainerVdom || root?._vtype === "container") ? root : ((root instanceof ElementVdom || root?._vtype === "element") ? (root as any).children : ((root instanceof FragmentVdom || root?._vtype === "fragment") ? root : null));
+	let container = (root instanceof ContainerVdom || isVType(root, "container")) ? root : ((root instanceof ElementVdom || isVType(root, "element")) ? (root as any).children : ((root instanceof FragmentVdom || isVType(root, "fragment")) ? root : null));
 
 	if (container) {
 		(container as any)._unrender();
-		if (container instanceof ContainerVdom || container?._vtype === "container" || container instanceof FragmentVdom || container?._vtype === "fragment") {
+		if (container instanceof ContainerVdom || isVType(container, "container") || container instanceof FragmentVdom || isVType(container, "fragment")) {
 			(container as any)._children = [];
 		}
 		(container as any)._isRendered = true;
-		if (container instanceof ContainerVdom || container?._vtype === "container") {
+		if (container instanceof ContainerVdom || isVType(container, "container")) {
 			if ((container as any).element) {
 				(container as any).element.innerHTML = "";
-			} else if ((container as any)._parent && ((container as any)._parent instanceof ElementVdom || (container as any)._parent?._vtype === "element") && (container as any)._parent.element) {
+			} else if ((container as any)._parent && ((container as any)._parent instanceof ElementVdom || isVType((container as any)._parent, "element")) && (container as any)._parent.element) {
 				(container as any)._parent.element.innerHTML = "";
 			}
-		} else if (container instanceof ElementVdom || container?._vtype === "element") {
+		} else if (container instanceof ElementVdom || isVType(container, "element")) {
 			if ((container as any).element) {
 				(container as any).element.innerHTML = "";
 			}
@@ -309,7 +313,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).remove = function() {
 	let root = resolveRoot(this);
 
-	if ((root instanceof ContainerVdom || root?._vtype === "container") && (root as any)._parent && ((root as any)._parent instanceof ElementVdom || (root as any)._parent?._vtype === "element")) {
+	if ((root instanceof ContainerVdom || isVType(root, "container")) && (root as any)._parent && ((root as any)._parent instanceof ElementVdom || isVType((root as any)._parent, "element"))) {
 		(root as any)._parent._unrender();
 	} else {
 		(root as any)._unrender();

@@ -24,8 +24,8 @@ export interface IWatcher<T = any>{
 	*/
 	subscribe(callback: Function): number;
 
-	_subscribe(boundReactive: IBinding, item: any);
-	_detachBinding(id: number);
+	_subscribe(boundReactive: IBinding, item: any): number;
+	_detachBinding(id: number): void;
 
 	/**
 	 * Called manually by the user to trigger an update.

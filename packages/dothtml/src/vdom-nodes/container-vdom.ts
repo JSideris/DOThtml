@@ -11,6 +11,7 @@ import { AttributeValueType, ObservableCollection } from "./vdom-types";
 import { ComponentVdom } from "./component-vdom";
 import Binding from "../reactivity/binding";
 import BaseVStyle from "../v-style-nodes/base-v-style";
+import { isVType } from "../helpers/tools";
 
 type ParentVdom = ContainerVdom|ConditionalVdom|ElementVdom;
 
@@ -30,7 +31,7 @@ export class ContainerVdom extends Vdom{
 	_addChild(content: Vdom){
 		this._children.push(content);
 		if(this.element) content._render(this.element);
-		else if(this._parent && this._parent instanceof ElementVdom && this._parent.element) content._render(this._parent.element);
+		else if(this._parent && (this._parent instanceof ElementVdom || isVType(this._parent, "element")) && (this._parent as any).element) content._render((this._parent as any).element);
 		return this;
 	}
 
@@ -43,11 +44,11 @@ export class ContainerVdom extends Vdom{
 				content._render(this.element);
 			}
 		}
-		else if(this._parent && this._parent instanceof ElementVdom && this._parent.element) {
-			if (this._parent.element.firstChild) {
-				content._renderBefore(this._parent.element.firstChild);
+		else if(this._parent && (this._parent instanceof ElementVdom || isVType(this._parent, "element")) && (this._parent as any).element) {
+			if ((this._parent as any).element.firstChild) {
+				content._renderBefore((this._parent as any).element.firstChild);
 			} else {
-				content._render(this._parent.element);
+				content._render((this._parent as any).element);
 			}
 		}
 		return this;

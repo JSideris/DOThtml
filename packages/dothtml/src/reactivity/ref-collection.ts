@@ -3,6 +3,7 @@ import Ref from "./ref";
 export default class RefCollection<T = any> {
 	private _refs: Map<string | number, Ref<T>> = new Map();
 	private _dot: any;
+	_vtype = "ref-collection";
 
 	constructor(dotInstance?: any) {
 		this._dot = dotInstance;

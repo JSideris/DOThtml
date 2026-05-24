@@ -6,6 +6,7 @@ import { HtmlVdom } from "../vdom-nodes/html-vdom";
 import { TextVdom } from "../vdom-nodes/text-vdom";
 import Binding from "./binding";
 import ReactiveAttr from "./reactive-attr";
+import { isVType } from "../helpers/tools";
 
 
 /**
@@ -27,26 +28,26 @@ export default class Subscription{
 		if(!this.active) return;
 		let value = this.boundReactive._get();
 
-		if(this.item instanceof TextVdom){
+		if(this.item instanceof TextVdom || isVType(this.item, "text")){
 			this.item.textNode.textContent = value as string ?? "";
 		}
-		else if(this.item._isReactiveVdom){
+		else if(this.item._isReactiveVdom || isVType(this.item, "reactive")){
 			this.item.update(value);
 		}
-		else if(this.item instanceof HtmlVdom){
+		else if(this.item instanceof HtmlVdom || isVType(this.item, "html")){
 			this.item.updateHtml(value);
 		}
 		else if(this.item instanceof ReactiveAttr){
 			this.item.elementVdom.updateReactiveAttr(this.item.attribute, value as any);
 		}
-		else if(this.item instanceof VMetaNode){
+		else if(this.item instanceof VMetaNode || isVType(this.item, ["style-v-node", "attribute-v-node"])){
 			this.item.update();
 		}
-		else if(this.item instanceof CollectionVdom){
+		else if(this.item instanceof CollectionVdom || isVType(this.item, "collection")){
 			// TODO: shouldn't I pass the value in here???
 			return this.item.updateList();
 		}
-		else if(this.item instanceof ConditionalVdom){
+		else if(this.item instanceof ConditionalVdom || isVType(this.item, "conditional")){
 			// TODO: shouldn't I pass the value in here???
 			this.item.updateConditions();
 		}

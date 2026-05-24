@@ -8,16 +8,22 @@ import { ReactiveVdom } from "./vdom-nodes/reactive-vdom";
 import { TextVdom } from "./vdom-nodes/text-vdom";
 import Ref from "./reactivity/ref";
 import { allEventAttr } from "./dot-event-attrs";
+import { isVType } from "./helpers/tools";
 
 export const isContent = (arg: any) => {
 	return arg instanceof ContainerVdom || 
+		isVType(arg, "container") ||
 		arg instanceof Vdom || 
+		isVType(arg, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"]) ||
 		arg?._root || // DotChain
+		isVType(arg, "dotchain") ||
 		arg?._children || // FragmentVdom or ContainerVdom
 		(typeof arg == "object" && arg?.build) || 
 		arg instanceof Signal || 
+		isVType(arg, "signal") ||
 		arg?._isSignal ||
 		arg instanceof Binding || 
+		isVType(arg, "binding") ||
 		arg?._isBinding ||
 		typeof arg === "string" || 
 		typeof arg === "number" || 
@@ -26,11 +32,11 @@ export const isContent = (arg: any) => {
 };
 
 export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont: any) => {
-	const target = n instanceof ElementVdom ? n.children : n;
+	const target = (n instanceof ElementVdom || isVType(n, "element")) ? (n as any).children : n;
 	if(Array.isArray(cont)){
 		for(let i = 0; i < cont.length; i++) applyContent(dot, n, cont[i]);
 	}
-	else if(cont?._root){
+	else if(cont?._root || isVType(cont, "dotchain")){
 		applyContent(dot, n, cont._root);
 	}
 	else if(Array.isArray(cont?._children)){
@@ -39,7 +45,7 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 			for(let i = 0; i < children.length; i++) target._addChild(children[i]);
 		}
 	}
-	else if(cont instanceof Vdom){
+	else if(cont instanceof Vdom || isVType(cont, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])){
 		target._addChild(cont);
 	}
 	else if(typeof cont == "object" && cont?.build){
@@ -48,10 +54,10 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 	else{
 		if(cont !== null && cont !== undefined){
 			let val = cont;
-			if(val instanceof Signal || val?._isSignal){
-				val = val.bind();
+			if(val instanceof Signal || isVType(val, "signal") || val?._isSignal){
+				val = (val as any).bind();
 			}
-			if(val instanceof Binding || val?._isBinding){
+			if(val instanceof Binding || isVType(val, "binding") || val?._isBinding){
 				target._addChild(new ReactiveVdom(dot, val as any));
 			}
 			else{
@@ -64,7 +70,7 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 export const applyAttributes = (n: ElementVdom, attrs: any) => {
 	for(let k in attrs) {
 		let attr = attrs[k];
-		if((attr instanceof Signal || attr?._isSignal) && !attr?._isRef) attr = attr.bind();
+		if((attr instanceof Signal || isVType(attr, "signal") || attr?._isSignal) && !attr?._isRef) attr = (attr as any).bind();
 		let eventName = k;
 		let modifiers = [];
 		if(k.includes(".")){

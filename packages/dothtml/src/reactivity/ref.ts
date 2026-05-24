@@ -8,6 +8,7 @@ import Signal from "./signal";
 export default class Ref<T = any> extends Signal<T | null> implements IRef<any>{
 	private _dot: any;
 	_isRef = true;
+	_vtype = "ref";
 
 	constructor(dotInstance?: any) {
 		super();

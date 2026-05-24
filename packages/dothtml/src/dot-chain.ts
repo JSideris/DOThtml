@@ -4,9 +4,11 @@ import { IDotCore } from "dothtml-interfaces";
 import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import { SlotVdom } from "./vdom-nodes/slot-vdom";
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
+import { isVType } from "./helpers/tools";
 
 export class DotChain extends Vdom {
 	_root: Vdom;
+	_vtype = "dotchain";
 
 	constructor(dot: IDotCore, initial: Vdom) {
 		super(dot);
@@ -14,29 +16,29 @@ export class DotChain extends Vdom {
 	}
 
 	_addChild(node: Vdom) {
-		if (this._root instanceof ContainerVdom) {
-			this._root._addChild(node);
-		} else if (!(this._root instanceof FragmentVdom)) {
+		if (this._root instanceof ContainerVdom || isVType(this._root, "container")) {
+			(this._root as any)._addChild(node);
+		} else if (!(this._root instanceof FragmentVdom || isVType(this._root, "fragment"))) {
 			const frag = new FragmentVdom(this._dot);
 			frag._children.push(this._root);
 			frag._children.push(node);
 			this._root = frag;
 		} else {
-			this._root._children.push(node);
+			(this._root as any)._children.push(node);
 		}
 		return this;
 	}
 
 	_prependChild(node: Vdom) {
-		if (this._root instanceof ContainerVdom) {
-			this._root._prependChild(node);
-		} else if (!(this._root instanceof FragmentVdom)) {
+		if (this._root instanceof ContainerVdom || isVType(this._root, "container")) {
+			(this._root as any)._prependChild(node);
+		} else if (!(this._root instanceof FragmentVdom || isVType(this._root, "fragment"))) {
 			const frag = new FragmentVdom(this._dot);
 			frag._children.push(node);
 			frag._children.push(this._root);
 			this._root = frag;
 		} else {
-			this._root._children.unshift(node);
+			(this._root as any)._children.unshift(node);
 		}
 		return this;
 	}
@@ -82,27 +84,27 @@ export class DotChain extends Vdom {
 	}
 
 	get _children() {
-		if (this._root instanceof ContainerVdom) {
-			return this._root._children;
+		if (this._root instanceof ContainerVdom || isVType(this._root, "container")) {
+			return (this._root as any)._children;
 		}
-		if (this._root instanceof FragmentVdom) {
-			return this._root._children;
+		if (this._root instanceof FragmentVdom || isVType(this._root, "fragment")) {
+			return (this._root as any)._children;
 		}
 		return [];
 	}
 
 	slot(name: string | any, content?: any) {
 		let lastChild = this._getLastChild();
-		while (lastChild instanceof DotChain) {
+		while (lastChild instanceof DotChain || isVType(lastChild, "dotchain")) {
 			lastChild = (lastChild as any)._root;
 		}
 
-		if (lastChild instanceof ComponentVdom) {
+		if (lastChild instanceof ComponentVdom || isVType(lastChild, "component")) {
 			if (typeof name !== "string") {
 				content = name;
 				name = "default";
 			}
-			lastChild.addSlot(name || "default", content);
+			(lastChild as any).addSlot(name || "default", content);
 		} else {
 			if (typeof name !== "string") {
 				content = name;

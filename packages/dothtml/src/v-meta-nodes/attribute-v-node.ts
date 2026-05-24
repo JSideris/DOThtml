@@ -1,16 +1,17 @@
 import Binding from "../reactivity/binding";
 import Signal from "../reactivity/signal";
 import VMetaNode from "./v-meta-node";
+import { isVType } from "../helpers/tools";
 
 /**
  * Attribute Virtual Nodes apply to a single attribute, such as class.
- * They're designed to allow users to set classes (and other attributes) using JSON objects.
  */
 export default class AttributeVNode extends VMetaNode{
 
 	attr: string;
 	value: Record<string, string|Binding>;
 	target: HTMLElement;
+	_vtype = "attribute-v-node";
 
 	observables: Record<number, Binding> = {};
 
@@ -27,11 +28,11 @@ export default class AttributeVNode extends VMetaNode{
 			for(let k in this.value){
 				let v = (this.value as any)[k];
 
-				if(v instanceof Signal) v = v.bind(); // TODO: this probably isn't the right place for this.
+				if(v instanceof Signal || isVType(v, "signal")) v = (v as any).bind(); // TODO: this probably isn't the right place for this.
 
-				if(v && v instanceof Binding){
-					let id = v._subscribe(this);
-					this.observables[id] = v;
+				if(v && (v instanceof Binding || isVType(v, "binding"))){
+					let id = (v as any)._subscribe(this);
+					this.observables[id] = v as any;
 				}
 			}
 		}
@@ -48,8 +49,8 @@ export default class AttributeVNode extends VMetaNode{
 		for(let k in this.value){
 			let v = (this.value as any)[k];
 			if(v){
-				if(v instanceof Signal) v = v.bind();
-				if(!(v instanceof Binding) || v._get()){	
+				if(v instanceof Signal || isVType(v, "signal")) v = (v as any).bind();
+				if(!(v instanceof Binding || isVType(v, "binding")) || (v as any)._get()){	
 					tokens.push(k);
 				}
 			}
@@ -66,7 +67,7 @@ export default class AttributeVNode extends VMetaNode{
 
 		for(let o in this.observables){
 			let v = this.observables[o];
-			v._unsubscribe(Number(o));
+			(v as any)._unsubscribe(Number(o));
 		}
 
 		this.observables = {};

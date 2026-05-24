@@ -13,6 +13,7 @@ import { IRef } from "dothtml-interfaces/src/bindings/i-ref";
 import Ref from "../reactivity/ref";
 import SyntheticEvent from "../events/synthetic-event";
 import { EventManager } from "../events/event-manager";
+import { isVType } from "../helpers/tools";
 
 export class AttributeItem{
 	elementVDom: ElementVdom;
@@ -179,22 +180,22 @@ export default class ElementVdom extends Vdom{
 		let targetAttr = attr;
 		if(attr == "bind"){
 			let typeAttr = this.attributes["type"];
-			if (typeAttr instanceof Binding) typeAttr = typeAttr._get();
-			else if (typeAttr instanceof Signal) typeAttr = typeAttr.value;
+			if (typeAttr instanceof Binding || isVType(typeAttr, "binding")) typeAttr = (typeAttr as any)._get();
+			else if (typeAttr instanceof Signal || isVType(typeAttr, "signal")) typeAttr = (typeAttr as any).value;
 
 			const type = (typeof typeAttr === "string") ? typeAttr.toLowerCase() : null;
 			targetAttr = (this.tag.toLowerCase() == "input" && (type == "checkbox" || type == "radio")) ? "checked" : "value";
 		}
 
 		const oldVal = this.attributes[attr];
-		if (oldVal instanceof StyleVNode) {
-			oldVal.unrender();
-			const idx = this.styleVNodes.indexOf(oldVal);
+		if (oldVal instanceof StyleVNode || isVType(oldVal, "style-v-node")) {
+			(oldVal as any).unrender();
+			const idx = this.styleVNodes.indexOf(oldVal as any);
 			if (idx !== -1) this.styleVNodes.splice(idx, 1);
 		}
-		if (oldVal instanceof AttributeVNode) {
-			oldVal.unrender();
-			const idx = this.attrVNodes.indexOf(oldVal);
+		if (oldVal instanceof AttributeVNode || isVType(oldVal, "attribute-v-node")) {
+			(oldVal as any).unrender();
+			const idx = this.attrVNodes.indexOf(oldVal as any);
 			if (idx !== -1) this.attrVNodes.splice(idx, 1);
 		}
 
@@ -202,13 +203,13 @@ export default class ElementVdom extends Vdom{
 		for (let i = 0; i < this.attributeObserverIds.length; i++) {
 			let item = this.attributeObserverIds[i];
 			if (item.attr === attr || item.attr === targetAttr) {
-				item.observable._unsubscribe(item.id);
+				(item.observable as any)._unsubscribe(item.id);
 				this.attributeObserverIds.splice(i, 1);
 				break;
 			}
 		}
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || (value as any)?._isBinding || value instanceof Signal || (value as any)?._isSignal || value instanceof BaseVStyle)){
+		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || isVType(value, "binding") || (value as any)?._isBinding || value instanceof Signal || isVType(value, "signal") || (value as any)?._isSignal || value instanceof BaseVStyle || isVType(value, "base-v-style"))){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){
@@ -234,8 +235,8 @@ export default class ElementVdom extends Vdom{
 			value = new StyleVNode(builder);
 		}
 
-		if (value instanceof BaseVStyle && attr === "style") {
-			value = new StyleVNode(value);
+		if ((value instanceof BaseVStyle || isVType(value, "base-v-style")) && attr === "style") {
+			value = new StyleVNode(value as any);
 		}
 
 		this.attributes[attr] = value;
@@ -253,8 +254,8 @@ export default class ElementVdom extends Vdom{
 
 		if(attr == "bind"){
 			let typeAttr = this.attributes["type"];
-			if (typeAttr instanceof Binding) typeAttr = typeAttr._get();
-			else if (typeAttr instanceof Signal) typeAttr = typeAttr.value;
+			if (typeAttr instanceof Binding || isVType(typeAttr, "binding")) typeAttr = (typeAttr as any)._get();
+			else if (typeAttr instanceof Signal || isVType(typeAttr, "signal")) typeAttr = (typeAttr as any).value;
 
 			const type = (typeof typeAttr === "string") ? typeAttr.toLowerCase() : null;
 			attr = (this.tag.toLowerCase() == "input" && (type == "checkbox" || type == "radio")) ? "checked" : "value";
@@ -267,7 +268,7 @@ export default class ElementVdom extends Vdom{
 				if (typeof this.ref === "function") {
 					this.ref(this.element);
 				} else {
-					this.ref.value = this.element;
+					(this.ref as any).value = this.element;
 				}
 			}
 		}
@@ -300,7 +301,7 @@ export default class ElementVdom extends Vdom{
 			// Like a space-separated class list.
 			node.setAttribute(attr, value.join(" "));
 		}
-		else if (value instanceof Binding || (value as any)?._isBinding){
+		else if (value instanceof Binding || isVType(value, "binding") || (value as any)?._isBinding){
 			this.renderAttr(attr, (value as any)._get(), node, isExplicitBind);
 			
 			// Only subscribe if we haven't already for this attribute.
@@ -354,13 +355,13 @@ export default class ElementVdom extends Vdom{
 				}
 			}
 		}
-		else if(value instanceof AttributeVNode){
-			value.render(node);
-			this.attrVNodes.push(value);
+		else if(value instanceof AttributeVNode || isVType(value, "attribute-v-node")){
+			(value as any).render(node);
+			this.attrVNodes.push(value as any);
 		}
-		else if(value instanceof StyleVNode){
-			value.render(node);
-			this.styleVNodes.push(value);
+		else if(value instanceof StyleVNode || isVType(value, "style-v-node")){
+			(value as any).render(node);
+			this.styleVNodes.push(value as any);
 		}
 	}
 

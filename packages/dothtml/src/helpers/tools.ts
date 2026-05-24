@@ -63,4 +63,14 @@ export function deepEqual(obj1: any, obj2: any, visited = new Map()): boolean {
     return true;
 }
 
+export function isVType(obj: any, type: string | string[]): boolean {
+	if (!obj || typeof obj !== "object") return false;
+	const vtype = obj._vtype;
+	if (!vtype) return false;
+	if (Array.isArray(type)) {
+		return type.indexOf(vtype) !== -1;
+	}
+	return vtype === type;
+}
+
 export const floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
