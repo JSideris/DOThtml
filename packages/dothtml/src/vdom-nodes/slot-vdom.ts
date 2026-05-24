@@ -11,6 +11,7 @@ export class SlotVdom extends Vdom {
 	scopedContent: ContainerVdom | null = null;
 	element: HTMLElement | null = null;
 	component: any;
+	_vtype = "slot";
 
 	constructor(dot: IDotCore, name?: string, fallbackOrScope?: any) {
 		super(dot);

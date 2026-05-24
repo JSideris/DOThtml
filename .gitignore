@@ -4,3 +4,7 @@ lib/
 build_module/
 build_umd/
 dist
+# Generated version files
+packages/dothtml/src/version.ts
+packages/interfaces/src/version.ts
+dothtml.org/src/generated/version.ts

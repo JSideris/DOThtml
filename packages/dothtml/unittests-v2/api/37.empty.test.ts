@@ -92,7 +92,7 @@ describe("Empty and Remove", () => {
 		expect(container.innerHTML).toBe("<div>A</div><div>B</div>");
 
 		el.empty();
-		// Now it targets the last child (B), so B should be empty.
-		expect(container.innerHTML).toBe("<div>A</div><div></div>");
+		// Emptying a fragment should empty all its children.
+		expect(container.innerHTML).toBe("");
 	});
 });

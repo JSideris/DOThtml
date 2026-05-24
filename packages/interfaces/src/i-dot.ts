@@ -1,4 +1,5 @@
 
+import { VERSION } from "./version";
 import IDotComponent from "./i-dot-component";
 import IDotCss from "./styles/i-dot-css";
 import IEventBus from "./i-event-bus";
@@ -295,7 +296,7 @@ export type ComponentArgs<TProps extends Array<string> = [], TEvents extends Arr
 export interface IDotCore extends IDotDocument {
 	(targetSelector: string | Element | Node | NodeList | Array<Node | Element>, targetWindow?: Window): IDotDocument;
 
-	version: string;
+	version: typeof VERSION;
 	styleMode: "sync" | "async";
 
 	navigate(path: string, replace?: boolean): void;

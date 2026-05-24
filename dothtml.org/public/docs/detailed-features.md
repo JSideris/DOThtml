@@ -44,6 +44,15 @@ dot.flushSync();
 // DOM is now updated.
 ```
 
+## Framework Metadata
+
+### Version (`dot.version`)
+You can access the current version of DOThtml at runtime using the `dot.version` property. This is useful for debugging, logging, or ensuring compatibility with specific framework features.
+
+```javascript
+console.log(`Running DOThtml version ${dot.version}`);
+```
+
 ## Other Advanced Features
 
 - **Built-in VDOM Transitions**: Declarative entry and exit animations for elements and components with async lifecycle support.

@@ -22,6 +22,7 @@ export class AttributeItem{
 export default class ElementVdom extends Vdom{
 
 	private _children: ContainerVdom = null;
+	_vtype = "element";
 	get children(): ContainerVdom {
 		if(!this._children){
 			this._children = new ContainerVdom(this._dot);

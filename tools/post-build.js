@@ -12,7 +12,6 @@ const DOCS_SRC_DIR = path.join(ROOT, 'docs');
 
 const GEN_DIR = path.join(ROOT, 'dothtml.org/src/generated');
 const SIZE_TS_PATH = path.join(GEN_DIR, 'size.ts');
-const VERSION_TS_PATH = path.join(GEN_DIR, 'version.ts');
 const BENCH_TS_PATH = path.join(GEN_DIR, 'benchmarks.ts');
 
 const PUBLIC_DOCS_DIR = path.join(ROOT, 'dothtml.org/public/docs');
@@ -60,24 +59,14 @@ export const DOTHTML_COMPRESSED_SIZE_FULL = ${sizeKbFull};
 fs.writeFileSync(SIZE_TS_PATH, sizeTsContent);
 console.log(`Generated ${SIZE_TS_PATH}`);
 
-const versionTsContent = `/* GENERATED CONTENT */
-export const DOTHTML_VERSION = "${version}";
-`;
-fs.writeFileSync(VERSION_TS_PATH, versionTsContent);
-console.log(`Generated ${VERSION_TS_PATH}`);
-
 // 4. Update README.md
 console.log('\n--- 4. Updating README.md ---');
 if (fs.existsSync(README_PATH)) {
 	let readme = fs.readFileSync(README_PATH, 'utf8');
-	const readmeRegex = /(\| \*\*DOThtml\*\* \| .*? \| \*\*)\d+\.?\d*kB(\*\* \|)/;
-	if (readmeRegex.test(readme)) {
-		readme = readme.replace(readmeRegex, `$1${sizeKb}kB$2`);
-		fs.writeFileSync(README_PATH, readme);
-		console.log(`Updated ${README_PATH}`);
-	} else {
-		console.warn(`Could not find DOThtml size pattern in ${README_PATH}`);
-	}
+	readme = readme.replace(/%%DOTHTML_COMPRESSED_SIZE%%/g, sizeKb);
+	readme = readme.replace(/%%DOTHTML_VERSION%%/g, version);
+	fs.writeFileSync(README_PATH, readme);
+	console.log(`Updated ${README_PATH}`);
 }
 
 // 5. Parse Benchmarks
@@ -187,7 +176,25 @@ files.sort().forEach(file => {
 	}
 });
 
-fs.writeFileSync(LLMS_FULL_FILE, fullContent);
-console.log(`Processed ${files.length} docs and generated ${LLMS_FULL_FILE}`);
+	fs.writeFileSync(LLMS_FULL_FILE, fullContent);
+	console.log(`Processed ${files.length} docs and generated ${LLMS_FULL_FILE}`);
+
+// 7. Update create-dothtml templates
+console.log('\n--- 7. Updating create-dothtml templates ---');
+const CREATE_DOTHTML_TEMPLATES_DIR = path.join(ROOT, 'packages/create-dothtml/templates');
+if (fs.existsSync(CREATE_DOTHTML_TEMPLATES_DIR)) {
+	const templates = fs.readdirSync(CREATE_DOTHTML_TEMPLATES_DIR);
+	templates.forEach(template => {
+		const pkgPath = path.join(CREATE_DOTHTML_TEMPLATES_DIR, template, 'package.json');
+		if (fs.existsSync(pkgPath)) {
+			const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+			if (pkg.dependencies && pkg.dependencies.dothtml) {
+				pkg.dependencies.dothtml = `^${version}`;
+				fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+				console.log(`Updated dothtml version to ^${version} in ${pkgPath}`);
+			}
+		}
+	});
+}
 
 console.log('\nPost-build script completed successfully!');

@@ -12,6 +12,7 @@ export class ConditionalVdom extends Vdom{
 	private renderedIndex = -1;
 	private currentUpdatePromise: Promise<void> | null = null;
 	private nextIndex: number | null = null;
+	_vtype = "conditional";
 
 	constructor(dot: IDotCore){
 		super(dot);

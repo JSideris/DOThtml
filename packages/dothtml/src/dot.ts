@@ -30,6 +30,7 @@ import { ConditionalVdom } from "./vdom-nodes/conditional-vdom";
 import CollectionVdom from "./vdom-nodes/collection-vdom";
 import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
 import { SlotVdom } from "./vdom-nodes/slot-vdom";
+import { VERSION } from "./version";
 
 function reduceReactive(value: any){
 	if(value instanceof Signal) return value.bind();
@@ -43,7 +44,7 @@ function promote(vdom: Vdom): DotChain {
 
 function resolveRoot(vdom: any): Vdom {
 	let root = vdom;
-	while (root instanceof DotChain) {
+	while (root && (root instanceof DotChain || root._vtype === "dotchain")) {
 		root = (root as any)._root;
 	}
 	return root;
@@ -123,12 +124,12 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).slot = function(name?: any, fallback?: any) {
 	let lastChild = resolveRoot(this._getLastChild());
 
-	if (lastChild instanceof ComponentVdom) {
+	if (lastChild && (lastChild instanceof ComponentVdom || lastChild._vtype === "component")) {
 		if (typeof name !== "string" && name !== undefined) {
 			fallback = name;
 			name = "default";
 		}
-		lastChild.addSlot(name || "default", fallback);
+		(lastChild as any).addSlot(name || "default", fallback);
 		return this;
 	} else {
 		if (typeof name !== "string" && name !== undefined) {
@@ -145,8 +146,8 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 
 (Vdom.prototype as any).append = function(c: any) {
 	let target = resolveRoot(this);
-	if (target instanceof ElementVdom) {
-		target.children.mount(c);
+	if (target && (target instanceof ElementVdom || target._vtype === "element")) {
+		(target as any).children.mount(c);
 		return this;
 	}
 	return this.mount(c);
@@ -154,8 +155,8 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 
 (Vdom.prototype as any).prepend = function(c: any) {
 	let target = resolveRoot(this);
-	if (target instanceof ElementVdom) {
-		target.children.prepend(c);
+	if (target && (target instanceof ElementVdom || target._vtype === "element")) {
+		(target as any).children.prepend(c);
 		return this;
 	}
 	return this._prependChild(createMountable(this._dot, c, []));
@@ -164,7 +165,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).when = function(condition: any, then: any) {
 	let condNode = new ConditionalVdom(this._dot);
 	let thenContainer: Vdom;
-	if (then instanceof Vdom) {
+	if (then instanceof Vdom || (then as any)?._vtype) {
 		thenContainer = then;
 	} else if (typeof then === "object" && then?.build) {
 		thenContainer = new FragmentVdom(this._dot);
@@ -185,9 +186,9 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).otherwiseWhen = function(condition: any, then: any, seal = false) {
 	let lastChild = this._getLastChild();
 
-	if (lastChild instanceof ConditionalVdom) {
+	if (lastChild && (lastChild instanceof ConditionalVdom || lastChild._vtype === "conditional")) {
 		let thenNode: Vdom;
-		if (then instanceof Vdom) {
+		if (then instanceof Vdom || (then as any)?._vtype) {
 			thenNode = then;
 		} else if (typeof then === "object" && then?.build) {
 			thenNode = new FragmentVdom(this._dot);
@@ -195,7 +196,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		} else {
 			thenNode = new TextVdom(reduceReactive(then));
 		}
-		lastChild.addCondition(reduceReactive(condition), thenNode, seal);
+		(lastChild as any).addCondition(reduceReactive(condition), thenNode, seal);
 	} else {
 		throw new Error("Can't branch off of a non-conditional node.");
 	}
@@ -209,12 +210,12 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).attr = function(A: string, c: any) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
-		target = target._parent;
+	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+		target = (target as any)._parent;
 	}
 
-	if (target instanceof ElementVdom) {
-		target.setAttr(A, c);
+	if (target && (target instanceof ElementVdom || target._vtype === "element")) {
+		(target as any).setAttr(A, c);
 	} else {
 		throw new Error(`Invalid node to set ${A} attribute.`);
 	}
@@ -235,12 +236,12 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).on = function(event: string, callback: (e: any)=>void) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
-		target = target._parent;
+	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+		target = (target as any)._parent;
 	}
 
-	if(target && (target instanceof ElementVdom || target instanceof ComponentVdom)){
-		target.addEventListener(event, callback);
+	if(target && (target instanceof ElementVdom || target._vtype === "element" || target instanceof ComponentVdom || target._vtype === "component")){
+		(target as any).addEventListener(event, callback);
 	}
 	else{
 		throw new Error(`Invalid node to set ${event} listener.`);
@@ -251,14 +252,14 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).onEnter = function(callback: (el: HTMLElement)=>void) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
-		target = target._parent;
+	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+		target = (target as any)._parent;
 	}
 
 	if (target) {
-		target._onEnterHook = callback;
-		if (target._isRendered) {
-			const nodes = target._getNodes();
+		(target as any)._onEnterHook = callback;
+		if ((target as any)._isRendered) {
+			const nodes = (target as any)._getNodes();
 			const el = nodes.find(n => n instanceof HTMLElement) as HTMLElement;
 			if (el) callback(el);
 		}
@@ -269,12 +270,12 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).onLeave = function(callback: (el: HTMLElement)=>Promise<void>|void) {
 	let target = resolveRoot(this._getLastChild() || this);
 
-	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
-		target = target._parent;
+	if (target && (target instanceof ContainerVdom || target._vtype === "container") && (target as any)._parent && ((target as any)._parent instanceof ElementVdom || (target as any)._parent?._vtype === "element")) {
+		target = (target as any)._parent;
 	}
 
 	if (target) {
-		target._onLeaveHook = callback;
+		(target as any)._onLeaveHook = callback;
 	}
 	return this;
 };
@@ -282,28 +283,23 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).empty = function() {
 	let root = resolveRoot(this);
 
-	let target = root;
-	if (!(root instanceof ContainerVdom)) {
-		target = resolveRoot(this._getLastChild() || root);
-	}
-
-	let container = target instanceof ContainerVdom ? target : (target instanceof ElementVdom ? target.children : (target instanceof FragmentVdom ? target : null));
+	let container = (root instanceof ContainerVdom || root?._vtype === "container") ? root : ((root instanceof ElementVdom || root?._vtype === "element") ? (root as any).children : ((root instanceof FragmentVdom || root?._vtype === "fragment") ? root : null));
 
 	if (container) {
-		container._unrender();
-		if (container instanceof ContainerVdom || container instanceof FragmentVdom) {
-			container._children = [];
+		(container as any)._unrender();
+		if (container instanceof ContainerVdom || container?._vtype === "container" || container instanceof FragmentVdom || container?._vtype === "fragment") {
+			(container as any)._children = [];
 		}
-		container._isRendered = true;
-		if (container instanceof ContainerVdom) {
-			if (container.element) {
-				container.element.innerHTML = "";
-			} else if (container._parent instanceof ElementVdom && container._parent.element) {
-				container._parent.element.innerHTML = "";
+		(container as any)._isRendered = true;
+		if (container instanceof ContainerVdom || container?._vtype === "container") {
+			if ((container as any).element) {
+				(container as any).element.innerHTML = "";
+			} else if ((container as any)._parent && ((container as any)._parent instanceof ElementVdom || (container as any)._parent?._vtype === "element") && (container as any)._parent.element) {
+				(container as any)._parent.element.innerHTML = "";
 			}
-		} else if (container instanceof ElementVdom) {
-			if ((container as ElementVdom).element) {
-				(container as ElementVdom).element.innerHTML = "";
+		} else if (container instanceof ElementVdom || container?._vtype === "element") {
+			if ((container as any).element) {
+				(container as any).element.innerHTML = "";
 			}
 		}
 	}
@@ -313,15 +309,10 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).remove = function() {
 	let root = resolveRoot(this);
 
-	let target = root;
-	if (!(root instanceof ContainerVdom)) {
-		target = resolveRoot(this._getLastChild() || root);
-	}
-
-	if (target instanceof ContainerVdom && target._parent instanceof ElementVdom) {
-		target._parent._unrender();
+	if ((root instanceof ContainerVdom || root?._vtype === "container") && (root as any)._parent && ((root as any)._parent instanceof ElementVdom || (root as any)._parent?._vtype === "element")) {
+		(root as any)._parent._unrender();
 	} else {
-		target._unrender();
+		(root as any)._unrender();
 	}
 };
 
@@ -395,6 +386,7 @@ const makeDot = ()=>{
 		}
 	}
 
+	_dot.version = VERSION;
 	_dot.onError = null;
 
 	_dot.state = function<T extends Signal|Array<any>|{[key: string|number]: any}|string|number|boolean = any>(value: T, key?: string): Signal<T>{

@@ -3,6 +3,7 @@ import { IDotCore } from "dothtml-interfaces";
 
 export class FragmentVdom extends Vdom {
 	_children: Vdom[] = [];
+	_vtype = "fragment";
 
 	constructor(dot?: IDotCore) {
 		super(dot);

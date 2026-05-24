@@ -13,6 +13,7 @@ export class ReactiveVdom extends Vdom {
 	private currentVdom: Vdom = null;
 	private observerId: number = 0;
 	_isReactiveVdom = true;
+	_vtype = "reactive";
 
 	constructor(dot: IDotCore, binding: Binding) {
 		super(dot);

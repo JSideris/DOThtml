@@ -21,6 +21,7 @@ export class ContainerVdom extends Vdom{
 	_children: Array<Vdom> = [];
 	_parent: ParentVdom = null;
 	element: HTMLElement | null = null;
+	_vtype = "container";
 
 	constructor(dot: IDotCore){
 		super(dot);

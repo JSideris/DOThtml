@@ -9,6 +9,7 @@ export class TextVdom extends Vdom{
 	_text: string|boolean|number|Binding;
 	textNode: Node = null;
 	observerId = 0;
+	_vtype = "text";
 
 	constructor(text: string|boolean|number|Binding){
 		super();

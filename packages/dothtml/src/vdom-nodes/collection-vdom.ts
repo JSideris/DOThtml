@@ -28,6 +28,7 @@ export default class CollectionVdom extends Vdom{
 	startNode: Node;
 	endNode: Node;
 	observerId = 0;
+	_vtype = "collection";
 
 	mappedItems: Array<DatumMap> = [];
 

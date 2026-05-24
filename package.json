@@ -7,12 +7,13 @@
     "benchmarks"
   ],
   "scripts": {
-    "build": "npm run build -w dothtml",
+    "build": "npm run build -w dothtml && npm run build -w create-dothtml",
     "test": "npm test -w dothtml",
     "dev": "npm run dev -w dothtml.org",
     "benchmarks": "npm run benchmarks -w dothtml",
     "version-packages": "changeset version",
-    "release": "npm run build && changeset publish"
+    "release": "npm run build && changeset publish",
+    "release-all": "node tools/smart-release.js"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

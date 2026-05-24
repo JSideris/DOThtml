@@ -33,7 +33,7 @@ DOThtml is engineered for high-performance applications. By bypassing the Virtua
 
 | Framework | Render Time | Bundle Size |
 | :--- | :--- | :--- |
-| **DOThtml** | **~660ms** | **22.2kB** |
+| **DOThtml (v6.0.7)** | **~660ms** | **22.4kB** |
 | React | ~1100ms | ~42kB |
 | Vue | ~680ms | ~33kB |
 | Svelte | ~900ms | ~2kB* |
@@ -68,23 +68,39 @@ The Style builder is powerful and useful, but still not fully developed. Conside
 
 ## 🚀 Release Process
 
-DOThtml uses a monorepo structure and leverages [Changesets](https://github.com/changesets/changesets) to coordinate versioning and publishing between `dothtml` and `dothtml-interfaces`.
+DOThtml uses a monorepo structure and leverages [Changesets](https://github.com/changesets/changesets) to coordinate versioning and publishing between `dothtml`, `dothtml-interfaces`, and `create-dothtml`.
 
-### 1. Create a Changeset
+### All-in-One Release (Recommended)
+To handle the entire release process in one command, run:
+```bash
+npm run release-all
+```
+This command will:
+1. Check if a new version is needed by comparing local versions with NPM.
+2. Prompt you to create a **Changeset** (if needed).
+3. **Bump versions** and update changelogs (if needed).
+4. **Build** all packages.
+5. **Publish** all packages to NPM.
+
+*Note: If the process fails during the final publish step, you can simply run `npm run release` to retry the publish without bumping versions again.*
+
+### Manual Release Steps (Alternative)
+
+#### 1. Create a Changeset
 When you make changes that should be included in the next release, run:
 ```bash
 npx changeset
 ```
 Follow the prompts to select which packages have changed and whether the change is a `patch`, `minor`, or `major` bump. This will create a temporary markdown file in the `.changeset` directory.
 
-### 2. Versioning (Bumping)
+#### 2. Versioning (Bumping)
 When you are ready to prepare a release, run the following command from the root:
 ```bash
 npm run version-packages
 ```
-This command will consolidate all pending changesets, bump the version numbers in both `dothtml` and `dothtml-interfaces` (keeping them in sync), and update the changelogs.
+This command will consolidate all pending changesets, bump the version numbers in all packages (keeping them in sync), and update the changelogs.
 
-### 3. Publishing
+#### 3. Publishing
 Finally, to build the packages and publish them to NPM, run:
 ```bash
 npm run release

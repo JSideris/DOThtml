@@ -7,6 +7,7 @@ export class HtmlVdom extends Vdom{
 
 	beforeNode: Node;
 	afterNode: Node;
+	_vtype = "html";
 
 	_content: any;
 	private currentVdom: Vdom | null = null;

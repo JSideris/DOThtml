@@ -48,6 +48,7 @@ export class ComponentVdom extends Vdom{
 	component: IDotComponent;
 	shadowEl: HTMLElement;
 	childShadowVdom: ContainerVdom;
+	_vtype = "component";
 	private events: Array<{name: string, callback: (e: any)=>void, modifiers: string[]}> = [];
 	private styleVNodes: Array<StyleVNode> = [];
 	private isQueued = false;

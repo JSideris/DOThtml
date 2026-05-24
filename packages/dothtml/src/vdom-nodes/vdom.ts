@@ -5,6 +5,7 @@ export abstract class Vdom{
 	_dot: IDotCore;
 	_onEnterHook?: (el: HTMLElement) => void;
 	_onLeaveHook?: (el: HTMLElement) => Promise<void> | void;
+	_vtype: string = "vdom";
 
 	constructor(dot?: IDotCore){
 		this._dot = dot;
