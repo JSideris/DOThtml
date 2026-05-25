@@ -1,5 +1,16 @@
 # dothtml
 
+## 6.4.0
+
+### Minor Changes
+
+- Added theme builder pattern.
+
+### Patch Changes
+
+- Updated dependencies
+  - dothtml-interfaces@6.4.0
+
 ## 6.3.3
 
 ### Patch Changes

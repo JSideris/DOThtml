@@ -210,6 +210,8 @@ To define styles that are shared across all instances of a component, use the `s
 
 **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
 
+Additionally, `stylize()` can return a **theme function** (or a Signal of one) to provide **Contextual Theme Inheritance** to its entire component subtree.
+
 ```javascript
 class MyComponent {
     stylize(s) {
@@ -353,7 +355,8 @@ class StyledCard extends DotComponent {
 
 Because DOThtml uses **Shadow DOM**, there is a strict boundary between a component's internal structure and the content passed into its slots.
 
-*   **Internal Structure**: Styles for elements defined *inside* your component's `build()` method (like a modal's backdrop or header) **must** be defined in that component's `stylize()` method. A parent component cannot style these elements.
+*   **Internal Structure**: Styles for elements defined *inside* your component's `build()` method (like a modal's backdrop or header) **must** be defined in that component's `stylize()` method. A parent component cannot style these elements via standard CSS.
+*   **Contextual Theming**: While standard CSS cannot penetrate the Shadow Root, a parent component can provide a **theme function** that is automatically applied *inside* the child's Shadow Root. This allows for safe, shared styling logic across the entire subtree.
 *   **Slotted Content**: Content passed into a slot retains the styling of the **parent component**. However, the child component can apply additional styles to this content using the `::slotted()` pseudo-element.
 
 **Example Pitfall:**

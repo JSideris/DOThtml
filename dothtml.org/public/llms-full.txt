@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.3.3)
+# Benchmarks (v6.4.0)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **24.2 kB**
+- **DOThtml**: **24.3 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **24.2 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **24.3 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -357,6 +357,8 @@ To define styles that are shared across all instances of a component, use the `s
 
 **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
 
+Additionally, `stylize()` can return a **theme function** (or a Signal of one) to provide **Contextual Theme Inheritance** to its entire component subtree.
+
 ```javascript
 class MyComponent {
     stylize(s) {
@@ -500,7 +502,8 @@ class StyledCard extends DotComponent {
 
 Because DOThtml uses **Shadow DOM**, there is a strict boundary between a component's internal structure and the content passed into its slots.
 
-*   **Internal Structure**: Styles for elements defined *inside* your component's `build()` method (like a modal's backdrop or header) **must** be defined in that component's `stylize()` method. A parent component cannot style these elements.
+*   **Internal Structure**: Styles for elements defined *inside* your component's `build()` method (like a modal's backdrop or header) **must** be defined in that component's `stylize()` method. A parent component cannot style these elements via standard CSS.
+*   **Contextual Theming**: While standard CSS cannot penetrate the Shadow Root, a parent component can provide a **theme function** that is automatically applied *inside* the child's Shadow Root. This allows for safe, shared styling logic across the entire subtree.
 *   **Slotted Content**: Content passed into a slot retains the styling of the **parent component**. However, the child component can apply additional styles to this content using the `::slotted()` pseudo-element.
 
 **Example Pitfall:**
@@ -703,7 +706,7 @@ DOThtml uses a powerful, low-salt reactivity system based on **Signals**. Data-d
 For larger applications, DOThtml provides a built-in state management solution called **Stores**. Stores are centralized containers for state, logic, and mutations.
 
 ### [Fluent & Reactive Styling](./styling.md)
-A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables and media queries.
+A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables, media queries, and **Contextual Subtree Theming**.
 
 ### [Popup Window Management](./popups.md)
 DOThtml provides a unique "Multi-Window Orchestration Layer," allowing you to manage popup windows as seamless extensions of your main app with shared state and inherited styles.
@@ -2134,6 +2137,55 @@ class MyComponent extends IDotComponent {
 ```
 
 When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
+
+## Contextual Theme Inheritance
+
+While global variables are great for application-wide defaults, large-scale "Mega-Apps" often require different styling for different sections (e.g., a "Dashboard" vs. a "Marketing" site).
+
+DOThtml supports **Contextual Theme Inheritance**, allowing a parent component to provide styling rules to its entire subtree.
+
+### Providing a Theme
+
+To provide a theme, a component's `stylize()` method can return a **theme function** (or a Signal of a theme function). This function will be automatically inherited and applied by all descendant components within their own Shadow Roots.
+
+```javascript
+class SectionTheme extends IDotComponent {
+  stylize() {
+    // Return a theme function to be inherited by all descendants
+    return (s) => {
+      s.class("btn", b => b
+        .backgroundColor("blue")
+        .color("white")
+        .borderRadiusPx(8)
+      );
+    };
+  }
+  build(dot) {
+    return dot.div(dot.slot());
+  }
+}
+```
+
+### Reactive Theme Propagation
+
+Contextual themes are fully reactive. If you return a `Signal` of a theme function, any change to that Signal will automatically trigger a style re-render for every component in its subtree.
+
+```javascript
+const currentTheme = dot.state((s) => s.class("btn", b => b.color("red")));
+
+class App extends IDotComponent {
+  stylize() {
+    return currentTheme; // Subtree will update when currentTheme changes
+  }
+  // ...
+}
+```
+
+### Benefits of Contextual Theming
+
+1.  **Zero Pollution**: Styles are applied *inside* each component's Shadow Root. A theme in Section A cannot leak out to affect Section B.
+2.  **No Prop-Drilling**: Child components don't need to be "theme-aware" or receive theme props; they just use standard classes, and the styles "show up."
+3.  **Composition**: Components can apply styles from a global theme, a section theme, and their own local styles in sequence.
 
 ## Reactive Theme Context
 

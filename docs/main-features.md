@@ -29,7 +29,7 @@ DOThtml uses a powerful, low-salt reactivity system based on **Signals**. Data-d
 For larger applications, DOThtml provides a built-in state management solution called **Stores**. Stores are centralized containers for state, logic, and mutations.
 
 ### [Fluent & Reactive Styling](./styling.md)
-A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables and media queries.
+A type-safe, batched styling system that integrates directly with reactivity. Apply styles using a fluent API that supports CSS variables, media queries, and **Contextual Subtree Theming**.
 
 ### [Popup Window Management](./popups.md)
 DOThtml provides a unique "Multi-Window Orchestration Layer," allowing you to manage popup windows as seamless extensions of your main app with shared state and inherited styles.

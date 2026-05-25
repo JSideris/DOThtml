@@ -1,2 +1,2 @@
 /* GENERATED CONTENT */
-export const DOTHTML_VERSION = "6.3.3" as const;
+export const DOTHTML_VERSION = "6.4.0" as const;

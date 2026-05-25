@@ -120,6 +120,9 @@ export default class MainCodeSample extends DotComponent {
 	private isModalOpen = dot.state(false);
 	private modalType = dot.state("info");
 
+	// Example 7: Theming
+	private isDarkMode = dot.state(false);
+
 	// Example 3: Store (Notification Service)
 	private static alertStore = dot.store({
 		id: "main-demo-alerts",
@@ -588,6 +591,69 @@ dot.mount(new Modal())
 							)))
 					)
 				)
+			},
+			"Theming": {
+				code: `@dot.component
+class Dashboard extends DotComponent {
+  isDark = dot.state(false);
+
+  stylize() {
+    // Provide a theme to the subtree
+    return this.isDark.bindAs(dark => (s) => {
+      s.class("btn", b => b
+        .backgroundColor(dark ? "#444" : "#eee")
+        .color(dark ? "#fff" : "#333")
+        .paddingPx(10, 20)
+        .borderRadiusPx(8)
+        .border("none")
+      );
+    });
+  }
+
+  build() {
+    return dot.div(
+      dot.button({ 
+        onClick: () => this.isDark.value = !this.isDark.value 
+      }, "Toggle Theme"),
+      dot.div(new CustomButton()) // Deep in Shadow DOM
+    );
+  }
+}`,
+				preview: () => {
+					const isDarkMode = this.isDarkMode;
+					class CustomButton extends DotComponent {
+						build() {
+							return dot.button({ class: "btn" }, "Themed Button");
+						}
+					}
+
+					class Dashboard extends DotComponent {
+						stylize() {
+							return isDarkMode.bindAs((dark: boolean) => (s: any) => {
+								s.class("btn", (b: any) => b
+									.backgroundColor(dark ? "#444" : "#eee")
+									.color(dark ? "#fff" : "#333")
+									.paddingPx(10, 20)
+									.borderRadiusPx(8)
+									.border("none")
+									.cursor("pointer")
+									.transition("all 0.3s")
+								);
+							});
+						}
+						build() {
+							return dot.div({ style: "display: flex; flex-direction: column; align-items: center; gap: 20px;" },
+								dot.button({ 
+									class: "btn",
+									onClick: () => isDarkMode.value = !isDarkMode.value 
+								}, "Toggle Subtree Theme"),
+								dot.div(new CustomButton())
+							);
+						}
+					}
+
+					return dot.mount(new Dashboard());
+				}
 			}
 		};
 

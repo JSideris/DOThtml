@@ -329,6 +329,55 @@ class MyComponent extends IDotComponent {
 
 When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
 
+## Contextual Theme Inheritance
+
+While global variables are great for application-wide defaults, large-scale "Mega-Apps" often require different styling for different sections (e.g., a "Dashboard" vs. a "Marketing" site).
+
+DOThtml supports **Contextual Theme Inheritance**, allowing a parent component to provide styling rules to its entire subtree.
+
+### Providing a Theme
+
+To provide a theme, a component's `stylize()` method can return a **theme function** (or a Signal of a theme function). This function will be automatically inherited and applied by all descendant components within their own Shadow Roots.
+
+```javascript
+class SectionTheme extends IDotComponent {
+  stylize() {
+    // Return a theme function to be inherited by all descendants
+    return (s) => {
+      s.class("btn", b => b
+        .backgroundColor("blue")
+        .color("white")
+        .borderRadiusPx(8)
+      );
+    };
+  }
+  build(dot) {
+    return dot.div(dot.slot());
+  }
+}
+```
+
+### Reactive Theme Propagation
+
+Contextual themes are fully reactive. If you return a `Signal` of a theme function, any change to that Signal will automatically trigger a style re-render for every component in its subtree.
+
+```javascript
+const currentTheme = dot.state((s) => s.class("btn", b => b.color("red")));
+
+class App extends IDotComponent {
+  stylize() {
+    return currentTheme; // Subtree will update when currentTheme changes
+  }
+  // ...
+}
+```
+
+### Benefits of Contextual Theming
+
+1.  **Zero Pollution**: Styles are applied *inside* each component's Shadow Root. A theme in Section A cannot leak out to affect Section B.
+2.  **No Prop-Drilling**: Child components don't need to be "theme-aware" or receive theme props; they just use standard classes, and the styles "show up."
+3.  **Composition**: Components can apply styles from a global theme, a section theme, and their own local styles in sequence.
+
 ## Reactive Theme Context
 
 DOThtml provides a first-class `Theme` concept that makes design systems easy to implement. By using `dot.setTheme()`, you can make a global reactive object available to all component style builders via `s.theme`.
