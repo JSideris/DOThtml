@@ -257,6 +257,14 @@ export default class ElementVdom extends Vdom{
 		}
 	}
 
+	hasAttr(attr: string): boolean {
+		return this.attributes[(attr ?? "").toLowerCase()] !== undefined;
+	}
+
+	getAttr(attr: string): any {
+		return this.attributes[(attr ?? "").toLowerCase()];
+	}
+
 	updateReactiveAttr(attr: string, value: AttributeValueType){
 		if(!this.element) return;
 		this.renderAttr((attr ?? "").toLowerCase(), value, this.element);

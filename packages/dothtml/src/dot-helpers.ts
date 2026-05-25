@@ -9,6 +9,47 @@ import { TextVdom } from "./vdom-nodes/text-vdom";
 import Ref from "./reactivity/ref";
 import { allEventAttr } from "./dot-event-attrs";
 import { isVType } from "./helpers/tools";
+import { HtmlVdom } from "./vdom-nodes/html-vdom";
+
+export const trySmartAdopt = (dot: IDotCore, n: ElementVdom, tag: string, content: any): boolean => {
+	if (tag !== "svg" && tag !== "math") return false;
+	
+	let rawStr: string = "";
+	if (typeof content === "string") {
+		rawStr = content;
+	} else if (content instanceof HtmlVdom || isVType(content, "html")) {
+		rawStr = (content as any)._content;
+		if (typeof rawStr !== "string") return false;
+	} else {
+		return false;
+	}
+
+	const trimmed = rawStr.trim();
+	if (!trimmed.toLowerCase().startsWith("<" + tag)) return false;
+
+	try {
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(trimmed, tag === "svg" ? "image/svg+xml" : "application/xml");
+		const root = doc.documentElement;
+
+		if (root.tagName.toLowerCase() === tag) {
+			// Adopt Attributes
+			for (let i = 0; i < root.attributes.length; i++) {
+				const attr = root.attributes[i];
+				if (!n.hasAttr(attr.name)) {
+					n.setAttr(attr.name, attr.value);
+				}
+			}
+			// Adopt Children
+			n.children.mount(new HtmlVdom(root.innerHTML, dot));
+			return true;
+		}
+	} catch (e) {
+		// Fallback to normal rendering if parsing fails
+	}
+
+	return false;
+};
 
 export const isContent = (arg: any) => {
 	return arg instanceof ContainerVdom || 
@@ -105,6 +146,9 @@ export const createElement = (dot: IDotCore, tag: string, args: any[] | IArgumen
 	for(let j = 0; j < args.length; j++){
 		let arg = args[j];
 		if(isContent(arg)){
+			if ((tag === "svg" || tag === "math") && trySmartAdopt(dot, n, tag, arg)) {
+				continue;
+			}
 			applyContent(dot, n, arg);
 		}
 		else if (typeof arg === "function" && (tag === "svg" || tag === "math")) {

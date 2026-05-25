@@ -37,7 +37,7 @@ export class HtmlVdom extends Vdom{
 		return null;
 	}
 
-	updateHtml(content: any){
+	updateHtml(content: any, target?: HTMLElement){
 		if(this.beforeNode){
 			if (this.currentVdom) {
 				this.currentVdom._unrender();
@@ -51,7 +51,13 @@ export class HtmlVdom extends Vdom{
 				this.currentVdom._renderBefore(this.afterNode);
 			} else if (content !== null && content !== undefined) {
 				// Need to render everything to a temporary div them move everything to the target.
-				let temp = this.beforeNode.ownerDocument.createElement("div");
+				let parent = target || this.beforeNode.parentElement;
+				let temp: HTMLElement;
+				if (parent && parent.namespaceURI && parent.namespaceURI !== "http://www.w3.org/1999/xhtml") {
+					temp = parent.ownerDocument.createElementNS(parent.namespaceURI, "g") as any;
+				} else {
+					temp = this.beforeNode.ownerDocument.createElement("div");
+				}
 				temp.innerHTML = content;
 
 				while (temp.firstChild) {
@@ -75,7 +81,7 @@ export class HtmlVdom extends Vdom{
 		this.afterNode = target.ownerDocument.createTextNode("");
 		target.appendChild(this.beforeNode);
 		target.appendChild(this.afterNode);
-		this.updateHtml(val);
+		this.updateHtml(val, target);
 	}
 
 	_unrender() {

@@ -96,4 +96,32 @@ describe("Ergonomic HTML Injection & SVG Support", () => {
 			expect(formatHTML(document.body.innerHTML)).toBe("<math><mi>x</mi><mo>+</mo><mi>y</mi></math>");
 		});
 	});
+
+	describe("Smart SVG Adoption", () => {
+		test("adopts attributes and children from full svg string", () => {
+			dot(document.body).svg('<svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" /></svg>');
+			expect(formatHTML(document.body.innerHTML)).toBe('<svg width=100 height=100 viewbox=0 0 100 100><circle cx=50 cy=50 r=40></circle></svg>');
+		});
+
+		test("explicit attributes take precedence over adopted ones", () => {
+			dot(document.body).svg({ width: 200 }, '<svg width="100"><circle /></svg>');
+			expect(formatHTML(document.body.innerHTML)).toBe('<svg width=200><circle></circle></svg>');
+		});
+
+		test("chained attributes take precedence over adopted ones", () => {
+			dot(document.body).svg('<svg width="100"><circle /></svg>').attr("width", 300);
+			expect(formatHTML(document.body.innerHTML)).toBe('<svg width=300><circle></circle></svg>');
+		});
+
+		test("falls back to nesting if root tag doesn't match", () => {
+			// This will be nested because the root tag is 'div', not 'svg'
+			dot(document.body).svg('<div><circle /></div>');
+			expect(formatHTML(document.body.innerHTML)).toBe('<svg><div><circle></circle></div></svg>');
+		});
+
+		test("falls back to nesting if string is not a full tag", () => {
+			dot(document.body).svg('<circle /><rect />');
+			expect(formatHTML(document.body.innerHTML)).toBe('<svg><circle></circle><rect></rect></svg>');
+		});
+	});
 });

@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.3.1
+
+### Patch Changes
+
+- Fix math and svg syntax to match spec.
+- Updated dependencies
+  - dothtml-interfaces@6.3.1
+
 ## 6.3.0
 
 ### Minor Changes

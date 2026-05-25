@@ -17,6 +17,7 @@ export default class Docs extends DotComponent<DocsProps> {
 		{ id: "quick-start", label: "Quick Start" },
 		{ id: "cli", label: "Official CLI" },
 		{ id: "rendering-basics", label: "Rendering Basics" },
+		{ id: "svg-and-math", label: "SVG & MathML" },
 		{ id: "main-features", label: "Main Features" },
 		{ id: "components", label: "Components" },
 		{ id: "reactivity", label: "Reactivity" },

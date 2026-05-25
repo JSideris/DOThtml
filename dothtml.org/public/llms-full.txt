@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.3.0)
+# Benchmarks (v6.3.1)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **23.4 kB**
+- **DOThtml**: **23.6 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **23.4 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **23.6 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -1332,37 +1332,7 @@ dot.div(dot.text("<b>Hello</b>"));
 
 ## SVG and MathML Support
 
-DOThtml provides full support for SVG and MathML namespaces. When you create an `svg` or `math` element, DOThtml automatically uses the correct namespace (`document.createElementNS`), ensuring that graphics and formulas render correctly in the browser.
-
-### SVG/MathML Builder Pattern
-
-While standard nesting (`dot.svg(dot.circle())`) works, DOThtml also provides a specialized builder pattern for `svg` and `math` tags. If you pass a function as an argument, it will be called with a builder scoped to that element's children.
-
-```javascript
-// Use a builder function for ergonomic child creation
-dot.svg({ width: 100, height: 100 }, s => s
-   .circle({ cx: 50, cy: 50, r: 40, fill: "red" })
-   .rect({ x: 30, y: 30, width: 40, height: 40, fill: "blue" })
-);
-```
-
-### Context-Aware Content
-
-For convenience, `svg` and `math` tags treat string arguments as raw HTML by default, as plain text is rarely the intended content for these elements.
-
-```javascript
-// Automatically uses SVG namespace and treats string as HTML
-dot.svg({ width: 50, height: 50 }, "<circle cx='25' cy='25' r='20' />");
-```
-
-### Sibling Convention
-
-Consistent with all other tags in DOThtml, chained calls on `svg` or `math` create **siblings**, not children.
-
-```javascript
-// Creates an SVG and a PATH as siblings
-dot.svg().path(); 
-```
+DOThtml provides first-class support for SVG and MathML, including automatic namespace management and a specialized builder pattern. For more details, see the **[SVG & MathML Guide](./svg-and-math.md)**.
 
 --- FILE: routing.md (Routing) ---
 
@@ -2347,6 +2317,80 @@ test("reactive style update", () => {
 
   expect(document.querySelector("div").style.color).toBe("blue");
 });
+```
+
+--- FILE: svg-and-math.md (Svg And Math) ---
+
+# SVG and MathML Support
+
+DOThtml provides first-class support for SVG and MathML, including automatic namespace management and a specialized builder pattern.
+
+## Namespace Awareness
+
+When you create an `svg` or `math` element, DOThtml automatically uses the correct namespace (`document.createElementNS`), ensuring that graphics and formulas render correctly in the browser. This namespace is also inherited by all children created within these elements.
+
+## SVG/MathML Builder Pattern
+
+While standard nesting (`dot.svg(dot.circle())`) works, DOThtml also provides a specialized builder pattern for `svg` and `math` tags. If you pass a function as an argument, it will be called with a builder scoped to that element's children.
+
+### SVG Example
+```javascript
+// Use a builder function for ergonomic child creation
+dot.svg({ width: 100, height: 100 }, s => s
+   .circle({ cx: 50, cy: 50, r: 40, fill: "red" })
+   .rect({ x: 30, y: 30, width: 40, height: 40, fill: "blue" })
+);
+```
+
+### MathML Example
+```javascript
+// Use a builder function for ergonomic MathML creation
+dot.math(m => m
+   .mrow(r => r
+      .mi("a")
+      .msup(s => s
+         .mi("x")
+         .mn(2)
+      )
+      .mo("+")
+      .mi("b")
+   )
+);
+```
+
+## Context-Aware Content
+
+For convenience, `svg` and `math` tags treat string arguments as raw HTML by default, as plain text is rarely the intended content for these elements.
+
+```javascript
+// Automatically uses SVG namespace and treats string as HTML
+dot.svg({ width: 50, height: 50 }, "<circle cx='25' cy='25' r='20' />");
+```
+
+## Smart SVG/MathML Adoption
+
+DOThtml features "Smart Adoption" for `svg` and `math` tags. If you pass a string that contains a full `<svg>` or `<math>` tag (e.g., loaded from a file), DOThtml will automatically "adopt" the attributes and inner content of that tag, rather than nesting it.
+
+```javascript
+// myIcon.svg: <svg width="24" viewBox="0 0 24 24"><path ... /></svg>
+
+dot.svg({ class: "large-icon", id: "main-logo" }, myIconContents);
+
+// Resulting DOM:
+// <svg width="24" viewBox="0 0 24 24" class="large-icon" id="main-logo">
+//    <path ... />
+// </svg>
+```
+
+This allows you to load existing SVG assets and still use DOThtml's fluent API to modify them dynamically. Explicitly set attributes via the attribute object or `.attr()` will take precedence over adopted ones.
+
+## Sibling Convention
+
+Consistent with all other tags in DOThtml, chained calls on `svg` or `math` create **siblings**, not children.
+
+```javascript
+// Creates an SVG and a PATH as siblings
+dot.svg().path(); 
 ```
 
 --- FILE: typescript.md (Typescript) ---
