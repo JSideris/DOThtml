@@ -35,8 +35,8 @@ describe("Ergonomic HTML Injection & SVG Support", () => {
 		});
 
 		test(".h() can be used in a chain", () => {
-			dot(document.body).svg().h("<span>Chained</span>");
-			expect(formatHTML(document.body.innerHTML)).toBe("<svg><span>chained</span></svg>");
+			dot(document.body).div().h("<span>Chained</span>");
+			expect(formatHTML(document.body.innerHTML)).toBe("<div></div><span>chained</span>");
 		});
 	});
 
@@ -47,8 +47,14 @@ describe("Ergonomic HTML Injection & SVG Support", () => {
 			expect(svg?.namespaceURI).toBe("http://www.w3.org/2000/svg");
 		});
 
-		test("svg children use SVG namespace", () => {
-			dot(document.body).svg().path({ id: "my-path" });
+		test("svg children use SVG namespace (nested)", () => {
+			dot(document.body).svg(dot.path({ id: "my-path" }));
+			const path = document.getElementById("my-path");
+			expect(path?.namespaceURI).toBe("http://www.w3.org/2000/svg");
+		});
+
+		test("svg children use SVG namespace (builder)", () => {
+			dot(document.body).svg(s => s.path({ id: "my-path" }));
 			const path = document.getElementById("my-path");
 			expect(path?.namespaceURI).toBe("http://www.w3.org/2000/svg");
 		});
@@ -69,6 +75,25 @@ describe("Ergonomic HTML Injection & SVG Support", () => {
 		test("math tag treats string argument as HTML by default", () => {
 			dot(document.body).math("<mi>x</mi>");
 			expect(formatHTML(document.body.innerHTML)).toBe("<math><mi>x</mi></math>");
+		});
+	});
+
+	describe("Sibling Convention", () => {
+		test("calling svg().path() creates siblings", () => {
+			dot(document.body).svg().path();
+			expect(formatHTML(document.body.innerHTML)).toBe("<svg></svg><path></path>");
+		});
+	});
+
+	describe("Builder Pattern", () => {
+		test("svg builder creates children", () => {
+			dot(document.body).svg(s => s.circle({ r: 5 }).rect({ width: 10 }));
+			expect(formatHTML(document.body.innerHTML)).toBe("<svg><circle r=5></circle><rect width=10></rect></svg>");
+		});
+
+		test("math builder creates children", () => {
+			dot(document.body).math(m => m.mi("x").mo("+").mi("y"));
+			expect(formatHTML(document.body.innerHTML)).toBe("<math><mi>x</mi><mo>+</mo><mi>y</mi></math>");
 		});
 	});
 });

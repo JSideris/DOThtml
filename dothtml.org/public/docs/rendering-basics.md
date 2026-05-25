@@ -192,6 +192,18 @@ dot.div(dot.text("<b>Hello</b>"));
 
 DOThtml provides full support for SVG and MathML namespaces. When you create an `svg` or `math` element, DOThtml automatically uses the correct namespace (`document.createElementNS`), ensuring that graphics and formulas render correctly in the browser.
 
+### SVG/MathML Builder Pattern
+
+While standard nesting (`dot.svg(dot.circle())`) works, DOThtml also provides a specialized builder pattern for `svg` and `math` tags. If you pass a function as an argument, it will be called with a builder scoped to that element's children.
+
+```javascript
+// Use a builder function for ergonomic child creation
+dot.svg({ width: 100, height: 100 }, s => s
+   .circle({ cx: 50, cy: 50, r: 40, fill: "red" })
+   .rect({ x: 30, y: 30, width: 40, height: 40, fill: "blue" })
+);
+```
+
 ### Context-Aware Content
 
 For convenience, `svg` and `math` tags treat string arguments as raw HTML by default, as plain text is rarely the intended content for these elements.
@@ -199,9 +211,14 @@ For convenience, `svg` and `math` tags treat string arguments as raw HTML by def
 ```javascript
 // Automatically uses SVG namespace and treats string as HTML
 dot.svg({ width: 50, height: 50 }, "<circle cx='25' cy='25' r='20' />");
+```
 
-// Chaining also works with the correct namespace
-dot.svg({ width: 50 })
-   .circle({ cx: 25, cy: 25, r: 20, fill: "red" });
+### Sibling Convention
+
+Consistent with all other tags in DOThtml, chained calls on `svg` or `math` create **siblings**, not children.
+
+```javascript
+// Creates an SVG and a PATH as siblings
+dot.svg().path(); 
 ```
 

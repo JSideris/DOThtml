@@ -358,12 +358,7 @@ for (let i = 0; i < allTags.length; i++) {
 				}
 			}
 		}
-		const n = createElement(this._dot, tag, args);
-		this._addChild(n);
-		if (tag === "svg" || tag === "math") {
-			return promote(n.children);
-		}
-		return this;
+		return this._addChild(createElement(this._dot, tag, args));
 	};
 }
 
@@ -378,11 +373,7 @@ const makeCoreWrapper = (d, fn)=>{
 			}
 		}
 		if (allTagsSet.has(fn)) {
-			const n = createElement(d, fn, args);
-			if (fn === "svg" || fn === "math") {
-				return promote(n.children);
-			}
-			return promote(n);
+			return promote(createElement(d, fn, args));
 		} else {
 			let n = new ContainerVdom(d);
 			n[fn](...args);

@@ -246,9 +246,30 @@ export interface IDotDocument {
 
 	span(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	strong(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
-	svg(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	svg(...args: (DotContent | IDotGlobalAttrs | ((s: IDotDocument) => void))[]): IDotDocument;
 	path(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
-	math(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	circle(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	rect(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	line(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	polyline(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	polygon(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	ellipse(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	g(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	defs(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	symbol(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	use(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	linearGradient(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	radialGradient(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	stop(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	clipPath(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mask(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	pattern(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	filter(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	feGaussianBlur(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	feOffset(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	feMerge(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	feMergeNode(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	math(...args: (DotContent | IDotGlobalAttrs | ((m: IDotDocument) => void))[]): IDotDocument;
 	mi(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	mo(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	mn(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
@@ -256,6 +277,29 @@ export interface IDotDocument {
 	mtext(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	mspace(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	mglyph(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mrow(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mfrac(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	msqrt(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mroot(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mstyle(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	merror(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mpadded(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mphantom(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	menclose(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	msub(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	msup(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	msubsup(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	munder(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mover(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	munderover(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mmultiscripts(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mtable(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mtr(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mtd(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	maction(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	semantics(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	annotation(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	"annotation-xml"(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	sub(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	summary(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	sup(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
@@ -418,6 +462,7 @@ export interface IDotConditionalDocument extends IDotDocument {
 
 // Attribute interface (for all elements):
 export interface IDotGlobalAttrs<T extends HTMLElement = HTMLElement> {
+	[key: string]: any;
 	/**
 	 * Create a custom attribute.
 	*/

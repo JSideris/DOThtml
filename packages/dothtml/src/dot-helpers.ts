@@ -107,6 +107,9 @@ export const createElement = (dot: IDotCore, tag: string, args: any[] | IArgumen
 		if(isContent(arg)){
 			applyContent(dot, n, arg);
 		}
+		else if (typeof arg === "function" && (tag === "svg" || tag === "math")) {
+			arg(n.children);
+		}
 		else if(arg && typeof arg === "object"){
 			applyAttributes(n, arg);
 		}

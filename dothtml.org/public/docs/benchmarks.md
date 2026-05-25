@@ -1,4 +1,4 @@
-# Benchmarks (v6.2.0)
+# Benchmarks (v6.3.0)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 

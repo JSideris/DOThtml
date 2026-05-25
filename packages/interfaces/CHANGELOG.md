@@ -1,5 +1,11 @@
 # dothtml-interfaces
 
+## 6.3.0
+
+### Minor Changes
+
+- New SVG builder.
+
 ## 6.2.0
 
 ### Minor Changes
