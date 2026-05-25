@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.3.2
+
+### Patch Changes
+
+- Bugfix for range input types getting set to NaN by bindings.
+- Updated dependencies
+  - dothtml-interfaces@6.3.2
+
 ## 6.3.1
 
 ### Patch Changes

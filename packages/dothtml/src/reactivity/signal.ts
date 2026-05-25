@@ -71,11 +71,11 @@ export default class Signal<T = any> implements IWatcher<T>{
 	protected _proxy() {
 		return new Proxy(this, {
 			get(target, prop, receiver) {
-				if (prop in target) {
+				if (prop in target && prop !== "toString" && prop !== "valueOf" && prop !== "toJSON") {
 					return Reflect.get(target, prop, receiver);
 				}
 				const val = target.value;
-				if (val && typeof (val as any)[prop] === "function") {
+				if (val !== null && val !== undefined && typeof (val as any)[prop] === "function") {
 					return (...args: any[]) => {
 						const result = (val as any)[prop].apply(val, args);
 						const mutatingMethods = ["push", "pop", "shift", "unshift", "splice", "sort", "reverse"];
@@ -85,14 +85,14 @@ export default class Signal<T = any> implements IWatcher<T>{
 						return result;
 					};
 				}
-				return val ? (val as any)[prop] : undefined;
+				return (val !== null && val !== undefined) ? (val as any)[prop] : undefined;
 			},
 			set(target, prop, value, receiver) {
 				if (prop in target || (typeof prop === "string" && prop.startsWith("_"))) {
 					return Reflect.set(target, prop, value, receiver);
 				}
 				const val = target.value;
-				if (val && typeof val === "object" && target.isWritable) {
+				if (val !== null && val !== undefined && typeof val === "object" && target.isWritable) {
 					const success = Reflect.set(val as any, prop, value);
 					if (success) target.refresh();
 					return success;
