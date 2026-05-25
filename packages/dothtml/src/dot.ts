@@ -118,7 +118,11 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).html = function(c: any) {
-	return this.mount(c);
+	return this.append(c);
+};
+
+(Vdom.prototype as any).h = function(c: any) {
+	return this.append(c);
 };
 
 (Vdom.prototype as any).md = function(c: any) {
@@ -347,17 +351,41 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 for (let i = 0; i < allTags.length; i++) {
 	const tag = allTags[i];
 	(Vdom.prototype as any)[tag] = function(...args: any[]) {
-		return this._addChild(createElement(this._dot, tag, args));
+		if (tag === "svg" || tag === "math") {
+			for (let j = 0; j < args.length; j++) {
+				if (typeof args[j] === "string") {
+					args[j] = new HtmlVdom(args[j], this._dot);
+				}
+			}
+		}
+		const n = createElement(this._dot, tag, args);
+		this._addChild(n);
+		if (tag === "svg" || tag === "math") {
+			return promote(n.children);
+		}
+		return this;
 	};
 }
 
 const makeCoreWrapper = (d, fn)=>{
 	d[fn] = function(){
+		let args = Array.from(arguments);
+		if (fn === "svg" || fn === "math") {
+			for (let j = 0; j < args.length; j++) {
+				if (typeof args[j] === "string") {
+					args[j] = new HtmlVdom(args[j], d);
+				}
+			}
+		}
 		if (allTagsSet.has(fn)) {
-			return promote(createElement(d, fn, arguments));
+			const n = createElement(d, fn, args);
+			if (fn === "svg" || fn === "math") {
+				return promote(n.children);
+			}
+			return promote(n);
 		} else {
 			let n = new ContainerVdom(d);
-			n[fn](...arguments);
+			n[fn](...args);
 			return promote(n);
 		}
 	}

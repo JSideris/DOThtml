@@ -1,5 +1,16 @@
 # dothtml
 
+## 6.2.0
+
+### Minor Changes
+
+- Make `h` a formal alias to `html` and fix several issues with SVG rendering.
+
+### Patch Changes
+
+- Updated dependencies
+  - dothtml-interfaces@6.2.0
+
 ## 6.1.0
 
 ### Minor Changes

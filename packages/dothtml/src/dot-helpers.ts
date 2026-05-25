@@ -71,6 +71,12 @@ export const applyAttributes = (n: ElementVdom, attrs: any) => {
 	for(let k in attrs) {
 		let attr = attrs[k];
 		if((attr instanceof Signal || isVType(attr, "signal") || attr?._isSignal) && !attr?._isRef) attr = (attr as any).bind();
+		
+		if (k === "html" || k === "innerHtml") {
+			n.children.mount(attr);
+			continue;
+		}
+
 		let eventName = k;
 		let modifiers = [];
 		if(k.includes(".")){

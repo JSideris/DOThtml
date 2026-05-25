@@ -53,6 +53,17 @@ dot.img({ src: "logo.png", alt: "Logo" });
 - **Styles**: While you can pass a `style` string or object in the attributes, we recommend using the fluent [Styling](./styling.md) API for better performance and reactivity.
 - **Events**: Event listeners can be added by prefixing the event name with `on` (e.g., `onClick`, `onInput`).
 
+### Reserved Attributes
+
+- **`html` / `innerHtml`**: These keys are reserved for raw HTML injection. When used in an attribute object, the value is treated as raw HTML content for the element rather than a literal attribute.
+  ```javascript
+  // Renders: <div class="container"><span>Raw Content</span></div>
+  dot.div({ 
+      class: "container", 
+      html: "<span>Raw Content</span>" 
+  });
+  ```
+
 ## Function Chaining
 
 Every element method returns a builder object, allowing you to chain multiple elements together. Chained elements are added as **siblings**.
@@ -164,15 +175,33 @@ dot("#sidebar").remove();
 
 ## HTML vs. Text
 
-By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper.
+By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper or its shorthand `.h()`.
 
 ```javascript
-// Renders: <div>&lt;b&gt;Hello&lt;/b&gt;</div>
-dot.div("<b>Hello</b>");
-
 // Renders: <div><b>Hello</b></div>
 dot.div(dot.html("<b>Hello</b>"));
+
+// Shorthand version
+dot.div(dot.h("<b>Hello</b>"));
 
 // Explicit text (useful if you want to be certain)
 dot.div(dot.text("<b>Hello</b>"));
 ```
+
+## SVG and MathML Support
+
+DOThtml provides full support for SVG and MathML namespaces. When you create an `svg` or `math` element, DOThtml automatically uses the correct namespace (`document.createElementNS`), ensuring that graphics and formulas render correctly in the browser.
+
+### Context-Aware Content
+
+For convenience, `svg` and `math` tags treat string arguments as raw HTML by default, as plain text is rarely the intended content for these elements.
+
+```javascript
+// Automatically uses SVG namespace and treats string as HTML
+dot.svg({ width: 50, height: 50 }, "<circle cx='25' cy='25' r='20' />");
+
+// Chaining also works with the correct namespace
+dot.svg({ width: 50 })
+   .circle({ cx: 25, cy: 25, r: 20, fill: "red" });
+```
+

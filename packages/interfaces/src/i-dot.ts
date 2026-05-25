@@ -55,6 +55,10 @@ export interface IDotDocument {
 	*/
 	html(content: DotContent): IDotDocument;
 	/**
+	 * Creates a generic HTML node that can render a string, HTML nodes, or dotHTML content.
+	*/
+	h(content: DotContent): IDotDocument;
+	/**
 	 * Creates a text node that will render as a string, rather than being parsed as markup.
 	*/
 	text(content: DotContent): IDotDocument;
@@ -243,6 +247,15 @@ export interface IDotDocument {
 	span(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	strong(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	svg(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	path(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	math(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mi(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mo(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mn(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	ms(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mtext(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mspace(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	mglyph(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	sub(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	summary(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	sup(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
@@ -449,6 +462,8 @@ export interface IDotGlobalAttrs<T extends HTMLElement = HTMLElement> {
 	exportParts?: AttrVal<string>;
 	hidden?: AttrVal<boolean>;
 	id?: string;
+	html?: AttrVal<DotContent>;
+	innerHtml?: AttrVal<DotContent>;
 	inert?: AttrVal<boolean>;
 	inputMode?: AttrVal<string>;
 	is?: AttrVal<string>;

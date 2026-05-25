@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.1.0)
+# Benchmarks (v6.2.0)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **22.9 kB**
+- **DOThtml**: **23.4 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **22.9 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **23.4 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -683,6 +683,14 @@ Unlike other tools that demand you build your entire app around them, DOThtml is
 *   **Architectural Freedom**: Use it for your entire UI, or just for a single complex widget in a legacy app.
 *   **Shadow DOM Native**: Built-in encapsulation ensures your components work perfectly regardless of the host environment.
 
+## The DOThtml Philosophy
+
+DOThtml is built on the idea that web development should be straightforward and, above all, **fun**.
+
+*   **No XML-Based Markup**: Stop wrestling with angle brackets in your logic. DOThtml uses a pure, fluent JavaScript/TypeScript API that feels natural and stays out of your way.
+*   **Less Salt**: We've stripped away the boilerplate and "magic" that makes other frameworks frustrating. DOThtml just works the way you expect it to.
+*   **Built for Humans**: All the power of a modern component-based framework, but designed to be intuitive and blazingly fast without the complexity of a virtual DOM.
+
 ## Core Capabilities
 
 ### [Component-Based Architecture](./components.md)
@@ -1187,6 +1195,17 @@ dot.img({ src: "logo.png", alt: "Logo" });
 - **Styles**: While you can pass a `style` string or object in the attributes, we recommend using the fluent [Styling](./styling.md) API for better performance and reactivity.
 - **Events**: Event listeners can be added by prefixing the event name with `on` (e.g., `onClick`, `onInput`).
 
+### Reserved Attributes
+
+- **`html` / `innerHtml`**: These keys are reserved for raw HTML injection. When used in an attribute object, the value is treated as raw HTML content for the element rather than a literal attribute.
+  ```javascript
+  // Renders: <div class="container"><span>Raw Content</span></div>
+  dot.div({ 
+      class: "container", 
+      html: "<span>Raw Content</span>" 
+  });
+  ```
+
 ## Function Chaining
 
 Every element method returns a builder object, allowing you to chain multiple elements together. Chained elements are added as **siblings**.
@@ -1298,17 +1317,34 @@ dot("#sidebar").remove();
 
 ## HTML vs. Text
 
-By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper.
+By default, any string passed to an element is treated as plain text and is automatically escaped for security. If you need to render raw HTML, use the `dot.html()` helper or its shorthand `.h()`.
 
 ```javascript
-// Renders: <div>&lt;b&gt;Hello&lt;/b&gt;</div>
-dot.div("<b>Hello</b>");
-
 // Renders: <div><b>Hello</b></div>
 dot.div(dot.html("<b>Hello</b>"));
 
+// Shorthand version
+dot.div(dot.h("<b>Hello</b>"));
+
 // Explicit text (useful if you want to be certain)
 dot.div(dot.text("<b>Hello</b>"));
+```
+
+## SVG and MathML Support
+
+DOThtml provides full support for SVG and MathML namespaces. When you create an `svg` or `math` element, DOThtml automatically uses the correct namespace (`document.createElementNS`), ensuring that graphics and formulas render correctly in the browser.
+
+### Context-Aware Content
+
+For convenience, `svg` and `math` tags treat string arguments as raw HTML by default, as plain text is rarely the intended content for these elements.
+
+```javascript
+// Automatically uses SVG namespace and treats string as HTML
+dot.svg({ width: 50, height: 50 }, "<circle cx='25' cy='25' r='20' />");
+
+// Chaining also works with the correct namespace
+dot.svg({ width: 50 })
+   .circle({ cx: 25, cy: 25, r: 20, fill: "red" });
 ```
 
 --- FILE: routing.md (Routing) ---

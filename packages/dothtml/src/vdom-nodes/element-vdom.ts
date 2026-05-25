@@ -59,7 +59,19 @@ export default class ElementVdom extends Vdom{
 	_render(node: HTMLElement){
 		this._isRendered = true;
 
-		this.element = node.ownerDocument.createElement(this.tag);
+		const svgNS = "http://www.w3.org/2000/svg";
+		const mathMLNS = "http://www.w3.org/1998/Math/MathML";
+
+		let ns = node.namespaceURI;
+		if (this.tag === "svg") ns = svgNS;
+		else if (this.tag === "math") ns = mathMLNS;
+
+		if (ns && ns !== "http://www.w3.org/1999/xhtml") {
+			this.element = node.ownerDocument.createElementNS(ns, this.tag) as any;
+		} else {
+			this.element = node.ownerDocument.createElement(this.tag);
+		}
+
 		this.element[DOT_VDOM_PROP_NAME] = this;
 		if(this.ref){
 			if (typeof this.ref === "function") {
