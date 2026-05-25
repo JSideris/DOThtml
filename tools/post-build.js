@@ -138,6 +138,16 @@ export const BENCHMARK_DATA = ${JSON.stringify(rawBenchData, null, 2)};
 console.log('\n--- 6. Processing Documentation ---');
 if (!fs.existsSync(PUBLIC_DOCS_DIR)) {
 	fs.mkdirSync(PUBLIC_DOCS_DIR, { recursive: true });
+} else {
+	// Clean up stale files in the public docs directory
+	const publicFiles = fs.readdirSync(PUBLIC_DOCS_DIR);
+	const sourceFiles = fs.readdirSync(DOCS_SRC_DIR);
+	publicFiles.forEach(file => {
+		if (!sourceFiles.includes(file)) {
+			fs.unlinkSync(path.join(PUBLIC_DOCS_DIR, file));
+			console.log(`Removed stale doc: ${file}`);
+		}
+	});
 }
 
 if (!fs.existsSync(DOCS_SRC_DIR)) {
