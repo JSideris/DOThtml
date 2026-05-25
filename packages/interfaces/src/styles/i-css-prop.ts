@@ -5,6 +5,7 @@ import IShadowProp from "./complex-css-types/i-shadow-prop";
 import ITransformationProp from "./complex-css-types/i-transformation-prop";
 import ColorProp from "./mapped-types/color-props";
 import LengthProp from "./mapped-types/length-prop";
+import AngleProp from "./mapped-types/angle-prop";
 import { IBinding } from "../bindings/i-binding";
 import { IWatcher } from "../bindings/i-watcher";
 
@@ -60,6 +61,48 @@ export default interface IDotcssProp extends
 	LengthProp<"padding", 1|2|3|4>,
 	LengthProp<"backgroundSize", 1|2, "contain"|"cover"|"auto">,
 	LengthProp<"gap", 1|2>,
+	LengthProp<"inset", 1|2|3|4>,
+	LengthProp<"insetBlock", 1|2>,
+	LengthProp<"insetBlockEnd">,
+	LengthProp<"insetBlockStart">,
+	LengthProp<"insetInline", 1|2>,
+	LengthProp<"insetInlineEnd">,
+	LengthProp<"insetInlineStart">,
+	LengthProp<"marginBlock", 1|2>,
+	LengthProp<"marginBlockEnd">,
+	LengthProp<"marginBlockStart">,
+	LengthProp<"marginInline", 1|2>,
+	LengthProp<"marginInlineEnd">,
+	LengthProp<"marginInlineStart">,
+	LengthProp<"paddingBlock", 1|2>,
+	LengthProp<"paddingBlockEnd">,
+	LengthProp<"paddingBlockStart">,
+	LengthProp<"paddingInline", 1|2>,
+	LengthProp<"paddingInlineEnd">,
+	LengthProp<"paddingInlineStart">,
+	LengthProp<"scrollMargin", 1|2|3|4>,
+	LengthProp<"scrollMarginBottom">,
+	LengthProp<"scrollMarginLeft">,
+	LengthProp<"scrollMarginRight">,
+	LengthProp<"scrollMarginTop">,
+	LengthProp<"scrollMarginBlock", 1|2>,
+	LengthProp<"scrollMarginBlockEnd">,
+	LengthProp<"scrollMarginBlockStart">,
+	LengthProp<"scrollMarginInline", 1|2>,
+	LengthProp<"scrollMarginInlineEnd">,
+	LengthProp<"scrollMarginInlineStart">,
+	LengthProp<"scrollPadding", 1|2|3|4>,
+	LengthProp<"scrollPaddingBottom">,
+	LengthProp<"scrollPaddingLeft">,
+	LengthProp<"scrollPaddingRight">,
+	LengthProp<"scrollPaddingTop">,
+	LengthProp<"scrollPaddingBlock", 1|2>,
+	LengthProp<"scrollPaddingBlockEnd">,
+	LengthProp<"scrollPaddingBlockStart">,
+	LengthProp<"scrollPaddingInline", 1|2>,
+	LengthProp<"scrollPaddingInlineEnd">,
+	LengthProp<"scrollPaddingInlineStart">,
+	LengthProp<"translate", 1|2|3>,
 
 	ColorProp<"color">,
 	ColorProp<"backgroundColor">,
@@ -70,7 +113,13 @@ export default interface IDotcssProp extends
 	ColorProp<"borderTopColor">,
 	ColorProp<"textDecorationColor">,
 	ColorProp<"outlineColor">,
-	ColorProp<"columnRuleColor">
+	ColorProp<"columnRuleColor">,
+	ColorProp<"accentColor">,
+	ColorProp<"caretColor">,
+	ColorProp<"scrollbarColor">,
+	ColorProp<"textEmphasisColor">,
+
+	AngleProp<["rotate"]>
 {
 	
 	//url: 
@@ -159,6 +208,9 @@ export default interface IDotcssProp extends
 	gridTemplateAreas?: GKV|string;
 	gridTemplateColumns?: GKV|string;
 	gridTemplateRows?: GKV|string;
+	container?: GKV|string;
+	containerType?: GKV|"normal"|"size"|"inline-size";
+	containerName?: GKV|string;
 	imageOrientation?: GKV|"from-image"|"none"|"flip"|string; // Note: flip may optionally be accompanied with an angle. This is a complex type.
 	justifyContent?: GKV|"flex-start"|"flex-end"|"center"|"space-between"|"space-around"|"space-evenly"|"start"|"end"|"left"|"right"|"safe flex-start"|"safe flex-end"|"safe center"|"safe space-between"|"safe space-around"|"safe space-evenly"|"unsafe flex-start"|"unsafe flex-end"|"unsafe center"|"unsafe space-between"|"unsafe space-around"|"unsafe space-evenly";
 	order?: GKV|number; // ✔️
@@ -285,6 +337,16 @@ export default interface IDotcssProp extends
 	voiceStress?: GKV|string;
 	voiceVolume?: GKV|string;
 	pointerEvents?: GKV|"auto"|"none";
+	scale?: ValueOrReactive<number|string>|[ValueOrReactive<number|string>, ValueOrReactive<number|string>]|[ValueOrReactive<number|string>, ValueOrReactive<number|string>, ValueOrReactive<number|string>];
+	scrollBehavior?: GKV|"auto"|"smooth";
+	scrollSnapType?: GKV|string;
+	scrollSnapAlign?: GKV|string;
+	scrollSnapStop?: GKV|"normal"|"always";
+	overscrollBehavior?: GKV|string;
+	overscrollBehaviorBlock?: GKV|string;
+	overscrollBehaviorInline?: GKV|string;
+	overscrollBehaviorX?: GKV|string;
+	overscrollBehaviorY?: GKV|string;
 
 	// Deprecated.
 	// marqueeDirection?: "up"|"down"|"left"|"right"|BasicCommonValues;
