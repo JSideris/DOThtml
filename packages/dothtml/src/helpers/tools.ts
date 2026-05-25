@@ -74,3 +74,31 @@ export function isVType(obj: any, type: string | string[]): boolean {
 }
 
 export const floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
+
+export function flattenAttribute(value: any): string[] {
+	if (value === null || value === undefined) return [];
+	if (typeof value === "string") return [value];
+	if (typeof value === "number") return [`${value}`];
+	if (Array.isArray(value)) {
+		let tokens: string[] = [];
+		for (let i = 0; i < value.length; i++) {
+			tokens.push(...flattenAttribute(value[i]));
+		}
+		return tokens;
+	}
+	if (typeof value === "object") {
+		if (isVType(value, "signal")) return flattenAttribute((value as any).value);
+		if (isVType(value, "binding") || (value as any)?._isBinding) return flattenAttribute((value as any)._get());
+
+		let tokens: string[] = [];
+		for (let k in value) {
+			let v = value[k];
+			if (isVType(v, "signal")) v = (v as any).value;
+			else if (isVType(v, "binding") || (v as any)?._isBinding) v = (v as any)._get();
+			
+			if (v) tokens.push(k);
+		}
+		return tokens;
+	}
+	return [];
+}

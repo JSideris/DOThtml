@@ -13,7 +13,7 @@ import { IRef } from "dothtml-interfaces/src/bindings/i-ref";
 import Ref from "../reactivity/ref";
 import SyntheticEvent from "../events/synthetic-event";
 import { EventManager } from "../events/event-manager";
-import { isVType } from "../helpers/tools";
+import { isVType, flattenAttribute } from "../helpers/tools";
 
 export class AttributeItem{
 	elementVDom: ElementVdom;
@@ -221,7 +221,7 @@ export default class ElementVdom extends Vdom{
 			}
 		}
 
-		if(value && typeof value === "object" && !(value instanceof Array || value instanceof Binding || isVType(value, "binding") || (value as any)?._isBinding || value instanceof Signal || isVType(value, "signal") || (value as any)?._isSignal || value instanceof BaseVStyle || isVType(value, "base-v-style"))){
+		if(value && typeof value === "object" && !(value instanceof Binding || isVType(value, "binding") || (value as any)?._isBinding || value instanceof Signal || isVType(value, "signal") || (value as any)?._isSignal || value instanceof BaseVStyle || isVType(value, "base-v-style"))){
 			// Supports attributes that are space-separated, such as class and aria-*.
 			// Also supports styles.
 			switch(attr){
@@ -319,7 +319,7 @@ export default class ElementVdom extends Vdom{
 		}
 		else if(value instanceof Array){
 			// Like a space-separated class list.
-			node.setAttribute(attr, value.join(" "));
+			node.setAttribute(attr, flattenAttribute(value).join(" "));
 		}
 		else if (value instanceof Binding || isVType(value, "binding") || (value as any)?._isBinding){
 			this.renderAttr(attr, (value as any)._get(), node, isExplicitBind);

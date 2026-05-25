@@ -1,7 +1,7 @@
 import Binding from "../reactivity/binding";
 import Signal from "../reactivity/signal";
 import VMetaNode from "./v-meta-node";
-import { isVType } from "../helpers/tools";
+import { isVType, flattenAttribute } from "../helpers/tools";
 
 /**
  * Attribute Virtual Nodes apply to a single attribute, such as class.
@@ -9,7 +9,7 @@ import { isVType } from "../helpers/tools";
 export default class AttributeVNode extends VMetaNode{
 
 	attr: string;
-	value: Record<string, string|Binding>;
+	value: any;
 	target: HTMLElement;
 	_vtype = "attribute-v-node";
 
@@ -25,16 +25,7 @@ export default class AttributeVNode extends VMetaNode{
 		this.target = target;
 
 		{ // Register observables.
-			for(let k in this.value){
-				let v = (this.value as any)[k];
-
-				if(v instanceof Signal || isVType(v, "signal")) v = (v as any).bind(); // TODO: this probably isn't the right place for this.
-
-				if(v && (v instanceof Binding || isVType(v, "binding"))){
-					let id = (v as any)._subscribe(this);
-					this.observables[id] = v as any;
-				}
-			}
+			this.registerObservables(this.value);
 		}
 
 		{ // Update.
@@ -42,19 +33,33 @@ export default class AttributeVNode extends VMetaNode{
 		}
 	}
 
+	private registerObservables(val: any) {
+		if (val instanceof Signal || isVType(val, "signal")) {
+			let binding = (val as any).bind();
+			let id = binding._subscribe(this);
+			this.observables[id] = binding;
+		}
+		else if (val instanceof Binding || isVType(val, "binding") || (val as any)?._isBinding) {
+			let id = (val as any)._subscribe(this);
+			this.observables[id] = val as any;
+		}
+		else if (Array.isArray(val)) {
+			for (let i = 0; i < val.length; i++) {
+				this.registerObservables(val[i]);
+			}
+		}
+		else if (typeof val === "object" && val !== null) {
+			for (let k in val) {
+				this.registerObservables(val[k]);
+			}
+		}
+	}
+
 	update(){
 		if(!this.target) return;
 
-		let tokens = [];
-		for(let k in this.value){
-			let v = (this.value as any)[k];
-			if(v){
-				if(v instanceof Signal || isVType(v, "signal")) v = (v as any).bind();
-				if(!(v instanceof Binding || isVType(v, "binding")) || (v as any)._get()){	
-					tokens.push(k);
-				}
-			}
-		}
+		let tokens = flattenAttribute(this.value);
+		
 		if (tokens.length > 0) {
 			this.target.setAttribute(this.attr, tokens.join(" "));
 		} else {
