@@ -591,6 +591,7 @@ export class ComponentVdom extends Vdom{
 			}
 
 			connectedCallback() {
+				if (this._isMounted) return;
 				this._isMounted = true;
 				if (this._component) {
 					this._renderComponent(this._component);

@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.4.1
+
+### Patch Changes
+
+- Fix regression in theme provider that caused themes to be lost when lists were modified.
+- Updated dependencies
+  - dothtml-interfaces@6.4.1
+
 ## 6.4.0
 
 ### Minor Changes
