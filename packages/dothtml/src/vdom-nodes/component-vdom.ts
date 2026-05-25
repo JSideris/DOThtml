@@ -61,9 +61,11 @@ export class ComponentVdom extends Vdom{
 	private buildEffects: any[] = [];
 	private disposables: Array<() => void> = [];
 	private buildDisposables: Array<() => void> = [];
+	private styleDisposables: Array<() => void> = [];
 	private ref: Ref<any> | ((comp: IDotComponent | null) => void);
 	private slots: Record<string, ContainerVdom | Function> = {};
 	private parentComponent: ComponentVdom | null = null;
+	private providedTheme: any = null;
 	private lastError: any = null;
 	private updateSubscription = {
 		active: true,
@@ -170,6 +172,10 @@ export class ComponentVdom extends Vdom{
 		} else {
 			this.disposables.push(disposable);
 		}
+	}
+
+	registerStyleDisposable(disposable: () => void) {
+		this.styleDisposables.push(disposable);
 	}
 
 	setRef(ref: Ref<any> | ((comp: IDotComponent | null) => void)) {
@@ -598,35 +604,86 @@ export class ComponentVdom extends Vdom{
 				const cvdom: ComponentVdom = (component._ as any).cvdom;
 				if (!cvdom) return;
 
+				// Clear previous style disposables
+				for (const disposable of cvdom.styleDisposables) {
+					disposable();
+				}
+				cvdom.styleDisposables = [];
+
 				try {
 					const builder = new StyleSheetBuilder();
 					if ((cvdom._dot as any)._theme) {
 						builder.setTheme((cvdom._dot as any)._theme);
 					}
 
-					const styles = (component.constructor as any).styles;
-					if (styles) {
-						if (typeof styles === "function") {
-							styles(builder);
+					// Contextual Theme Inheritance
+					let inheritedTheme: any = null;
+					let p = cvdom.parentComponent;
+					while (p) {
+						if (p.providedTheme) {
+							inheritedTheme = p.providedTheme;
+							break;
+						}
+						p = p.parentComponent;
+					}
+
+					const applyTheme = (theme: any) => {
+						if (typeof theme === "function") {
+							theme(builder);
+						} else if (theme instanceof Signal || isVType(theme, "signal") || theme instanceof Binding || isVType(theme, "binding") || theme instanceof Computed || isVType(theme, "computed")) {
+							const val = (theme instanceof Binding || isVType(theme, "binding")) ? (theme as any)._get() : (theme as any).value;
+							if (typeof val === "function") val(builder);
+						}
+					};
+
+					const applyBaseStyles = () => {
+						if (inheritedTheme) {
+							applyTheme(inheritedTheme);
+						}
+
+						const styles = (component.constructor as any).styles;
+						if (styles) {
+							if (typeof styles === "function") {
+								styles(builder);
+							}
+						}
+
+						const hostStyles = (component.constructor as any).hostStyles;
+						if (hostStyles) {
+							if (typeof hostStyles === "function") {
+								hostStyles(builder);
+							}
+						}
+
+						// Handle component.hostStyle()
+						if ((component as any).hostStyle) {
+							builder.rule(":host", (s) => (component as any).hostStyle(s));
+						}
+					};
+
+					if (inheritedTheme) {
+						// Subscribe to inherited theme if it's reactive
+						if (inheritedTheme instanceof Signal || isVType(inheritedTheme, "signal") || inheritedTheme instanceof Binding || isVType(inheritedTheme, "binding") || inheritedTheme instanceof Computed || isVType(inheritedTheme, "computed")) {
+							const id = (inheritedTheme as any).subscribe(() => {
+								this._renderComponent(component); // Re-render styles
+							});
+							cvdom.registerStyleDisposable(() => {
+								if (inheritedTheme instanceof Binding || isVType(inheritedTheme, "binding")) (inheritedTheme as any)._unsubscribe(id);
+								else (inheritedTheme as any).unsubscribe(id);
+							});
 						}
 					}
 
-					const hostStyles = (component.constructor as any).hostStyles;
-					if (hostStyles) {
-						if (typeof hostStyles === "function") {
-							hostStyles(builder);
-						}
-					}
-
-					// Handle component.hostStyle()
-					if ((component as any).hostStyle) {
-						builder.rule(":host", (s) => (component as any).hostStyle(s));
-					}
+					applyBaseStyles();
 
 					// Adopt global styles
 					const globalStyles = (cvdom._dot as any).globalStyles || [];
 					for (const s of globalStyles) {
 						if (typeof s === "string") {
+							// Check if already added
+							const existing = Array.from(shadow.querySelectorAll("style")).find(el => el.textContent === s.replace(/\b(html|body)\b/g, ":host"));
+							if (existing) continue;
+
 							const styleEl = document.createElement("style");
 							// Transform html/body to :host
 							styleEl.textContent = s.replace(/\b(html|body)\b/g, ":host");
@@ -636,7 +693,21 @@ export class ComponentVdom extends Vdom{
 
 					if (component.stylize) {
 						const result = component.stylize(builder);
-						if (typeof result === "string") {
+						if (typeof result === "function" || ((result instanceof Signal || isVType(result, "signal") || result instanceof Binding || isVType(result, "binding") || result instanceof Computed || isVType(result, "computed")) && typeof ((result instanceof Binding || isVType(result, "binding")) ? (result as any)._get() : (result as any).value) === "function")) {
+							cvdom.providedTheme = result;
+							applyTheme(result);
+							
+							// Subscribe to provided theme if it's reactive
+							if (result instanceof Signal || isVType(result, "signal") || result instanceof Binding || isVType(result, "binding") || result instanceof Computed || isVType(result, "computed")) {
+								const id = (result as any).subscribe(() => {
+									this._renderComponent(component); // Re-render styles
+								});
+								cvdom.registerStyleDisposable(() => {
+									if (result instanceof Binding || isVType(result, "binding")) (result as any)._unsubscribe(id);
+									else (result as any).unsubscribe(id);
+								});
+							}
+						} else if (typeof result === "string") {
 							const styleEl = document.createElement("style");
 							styleEl.textContent = result;
 							shadow.appendChild(styleEl);
@@ -646,6 +717,7 @@ export class ComponentVdom extends Vdom{
 							shadow.appendChild(styleEl);
 							const update = () => {
 								builder.clearRules();
+								applyBaseStyles();
 								const res = component.stylize(builder);
 								let finalStyles = "";
 								if (typeof res === "string") {
@@ -674,7 +746,7 @@ export class ComponentVdom extends Vdom{
 								}
 							};
 							const id = (result as any).subscribe(update);
-							cvdom.registerDisposable(() => {
+							cvdom.registerStyleDisposable(() => {
 								if (result instanceof Binding || isVType(result, "binding")) (result as any)._unsubscribe(id);
 								else (result as any).unsubscribe(id);
 							});
@@ -683,9 +755,13 @@ export class ComponentVdom extends Vdom{
 					}
 
 					if (builder.hasRules()) {
-						const styleEl = document.createElement("style");
+						let styleEl = shadow.querySelector("style#--dh-main-style") as HTMLStyleElement;
+						if (!styleEl) {
+							styleEl = document.createElement("style");
+							styleEl.id = "--dh-main-style";
+							shadow.appendChild(styleEl);
+						}
 						styleEl.textContent = builder.toString();
-						shadow.appendChild(styleEl);
 						
 						// Cache styles for HMR tests
 						(component.constructor as any)._cachedStyles = builder.toString();
@@ -701,7 +777,7 @@ export class ComponentVdom extends Vdom{
 									const id = (v.value as any).subscribe((newVal) => {
 										this.style.setProperty(v.name, `${newVal}`);
 									});
-									cvdom.registerDisposable(() => {
+									cvdom.registerStyleDisposable(() => {
 										if (v.value instanceof Binding || isVType(v.value, "binding")) (v.value as any)._unsubscribe(id);
 										else (v.value as any).unsubscribe(id);
 									});
@@ -709,7 +785,7 @@ export class ComponentVdom extends Vdom{
 							});
 						}
 
-						cvdom.registerDisposable(() => builder.dispose());
+						cvdom.registerStyleDisposable(() => builder.dispose());
 					}
 
 					if (cvdom.childShadowVdom._isRendered) {
@@ -895,6 +971,11 @@ export class ComponentVdom extends Vdom{
 			disposable();
 		}
 		this.buildDisposables = [];
+
+		for (const disposable of this.styleDisposables) {
+			disposable();
+		}
+		this.styleDisposables = [];
 
 		if (this.ref) {
 			if (typeof this.ref === "function") {
