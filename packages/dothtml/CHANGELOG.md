@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.3.3
+
+### Patch Changes
+
+- Bugfix for another signal fix. Better equity check for NaN values.
+- Updated dependencies
+  - dothtml-interfaces@6.3.3
+
 ## 6.3.2
 
 ### Patch Changes

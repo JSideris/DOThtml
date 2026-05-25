@@ -1,5 +1,11 @@
 # create-dothtml
 
+## 6.3.3
+
+### Patch Changes
+
+- Bugfix for another signal fix. Better equity check for NaN values.
+
 ## 6.3.2
 
 ### Patch Changes

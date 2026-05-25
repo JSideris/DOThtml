@@ -15,6 +15,11 @@ import SyntheticEvent from "../events/synthetic-event";
 import { EventManager } from "../events/event-manager";
 import { isVType, flattenAttribute } from "../helpers/tools";
 
+const valuesMatch = (a: any, b: any) => {
+	if (Object.is(a, b)) return true;
+	return a == b;
+};
+
 export class AttributeItem{
 	elementVDom: ElementVdom;
 	attribute: string;
@@ -294,11 +299,16 @@ export default class ElementVdom extends Vdom{
 		}
 		else if(typeof value === "string" || typeof value === "number"){
 			if(attr == "value" && (this.tag.toLowerCase() == "input" || this.tag.toLowerCase() == "textarea" || this.tag.toLowerCase() == "select")){
-				(node as any).value = value ?? "";
-				this.lastSyncedValues[attr] = value ?? "";
+				const val = (typeof value === "number" && isNaN(value)) ? "" : (value ?? "");
+				(node as any).value = val;
+				this.lastSyncedValues[attr] = value;
 			}
 			else{
-				node.setAttribute(attr, `${value}`);
+				if (typeof value === "number" && isNaN(value)) {
+					node.removeAttribute(attr);
+				} else {
+					node.setAttribute(attr, `${value}`);
+				}
 			}
 		}
 		else if (typeof value === "boolean" || value == null || value == undefined){
@@ -346,8 +356,8 @@ export default class ElementVdom extends Vdom{
 							const lastVal = this.lastSyncedValues[targetAttr];
 
 							// Only update the signal if the DOM changed AND the signal hasn't already been updated to this value.
-							// We use loose equality here to handle null/undefined/empty string transitions gracefully.
-							if (currentSigVal == lastVal && val != lastVal) {
+							// We use robust equality here to handle NaN correctly.
+							if (valuesMatch(currentSigVal, lastVal) && !valuesMatch(val, lastVal)) {
 								binding._set(val);
 							}
 							
