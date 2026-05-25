@@ -7,7 +7,7 @@
     "benchmarks"
   ],
   "scripts": {
-    "build": "npm run build -w dothtml && npm run build -w create-dothtml",
+    "build": "npm run build -w dothtml && npm run build -w create-dothtml && npm run build -w dothtml.org",
     "test": "npm test -w dothtml",
     "dev": "npm run dev -w dothtml.org",
     "benchmarks": "npm run benchmarks -w dothtml",
