@@ -1,8 +1,9 @@
 import Binding from "../reactivity/binding";
 import Signal from "../reactivity/signal";
 import cssProps from "../css/css-props";
+import { IDotStyleBuilder } from "dothtml-interfaces";
 
-export default class BaseVStyle {
+export default class BaseVStyle implements IDotStyleBuilder {
 	[key: string]: any;
 	_vtype = "base-v-style";
 

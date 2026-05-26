@@ -1,30 +1,31 @@
 import BaseVStyle from "./base-v-style";
+import { IAtKeyframesBuilder, IDotStyleBuilder } from "dothtml-interfaces";
 
 export interface IStylePropHost {
 	formatPropsForBlock(style: BaseVStyle): string;
 }
 
-export default class KeyframesBuilder {
+export default class KeyframesBuilder implements IAtKeyframesBuilder {
 	private steps: Array<{ selector: string, style: BaseVStyle }> = [];
 
 	constructor(private sheet: IStylePropHost) {}
 
-	private step(selector: string, callback: (s: BaseVStyle) => void) {
+	private step(selector: string, callback: (s: IDotStyleBuilder) => void) {
 		const style = new BaseVStyle();
-		callback(style);
+		callback(style as unknown as IDotStyleBuilder);
 		this.steps.push({ selector, style });
 		return this;
 	}
 
-	from(callback: (s: BaseVStyle) => void) {
+	from(callback: (s: IDotStyleBuilder) => void) {
 		return this.step("from", callback);
 	}
 
-	to(callback: (s: BaseVStyle) => void) {
+	to(callback: (s: IDotStyleBuilder) => void) {
 		return this.step("to", callback);
 	}
 
-	at(percent: number | string, callback: (s: BaseVStyle) => void) {
+	at(percent: number | string, callback: (s: IDotStyleBuilder) => void) {
 		const selector = typeof percent === "number" ? `${percent}%` : percent;
 		return this.step(selector, callback);
 	}

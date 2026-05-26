@@ -1,5 +1,7 @@
 
 import { IDotCore, IDotDocument } from "./i-dot";
+import { IStyleSheetBuilder } from "./styles/i-style-sheet-builder";
+import { IDotStyleBuilder } from "./styles/i-dot-style-builder";
 
 // export type EventNames<T> = T extends { allowedEvents: infer E } ? E : never;
 
@@ -96,12 +98,12 @@ export default interface IDotComponent/*<TProps extends Array<string> = [], TEve
 	 * to the component's shadow DOM.
 	 * @returns A string (or array of strings) containing imported CSS rules.
 	 */
-	stylize?(s?: any): string | string[] | any;
+	stylize?(s?: IStyleSheetBuilder): string | string[] | any;
 
 	/**
 	 * An optional function that allows you to apply styles directly to the component's host element.
 	 */
-	hostStyle?(s: any): void;
+	hostStyle?(s: IDotStyleBuilder): void;
 
 	/**
 	 * An optional function that gets called when an error occurs during the component's lifecycle.

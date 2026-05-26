@@ -8,6 +8,7 @@ import CssFunctionBuilderVStyle from "./css-function-builder-v-style";
 import FilterVStyle from "./filter-v-style";
 import TransformVStyle from "./transform-v-style";
 import KeyframesBuilder from "./keyframes-builder";
+import { IStyleSheetBuilder, IDotStyleBuilder, IAtKeyframesBuilder } from "dothtml-interfaces";
 
 
 type StyleRule = 
@@ -18,7 +19,7 @@ type StyleRule =
 	| { type: "keyframes", name: string, builder: KeyframesBuilder }
 	| { type: "raw", content: string };
 
-export default class StyleSheetBuilder {
+export default class StyleSheetBuilder implements IStyleSheetBuilder {
 	private rules: Array<StyleRule> = [];
 	public theme: any = null;
 	private ghostVars: Array<{ name: string, value: Signal | Binding }> = [];
@@ -57,43 +58,43 @@ export default class StyleSheetBuilder {
 		});
 	}
 
-	class(name: string, callback: (s: BaseVStyle) => void) {
+	class(name: string, callback: (s: IDotStyleBuilder) => void) {
 		return this.rule(`.${name}`, callback);
 	}
 
-	rule(selector: string, callback: (s: BaseVStyle) => void) {
+	rule(selector: string, callback: (s: IDotStyleBuilder) => void) {
 		const style = new BaseVStyle();
-		callback(style);
+		callback(style as unknown as IDotStyleBuilder);
 		this.rules.push({ type: "rule", selector, style });
 		return this;
 	}
 
-	selector(selector: string, callback: (s: BaseVStyle) => void) {
+	selector(selector: string, callback: (s: IDotStyleBuilder) => void) {
 		return this.rule(selector, callback);
 	}
 
-	media(condition: string, callback: (s: StyleSheetBuilder) => void) {
+	media(condition: string, callback: (s: IStyleSheetBuilder) => void) {
 		const builder = new StyleSheetBuilder();
 		callback(builder);
 		this.rules.push({ type: "media", condition, builder });
 		return this;
 	}
 
-	container(condition: string, callback: (s: StyleSheetBuilder) => void) {
+	container(condition: string, callback: (s: IStyleSheetBuilder) => void) {
 		const builder = new StyleSheetBuilder();
 		callback(builder);
 		this.rules.push({ type: "container", condition, builder });
 		return this;
 	}
 
-	supports(condition: string, callback: (s: StyleSheetBuilder) => void) {
+	supports(condition: string, callback: (s: IStyleSheetBuilder) => void) {
 		const builder = new StyleSheetBuilder();
 		callback(builder);
 		this.rules.push({ type: "supports", condition, builder });
 		return this;
 	}
 
-	keyframes(name: string, callback: (k: KeyframesBuilder) => void) {
+	keyframes(name: string, callback: (k: IAtKeyframesBuilder) => void) {
 		const builder = new KeyframesBuilder(this);
 		callback(builder);
 		this.rules.push({ type: "keyframes", name, builder });
