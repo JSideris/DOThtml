@@ -1,4 +1,4 @@
-import { IDotCore, IDotCss } from "dothtml-interfaces";
+import { IDotCore, IDotCss, IDotStyleBuilder } from "dothtml-interfaces";
 import { DOT_VDOM_PROP_NAME } from "../constants";
 import Signal from "../reactivity/signal";
 import AttributeVNode from "../v-meta-nodes/attribute-v-node";
@@ -248,7 +248,7 @@ export default class ElementVdom extends Vdom{
 
 		if (typeof value === "function" && attr === "style") {
 			const builder = new BaseVStyle();
-			value(builder);
+			(value as any)(builder as unknown as IDotStyleBuilder);
 			value = new StyleVNode(builder);
 		}
 

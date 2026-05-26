@@ -1,5 +1,16 @@
 # dothtml
 
+## 6.5.0
+
+### Minor Changes
+
+- Upgraded theme provider to support stylesheets as a string rather than forcing use of the style builder. Also enhanced typing for many of the style-related callbacks.
+
+### Patch Changes
+
+- Updated dependencies
+  - dothtml-interfaces@6.5.0
+
 ## 6.4.1
 
 ### Patch Changes

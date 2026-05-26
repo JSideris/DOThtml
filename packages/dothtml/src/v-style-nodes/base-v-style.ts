@@ -3,7 +3,8 @@ import Signal from "../reactivity/signal";
 import cssProps from "../css/css-props";
 import { IDotStyleBuilder } from "dothtml-interfaces";
 
-export default class BaseVStyle implements IDotStyleBuilder {
+interface BaseVStyle extends IDotStyleBuilder {}
+class BaseVStyle {
 	[key: string]: any;
 	_vtype = "base-v-style";
 
@@ -53,6 +54,8 @@ export default class BaseVStyle implements IDotStyleBuilder {
 		return this.props;
 	}
 }
+
+export default BaseVStyle;
 
 // Generate fluent methods from cssProps.
 for (let key in cssProps) {

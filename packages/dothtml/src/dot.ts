@@ -13,7 +13,7 @@ import { ComponentVdom, HandledError } from "./vdom-nodes/component-vdom";
 import renderStylesheet from "./helpers/render-stylesheet";
 import BaseVStyle from "./v-style-nodes/base-v-style";
 import StyleVNode from "./v-meta-nodes/style-v-node";
-import { IDotCore, IDotCss, IDotComponent } from "dothtml-interfaces";
+import { IDotCore, IDotCss, IDotComponent, IDotStyleBuilder } from "dothtml-interfaces";
 import WindowWrapper from "./window-wrapper";
 import Binding from "./reactivity/binding";
 import Ref from "./reactivity/ref";
@@ -233,7 +233,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 (Vdom.prototype as any).style = function(c: string | Signal | Binding | IDotCss | ((s: BaseVStyle) => void)) {
 	if (typeof c === "function") {
 		const builder = new BaseVStyle();
-		c(builder);
+		(c as (s: BaseVStyle) => void)(builder);
 		this.attr("style", builder);
 	} else {
 		this.attr("style", c);
