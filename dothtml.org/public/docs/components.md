@@ -210,7 +210,7 @@ To define styles that are shared across all instances of a component, use the `s
 
 **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
 
-Additionally, `stylize()` can return a **theme function** (or a Signal of one) to provide **Contextual Theme Inheritance** to its entire component subtree.
+Additionally, `stylize()` can return a **theme function**, a **CSS string**, or a **Signal** of either to provide **Contextual Theme Inheritance** to its entire component subtree. When a string is provided, `html` and `body` selectors are automatically converted to `:host` for child components.
 
 ```javascript
 class MyComponent {

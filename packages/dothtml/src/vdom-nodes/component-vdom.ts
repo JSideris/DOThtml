@@ -631,9 +631,12 @@ export class ComponentVdom extends Vdom{
 					const applyTheme = (theme: any) => {
 						if (typeof theme === "function") {
 							theme(builder);
+						} else if (typeof theme === "string") {
+							builder.css(theme.replace(/\b(html|body)\b/g, ":host"));
 						} else if (theme instanceof Signal || isVType(theme, "signal") || theme instanceof Binding || isVType(theme, "binding") || theme instanceof Computed || isVType(theme, "computed")) {
 							const val = (theme instanceof Binding || isVType(theme, "binding")) ? (theme as any)._get() : (theme as any).value;
 							if (typeof val === "function") val(builder);
+							else if (typeof val === "string") builder.css(val.replace(/\b(html|body)\b/g, ":host"));
 						}
 					};
 
@@ -694,7 +697,8 @@ export class ComponentVdom extends Vdom{
 
 					if (component.stylize) {
 						const result = component.stylize(builder);
-						if (typeof result === "function" || ((result instanceof Signal || isVType(result, "signal") || result instanceof Binding || isVType(result, "binding") || result instanceof Computed || isVType(result, "computed")) && typeof ((result instanceof Binding || isVType(result, "binding")) ? (result as any)._get() : (result as any).value) === "function")) {
+						const resultValue = (result instanceof Signal || isVType(result, "signal") || result instanceof Binding || isVType(result, "binding") || result instanceof Computed || isVType(result, "computed")) ? ((result instanceof Binding || isVType(result, "binding")) ? (result as any)._get() : (result as any).value) : result;
+						if (typeof result === "function" || typeof result === "string" || typeof resultValue === "function" || typeof resultValue === "string") {
 							cvdom.providedTheme = result;
 							applyTheme(result);
 							
@@ -708,10 +712,6 @@ export class ComponentVdom extends Vdom{
 									else (result as any).unsubscribe(id);
 								});
 							}
-						} else if (typeof result === "string") {
-							const styleEl = document.createElement("style");
-							styleEl.textContent = result;
-							shadow.appendChild(styleEl);
 						} else if (result instanceof Signal || isVType(result, "signal") || result instanceof Binding || isVType(result, "binding") || result instanceof Computed || isVType(result, "computed")) {
 							const styleEl = document.createElement("style");
 							styleEl.id = "--dh-dynamic-style";

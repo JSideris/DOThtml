@@ -15,7 +15,8 @@ type StyleRule =
 	| { type: "media", condition: string, builder: StyleSheetBuilder }
 	| { type: "container", condition: string, builder: StyleSheetBuilder }
 	| { type: "supports", condition: string, builder: StyleSheetBuilder }
-	| { type: "keyframes", name: string, builder: KeyframesBuilder };
+	| { type: "keyframes", name: string, builder: KeyframesBuilder }
+	| { type: "raw", content: string };
 
 export default class StyleSheetBuilder {
 	private rules: Array<StyleRule> = [];
@@ -96,6 +97,11 @@ export default class StyleSheetBuilder {
 		const builder = new KeyframesBuilder(this);
 		callback(builder);
 		this.rules.push({ type: "keyframes", name, builder });
+		return this;
+	}
+
+	css(content: string) {
+		this.rules.push({ type: "raw", content });
 		return this;
 	}
 
@@ -236,6 +242,9 @@ export default class StyleSheetBuilder {
 			}
 			if (r.type === "keyframes") {
 				return `${indent}@keyframes ${r.name} {\n${r.builder.toString(indent + "  ")}\n${indent}}`;
+			}
+			if (r.type === "raw") {
+				return indent + r.content;
 			}
 
 			const props = this.formatPropsForBlock(r.style);

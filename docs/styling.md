@@ -22,6 +22,15 @@ The **Stylesheet Builder** is used to define the structure of a stylesheet, incl
     *   As the argument in a component's `hostStyle(s)` method.
     *   In the callback for at-rules like `.media(condition, m => ...)`.
 
+*   **Methods**:
+    *   `.rule(selector, callback)`: Define a new CSS rule.
+    *   `.class(name, callback)`: Shorthand for `.rule(".name", ...)`.
+    *   `.css(content)`: Inject a raw CSS string directly into the stylesheet.
+    *   `.media(condition, callback)`: Define a media query.
+    *   `.keyframes(name, callback)`: Define a keyframe animation.
+    *   `.container(condition, callback)`: Define a container query.
+    *   `.supports(condition, callback)`: Define a feature query.
+
 ## Fluent Style Builder
 
 Instead of using string-based styles or plain object literals, DOThtml uses a fluent **Property Builder** pattern. This provides type safety, IDE autocompletion, and automatic unit formatting.
@@ -337,8 +346,9 @@ DOThtml supports **Contextual Theme Inheritance**, allowing a parent component t
 
 ### Providing a Theme
 
-To provide a theme, a component's `stylize()` method can return a **theme function** (or a Signal of a theme function). This function will be automatically inherited and applied by all descendant components within their own Shadow Roots.
+To provide a theme, a component's `stylize()` method can return a **theme function**, a **CSS string**, or a **Signal** of either. This theme will be automatically inherited and applied by all descendant components within their own Shadow Roots.
 
+#### Using a Theme Function
 ```javascript
 class SectionTheme extends IDotComponent {
   stylize() {
@@ -350,6 +360,25 @@ class SectionTheme extends IDotComponent {
         .borderRadiusPx(8)
       );
     };
+  }
+  build(dot) {
+    return dot.div(dot.slot());
+  }
+}
+```
+
+#### Using a CSS String
+If you provide a CSS string, DOThtml automatically transforms `html` and `body` selectors into `:host` to ensure the styles apply correctly within the child components' Shadow Roots.
+
+```javascript
+class LegacyThemeProvider extends IDotComponent {
+  stylize() {
+    // Return a raw CSS string to be inherited by all descendants
+    return `
+      html { background-color: #f0f0f0; }
+      body { font-family: sans-serif; }
+      .btn { border-radius: 20px; }
+    `;
   }
   build(dot) {
     return dot.div(dot.slot());
