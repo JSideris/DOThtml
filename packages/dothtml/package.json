@@ -1,6 +1,6 @@
 {
   "name": "dothtml",
-  "version": "6.5.0",
+  "version": "6.5.1",
   "description": "DOThtml is a client-side web building framework written in TypeScript.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

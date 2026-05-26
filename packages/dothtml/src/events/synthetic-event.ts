@@ -12,7 +12,8 @@ export default class SyntheticEvent {
 
 	constructor(e: Event) {
 		this.nativeEvent = e;
-		this.target = e.target;
+		const path = e.composedPath();
+		this.target = path.length > 0 ? path[0] : e.target;
 		this.currentTarget = e.currentTarget;
 		this.type = e.type;
 		this.timeStamp = e.timeStamp;

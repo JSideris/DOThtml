@@ -100,7 +100,7 @@ export class EventManager {
 			(syntheticEvent as any).currentTarget = element;
 
 			for (const { handler, modifiers } of [...handlers]) {
-				if (modifiers.includes("self") && nativeEvent.target !== element) continue;
+				if (modifiers.includes("self") && syntheticEvent.target !== element) continue;
 
 				if (modifiers.includes("stop")) syntheticEvent.stopPropagation();
 				if (modifiers.includes("prevent")) syntheticEvent.preventDefault();

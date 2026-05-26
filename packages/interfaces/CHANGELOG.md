@@ -1,5 +1,11 @@
 # dothtml-interfaces
 
+## 6.5.1
+
+### Patch Changes
+
+- Fix bug with bindings where SyntheticEvent.target was set to the component's host element, the shadow DOM, rather than the actual element that triggered the event.
+
 ## 6.5.0
 
 ### Minor Changes
