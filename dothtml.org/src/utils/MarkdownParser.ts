@@ -14,6 +14,8 @@ export default class MarkdownParser {
 	public static parse(markdown: string): string {
 		if (!markdown) return "";
 
+		const slugify = (text: string) => text.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '');
+
 		// Replace placeholders
 		let html = markdown.replace(/%%DOTHTML_COMPRESSED_SIZE%%/g, DOTHTML_COMPRESSED_SIZE.toString());
 		html = html.replace(/%%DOTHTML_COMPRESSED_SIZE_FULL%%/g, DOTHTML_COMPRESSED_SIZE_FULL.toString());
@@ -66,12 +68,12 @@ export default class MarkdownParser {
 		html = html.replace(/^---$/gm, "<hr />");
 
 		// Headings (# h1, ## h2, etc.)
-		html = html.replace(/^###### (.*$)/gm, "<h6>$1</h6>");
-		html = html.replace(/^##### (.*$)/gm, "<h5>$1</h5>");
-		html = html.replace(/^#### (.*$)/gm, "<h4>$1</h4>");
-		html = html.replace(/^### (.*$)/gm, "<h3>$1</h3>");
-		html = html.replace(/^## (.*$)/gm, "<h2>$1</h2>");
-		html = html.replace(/^# (.*$)/gm, "<h1>$1</h1>");
+		html = html.replace(/^###### (.*$)/gm, (match, text) => `<h6 id="${slugify(text)}">${text}</h6>`);
+		html = html.replace(/^##### (.*$)/gm, (match, text) => `<h5 id="${slugify(text)}">${text}</h5>`);
+		html = html.replace(/^#### (.*$)/gm, (match, text) => `<h4 id="${slugify(text)}">${text}</h4>`);
+		html = html.replace(/^### (.*$)/gm, (match, text) => `<h3 id="${slugify(text)}">${text}</h3>`);
+		html = html.replace(/^## (.*$)/gm, (match, text) => `<h2 id="${slugify(text)}">${text}</h2>`);
+		html = html.replace(/^# (.*$)/gm, (match, text) => `<h1 id="${slugify(text)}">${text}</h1>`);
 
 		// Blockquotes
 		// Matches one or more lines starting with &gt;

@@ -12,6 +12,6 @@ export function throwError(code: number, message: string): never {
 	if (IS_DEV) {
 		throw new Error(`[DOThtml] ${message}`);
 	} else {
-		throw new Error(`[DOThtml] Error ${code}. See https://dothtml.org/errors#${code}`);
+		throw new Error(`[DOThtml] Error ${code}. See https://dothtml.org/docs/errors.md#${code}`);
 	}
 }

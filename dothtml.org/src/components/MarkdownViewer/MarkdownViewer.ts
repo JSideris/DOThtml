@@ -32,6 +32,18 @@ export default class MarkdownViewer extends DotComponent<MarkdownViewerProps> {
 			// Use concurrent rendering for parsing and updating content
 			const html = MarkdownParser.parse(markdown);
 			this.content.setValue(html, Priority.Background);
+
+			// Scroll to fragment if present
+			setTimeout(() => {
+				const hash = window.location.hash;
+				if (hash) {
+					const id = hash.substring(1);
+					const el = document.getElementById(id);
+					if (el) {
+						el.scrollIntoView({ behavior: "smooth" });
+					}
+				}
+			}, 100);
 		} catch (error) {
 			console.error("Error loading markdown:", error);
 			this.content.setValue(`<p style="color: red;">Error loading documentation: ${error instanceof Error ? error.message : String(error)}</p>`, Priority.Normal);

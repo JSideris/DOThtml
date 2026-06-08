@@ -16,6 +16,8 @@ const BENCH_TS_PATH = path.join(GEN_DIR, 'benchmarks.ts');
 
 const PUBLIC_DOCS_DIR = path.join(ROOT, 'dothtml.org/public/docs');
 const LLMS_FULL_FILE = path.join(ROOT, 'dothtml.org/public/llms-full.txt');
+const ERRORS_MD_PATH = path.join(ROOT, 'docs/errors.md');
+const DOTHTML_SRC_DIR = path.join(ROOT, 'packages/dothtml/src');
 
 // 1. Get Version
 console.log('--- 1. Extracting Version ---');
@@ -189,8 +191,44 @@ files.sort().forEach(file => {
 	fs.writeFileSync(LLMS_FULL_FILE, fullContent);
 	console.log(`Processed ${files.length} docs and generated ${LLMS_FULL_FILE}`);
 
-// 7. Update create-dothtml templates
-console.log('\n--- 7. Updating create-dothtml templates ---');
+// 7. Harvest Errors
+console.log('\n--- 7. Harvesting Errors ---');
+function harvestErrors(dir, errorMap = {}) {
+	const items = fs.readdirSync(dir);
+	for (const item of items) {
+		const fullPath = path.join(dir, item);
+		const stat = fs.statSync(fullPath);
+		if (stat.isDirectory()) {
+			harvestErrors(fullPath, errorMap);
+		} else if (item.endsWith('.ts') || item.endsWith('.js')) {
+			const content = fs.readFileSync(fullPath, 'utf8');
+			// Match throwError(code, "message") or throwError(code, `message`)
+			// We handle multi-line messages and escaped quotes
+			const regex = /throwError\(\s*(\d+)\s*,\s*(["'`])([\s\S]*?)\2\s*\)/g;
+			let match;
+			while ((match = regex.exec(content)) !== null) {
+				const code = match[1];
+				const message = match[3].trim();
+				errorMap[code] = message;
+			}
+		}
+	}
+	return errorMap;
+}
+
+const errors = harvestErrors(DOTHTML_SRC_DIR);
+const sortedCodes = Object.keys(errors).sort((a, b) => parseInt(a) - parseInt(b));
+
+let errorsMdContent = `# DOThtml Error Codes\n\nThis page contains a reference for all framework-level errors thrown by DOThtml.\n\n`;
+for (const code of sortedCodes) {
+	errorsMdContent += `## ${code}\n**Message:** ${errors[code]}\n\n`;
+}
+
+fs.writeFileSync(ERRORS_MD_PATH, errorsMdContent);
+console.log(`Generated ${ERRORS_MD_PATH} with ${sortedCodes.length} error codes.`);
+
+// 8. Update create-dothtml templates
+console.log('\n--- 8. Updating create-dothtml templates ---');
 const CREATE_DOTHTML_TEMPLATES_DIR = path.join(ROOT, 'packages/create-dothtml/templates');
 if (fs.existsSync(CREATE_DOTHTML_TEMPLATES_DIR)) {
 	const templates = fs.readdirSync(CREATE_DOTHTML_TEMPLATES_DIR);

@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.5.3
+
+### Patch Changes
+
+- Linking to error pages md on project website from non-dev browser console.
+- Updated dependencies
+  - dothtml-interfaces@6.5.3
+
 ## 6.5.2
 
 ### Patch Changes

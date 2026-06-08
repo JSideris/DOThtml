@@ -20,6 +20,7 @@
 - [Routing](https://dothtml.org/docs/routing.md): Reactive routing with navigation guards and lazy loading.
 - [Popups](https://dothtml.org/docs/popups.md): Multi-window orchestration layer with shared state and style inheritance.
 - [Error Handling](https://dothtml.org/docs/error-handling.md): Component-level error boundaries and global error management.
+- [Error Codes](https://dothtml.org/docs/errors.md): Reference for framework error codes.
 - [TypeScript](https://dothtml.org/docs/typescript.md): First-class TypeScript support with full type safety for components, props, and refs.
 
 ## Deep Dives

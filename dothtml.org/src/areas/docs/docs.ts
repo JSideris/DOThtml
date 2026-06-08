@@ -29,6 +29,7 @@ export default class Docs extends DotComponent<DocsProps> {
 		{ id: "routing", label: "Routing" },
 		{ id: "popups", label: "Popups" },
 		{ id: "error-handling", label: "Error Handling" },
+		{ id: "errors", label: "Error Codes" },
 		{ id: "typescript", label: "TypeScript Reference" },
 		{ id: "benchmarks", label: "Benchmarks" },
 		{ id: "detailed-features", label: "Detailed Features" },
