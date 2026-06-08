@@ -9,6 +9,7 @@ import { scheduler } from "../reactivity/scheduler";
 import { IDotCore } from "dothtml-interfaces";
 import { getCurrentComponent, pushComponent, popComponent } from "./component-context";
 import { ComponentVdom } from "./component-vdom";
+import { throwError } from "../helpers/errors";
 
 type DatumMap = {
 	vdom: Vdom; 
@@ -169,6 +170,9 @@ export default class CollectionVdom extends Vdom{
 	}
 
 	private batchRenderNewItems(items: DatumMap[], parent: Node, insertBefore: Node): void {
+		if (!parent) {
+			throwError(5, "Cannot batch render items into a null parent. The collection's anchor nodes may have been removed from the DOM.");
+		}
 		const fragment = parent.ownerDocument.createDocumentFragment();
 		for (const item of items) {
 			item.vdom._render(fragment as unknown as HTMLElement);

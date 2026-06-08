@@ -1,4 +1,5 @@
 import { IDotCore } from "dothtml-interfaces";
+import { throwError } from "../helpers/errors";
 
 export abstract class Vdom{
 
@@ -35,7 +36,7 @@ export abstract class Vdom{
 		let nodes = this._getNodes();
 		if (nodes.length === 0) return;
 		let p = reference?.parentElement || parent;
-		if (!p) throw new Error("Internal Error: Cannot move nodes without a parent.");
+		if (!p) throwError(3, "Attempted to move nodes into a detached or null parent. The container may have been cleared externally.");
 		
 		for (let i = 0; i < nodes.length; i++) {
 			if (nodes[i] === reference) return;
@@ -68,6 +69,9 @@ export abstract class Vdom{
 		while(dummy.childNodes.length > 0){
 			let cn = dummy.childNodes[0];
 			cn.parentElement.removeChild(cn);
+			if (!reference.parentElement) {
+				throwError(4, "Attempted to render a node before a reference node that is detached from the DOM. This usually happens if the container was cleared manually (e.g., via innerHTML or .empty()) while DOThtml was managing it.");
+			}
 			reference.parentElement.insertBefore(cn, reference);
 		}
 	}

@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.5.1)
+# Benchmarks (v6.5.2)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **24.4 kB**
+- **DOThtml**: **24.7 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **24.4 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **24.7 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -238,11 +238,18 @@ class UserProfile {
     build(dot) {
         return dot.div(
             dot.h2(this.props.username),
-            dot.p(`Age: ${this.props.age}`)
+            dot.p(this.props.age.bindAs(v => `Age: ${v}`))
         );
     }
 }
 ```
+
+### Important Note on Props
+When a component receives a reactive value (a `Signal` or `Binding`) as a prop, the prop itself remains a reactive object inside the component. 
+
+*   **For display**: You can pass the prop directly to a DOThtml method (e.g., `dot.div(this.props.name)`).
+*   **For logic**: You must access the current value using `.value` (e.g., `if (this.props.age.value > 18)`).
+*   **For string interpolation**: Use `.bindAs()` to create a reactive string (e.g., `this.props.age.bindAs(v => "Age: " + v)`).
 
 ### Validation Rules
 - `type`: One of `String`, `Number`, `Boolean`, `Object`, `Array`.
@@ -948,17 +955,48 @@ Refs are specialized reactive signals used to obtain direct access to DOM elemen
 
 When you pass a `Signal` or a `Binding` as a prop to a component, the component automatically subscribes to it. If the value changes, the component's `build()` function is re-called, and the component re-renders.
 
+### Accessing Prop Values
+
+Inside the `build()` method, props passed as signals remain as Signal objects. This allows you to pass them directly to other elements for reactive updates. However, if you need to perform logic or comparisons, you must access the current value using the `.value` property.
+
 ```javascript
-class MyComponent extends IDotComponent {
+class MyComponent extends DotComponent {
     build() {
-        return dot.div(this.props.title);
+        // Correct: Accessing .value for comparison
+        const isVisible = this.props.hidden.value === false;
+        
+        return dot.div({
+            class: {
+                "visible": isVisible,
+                "hidden": !isVisible
+            }
+        },
+            // Correct: Passing the signal directly for reactive text
+            dot.div(this.props.title)
+        );
     }
 }
+```
 
-const title = dot.state("Initial Title");
-dot.mount(new MyComponent(), { title: title });
+> **Warning**: Comparing a Signal object directly to a value (e.g., `this.props.hidden === false`) will always return `false` because you are comparing the Signal object itself, not its value.
 
-title.value = "New Title"; // MyComponent re-renders automatically.
+## Reactive Attributes
+
+Reactivity can also be applied to element attributes. When a `Signal` or `Binding` is passed as an attribute value, DOThtml automatically updates that attribute whenever the signal changes.
+
+```javascript
+const isActive = dot.state(true);
+dot.div({ class: { "active": isActive } }); // Updates class when isActive changes.
+```
+
+You can also use `.bindAs()` to transform a signal's value specifically for an attribute:
+
+```javascript
+const count = dot.state(5);
+dot.div({ 
+    "data-count": count.bindAs(v => v * 10),
+    class: { "high-count": count.bindAs(v => v > 10) }
+});
 ```
 
 ## Reactive Styles
@@ -1190,11 +1228,17 @@ dot.img({ src: "logo.png", alt: "Logo" });
 
 ### Special Attribute Handling
 
-- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans.
+- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans, `Signals`, or `Bindings`.
   ```javascript
+  // Static classes
   dot.div({ class: ["btn", "btn-primary"] });
   dot.div({ class: { "active": true, "disabled": false } });
+
+  // Reactive classes
+  const isActive = dot.state(true);
+  dot.div({ class: { "active": isActive } });
   ```
+  > **Note**: When using an object for classes, DOThtml checks the truthiness of the values. **Functions are not executed**; they are treated as truthy. To use logic for a class, use a `Signal` or a `Binding`.
 - **Styles**: While you can pass a `style` string or object in the attributes, we recommend using the fluent [Styling](./styling.md) API for better performance and reactivity.
 - **Events**: Event listeners can be added by prefixing the event name with `on` (e.g., `onClick`, `onInput`).
 

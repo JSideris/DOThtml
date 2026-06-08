@@ -1,5 +1,11 @@
 # create-dothtml
 
+## 6.5.2
+
+### Patch Changes
+
+- Better error messages.
+
 ## 6.5.1
 
 ### Patch Changes

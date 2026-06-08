@@ -32,6 +32,7 @@ import { FragmentVdom } from "./vdom-nodes/fragment-vdom";
 import { SlotVdom } from "./vdom-nodes/slot-vdom";
 import { VERSION } from "./version";
 import { isVType } from "./helpers/tools";
+import { throwError } from "./helpers/errors";
 
 function reduceReactive(value: any){
 	if(isVType(value, "signal")) return (value as Signal).bind();
@@ -206,7 +207,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		}
 		(lastChild as any).addCondition(reduceReactive(condition), thenNode, seal);
 	} else {
-		throw new Error("Can't branch off of a non-conditional node.");
+		throwError(6, "Can't branch off of a non-conditional node.");
 	}
 	return this;
 };
@@ -225,7 +226,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 	if (target && (target instanceof ElementVdom || isVType(target, "element"))) {
 		(target as any).setAttr(A, c);
 	} else {
-		throw new Error(`Invalid node to set ${A} attribute.`);
+		throwError(7, `Invalid node to set ${A} attribute.`);
 	}
 	return this;
 };
@@ -252,7 +253,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		(target as any).addEventListener(event, callback);
 	}
 	else{
-		throw new Error(`Invalid node to set ${event} listener.`);
+		throwError(8, `Invalid node to set ${event} listener.`);
 	}
 	return this;
 };
@@ -405,7 +406,7 @@ const makeDot = ()=>{
 			return _dot(targetWindow.document.querySelectorAll(targetSelector)[0]);
 		}
 		else{
-			throw new Error("Invalid render target.");
+			throwError(9, "Invalid render target.");
 		}
 	}
 
@@ -596,7 +597,7 @@ const dot = IS_DEV ? new Proxy(dotInstance, {
 			return Reflect.get(target, prop, receiver);
 		}
 		return (...args: any[]) => {
-			throw new Error(`[DOThtml] "${prop}" is not a valid method on the dot object.`);
+			throwError(10, `"${prop}" is not a valid method on the dot object.`);
 		};
 	}
 }) : dotInstance;

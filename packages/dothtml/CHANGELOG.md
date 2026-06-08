@@ -1,5 +1,13 @@
 # dothtml
 
+## 6.5.2
+
+### Patch Changes
+
+- Better error messages.
+- Updated dependencies
+  - dothtml-interfaces@6.5.2
+
 ## 6.5.1
 
 ### Patch Changes

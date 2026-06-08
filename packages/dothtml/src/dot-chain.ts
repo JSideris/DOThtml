@@ -6,6 +6,7 @@ import { SlotVdom } from "./vdom-nodes/slot-vdom";
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
 import { isVType } from "./helpers/tools";
 import { IS_DEV } from "./constants";
+import { throwError } from "./helpers/errors";
 
 export class DotChain extends Vdom {
 	_root: Vdom;
@@ -22,7 +23,7 @@ export class DotChain extends Vdom {
 						return Reflect.get(target, prop, receiver);
 					}
 					return (...args: any[]) => {
-						throw new Error(`[DOThtml] "${prop}" is not a valid method on this DOThtml chain.`);
+						throwError(11, `"${prop}" is not a valid method on this DOThtml chain.`);
 					};
 				}
 			}) as any;
