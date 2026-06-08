@@ -5,6 +5,7 @@ import { ComponentVdom } from "./vdom-nodes/component-vdom";
 import { SlotVdom } from "./vdom-nodes/slot-vdom";
 import { ContainerVdom } from "./vdom-nodes/container-vdom";
 import { isVType } from "./helpers/tools";
+import { IS_DEV } from "./constants";
 
 export class DotChain extends Vdom {
 	_root: Vdom;
@@ -13,6 +14,19 @@ export class DotChain extends Vdom {
 	constructor(dot: IDotCore, initial: Vdom) {
 		super(dot);
 		this._root = initial;
+
+		if (IS_DEV) {
+			return new Proxy(this, {
+				get(target, prop, receiver) {
+					if (prop in target || typeof prop !== "string") {
+						return Reflect.get(target, prop, receiver);
+					}
+					return (...args: any[]) => {
+						throw new Error(`[DOThtml] "${prop}" is not a valid method on this DOThtml chain.`);
+					};
+				}
+			}) as any;
+		}
 	}
 
 	_addChild(node: Vdom) {

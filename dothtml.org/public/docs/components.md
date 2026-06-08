@@ -91,11 +91,18 @@ class UserProfile {
     build(dot) {
         return dot.div(
             dot.h2(this.props.username),
-            dot.p(`Age: ${this.props.age}`)
+            dot.p(this.props.age.bindAs(v => `Age: ${v}`))
         );
     }
 }
 ```
+
+### Important Note on Props
+When a component receives a reactive value (a `Signal` or `Binding`) as a prop, the prop itself remains a reactive object inside the component. 
+
+*   **For display**: You can pass the prop directly to a DOThtml method (e.g., `dot.div(this.props.name)`).
+*   **For logic**: You must access the current value using `.value` (e.g., `if (this.props.age.value > 18)`).
+*   **For string interpolation**: Use `.bindAs()` to create a reactive string (e.g., `this.props.age.bindAs(v => "Age: " + v)`).
 
 ### Validation Rules
 - `type`: One of `String`, `Number`, `Boolean`, `Object`, `Array`.

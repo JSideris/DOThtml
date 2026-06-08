@@ -66,17 +66,48 @@ Refs are specialized reactive signals used to obtain direct access to DOM elemen
 
 When you pass a `Signal` or a `Binding` as a prop to a component, the component automatically subscribes to it. If the value changes, the component's `build()` function is re-called, and the component re-renders.
 
+### Accessing Prop Values
+
+Inside the `build()` method, props passed as signals remain as Signal objects. This allows you to pass them directly to other elements for reactive updates. However, if you need to perform logic or comparisons, you must access the current value using the `.value` property.
+
 ```javascript
-class MyComponent extends IDotComponent {
+class MyComponent extends DotComponent {
     build() {
-        return dot.div(this.props.title);
+        // Correct: Accessing .value for comparison
+        const isVisible = this.props.hidden.value === false;
+        
+        return dot.div({
+            class: {
+                "visible": isVisible,
+                "hidden": !isVisible
+            }
+        },
+            // Correct: Passing the signal directly for reactive text
+            dot.div(this.props.title)
+        );
     }
 }
+```
 
-const title = dot.state("Initial Title");
-dot.mount(new MyComponent(), { title: title });
+> **Warning**: Comparing a Signal object directly to a value (e.g., `this.props.hidden === false`) will always return `false` because you are comparing the Signal object itself, not its value.
 
-title.value = "New Title"; // MyComponent re-renders automatically.
+## Reactive Attributes
+
+Reactivity can also be applied to element attributes. When a `Signal` or `Binding` is passed as an attribute value, DOThtml automatically updates that attribute whenever the signal changes.
+
+```javascript
+const isActive = dot.state(true);
+dot.div({ class: { "active": isActive } }); // Updates class when isActive changes.
+```
+
+You can also use `.bindAs()` to transform a signal's value specifically for an attribute:
+
+```javascript
+const count = dot.state(5);
+dot.div({ 
+    "data-count": count.bindAs(v => v * 10),
+    class: { "high-count": count.bindAs(v => v > 10) }
+});
 ```
 
 ## Reactive Styles

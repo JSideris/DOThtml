@@ -588,7 +588,18 @@ const makeDot = ()=>{
 	return _dot as unknown as IDotCore;
 }
 
-const dot = makeDot();
+const dotInstance = makeDot();
+
+const dot = IS_DEV ? new Proxy(dotInstance, {
+	get(target, prop, receiver) {
+		if (prop in target || typeof prop !== "string") {
+			return Reflect.get(target, prop, receiver);
+		}
+		return (...args: any[]) => {
+			throw new Error(`[DOThtml] "${prop}" is not a valid method on the dot object.`);
+		};
+	}
+}) : dotInstance;
 
 if (IS_DEV && typeof window !== "undefined") {
 	(window as any).dot = dot;

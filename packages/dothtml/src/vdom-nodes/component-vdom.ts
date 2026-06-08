@@ -314,6 +314,10 @@ export class ComponentVdom extends Vdom{
 
 		this.lastError = err;
 
+		if (IS_DEV) {
+			console.error("[DOThtml] Error caught in component:", err);
+		}
+
 		if (this.component.errorCaught) {
 			try {
 				const fallback = this.component.errorCaught(err);
@@ -462,6 +466,8 @@ export class ComponentVdom extends Vdom{
 	private renderErrorBox(err: any) {
 		const errorBox = document.createElement("div");
 		errorBox.style.cssText = `
+			display: block !important;
+			visibility: visible !important;
 			background-color: rgba(255, 0, 0, 0.9);
 			color: white;
 			padding: 20px;

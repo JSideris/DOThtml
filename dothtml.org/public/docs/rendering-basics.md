@@ -45,11 +45,17 @@ dot.img({ src: "logo.png", alt: "Logo" });
 
 ### Special Attribute Handling
 
-- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans.
+- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans, `Signals`, or `Bindings`.
   ```javascript
+  // Static classes
   dot.div({ class: ["btn", "btn-primary"] });
   dot.div({ class: { "active": true, "disabled": false } });
+
+  // Reactive classes
+  const isActive = dot.state(true);
+  dot.div({ class: { "active": isActive } });
   ```
+  > **Note**: When using an object for classes, DOThtml checks the truthiness of the values. **Functions are not executed**; they are treated as truthy. To use logic for a class, use a `Signal` or a `Binding`.
 - **Styles**: While you can pass a `style` string or object in the attributes, we recommend using the fluent [Styling](./styling.md) API for better performance and reactivity.
 - **Events**: Event listeners can be added by prefixing the event name with `on` (e.g., `onClick`, `onInput`).
 
