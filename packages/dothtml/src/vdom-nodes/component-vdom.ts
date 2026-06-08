@@ -919,7 +919,7 @@ export class ComponentVdom extends Vdom{
 				this.component.onEnter();
 			}
 		} catch (err) {
-			if (this.shadowEl && !this.shadowEl.parentElement) {
+			if (this.shadowEl && !this.shadowEl.parentNode) {
 				node.appendChild(this.shadowEl);
 			}
 			if (err instanceof HandledError || isVType(err, "handled-error")) return;

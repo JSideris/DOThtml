@@ -39,7 +39,7 @@ export class ConditionalVdom extends Vdom{
 		if(this._isRendered){
 			// This means it's rendered.
 
-			this.renderClause(C, this.conditions[0].startAnchor.parentElement);
+			this.renderClause(C, this.conditions[0].startAnchor.parentNode as HTMLElement);
 
 			// If we're rendered but none of the previous conditions were true.
 			if(this.renderedIndex == -1){
@@ -87,8 +87,8 @@ export class ConditionalVdom extends Vdom{
 
 		let start = C.startAnchor;
 		let end = C.endAnchor;
-		start.parentElement.removeChild(start);
-		end.parentElement.removeChild(end);
+		start.parentNode.removeChild(start);
+		end.parentNode.removeChild(end);
 		C.startAnchor = null;
 		C.endAnchor = null;
 		C.vNode._unrender();

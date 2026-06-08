@@ -83,8 +83,8 @@ export class ReactiveVdom extends Vdom {
 		}
 
 		removeNodesBetween(this.beforeNode, this.afterNode);
-		if (this.beforeNode.parentElement) this.beforeNode.parentElement.removeChild(this.beforeNode);
-		if (this.afterNode.parentElement) this.afterNode.parentElement.removeChild(this.afterNode);
+		if (this.beforeNode.parentNode) this.beforeNode.parentNode.removeChild(this.beforeNode);
+		if (this.afterNode.parentNode) this.afterNode.parentNode.removeChild(this.afterNode);
 		this.beforeNode = null;
 		this.afterNode = null;
 	}

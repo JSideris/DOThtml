@@ -1,5 +1,11 @@
 # create-dothtml
 
+## 6.5.4
+
+### Patch Changes
+
+- Support nested reactivity during batch rendering by switching from parentElement to parentNode for DOM validation.
+
 ## 6.5.3
 
 ### Patch Changes

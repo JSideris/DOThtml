@@ -84,12 +84,12 @@ export default class CollectionVdom extends Vdom{
 		for(let i = 0; i < this.mappedItems.length; i++){
 			let I = this.mappedItems[i];
 			I.vdom._unrender();
-			I.afterNode.parentElement.removeChild(I.afterNode);
+			I.afterNode.parentNode.removeChild(I.afterNode);
 		}
 		this.mappedItems.length = 0;
 
-		this.startNode.parentElement.removeChild(this.startNode);
-		this.endNode.parentElement.removeChild(this.endNode);
+		this.startNode.parentNode.removeChild(this.startNode);
+		this.endNode.parentNode.removeChild(this.endNode);
 		this.startNode = null;
 		this.endNode = null;
 	}
@@ -120,7 +120,7 @@ export default class CollectionVdom extends Vdom{
 
 	private isItemPositionedAfter(item: DatumMap, anchor: Node): boolean {
 		const nodes = item.vdom._getNodes();
-		if (!nodes.length || !anchor.parentElement) return false;
+		if (!nodes.length || !anchor.parentNode) return false;
 		if (nodes[0] !== anchor.nextSibling) return false;
 		const lastNode = nodes[nodes.length - 1];
 		return item.afterNode === lastNode.nextSibling;
@@ -188,13 +188,13 @@ export default class CollectionVdom extends Vdom{
 		const result = item.vdom._unrenderAsync();
 		if (result instanceof Promise) {
 			return result.then(() => {
-				if (item.afterNode.parentElement) {
-					item.afterNode.parentElement.removeChild(item.afterNode);
+				if (item.afterNode.parentNode) {
+					item.afterNode.parentNode.removeChild(item.afterNode);
 				}
 			});
 		}
-		if (item.afterNode.parentElement) {
-			item.afterNode.parentElement.removeChild(item.afterNode);
+		if (item.afterNode.parentNode) {
+			item.afterNode.parentNode.removeChild(item.afterNode);
 		}
 	}
 
@@ -330,7 +330,7 @@ export default class CollectionVdom extends Vdom{
 
 						if (runLength >= 2) {
 							const batch = state.nextMappedItems.slice(state.currentIndex, state.currentIndex + runLength);
-							const parent = state.lastNode.parentElement;
+							const parent = state.lastNode.parentNode;
 							const insertBefore = this.getInsertBeforeAnchor(state.currentIndex + runLength, state.nextMappedItems);
 							this.batchRenderNewItems(batch, parent, insertBefore);
 
@@ -341,14 +341,14 @@ export default class CollectionVdom extends Vdom{
 							state.currentIndex += runLength;
 						} else {
 							item.vdom._renderAfter(state.lastNode);
-							state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+							state.lastNode.parentNode.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
 							state.lastNode = item.afterNode;
 							this.mappedItems.push(item);
 							state.currentIndex++;
 						}
 					} else if (!this.isItemPositionedAfter(item, state.lastNode)) {
-						item.vdom._moveBefore(state.lastNode.nextSibling, state.lastNode.parentElement);
-						state.lastNode.parentElement.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
+						item.vdom._moveBefore(state.lastNode.nextSibling, state.lastNode.parentNode);
+						state.lastNode.parentNode.insertBefore(item.afterNode, item.vdom._getNodes().slice(-1)[0].nextSibling);
 						state.lastNode = item.afterNode;
 						this.mappedItems.push(item);
 						state.currentIndex++;

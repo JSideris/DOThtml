@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.5.3)
+# Benchmarks (v6.5.4)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -690,7 +690,7 @@ This page contains a reference for all framework-level errors thrown by DOThtml.
 **Message:** Attempted to move nodes into a detached or null parent. The container may have been cleared externally.
 
 ## 4
-**Message:** Attempted to render a node before a reference node that is detached from the DOM. This usually happens if the container was cleared manually (e.g., via innerHTML or .empty()) while DOThtml was managing it.
+**Message:** Attempted to perform a DOM operation on a node with no parent. This can happen if the container was cleared externally or if there is a conflict during batch rendering.
 
 ## 5
 **Message:** Cannot batch render items into a null parent. The collection's anchor nodes may have been removed from the DOM.

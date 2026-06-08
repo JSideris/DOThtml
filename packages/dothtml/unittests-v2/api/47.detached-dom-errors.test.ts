@@ -25,7 +25,7 @@ describe("Detached DOM Error Handling", () => {
 
 		expect(() => {
 			(dot.div("new") as any)._renderBefore(refNode);
-		}).toThrow(/\[DOThtml\] Attempted to render a node before a reference node that is detached from the DOM/);
+		}).toThrow(/\[DOThtml\] Attempted to perform a DOM operation on a node with no parent/);
 	});
 
 	test("CollectionVdom throws descriptive error when parent is null during batch render", () => {

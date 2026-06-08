@@ -35,7 +35,7 @@ export abstract class Vdom{
 	_moveBefore(reference: Node, parent?: Node){
 		let nodes = this._getNodes();
 		if (nodes.length === 0) return;
-		let p = reference?.parentElement || parent;
+		let p = reference?.parentNode || parent;
 		if (!p) throwError(3, "Attempted to move nodes into a detached or null parent. The container may have been cleared externally.");
 		
 		for (let i = 0; i < nodes.length; i++) {
@@ -68,11 +68,12 @@ export abstract class Vdom{
 		this._render(dummy);
 		while(dummy.childNodes.length > 0){
 			let cn = dummy.childNodes[0];
-			cn.parentElement.removeChild(cn);
-			if (!reference.parentElement) {
-				throwError(4, "Attempted to render a node before a reference node that is detached from the DOM. This usually happens if the container was cleared manually (e.g., via innerHTML or .empty()) while DOThtml was managing it.");
+			cn.parentNode.removeChild(cn);
+			const parent = reference.parentNode;
+			if (!parent) {
+				throwError(4, "Attempted to perform a DOM operation on a node with no parent. This can happen if the container was cleared externally or if there is a conflict during batch rendering.");
 			}
-			reference.parentElement.insertBefore(cn, reference);
+			parent.insertBefore(cn, reference);
 		}
 	}
 	_renderAfter(reference: Node){
@@ -81,9 +82,13 @@ export abstract class Vdom{
 		}
 		else{
 			let temp = reference.ownerDocument.createTextNode("");
-			reference.parentElement.appendChild(temp);
+			const parent = reference.parentNode;
+			if (!parent) {
+				throwError(4, "Attempted to perform a DOM operation on a node with no parent. This can happen if the container was cleared externally or if there is a conflict during batch rendering.");
+			}
+			parent.appendChild(temp);
 			this._renderBefore(temp);
-			temp.parentElement.removeChild(temp);
+			temp.parentNode.removeChild(temp);
 		}
 	}
 
