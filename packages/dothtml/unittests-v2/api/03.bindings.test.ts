@@ -516,6 +516,58 @@ describe("Conditional w/ binding.", () => {
 	});
 });
 
+describe("Conditional w/ computed.", () => {
+	test("Sibling when with mutually exclusive computeds.", () => {
+		const view = dot.state<"a" | "b">("a");
+		const isA = dot.computed(() => view.value === "a");
+		const isB = dot.computed(() => view.value === "b");
+
+		dot(document.body).div(
+			dot.when(isA, dot.p("A"))
+			.when(isB, dot.p("B"))
+		);
+
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("A"))));
+
+		view.value = "b";
+		dot.flushSync();
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.div(dot.p("B"))));
+	});
+
+	test("When computed false uses otherwise.", () => {
+		const flag = dot.state(false);
+		const isTrue = dot.computed(() => flag.value);
+
+		dot(document.body).when(isTrue, dot.p("yes")).otherwise(dot.p("no"));
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("no")));
+
+		flag.value = true;
+		dot.flushSync();
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("yes")));
+	});
+
+	test("OtherwiseWhen with computed middle branch.", () => {
+		const mode = dot.state(1);
+		const isFirst = dot.computed(() => mode.value === 1);
+		const isSecond = dot.computed(() => mode.value === 2);
+
+		dot(document.body)
+			.when(isFirst, dot.p("a"))
+			.otherwiseWhen(isSecond, dot.p("b"))
+			.otherwise(dot.p("c"));
+
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a")));
+
+		mode.value = 2;
+		dot.flushSync();
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("b")));
+
+		mode.value = 3;
+		dot.flushSync();
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("c")));
+	});
+});
+
 describe("Iteration w/ binding.", () => {
 	// Bonud arrays.
 	// test.only("Basic array.", ()=>{

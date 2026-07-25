@@ -4,6 +4,7 @@
 
 ### Patch Changes
 
+- Fix `dot.when` ignoring `dot.computed` conditions by unwrapping Computed signals in `reduceReactive`.
 - Support nested reactivity during batch rendering by switching from parentElement to parentNode for DOM validation.
 - Updated dependencies
   - dothtml-interfaces@6.5.4

@@ -35,8 +35,10 @@ import { isVType } from "./helpers/tools";
 import { throwError } from "./helpers/errors";
 
 function reduceReactive(value: any){
-	if(isVType(value, "signal")) return (value as Signal).bind();
-	else return value;
+	if (value instanceof Signal || isVType(value, ["signal", "computed"]) || value?._isSignal === true) {
+		return (value as Signal).bind();
+	}
+	return value;
 }
 
 function promote(vdom: Vdom): DotChain {
