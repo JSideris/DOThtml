@@ -8,3 +8,6 @@ dist
 packages/dothtml/src/version.ts
 packages/interfaces/src/version.ts
 dothtml.org/src/generated/version.ts
+
+# Decomposer breadcrumbs
+.decomposer/
