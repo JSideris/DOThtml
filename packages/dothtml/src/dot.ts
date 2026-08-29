@@ -41,6 +41,13 @@ function reduceReactive(value: any){
 	return value;
 }
 
+function promoteGetter(dot: IDotCore, value: any) {
+	if (typeof value === "function" && value.length === 0 && !value.prototype?.build) {
+		return dot.computed(value);
+	}
+	return value;
+}
+
 function promote(vdom: Vdom): DotChain {
 	if (vdom instanceof DotChain || isVType(vdom, "dotchain")) return vdom as DotChain;
 	return new DotChain(vdom._dot, vdom);
@@ -185,11 +192,13 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		thenContainer = new FragmentVdom(this._dot);
 		(thenContainer as FragmentVdom)._children.push(new TextVdom(reduceReactive(then)));
 	}
+	condition = promoteGetter(this._dot, condition);
 	condNode.addCondition(reduceReactive(condition), thenContainer as any);
 	return this._addChild(condNode);
 };
 
 (Vdom.prototype as any).each = function(collection: any, callback: any) {
+	collection = promoteGetter(this._dot, collection);
 	let collectionVdom = new CollectionVdom(this._dot, reduceReactive(collection), callback);
 	return this._addChild(collectionVdom);
 };
@@ -207,6 +216,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		} else {
 			thenNode = new TextVdom(reduceReactive(then));
 		}
+		condition = promoteGetter(this._dot, condition);
 		(lastChild as any).addCondition(reduceReactive(condition), thenNode, seal);
 	} else {
 		throwError(6, "Can't branch off of a non-conditional node.");
