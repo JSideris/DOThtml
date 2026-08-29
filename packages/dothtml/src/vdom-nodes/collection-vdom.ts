@@ -11,6 +11,15 @@ import { getCurrentComponent, pushComponent, popComponent } from "./component-co
 import { ComponentVdom } from "./component-vdom";
 import { throwError } from "../helpers/errors";
 
+function isPlainCollection(value: any): boolean {
+	if (value == null) return false;
+	if (Array.isArray(value)) return true;
+	if (typeof value !== "object") return false;
+	if (value instanceof Set || value instanceof Map) return false;
+	if (typeof value.then === "function") return false;
+	return true;
+}
+
 type DatumMap = {
 	vdom: Vdom; 
 	value: any;
@@ -209,7 +218,11 @@ export default class CollectionVdom extends Vdom{
 				unmappedCollection = this.value;
 			}
 
-			const currentItems: Array<any> = Array.isArray(unmappedCollection) 
+			if (!isPlainCollection(unmappedCollection)) {
+				throwError(14, "each() collection must be an array or a plain object. Signals, bindings, and zero-arg getters must resolve to an array or plain object. Set, Map, Promise, null, and undefined are not valid collections.");
+			}
+
+			const currentItems: Array<any> = Array.isArray(unmappedCollection)
 				? unmappedCollection 
 				: Object.values(unmappedCollection);
 

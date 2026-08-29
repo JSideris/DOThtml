@@ -66,3 +66,99 @@ describe("each/when nullary getters.", () => {
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a").toString()));
 	});
 });
+
+describe("each/when invalid inputs.", () => {
+	const row = (x: any) => dot.p(x);
+
+	test("each with arity-1 function collection throws error 12.", () => {
+		expect(() => {
+			dot(document.body).each((x: any) => x, row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each((x: any) => x, row);
+		}).toThrow(/12|function with parameters/i);
+	});
+
+	test("when with arity-1 function condition throws error 12.", () => {
+		expect(() => {
+			dot(document.body).when(((x: any) => x) as any, dot.p("x"));
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).when(((x: any) => x) as any, dot.p("x"));
+		}).toThrow(/12|function with parameters/i);
+	});
+
+	test("when with function then-content throws error 13.", () => {
+		expect(() => {
+			dot(document.body).when(true, (() => dot.p("x")) as any);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).when(true, (() => dot.p("x")) as any);
+		}).toThrow(/13|cannot be a function/i);
+	});
+
+	test("each with Set throws error 14.", () => {
+		expect(() => {
+			dot(document.body).each(new Set([1]), row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each(new Set([1]), row);
+		}).toThrow(/14|not valid collections/i);
+	});
+
+	test("each with Map throws error 14.", () => {
+		expect(() => {
+			dot(document.body).each(new Map([["a", 1]]), row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each(new Map([["a", 1]]), row);
+		}).toThrow(/14|not valid collections/i);
+	});
+
+	test("each with null throws error 14.", () => {
+		expect(() => {
+			dot(document.body).each(null as any, row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each(null as any, row);
+		}).toThrow(/14|not valid collections/i);
+	});
+
+	test("each with undefined throws error 14.", () => {
+		expect(() => {
+			dot(document.body).each(undefined as any, row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each(undefined as any, row);
+		}).toThrow(/14|not valid collections/i);
+	});
+
+	test("each with Promise throws error 14.", () => {
+		expect(() => {
+			dot(document.body).each(Promise.resolve([]), row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each(Promise.resolve([]), row);
+		}).toThrow(/14|not valid collections/i);
+	});
+
+	test("each with computed resolving to Set throws error 14 on render.", () => {
+		expect(() => {
+			dot(document.body).each(dot.computed(() => new Set([1])), row);
+		}).toThrow(/\[DOThtml\]/);
+		expect(() => {
+			dot(document.body).each(dot.computed(() => new Set([1])), row);
+		}).toThrow(/14|not valid collections/i);
+	});
+
+	test("each with static dictionary still works.", () => {
+		dot(document.body).each({ a: 1, b: 2 }, (x, i, k) => dot.p(`${x}, ${k}`));
+		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("1, a").p("2, b").toString()));
+	});
+
+	test("when with component instance then-content does not throw error 13.", () => {
+		dot(document.body).when(true, { build() { return dot.p("x"); } });
+		const shadow = document.body.children[0]?.shadowRoot;
+		expect(formatHTML(shadow?.innerHTML || "")).toBe(formatHTML("<p>x</p>"));
+	});
+});

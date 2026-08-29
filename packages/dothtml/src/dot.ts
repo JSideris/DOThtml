@@ -48,6 +48,18 @@ function promoteGetter(dot: IDotCore, value: any) {
 	return value;
 }
 
+function rejectNonGetterFunction(value: any) {
+	if (typeof value === "function") {
+		throwError(12, "each/when does not accept a function with parameters as a collection or condition. Pass an array, a plain object, a signal, a binding, or a zero-arg getter.");
+	}
+}
+
+function rejectFunctionThenContent(then: any) {
+	if (typeof then === "function" && !then.prototype?.build) {
+		throwError(13, "when/otherwiseWhen then-content cannot be a function. Pass markup or a component, not a factory. Use a zero-arg getter or computed for the condition.");
+	}
+}
+
 function promote(vdom: Vdom): DotChain {
 	if (vdom instanceof DotChain || isVType(vdom, "dotchain")) return vdom as DotChain;
 	return new DotChain(vdom._dot, vdom);
@@ -181,6 +193,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).when = function(condition: any, then: any) {
+	rejectFunctionThenContent(then);
 	let condNode = new ConditionalVdom(this._dot);
 	let thenContainer: Vdom;
 	if (then instanceof Vdom || isVType(then, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
@@ -193,12 +206,14 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 		(thenContainer as FragmentVdom)._children.push(new TextVdom(reduceReactive(then)));
 	}
 	condition = promoteGetter(this._dot, condition);
+	rejectNonGetterFunction(condition);
 	condNode.addCondition(reduceReactive(condition), thenContainer as any);
 	return this._addChild(condNode);
 };
 
 (Vdom.prototype as any).each = function(collection: any, callback: any) {
 	collection = promoteGetter(this._dot, collection);
+	rejectNonGetterFunction(collection);
 	let collectionVdom = new CollectionVdom(this._dot, reduceReactive(collection), callback);
 	return this._addChild(collectionVdom);
 };
@@ -207,6 +222,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 	let lastChild = this._getLastChild();
 
 	if (lastChild && (lastChild instanceof ConditionalVdom || isVType(lastChild, "conditional"))) {
+		rejectFunctionThenContent(then);
 		let thenNode: Vdom;
 		if (then instanceof Vdom || isVType(then, ["vdom", "container", "element", "fragment", "component", "html", "text", "reactive", "conditional", "collection", "slot"])) {
 			thenNode = then;
@@ -217,6 +233,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 			thenNode = new TextVdom(reduceReactive(then));
 		}
 		condition = promoteGetter(this._dot, condition);
+		rejectNonGetterFunction(condition);
 		(lastChild as any).addCondition(reduceReactive(condition), thenNode, seal);
 	} else {
 		throwError(6, "Can't branch off of a non-conditional node.");
