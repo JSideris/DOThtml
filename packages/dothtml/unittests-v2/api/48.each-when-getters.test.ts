@@ -14,7 +14,7 @@ afterEach(() => {
 describe("each/when nullary getters.", () => {
 	test("each getter renders and updates after source change.", () => {
 		const box = dot.state({ items: ["a", "b"] });
-		dot(document.body).each((() => box.value.items) as any, x => dot.p(x));
+		dot(document.body).each(() => box.value.items, x => dot.p(x));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a").p("b").toString()));
 
 		box.value = { items: ["a", "b", "c"] };
@@ -24,7 +24,7 @@ describe("each/when nullary getters.", () => {
 
 	test("when getter toggles then and otherwise.", () => {
 		const on = dot.state(false);
-		dot(document.body).when((() => on.value) as any, dot.p("yes")).otherwise(dot.p("no"));
+		dot(document.body).when(() => on.value, dot.p("yes")).otherwise(dot.p("no"));
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("no").toString()));
 
 		on.value = true;
@@ -36,8 +36,8 @@ describe("each/when nullary getters.", () => {
 		const mode = dot.state(1);
 
 		dot(document.body)
-			.when((() => mode.value === 1) as any, dot.p("a"))
-			.otherwiseWhen((() => mode.value === 2) as any, dot.p("b"))
+			.when(() => mode.value === 1, dot.p("a"))
+			.otherwiseWhen(() => mode.value === 2, dot.p("b"))
 			.otherwise(dot.p("c"));
 
 		expect(formatHTML(document.body.innerHTML)).toBe(formatHTML(dot.p("a").toString()));

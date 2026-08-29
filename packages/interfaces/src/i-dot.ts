@@ -18,6 +18,8 @@ export type ISignal<T = any> = IWatcher<T>;
 
 type AttrVal<T = string | number | boolean> = T | IReactive;
 
+type DotDictionary<T> = { [key: string | number]: T } & object;
+
 /**
  * Global interface containing elements.
  */
@@ -30,9 +32,9 @@ export interface IDotDocument {
 	// _appendOrCreateDocument(content: DotContent, parentEl?: Element, beforeNode?: Node|number);
 
 	/**
-	 * A conditional function, analogous to if. Renders the specified DOT if a condition is met. Dynamic binding is possible when condition and callback are functions.
+	 * Conditional, analogous to `if`. `condition` is a boolean, a signal/binding of a boolean, or a zero-arg getter (wrapped in `dot.computed`). `callback` is eager `DotContent` — not a factory function.
 	*/
-	when(condition: IReactive<boolean> | boolean, callback: DotContent): IDotConditionalDocument;
+	when(condition: IReactive<boolean> | boolean | (() => boolean), callback: DotContent): IDotConditionalDocument;
 
 	// Main functions.
 	// TODO: please make this into a test case.
@@ -82,18 +84,18 @@ export interface IDotDocument {
 	// mount<T extends IComponent>(init: (c: IMountedComponent<T>) => IMountedComponent<T> | void, component: T): IDotDocument;
 	// mount(component: IComponent, init: (init=>IMountedComponent): IMountedComponent|void): IDotDocument;
 	/**
-	 * Iterates n times, appending the result of each iteration to the VDBO.
-	 * @param n The number of iterations.
-	 * @param callback The markup-generating callback.
-	*/
-	iterate(n: number, callback: (i: number) => DotContent): IDotDocument;
-	each<T>(a: Array<T> | { [key: string | number]: T }, callback: (x: T, i: number, k: string | number) => DotContent): IDotDocument;
-	each<T>(a: 
-		IWatcher<Array<T>>
-		|IWatcher<Record<string|number, T>>
-		|IBinding<any, Array<T>>
-		|IBinding<any, IWatcher<Record<string|number, T>>>
-		, callback: (x: T, i: IBinding<number>, k: string | number) => DotContent): IDotDocument;
+	 * Renders a list. `a` is a static array or dictionary, a signal/binding of either, or a zero-arg getter that returns either. The getter is wrapped in `dot.computed`. For keyed reuse, create the list with `dot.state(items, "id")` where `"id"` is the item property name. The callback builds each row `(item, index, key)`.
+	 */
+	each<T>(
+		a: readonly T[] | DotDictionary<T>,
+		callback: (x: T, i: number, k: string | number) => DotContent
+	): IDotDocument;
+	each<T>(
+		a:
+			| IReactive<readonly T[] | DotDictionary<T>>
+			| (() => readonly T[] | DotDictionary<T>),
+		callback: (x: T, i: IBinding<number>, k: string | number) => DotContent
+	): IDotDocument;
 
 	/**
 	 * Removes the targeted document and everything in it.
@@ -450,12 +452,12 @@ export interface IDotWindowBuilder {
 export interface IDotConditionalDocument extends IDotDocument {
 	/**
 	 * A conditional catch, analogous to else if. Can be used after a when function. Evaluates if the previous when's condition was false.
-	 * Renders the specified DOT if a condition is met. Dynamic binding is possible when condition and callback are functions.
+	 * `condition` is a boolean, a signal/binding of a boolean, or a zero-arg getter (wrapped in `dot.computed`). `callback` is eager `DotContent` — not a factory function.
 	*/
-	otherwiseWhen(condition: IReactive<boolean> | boolean, callback: DotContent): IDotConditionalDocument;
+	otherwiseWhen(condition: IReactive<boolean> | boolean | (() => boolean), callback: DotContent): IDotConditionalDocument;
 	/**
 	 * A conditional final catch, analogous to else. Can be used after a when or otherwiseWhen function. Evaluates if the previous when/otherwiseWhen evaluated to false.
-	 * Renders the specified DOT if a condition is met. Dynamic binding is possible when callback is a function.
+	 * Renders the specified DOT if a condition is met.
 	*/
 	otherwise(callback: DotContent): IDotDocument;
 }
