@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.5.4)
+# Benchmarks (v6.6.0)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **25.0 kB**
+- **DOThtml**: **25.1 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **25.0 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **25.1 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -472,6 +472,8 @@ dot.slot("optional", dot.span("Default Fallback Content"))
 
 Scoped slots allow the component to pass data back to the slot content. This is essential for components like lists or tables.
 
+> **Note:** `this.items` below is a static array. For reactive lists, use `dot.state(…)` or a derived list — see [Lists & Conditionals](./lists-and-conditionals.md).
+
 ```javascript
 class UserList extends DotComponent {
     items = [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }];
@@ -530,7 +532,7 @@ DOThtml features an intelligent update scheduler, a sophisticated keyed diffing 
 Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
 
 ### Keyed Diffing
-When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. By providing a `key` property in your data, DOThtml can:
+When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. Pass the property name as the second argument to `dot.state(items, "id")`. Items then need that property. DOThtml can:
 *   **Reuse DOM Nodes**: Instead of re-rendering an entire item, DOThtml reuses the existing DOM nodes and only updates the content that changed.
 *   **Efficient Reordering**: If items in your list move, DOThtml moves the corresponding DOM nodes using `insertBefore` instead of unrendering and re-rendering them.
 *   **Minimal DOM Operations**: The reconciliation algorithm ensures that the minimum number of DOM operations are performed to reach the desired state.
@@ -721,6 +723,102 @@ This page contains a reference for all framework-level errors thrown by DOThtml.
 
 ## 14
 **Message:** each() collection must be an array or a plain object. Signals, bindings, and zero-arg getters must resolve to an array or plain object. Set, Map, Promise, null, and undefined are not valid collections.
+
+--- FILE: lists-and-conditionals.md (Lists And Conditionals) ---
+
+# Lists & Conditionals
+
+DOThtml renders lists with `dot.each` and branches with `dot.when`, `dot.otherwiseWhen`, and `dot.otherwise`. This page covers the inputs that stay reactive, the derived-list recipes agents reach for, and the mistakes that silently fail or throw.
+
+## Conditionals
+
+`when` / `otherwiseWhen` / `otherwise` are analogous to `if` / `else if` / `else`.
+
+The **condition** may be:
+
+- a boolean literal
+- a signal or binding of a boolean
+- a **zero-arg getter** — wrapped in `dot.computed` automatically
+
+The **then-content** is eager `DotContent` (markup, text, or a component instance). It is **not** a factory function. `when(cond, () => dot.p("x"))` throws error **13**.
+
+`otherwise` is not a getter target. It always runs when the previous branch was false.
+
+```javascript
+// when
+dot.when(visible, dot.p("shown"));
+dot.when(() => this.payload.value.ready, dot.p("ready"))
+	.otherwise(dot.p("loading"));
+```
+
+Chain `otherwiseWhen` for additional branches:
+
+```javascript
+dot.when(() => mode === 1, dot.p("a"))
+	.otherwiseWhen(() => mode === 2, dot.p("b"))
+	.otherwise(dot.p("c"));
+```
+
+## Lists (`each`)
+
+The **first argument** to `dot.each` may be:
+
+- a static array or plain object dictionary
+- a signal or binding of an array or dictionary
+- a **zero-arg getter** that returns an array or dictionary — wrapped in `dot.computed`
+- a binding from `bindAs` that resolves to an array or dictionary
+
+The **row callback** `(item, index, key) => DotContent` builds each row. It is a normal function callback, not a reactive getter.
+
+## Recipes
+
+```javascript
+// 1. The list is the signal
+const worlds = dot.state([]);
+dot.each(worlds, w => dot.li(w.name));
+
+// 2. Derived list via computed / getter (equivalent)
+dot.each(dot.computed(() => this.payload.value.worlds), w => dot.li(w.name));
+dot.each(() => this.payload.value.worlds, w => dot.li(w.name));
+
+// 3. Derived list via bindAs
+dot.each(this.payload.bindAs(p => p.worlds), w => dot.li(w.name));
+
+// Anti-examples — render once or never; not reactive
+dot.each(this.payload.value.worlds, w => dot.li(w.name));
+dot.each(this.payload.worlds, w => dot.li(w.name));
+```
+
+## Keyed lists
+
+For efficient reuse and reordering, create the list with `dot.state(items, "id")` where `"id"` is the **item property name** used as the stable key. Each item must have that property.
+
+```javascript
+const items = dot.state([{ id: "a", name: "Alice" }, { id: "b", name: "Bob" }], "id");
+dot.each(items, item => dot.li(item.name));
+```
+
+See [Detailed Features](./detailed-features.md) for keyed diffing internals.
+
+## What not to pass
+
+| Input | Outcome |
+| :--- | :--- |
+| `each(payload.value.items)` / `each(payload.items)` | Snapshot; not reactive (see anti-examples above) |
+| `each(new Set(…))` / `Map` / `null` / `undefined` / `Promise` | Error **14** |
+| `when(true, () => dot.p("x"))` | Error **13** (not lazy factories) |
+| `each((x) => …, row)` or arity-1 condition | Error **12** |
+
+Reading nested properties through the signal proxy (for example `payload.items`) returns a **raw array**, not a list signal. Use a signal, `bindAs`, `computed`, or a zero-arg getter on `each`.
+
+See [Error Codes](./errors.md) for full messages.
+
+## See also
+
+- [Reactivity](./reactivity.md) — signals, computed, bindings
+- [Refs](./refs.md) — `refCollection` for keyed element refs in lists
+- [Styling](./styling.md#transitions-and-animations) — transitions on `each` / `when` content
+- [Detailed Features](./detailed-features.md) — keyed diffing and performance internals
 
 --- FILE: main-features.md (Main Features) ---
 
@@ -989,6 +1087,18 @@ const count = dot.state(5);
 dot.div(count.bindAs(v => `The count is ${v}`));
 ```
 
+## Reactive lists
+
+For `dot.each`, pass the list itself as a signal, derive it with `dot.computed` or a zero-arg getter, or use `bindAs` on a parent signal:
+
+```javascript
+dot.each(worlds, w => dot.li(w.name));
+dot.each(() => payload.value.worlds, w => dot.li(w.name));
+dot.each(payload.bindAs(p => p.worlds), w => dot.li(w.name));
+```
+
+Reading `payload.items` through the signal proxy is a **raw array**, not a list signal — it will not update when the parent changes. See [Lists & Conditionals](./lists-and-conditionals.md) for full recipes, anti-examples, and `when` / `otherwiseWhen` usage.
+
 ## Refs
 
 Refs are specialized reactive signals used to obtain direct access to DOM elements or component instances. See the [Refs Documentation](./refs.md) for more details.
@@ -1165,6 +1275,8 @@ modalRef.open(); // Calls the 'open' method on the MyModal instance.
 
 When working with lists, you may need a reference to multiple elements. `dot.refCollection()` provides a keyed Map of refs.
 
+`items` must be a signal, binding, or zero-arg getter — not a raw nested property read. See [Lists & Conditionals](./lists-and-conditionals.md).
+
 ```javascript
 const itemRefs = dot.refCollection();
 
@@ -1328,7 +1440,7 @@ const fragment = dot.div("A").p("B");
 
 ### Chaining Consistency
 
-All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. This allows for powerful imperative patterns:
+All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. Zero-arg getters are OK for the **first** argument of `dot.each` and `dot.when`. See [Lists & Conditionals](./lists-and-conditionals.md) for reactive lists and conditionals. This allows for powerful imperative patterns:
 
 ```javascript
 dot("#app")

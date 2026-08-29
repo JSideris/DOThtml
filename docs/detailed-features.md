@@ -10,7 +10,7 @@ DOThtml features an intelligent update scheduler, a sophisticated keyed diffing 
 Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
 
 ### Keyed Diffing
-When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. By providing a `key` property in your data, DOThtml can:
+When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. Pass the property name as the second argument to `dot.state(items, "id")`. Items then need that property. DOThtml can:
 *   **Reuse DOM Nodes**: Instead of re-rendering an entire item, DOThtml reuses the existing DOM nodes and only updates the content that changed.
 *   **Efficient Reordering**: If items in your list move, DOThtml moves the corresponding DOM nodes using `insertBefore` instead of unrendering and re-rendering them.
 *   **Minimal DOM Operations**: The reconciliation algorithm ensures that the minimum number of DOM operations are performed to reach the desired state.

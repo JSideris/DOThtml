@@ -21,6 +21,7 @@ export default class Docs extends DotComponent<DocsProps> {
 		{ id: "main-features", label: "Main Features" },
 		{ id: "components", label: "Components" },
 		{ id: "reactivity", label: "Reactivity" },
+		{ id: "lists-and-conditionals", label: "Lists & Conditionals" },
 		{ id: "use-cases", label: "Use Cases" },
 		{ id: "stores", label: "Stores" },
 		{ id: "refs", label: "Refs" },

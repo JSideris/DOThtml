@@ -13,6 +13,7 @@
 ## API & Features
 - [Components](https://dothtml.org/docs/components.md): Building blocks, props, validation, lifecycle hooks, and advanced event handling.
 - [Reactivity](https://dothtml.org/docs/reactivity.md): Signals, computed state, and reactive bindings.
+- [Lists & Conditionals](https://dothtml.org/docs/lists-and-conditionals.md): Reactive lists and conditionals — signals, computed/getters, bindAs, and what not to pass.
 - [Stores](https://dothtml.org/docs/stores.md): Centralized state management for enterprise-scale applications.
 - [Refs](https://dothtml.org/docs/refs.md): Direct access to DOM elements and component instances.
 - [Scroll & Visibility](https://dothtml.org/docs/scroll-and-visibility.md): Global scroll tracking and element visibility detection.

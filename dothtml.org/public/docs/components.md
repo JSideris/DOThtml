@@ -325,6 +325,8 @@ dot.slot("optional", dot.span("Default Fallback Content"))
 
 Scoped slots allow the component to pass data back to the slot content. This is essential for components like lists or tables.
 
+> **Note:** `this.items` below is a static array. For reactive lists, use `dot.state(…)` or a derived list — see [Lists & Conditionals](./lists-and-conditionals.md).
+
 ```javascript
 class UserList extends DotComponent {
     items = [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }];

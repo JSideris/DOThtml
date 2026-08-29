@@ -58,6 +58,18 @@ const count = dot.state(5);
 dot.div(count.bindAs(v => `The count is ${v}`));
 ```
 
+## Reactive lists
+
+For `dot.each`, pass the list itself as a signal, derive it with `dot.computed` or a zero-arg getter, or use `bindAs` on a parent signal:
+
+```javascript
+dot.each(worlds, w => dot.li(w.name));
+dot.each(() => payload.value.worlds, w => dot.li(w.name));
+dot.each(payload.bindAs(p => p.worlds), w => dot.li(w.name));
+```
+
+Reading `payload.items` through the signal proxy is a **raw array**, not a list signal — it will not update when the parent changes. See [Lists & Conditionals](./lists-and-conditionals.md) for full recipes, anti-examples, and `when` / `otherwiseWhen` usage.
+
 ## Refs
 
 Refs are specialized reactive signals used to obtain direct access to DOM elements or component instances. See the [Refs Documentation](./refs.md) for more details.

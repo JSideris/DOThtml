@@ -1,5 +1,14 @@
 # dothtml-interfaces
 
+## 6.6.0
+
+### Minor Changes
+
+- Getter overloads on `each`, `when`, and `otherwiseWhen`.
+- Remove `iterate` from public types.
+- JSDoc matches runtime for lists and conditionals.
+- Binding dictionary overload no longer wraps `IWatcher`.
+
 ## 6.5.4
 
 ### Patch Changes

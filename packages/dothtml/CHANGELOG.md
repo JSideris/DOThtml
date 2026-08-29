@@ -1,5 +1,18 @@
 # dothtml
 
+## 6.6.0
+
+### Minor Changes
+
+- Accept zero-arg getters on `each`, `when`, and `otherwiseWhen` (wrapped in `dot.computed`).
+- Throw on invalid collections (error 14) and function then-content (error 13); arity-1 collection or condition (error 12).
+- Docs: lists & conditionals page with derived-list recipes and anti-examples.
+
+### Patch Changes
+
+- Updated dependencies
+  - dothtml-interfaces@6.6.0
+
 ## 6.5.4
 
 ### Patch Changes

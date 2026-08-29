@@ -63,6 +63,8 @@ modalRef.open(); // Calls the 'open' method on the MyModal instance.
 
 When working with lists, you may need a reference to multiple elements. `dot.refCollection()` provides a keyed Map of refs.
 
+`items` must be a signal, binding, or zero-arg getter — not a raw nested property read. See [Lists & Conditionals](./lists-and-conditionals.md).
+
 ```javascript
 const itemRefs = dot.refCollection();
 
