@@ -68,41 +68,34 @@ The Style builder is powerful and useful, but still not fully developed. Conside
 
 ## 🚀 Release Process
 
-DOThtml uses a monorepo structure and leverages [Changesets](https://github.com/changesets/changesets) to coordinate versioning and publishing between `dothtml`, `dothtml-interfaces`, and `create-dothtml`.
+DOThtml uses a monorepo structure and [Changesets](https://github.com/changesets/changesets) to keep `dothtml`, `dothtml-interfaces`, and `create-dothtml` on the same version. Version bumps are prepared locally. GitHub Actions publishes to npm via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (no OTP).
 
-### All-in-One Release (Recommended)
-To handle the entire release process in one command, run:
-```bash
-npm run release-all
-```
-This command will:
-1. Check if a new version is needed by comparing local versions with NPM.
-2. Prompt you to create a **Changeset** (if needed).
-3. **Bump versions** and update changelogs (if needed).
-4. **Build** all packages.
-5. **Publish** all packages to NPM.
+### Patch, minor, or major release
 
-*Note: If the process fails during the final publish step, you can simply run `npm run release` to retry the publish without bumping versions again.*
+1. Record the change:
+   ```bash
+   npx changeset
+   ```
+   Choose **patch**, **minor**, or **major**. The three packages version together, so all of them bump.
 
-### Manual Release Steps (Alternative)
+2. Apply it:
+   ```bash
+   npm run version-packages
+   ```
+   This updates versions and changelogs.
 
-#### 1. Create a Changeset
-When you make changes that should be included in the next release, run:
-```bash
-npx changeset
-```
-Follow the prompts to select which packages have changed and whether the change is a `patch`, `minor`, or `major` bump. This will create a temporary markdown file in the `.changeset` directory.
+3. Commit and push to `master`.
 
-#### 2. Versioning (Bumping)
-When you are ready to prepare a release, run the following command from the root:
-```bash
-npm run version-packages
-```
-This command will consolidate all pending changesets, bump the version numbers in all packages (keeping them in sync), and update the changelogs.
+4. Stop. The **Publish** workflow (`.github/workflows/publish.yml`) builds and publishes any versions that are not already on npm.
 
-#### 3. Publishing
-Finally, to build the packages and publish them to NPM, run:
+`npm run release-all` still does steps 1–2 in one go when local versions match npm. It does not publish. After it finishes, commit and push.
+
+### Local publish fallback
+
+If Actions cannot publish, you can upload from your machine (this will prompt for an npm OTP):
+
 ```bash
 npm run release
 ```
-This command will run the build script for the framework and execute `changeset publish` to upload the new versions to the NPM registry.
+
+Use this only as a fallback. Day-to-day publishes should go through GitHub Actions.
