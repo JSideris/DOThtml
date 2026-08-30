@@ -33,17 +33,11 @@ import { SlotVdom } from "./vdom-nodes/slot-vdom";
 import { VERSION } from "./version";
 import { isVType } from "./helpers/tools";
 import { throwError } from "./helpers/errors";
+import { promoteGetter, promoteOrRejectAttrValue, rejectFunctionAttrOrContent } from "./helpers/promote-getter";
 
 function reduceReactive(value: any){
 	if (value instanceof Signal || isVType(value, ["signal", "computed"]) || value?._isSignal === true) {
 		return (value as Signal).bind();
-	}
-	return value;
-}
-
-function promoteGetter(dot: IDotCore, value: any) {
-	if (typeof value === "function" && value.length === 0 && !value.prototype?.build) {
-		return dot.computed(value);
 	}
 	return value;
 }
@@ -132,6 +126,8 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 };
 
 (Vdom.prototype as any).text = function(c: any) {
+	c = promoteGetter(this._dot, c);
+	rejectFunctionAttrOrContent(c);
 	let val = reduceReactive(c);
 	if(val instanceof Binding){
 		return this._addChild(new ReactiveVdom(this._dot, val));
@@ -253,6 +249,7 @@ function createMountable(dot: IDotCore, c: any, args: any[]): Vdom {
 	}
 
 	if (target && (target instanceof ElementVdom || isVType(target, "element"))) {
+		c = promoteOrRejectAttrValue(this._dot, A, c);
 		(target as any).setAttr(A, c);
 	} else {
 		throwError(7, `Invalid node to set ${A} attribute.`);

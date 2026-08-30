@@ -1,5 +1,12 @@
 # create-dothtml
 
+## 6.7.0
+
+### Minor Changes
+
+- Zero-arg getters work on attributes.
+- Promote zero-arg getters on attributes, `.attr()`, and text content (wrapped in `dot.computed`). Throw error 15 on leftover functions and on `bind` getters. Event handlers, style builders, and ref callbacks are unchanged.
+
 ## 6.5.4
 
 ### Patch Changes

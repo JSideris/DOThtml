@@ -10,6 +10,7 @@ import Ref from "./reactivity/ref";
 import { allEventAttr } from "./dot-event-attrs";
 import { isVType } from "./helpers/tools";
 import { HtmlVdom } from "./vdom-nodes/html-vdom";
+import { promoteGetter, promoteOrRejectAttrValue, rejectFunctionAttrOrContent } from "./helpers/promote-getter";
 
 export const trySmartAdopt = (dot: IDotCore, n: ElementVdom, tag: string, content: any): boolean => {
 	if (tag !== "svg" && tag !== "math") return false;
@@ -93,6 +94,10 @@ export const applyContent = (dot: IDotCore, n: ElementVdom | ContainerVdom, cont
 		target.mount(cont);
 	}
 	else{
+		if(typeof cont === "function" && !cont.prototype?.build){
+			cont = promoteGetter(dot, cont);
+			rejectFunctionAttrOrContent(cont);
+		}
 		if(cont !== null && cont !== undefined){
 			let val = cont;
 			if(val instanceof Signal || isVType(val, "signal") || val?._isSignal){
@@ -135,6 +140,7 @@ export const applyAttributes = (n: ElementVdom, attrs: any) => {
 
 			(n as any).addEventListener(eventName.substring(2).toLowerCase(), attr, modifiers);
 		} else {
+			attr = promoteOrRejectAttrValue(n._dot, k, attr);
 			n.setAttr(k, attr);
 		}
 	}
@@ -153,6 +159,9 @@ export const createElement = (dot: IDotCore, tag: string, args: any[] | IArgumen
 		}
 		else if (typeof arg === "function" && (tag === "svg" || tag === "math")) {
 			arg(n.children);
+		}
+		else if (typeof arg === "function" && !arg.prototype?.build) {
+			applyContent(dot, n, arg);
 		}
 		else if(arg && typeof arg === "object"){
 			applyAttributes(n, arg);

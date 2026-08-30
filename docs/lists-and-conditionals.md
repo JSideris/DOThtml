@@ -61,6 +61,23 @@ dot.each(this.payload.value.worlds, w => dot.li(w.name));
 dot.each(this.payload.worlds, w => dot.li(w.name));
 ```
 
+## Attributes and text content
+
+The same zero-arg getter recipe works on attributes, `.attr()`, and element text. The getter is wrapped in `dot.computed`.
+
+```javascript
+dot.input({ type: "range", min: 0, max: 4, value: () => n.value });
+dot.div(() => name.value);
+dot.div("label").attr("data-n", () => n.value);
+dot.text(() => name.value);
+```
+
+`dot.div(() => name.value)` is **derived text**, not a lazy factory. `when` then-content stays eager — `when(cond, () => dot.p("x"))` still throws error **13**.
+
+Event handlers (`onClick: () => …`), style builders, and ref callbacks are not getters. `bind` must be a writable signal or binding — `bind: () => x` throws error **15**.
+
+Class-map values (`class: { active: () => … }`) are still treated as truthy / not executed.
+
 ## Keyed lists
 
 For efficient reuse and reordering, create the list with `dot.state(items, "id")` where `"id"` is the **item property name** used as the stable key. Each item must have that property.
@@ -80,6 +97,8 @@ See [Detailed Features](./detailed-features.md) for keyed diffing internals.
 | `each(new Set(…))` / `Map` / `null` / `undefined` / `Promise` | Error **14** |
 | `when(true, () => dot.p("x"))` | Error **13** (not lazy factories) |
 | `each((x) => …, row)` or arity-1 condition | Error **12** |
+| `value: (x) => …` / `dot.div((x) => …)` | Error **15** |
+| `bind: () => x` | Error **15** (not writable) |
 
 Reading nested properties through the signal proxy (for example `payload.items`) returns a **raw array**, not a list signal. Use a signal, `bindAs`, `computed`, or a zero-arg getter on `each`.
 
