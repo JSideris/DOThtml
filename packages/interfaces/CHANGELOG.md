@@ -1,5 +1,11 @@
 # dothtml-interfaces
 
+## 6.7.1
+
+### Patch Changes
+
+- 515c38a: Allow boxShadow to accept CSS string values in addition to structured IShadowProp objects. This improves DX for AI agents and developers who prefer using standard CSS shadow syntax like `boxShadow("0 1px 3px rgba(0, 0, 0, 0.1)")` without requiring type assertions.
+
 ## 6.7.0
 
 ### Minor Changes

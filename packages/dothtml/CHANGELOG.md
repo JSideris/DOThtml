@@ -1,5 +1,12 @@
 # dothtml
 
+## 6.7.1
+
+### Patch Changes
+
+- Updated dependencies [515c38a]
+  - dothtml-interfaces@6.7.1
+
 ## 6.7.0
 
 ### Minor Changes
