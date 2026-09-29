@@ -78,4 +78,22 @@ describe("Styling v6 Extra Coverage", () => {
 			expect(dot.css.v("--test")).toBe("var(--test)");
 		});
 	});
+
+	describe("Shadow Properties", () => {
+		test("boxShadow accepts CSS string values", () => {
+			dot(document.body).div({ id: "shadow-test" }).style(s => s.boxShadow("0 1px 3px rgba(0, 0, 0, 0.1)"));
+			dot.flushSync();
+
+			const el = document.getElementById("shadow-test") as HTMLElement;
+			expect(el?.style.boxShadow).toBe("0 1px 3px rgba(0, 0, 0, 0.1)");
+		});
+
+		test("textShadow accepts CSS string values", () => {
+			dot(document.body).div({ id: "text-shadow-test" }).style(s => s.textShadow("2px 2px 4px rgba(0, 0, 0, 0.5)"));
+			dot.flushSync();
+
+			const el = document.getElementById("text-shadow-test") as HTMLElement;
+			expect(el?.style.textShadow).toBe("2px 2px 4px rgba(0, 0, 0, 0.5)");
+		});
+	});
 });
