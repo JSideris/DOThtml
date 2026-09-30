@@ -12,8 +12,9 @@ For most styling needs, DOThtml recommends these two complementary approaches:
 
 Define reusable, scoped styles for your components using the `stylize()` method. This creates a stylesheet shared across all instances of your component:
 
-```javascript
-class MyComponent extends IDotComponent {
+```typescript
+@dot.component
+class MyComponent extends DotComponent {
 	stylize(s) {
 		// s is a Stylesheet Builder
 		return s.class("card", b => b
@@ -24,10 +25,13 @@ class MyComponent extends IDotComponent {
 		);
 	}
 	
-	build() {
+	build(dot) {
 		return dot.div({ class: "card" }, "Hello!");
 	}
 }
+
+// Instantiate with 'new'
+dot(document.body).mount(new MyComponent());
 
 // Set global theme variables
 dot.css.variable("card-bg", "#f5f5f5");
@@ -49,9 +53,10 @@ dot.css.variable("card-bg", theme.bindAs(t => t === "light" ? "#f5f5f5" : "#1a1a
 
 For instance-specific styling or styles driven by component props, use the fluent `.style()` method:
 
-```javascript
-class ColoredBox extends IDotComponent {
-	build() {
+```typescript
+@dot.component
+class ColoredBox extends DotComponent {
+	build(dot) {
 		return dot.div("Dynamic styling")
 			.style(b => b
 				.backgroundColor(this.props.color)  // Prop-driven
@@ -60,6 +65,9 @@ class ColoredBox extends IDotComponent {
 			);
 	}
 }
+
+// Usage
+dot(document.body).mount(new ColoredBox({ color: "lightblue" }));
 ```
 
 **When to use inline styles:**
@@ -113,8 +121,9 @@ DOThtml components use **Shadow DOM** by default, providing strong encapsulation
 
 To define shared styles for all instances of a component, implement the `stylize()` method. This method receives a **Stylesheet Builder**. DOThtml will automatically create a `CSSStyleSheet` (or a fallback `<style>` tag) and adopt it into the component's shadow root.
 
-```javascript
-class MyComponent extends IDotComponent {
+```typescript
+@dot.component
+class MyComponent extends DotComponent {
 	stylize(s) {
 		return s.class("container", b => b
 			.display("flex")
@@ -123,7 +132,7 @@ class MyComponent extends IDotComponent {
 		);
 	}
 
-	build() {
+	build(dot) {
 		return dot.div({ class: "container" }, "Hello Shadow DOM!");
 	}
 }
@@ -135,8 +144,9 @@ class MyComponent extends IDotComponent {
 
 Components should reference CSS variables (custom properties) for themeable values. Use `s.v()` to reference variables with automatic `--` prefix handling:
 
-```javascript
-class ThemedCard extends IDotComponent {
+```typescript
+@dot.component
+class ThemedCard extends DotComponent {
 	stylize(s) {
 		return s.class("card", b => b
 			.backgroundColor(s.v("card-bg"))       // var(--card-bg)
@@ -147,7 +157,7 @@ class ThemedCard extends IDotComponent {
 		);
 	}
 
-	build() {
+	build(dot) {
 		return dot.div({ class: "card" }, "Themed content");
 	}
 }
@@ -164,9 +174,10 @@ When theme variables change, every component using them updates instantly withou
 
 Within a component's `build()` method, you can use the fluent `.style()` API to apply instance-specific styles. This uses a **Property Builder** and is ideal for styles driven by props or internal state.
 
-```javascript
-class MyButton extends IDotComponent {
-	build() {
+```typescript
+@dot.component
+class MyButton extends DotComponent {
+	build(dot) {
 		return dot.button("Click Me")
 			.style(b => b
 				.backgroundColor(this.props.color)
@@ -182,8 +193,9 @@ Sometimes you want a component to drive its internal styles via CSS variables on
 
 Use the `hostStyle()` method to bind reactive styles to the component's host element. This method receives a **Stylesheet Builder** (pre-scoped to the `:host` rule).
 
-```javascript
-class ThemeableBox extends IDotComponent {
+```typescript
+@dot.component
+class ThemeableBox extends DotComponent {
 	hostStyle(s) {
 		// s is a Stylesheet Builder
 		// Bind a reactive signal to a CSS variable on the host element.
@@ -197,7 +209,7 @@ class ThemeableBox extends IDotComponent {
 		);
 	}
 
-	build() {
+	build(dot) {
 		return dot.div({ class: "box" }, "I am themed via host variables!");
 	}
 }
@@ -281,8 +293,9 @@ When you use a `Signal` or `Binding` inside the `stylize()` builder, DOThtml:
 2.  Injects that variable into the static CSS rule.
 3.  Automatically updates the variable value on every component instance whenever the signal changes.
 
-```javascript
-class GlowingBox extends IDotComponent {
+```typescript
+@dot.component
+class GlowingBox extends DotComponent {
   stylize(s) {
     // s is a Stylesheet Builder
     return s.class("box", b => b
@@ -360,8 +373,9 @@ This makes your style definitions cleaner and less error-prone.
 
 DOThtml supports native CSS media queries within the `stylize()` method using the `.media()` builder. This allows you to define responsive styles that are scoped to your component.
 
-```javascript
-class ResponsiveNavbar extends IDotComponent {
+```typescript
+@dot.component
+class ResponsiveNavbar extends DotComponent {
   stylize(s) {
     return s.class("navbar", b => b
       .display("flex")
@@ -377,7 +391,7 @@ class ResponsiveNavbar extends IDotComponent {
     );
   }
 
-  build() {
+  build(dot) {
     return dot.nav({ class: "navbar" },
       dot.div({ class: "nav-links" }, "...")
     );
@@ -495,13 +509,14 @@ stylize(s) {
 
 DOThtml provides a global `dot.css` builder that is automatically bound to the document root (`<html>`). This is a **Property Builder**. This is the recommended way to handle application-wide theming.
 
-```javascript
+```typescript
 // In your app initialization
 const themeColor = dot.state("blue");
 dot.css.variable("primary", themeColor);
 
 // Any component can now use this global variable
-class MyComponent extends IDotComponent {
+@dot.component
+class MyComponent extends DotComponent {
   stylize(s) {
     return s.class("title", b => b.color(s.v("primary")));
   }
