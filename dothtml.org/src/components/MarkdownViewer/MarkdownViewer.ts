@@ -21,13 +21,22 @@ export default class MarkdownViewer extends DotComponent<MarkdownViewerProps> {
 		}
 	}
 
+	private stripFrontmatter(markdown: string): string {
+		// Remove YAML frontmatter if present at the start of the document
+		const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+		return markdown.replace(frontmatterRegex, '');
+	}
+
 	async load() {
 		try {
 			const response = await fetch(this.props.src);
 			if (!response.ok) {
 				throw new Error(`Failed to fetch markdown from ${this.props.src}: ${response.statusText}`);
 			}
-			const markdown = await response.text();
+			let markdown = await response.text();
+			
+			// Strip YAML frontmatter if present (used in blog posts)
+			markdown = this.stripFrontmatter(markdown);
 			
 			// Use concurrent rendering for parsing and updating content
 			const html = MarkdownParser.parse(markdown);
