@@ -1,5 +1,11 @@
 [https://dothtml.org/](https://dothtml.org/) for documentation.
 
+## Start Here
+
+**Documentation:** [https://dothtml.org/](https://dothtml.org/)  
+**AI Agent Guide:** [https://dothtml.org/docs/ai-agents.md](https://dothtml.org/docs/ai-agents.md)  
+**LLM Context:** [https://dothtml.org/llms.txt](https://dothtml.org/llms.txt) · [llms-full.txt](https://dothtml.org/llms-full.txt)
+
 ## Quick Start
 
 ### Via CDN
