@@ -1594,16 +1594,48 @@ const routes = [
 
 ## Navigation with Link
 
-Use the `Link` component for declarative navigation. It automatically handles active classes and prevents full page reloads.
+Use the `Link` component for declarative navigation. It automatically applies the `active` class (or a custom class) when the current route matches, and prevents full page reloads.
 
 ```javascript
 import { Link } from "dothtml";
 
 dot.nav(
-    dot.mount(new Link({ to: "/", label: "Home", exact: true })),
-    dot.mount(new Link({ to: "/about", label: "About" }))
+    dot.mount(new Link(), { to: "/", label: "Home", exact: true }),
+    dot.mount(new Link(), { to: "/about", label: "About" })
 );
 ```
+
+### Link Props
+
+- **`to`** (string): The path to navigate to.
+- **`label`** (string): The text content of the link. Can also use slots: `dot.mount(new Link(), { to: "/" }).slot("Home")`.
+- **`exact`** (boolean, default: `false`): When `true`, the active class is only applied if the current path exactly matches `to`. When `false`, matches if the current path starts with `to`.
+- **`activeClass`** (string, default: `"active"`): The CSS class applied when the link's route matches the current location.
+- **`name`** (string): Use a named route instead of `to`. Requires corresponding route configuration.
+- **`params`** (object): Parameters to pass when using named routes.
+
+## Programmatic Navigation
+
+For navigation triggered by logic (e.g., after form submission, authentication flows, or button clicks), use the `navigate` function instead of directly manipulating the History API.
+
+```javascript
+import { navigate } from "dothtml";
+
+// Navigate to a new path
+navigate("/dashboard");
+
+// Replace the current history entry instead of pushing a new one
+navigate("/login", true);
+```
+
+You can also access `navigate` via `dot.navigate`:
+
+```javascript
+dot.navigate("/profile");
+dot.navigate("/home", true);
+```
+
+**Prefer `navigate` over `window.history.pushState` for in-app navigation** — it ensures DOThtml's reactive routing state stays synchronized.
 
 ## Reactive Params
 
