@@ -78,6 +78,8 @@ dot("#app").mount(myFragment);
 
 > **Note**: This pattern is for **advanced use cases** requiring complete separation between implementation and interfaces (e.g., complex Dependency Injection scenarios). For typical component development, prefer the `@dot.component` decorator or `dot.component()` wrapper patterns above.
 
+**⚠️ For normal applications, use the patterns above with `new`. This pattern is only for advanced dependency injection scenarios.**
+
 If you need complete separation between implementation and interfaces, you can implement the `IDotComponent` interface directly.
 
 ```typescript
@@ -96,6 +98,8 @@ dot(document.body).mount(dot.create(MyComponent, { name: "World" }));
 ```
 
 **Note**: When using this pattern, you **must** use `dot.create` to instantiate the component if you use any reactive signals in the constructor. Using `new` directly on an undecorated class will result in "orphaned" signals that cause memory leaks.
+
+**Again: For typical applications, prefer the decorator or wrapper patterns above and instantiate with `new`. Only use `dot.create` for advanced DI scenarios.**
 
 ## Props and Validation
 

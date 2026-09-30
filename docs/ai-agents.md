@@ -61,7 +61,17 @@ dot(document.body).mount(new MyComponent({ name: "World" }));
 
 **❌ Avoid: `IDotComponent` interface + `dot.create` as the default**
 
-The `IDotComponent` interface and `dot.create` factory exist for advanced dependency injection scenarios, but are not the recommended starting point. Prefer the patterns above.
+The `IDotComponent` interface and `dot.create` factory exist for advanced dependency injection scenarios, but are **not the recommended starting point**. 
+
+**Do not use `dot.create` for normal applications**. Always prefer the decorator or wrapper patterns above and instantiate with `new`:
+
+```javascript
+// ✅ CORRECT: Use 'new' for normal apps
+dot(document.body).mount(new MyComponent({ name: "World" }));
+
+// ❌ AVOID: dot.create is only for advanced DI scenarios
+dot(document.body).mount(dot.create(MyComponent, { name: "World" }));
+```
 
 **See:** [components.md](./components.md)
 
@@ -167,7 +177,19 @@ dot.p(() => `Hello, ${name.value}!`);
 
 This keeps the input and signal synchronized automatically.
 
-**❌ Avoid: `value:` for two-way binding**
+**❌ Avoid: Manual "two-way" binding with `.attr()` + `.on('input')`**
+
+Do not attempt to implement two-way binding manually:
+
+```javascript
+// WRONG: This is not true two-way binding
+const name = dot.state("");
+dot.input({ type: "text" })
+	.attr("value", name)
+	.on("input", e => name.value = e.target.value); // ❌ Verbose and wrong
+```
+
+**❌ Avoid: `value:` alone for two-way binding**
 
 Setting `value:` alone is **one-way only**. It sets the initial value but does not update the signal when the user types:
 
@@ -316,7 +338,7 @@ While `history.pushState` works, prefer `navigate` to ensure DOThtml's routing s
 
 ### 8. Styling
 
-**✅ Prefer: `stylize` and CSS variables (`dot.css.variable` + `s.v`)**
+**✅ Prefer: `stylize(s)` builder and CSS variables (`dot.css.variable` + `s.v`)**
 
 For component-scoped styles, use the `stylize(s)` method with the stylesheet builder:
 
@@ -354,6 +376,8 @@ s.class("button", b => b
 	.backgroundColor(s.v(accentColor))
 );
 ```
+
+**Note:** `stylize(s)` can also return a raw CSS string or a theme function for advanced scenarios, but **prefer the stylesheet builder `s` for typical use cases** — it provides better type safety, reactivity support, and IDE assistance.
 
 **❌ Avoid: Deep imports of StyleVNode as the default**
 
