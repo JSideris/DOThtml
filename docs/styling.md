@@ -2,6 +2,80 @@
 
 DOThtml provides a powerful, fluent, and reactive styling system that leverages the browser's native performance while providing a low-friction developer experience.
 
+## Quick Start: Recommended Approaches
+
+For most styling needs, DOThtml recommends these two complementary approaches:
+
+### 1. Component Styles with `stylize()` + CSS Variables
+
+**Use for:** Shared component styles and theming
+
+Define reusable, scoped styles for your components using the `stylize()` method. This creates a stylesheet shared across all instances of your component:
+
+```javascript
+class MyComponent extends IDotComponent {
+	stylize(s) {
+		// s is a Stylesheet Builder
+		return s.class("card", b => b
+			// b is a Property Builder
+			.backgroundColor(s.v("card-bg"))  // Reference CSS variables with s.v()
+			.paddingPx(16)
+			.borderRadiusPx(8)
+		);
+	}
+	
+	build() {
+		return dot.div({ class: "card" }, "Hello!");
+	}
+}
+
+// Set global theme variables
+dot.css.variable("card-bg", "#f5f5f5");
+
+// Or bind them reactively
+const theme = dot.state("light");
+dot.css.variable("card-bg", theme.bindAs(t => t === "light" ? "#f5f5f5" : "#1a1a1a"));
+```
+
+**Why this approach?**
+- **Performance**: CSS variables update instantly without JavaScript re-renders
+- **Scoped**: Styles don't leak thanks to Shadow DOM
+- **Reactive**: Variables bound to signals update automatically
+- **Themeable**: Components reference variables; change once, update everywhere
+
+### 2. Inline Styles with `.style()`
+
+**Use for:** One-off element styles and prop-driven styling
+
+For instance-specific styling or styles driven by component props, use the fluent `.style()` method:
+
+```javascript
+class ColoredBox extends IDotComponent {
+	build() {
+		return dot.div("Dynamic styling")
+			.style(b => b
+				.backgroundColor(this.props.color)  // Prop-driven
+				.paddingPx(10)
+				.borderRadiusPx(4)
+			);
+	}
+}
+```
+
+**When to use inline styles:**
+- Instance-specific appearance (prop-driven colors, sizes)
+- One-off adjustments that don't need sharing
+- Quick prototyping
+
+**When to use `stylize()` instead:**
+- Styles shared across all instances of a component
+- Styles that should be themeable via CSS variables
+- Complex responsive rules with media queries
+
+---
+
+For more styling techniques, see the sections below. For a complete guide on AI-friendly styling patterns, see [AI Agents](./ai-agents.md).
+
 ## The Two Types of Style Builders
 
 To use DOThtml's styling system effectively, it's important to understand the distinction between the two types of builders provided by the API:
@@ -30,6 +104,104 @@ The **Stylesheet Builder** is used to define the structure of a stylesheet, incl
     *   `.keyframes(name, callback)`: Define a keyframe animation.
     *   `.container(condition, callback)`: Define a container query.
     *   `.supports(condition, callback)`: Define a feature query.
+
+## Component Styling
+
+DOThtml components use **Shadow DOM** by default, providing strong encapsulation for both structure and style. This isolation ensures that styles defined inside a component don't leak out, and global styles don't accidentally break your component's internal layout.
+
+### Scoped Styles with `stylize()`
+
+To define shared styles for all instances of a component, implement the `stylize()` method. This method receives a **Stylesheet Builder**. DOThtml will automatically create a `CSSStyleSheet` (or a fallback `<style>` tag) and adopt it into the component's shadow root.
+
+```javascript
+class MyComponent extends IDotComponent {
+	stylize(s) {
+		return s.class("container", b => b
+			.display("flex")
+			.paddingPx(20)
+			.backgroundColor("#f0f0f0")
+		);
+	}
+
+	build() {
+		return dot.div({ class: "container" }, "Hello Shadow DOM!");
+	}
+}
+```
+
+> **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
+
+### Using CSS Variables for Theming
+
+Components should reference CSS variables (custom properties) for themeable values. Use `s.v()` to reference variables with automatic `--` prefix handling:
+
+```javascript
+class ThemedCard extends IDotComponent {
+	stylize(s) {
+		return s.class("card", b => b
+			.backgroundColor(s.v("card-bg"))       // var(--card-bg)
+			.color(s.v("card-text"))                // var(--card-text)
+			.border(`1px solid ${s.v("card-border")}`)
+			.paddingPx(16)
+			.borderRadiusPx(8)
+		);
+	}
+
+	build() {
+		return dot.div({ class: "card" }, "Themed content");
+	}
+}
+
+// Set global theme variables
+dot.css.variable("card-bg", "#ffffff");
+dot.css.variable("card-text", "#000000");
+dot.css.variable("card-border", "#e0e0e0");
+```
+
+When theme variables change, every component using them updates instantly without any JavaScript re-renders.
+
+### Inline Styles with `.style()`
+
+Within a component's `build()` method, you can use the fluent `.style()` API to apply instance-specific styles. This uses a **Property Builder** and is ideal for styles driven by props or internal state.
+
+```javascript
+class MyButton extends IDotComponent {
+	build() {
+		return dot.button("Click Me")
+			.style(b => b
+				.backgroundColor(this.props.color)
+				.borderRadiusPx(5)
+			);
+	}
+}
+```
+
+### Host Variable Binding with `hostStyle()`
+
+Sometimes you want a component to drive its internal styles via CSS variables on its own host element. This is highly performant as it avoids re-rendering the entire component for visual-only changes.
+
+Use the `hostStyle()` method to bind reactive styles to the component's host element. This method receives a **Stylesheet Builder** (pre-scoped to the `:host` rule).
+
+```javascript
+class ThemeableBox extends IDotComponent {
+	hostStyle(s) {
+		// s is a Stylesheet Builder
+		// Bind a reactive signal to a CSS variable on the host element.
+		s.variable("box-color", this.props.color);
+	}
+
+	stylize(s) {
+		return s.class("box", b => b
+			.backgroundColor("var(--box-color)") // Reference the host variable.
+			.paddingPx(10)
+		);
+	}
+
+	build() {
+		return dot.div({ class: "box" }, "I am themed via host variables!");
+	}
+}
+```
 
 ## Fluent Style Builder
 
@@ -338,55 +510,109 @@ class MyComponent extends IDotComponent {
 
 When `themeColor.value` changes, the CSS variable on the document root is updated, and every component using `var(--primary)` will instantly reflect the change without any JavaScript re-renders.
 
-## Contextual Theme Inheritance
+## Advanced Theming Patterns
 
-While global variables are great for application-wide defaults, large-scale "Mega-Apps" often require different styling for different sections (e.g., a "Dashboard" vs. a "Marketing" site).
+The following patterns are powerful but typically needed only for complex applications with sophisticated theming requirements. **For most use cases, prefer the simpler approach of `stylize()` with CSS variables (see [Component Styling](#component-styling) above).**
 
-DOThtml supports **Contextual Theme Inheritance**, allowing a parent component to provide styling rules to its entire subtree.
+### Signal Stylesheet Swapping
 
-### Providing a Theme
+For advanced use cases like switching between "Light" and "Dark" modes or "Compact" and "Comfortable" layouts, the `stylize()` method can return a `Signal` or `Binding` of styles. This causes DOThtml to swap the entire stylesheet when the signal changes.
 
-To provide a theme, a component's `stylize()` method can return a **theme function**, a **CSS string**, or a **Signal** of either. This theme will be automatically inherited and applied by all descendant components within their own Shadow Roots.
+**⚠️ Use Sparingly:** This pattern swaps the entire component stylesheet on every signal change, which can be expensive for large component trees. For simple theme switches (colors, spacing), prefer CSS variables that update without re-creating stylesheets.
+
+```javascript
+const layoutMode = dot.state("comfortable");
+
+class AppContainer extends IDotComponent {
+	stylize(s) {
+		return layoutMode.bindAs(mode => {
+			if (mode === "compact") {
+				return s.class("main", b => b.paddingPx(5).fontSizePx(12));
+			}
+			return s.class("main", b => b.paddingPx(20).fontSizePx(16));
+		});
+	}
+}
+```
+
+When the `layoutMode` signal changes, DOThtml efficiently swaps the stylesheet for all instances of the component without re-rendering the component's HTML structure.
+
+**Recommended alternative for simple theme switching:**
+
+```javascript
+// ✅ Use CSS variables instead
+const layoutMode = dot.state("comfortable");
+dot.css.variable("main-padding", layoutMode.bindAs(m => m === "compact" ? 5 : 20));
+dot.css.variable("main-font-size", layoutMode.bindAs(m => m === "compact" ? 12 : 16));
+
+class AppContainer extends IDotComponent {
+	stylize(s) {
+		return s.class("main", b => b
+			.paddingPx(s.v("main-padding"))
+			.fontSizePx(s.v("main-font-size"))
+		);
+	}
+}
+```
+
+### Contextual Theme Inheritance
+
+While global variables are great for application-wide defaults, large-scale "Mega-Apps" may require different styling for different sections (e.g., a "Dashboard" vs. a "Marketing" site).
+
+DOThtml supports **Contextual Theme Inheritance**, allowing a parent component to provide styling rules to its entire subtree. This pattern is useful when you need section-specific theming that cascades to all descendants.
+
+**When to use:**
+- Building multi-tenant or white-label applications
+- Creating distinct theme sections within a single app
+- Migrating legacy CSS that needs to be scoped per-section
+
+**When not to use:**
+- Simple app-wide theming (use `dot.css.variable()` instead)
+- Per-component customization (use component props or CSS variables)
 
 #### Using a Theme Function
+
+A component's `stylize()` method can return a **theme function** that will be automatically inherited and applied by all descendant components within their own Shadow Roots.
+
 ```javascript
 class SectionTheme extends IDotComponent {
-  stylize() {
-    // Return a theme function to be inherited by all descendants
-    return (s) => {
-      s.class("btn", b => b
-        .backgroundColor("blue")
-        .color("white")
-        .borderRadiusPx(8)
-      );
-    };
-  }
-  build(dot) {
-    return dot.div(dot.slot());
-  }
+	stylize() {
+		// Return a theme function to be inherited by all descendants
+		return (s) => {
+			s.class("btn", b => b
+				.backgroundColor("blue")
+				.color("white")
+				.borderRadiusPx(8)
+			);
+		};
+	}
+	build(dot) {
+		return dot.div(dot.slot());
+	}
 }
 ```
 
 #### Using a CSS String
+
 If you provide a CSS string, DOThtml automatically transforms `html` and `body` selectors into `:host` to ensure the styles apply correctly within the child components' Shadow Roots.
 
 ```javascript
 class LegacyThemeProvider extends IDotComponent {
-  stylize() {
-    // Return a raw CSS string to be inherited by all descendants
-    return `
-      html { background-color: #f0f0f0; }
-      body { font-family: sans-serif; }
-      .btn { border-radius: 20px; }
-    `;
-  }
-  build(dot) {
-    return dot.div(dot.slot());
-  }
+	stylize() {
+		// Return a raw CSS string to be inherited by all descendants
+		return `
+			html { background-color: #f0f0f0; }
+			body { font-family: sans-serif; }
+			.btn { border-radius: 20px; }
+		`;
+	}
+	build(dot) {
+		return dot.div(dot.slot());
+	}
 }
 ```
 
-### Reactive Theme Propagation
+#### Reactive Theme Propagation
 
 Contextual themes are fully reactive. If you return a `Signal` of a theme function, any change to that Signal will automatically trigger a style re-render for every component in its subtree.
 
@@ -394,131 +620,67 @@ Contextual themes are fully reactive. If you return a `Signal` of a theme functi
 const currentTheme = dot.state((s) => s.class("btn", b => b.color("red")));
 
 class App extends IDotComponent {
-  stylize() {
-    return currentTheme; // Subtree will update when currentTheme changes
-  }
-  // ...
+	stylize() {
+		return currentTheme; // Subtree will update when currentTheme changes
+	}
+	// ...
 }
 ```
 
-### Benefits of Contextual Theming
+#### Benefits of Contextual Theming
 
-1.  **Zero Pollution**: Styles are applied *inside* each component's Shadow Root. A theme in Section A cannot leak out to affect Section B.
-2.  **No Prop-Drilling**: Child components don't need to be "theme-aware" or receive theme props; they just use standard classes, and the styles "show up."
-3.  **Composition**: Components can apply styles from a global theme, a section theme, and their own local styles in sequence.
+1. **Zero Pollution**: Styles are applied *inside* each component's Shadow Root. A theme in Section A cannot leak out to affect Section B.
+2. **No Prop-Drilling**: Child components don't need to be "theme-aware" or receive theme props; they just use standard classes, and the styles "show up."
+3. **Composition**: Components can apply styles from a global theme, a section theme, and their own local styles in sequence.
 
-## Reactive Theme Context
+### Reactive Theme Context with `dot.setTheme()`
 
 DOThtml provides a first-class `Theme` concept that makes design systems easy to implement. By using `dot.setTheme()`, you can make a global reactive object available to all component style builders via `s.theme`.
+
+**⚠️ Consider CSS Variables First:** This pattern creates a global theme object accessible via `s.theme` in every component. For most applications, using `dot.css.variable()` is simpler and more explicit.
+
+**When to use `setTheme()`:**
+- You have a complex design system with many interconnected theme values
+- You want components to automatically bind to theme properties without explicitly wiring each one
+- You're building a framework or design system library
 
 ```javascript
 // 1. Define your theme
 const myTheme = {
-  primary: dot.state("#007bff"),
-  spacing: dot.state(10)
+	primary: dot.state("#007bff"),
+	spacing: dot.state(10)
 };
 dot.setTheme(myTheme);
 
 // 2. Use it in any component
 class MyComponent extends IDotComponent {
-  stylize(s) {
-    return s.class("container", b => b
-      .color(s.theme.primary) // Automatically creates a reactive binding
-      .paddingPx(s.theme.spacing)
-    );
-  }
+	stylize(s) {
+		return s.class("container", b => b
+			.color(s.theme.primary) // Automatically creates a reactive binding
+			.paddingPx(s.theme.spacing)
+		);
+	}
 }
 ```
 
-## Component Styling
-
-DOThtml provides several ways to style components, ranging from instance-specific inline styles to shared, scoped templates.
-
-### Inline Styles
-
-Within a component's `build()` method, you can use the fluent `.style()` API to apply instance-specific styles. This uses a **Property Builder** and is ideal for styles driven by props or internal state.
+**Simpler alternative using CSS variables:**
 
 ```javascript
-class MyButton extends IDotComponent {
-  build() {
-    return dot.button("Click Me")
-      .style(b => b
-        .backgroundColor(this.props.color)
-        .borderRadiusPx(5)
-      );
-  }
-}
-```
+// ✅ More explicit and easier to trace
+const myTheme = {
+	primary: dot.state("#007bff"),
+	spacing: dot.state(10)
+};
+dot.css.variable("theme-primary", myTheme.primary);
+dot.css.variable("theme-spacing", myTheme.spacing);
 
-### Scoped Styles and Shadow DOM
-
-By default, DOThtml components use **Shadow DOM** for style encapsulation. This means styles defined within a component won't leak out, and global styles won't leak in (unless explicitly allowed).
-
-To define shared styles for all instances of a component, implement the `stylize()` method. This method receives a **Stylesheet Builder**. DOThtml will automatically create a `CSSStyleSheet` (or a fallback `<style>` tag) and adopt it into the component's shadow root.
-
-```javascript
 class MyComponent extends IDotComponent {
-  stylize(s) {
-    return s.class("container", b => b
-      .display("flex")
-      .paddingPx(20)
-      .backgroundColor("#f0f0f0")
-    );
-  }
-
-  build() {
-    return dot.div({ class: "container" }, "Hello Shadow DOM!");
-  }
-}
-```
-
-> **Note**: Unlike many other frameworks, `stylize()` in DOThtml is **fully reactive**. You can pass Signals and Bindings directly into the builder, and DOThtml will automatically optimize them into high-performance CSS variables behind the scenes.
-
-### Signal Stylesheet Swapping
-
-For advanced use cases like switching between "Light" and "Dark" modes or "Compact" and "Comfortable" layouts, the `stylize()` method can return a `Signal` or `Binding` of styles.
-
-```javascript
-const layoutMode = dot.state("comfortable");
-
-class AppContainer extends IDotComponent {
-  stylize(s) {
-    return layoutMode.bindAs(mode => {
-      if (mode === "compact") {
-        return s.class("main", b => b.paddingPx(5).fontSizePx(12));
-      }
-      return s.class("main", b => b.paddingPx(20).fontSizePx(16));
-    });
-  }
-}
-```
-
-When the `layoutMode` signal changes, DOThtml efficiently swaps the stylesheet for all instances of the component without re-rendering the component's HTML structure.
-
-### Host Variable Binding
-
-Sometimes you want a component to drive its internal styles via CSS variables on its own host element. This is highly performant as it avoids re-rendering the entire component for visual-only changes.
-
-Use the `hostStyle()` method to bind reactive styles to the component's host element. This method receives a **Stylesheet Builder** (pre-scoped to the `:host` rule).
-
-```javascript
-class ThemeableBox extends IDotComponent {
-  hostStyle(s) {
-    // s is a Stylesheet Builder
-    // Bind a reactive signal to a CSS variable on the host element.
-    s.variable("box-color", this.props.color);
-  }
-
-  stylize(s) {
-    return s.class("box", b => b
-      .backgroundColor("var(--box-color)") // Reference the host variable.
-      .paddingPx(10)
-    );
-  }
-
-  build() {
-    return dot.div({ class: "box" }, "I am themed via host variables!");
-  }
+	stylize(s) {
+		return s.class("container", b => b
+			.color(s.v("theme-primary"))
+			.paddingPx(s.v("theme-spacing"))
+		);
+	}
 }
 ```
 
@@ -540,9 +702,15 @@ These global styles are automatically added to the `adoptedStyleSheets` of every
 
 ### Dynamic Global Selectors
 
-While `dot.css` targets the document root, you can create style nodes that target any CSS selector and update them reactively.
+> **⚠️ Warning: Internal API**
+> The deep import `dothtml/v-meta-nodes/style-v-node` shown below is **not a valid published package export**. It is an internal implementation detail and may break in any release. This pattern is **not recommended** for production use.
+>
+> For most use cases, prefer `dot.css.variable()` for global theming or component `stylize()` for scoped styles. This internal API is documented here only for framework contributors and advanced debugging scenarios.
+
+While `dot.css` targets the document root, you can create style nodes that target any CSS selector and update them reactively using an internal API:
 
 ```javascript
+// ⚠️ INTERNAL API - Not a valid package export
 import StyleVNode from "dothtml/v-meta-nodes/style-v-node";
 
 const color = dot.state("red");
@@ -551,6 +719,20 @@ globalStyle.render(".my-dynamic-class");
 
 // Later...
 color.value = "blue"; // Updates the <style> tag targeting .my-dynamic-class
+```
+
+**Recommended alternative:**
+
+```javascript
+// ✅ Use CSS variables instead
+dot.css.variable("dynamic-color", dot.state("red"));
+
+// Then reference in your components:
+stylize(s) {
+	return s.class("my-dynamic-class", b => b
+		.color(s.v("dynamic-color"))
+	);
+}
 ```
 
 ## Performance and Caching
