@@ -23,7 +23,7 @@ class MyErrorBoundary extends DotComponent {
         console.error("Caught an error:", error);
         this.hasError.value = true;
         
-        // Return a fallback UI to be rendered inside this component's shadow root.
+        // Return a fallback UI (markup) to be rendered inside this component's shadow root.
         return dot.div({ class: "error-fallback" },
             dot.h2("Something went wrong."),
             dot.p(error.message),
@@ -40,6 +40,22 @@ class MyErrorBoundary extends DotComponent {
     }
 }
 ```
+
+### What `errorCaught` Catches
+
+The `errorCaught` hook is invoked **only** for errors that occur within the VDOM update path:
+
+✅ **Errors that ARE caught:**
+- Errors thrown in a child component's `build()` method
+- Errors during the `mounted` lifecycle hook
+- Errors during reactive/scheduled updates triggered by signal changes
+- Errors during the `unmounting` lifecycle hook
+
+❌ **Errors that are NOT caught:**
+- **Event handlers** (`onClick`, `onInput`, `onChange`, etc.) — these run outside the VDOM update cycle and errors escape as uncaught browser errors. Wrap event handler logic in `try-catch` or set an error signal yourself.
+- **Async/promise rejections** outside the update path unless you catch and rethrow them into a reactive update.
+
+**Important:** The `errorCaught` hook must return **fallback markup** (e.g., `return dot.div(...)`) to replace the failed content, not boolean values like `true` or `false`.
 
 ### Key Features of Error Boundaries:
 *   **Bubbling**: Errors automatically bubble up the component tree until caught.
