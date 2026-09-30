@@ -379,6 +379,24 @@ s.class("button", b => b
 
 **Note:** `stylize(s)` can also return a raw CSS string or a theme function for advanced scenarios, but **prefer the stylesheet builder `s` for typical use cases** — it provides better type safety, reactivity support, and IDE assistance.
 
+**✅ Valid on-ramp: External stylesheets**
+
+Importing or linking external CSS files is a **valid and supported** approach, especially when:
+- Migrating existing applications with established stylesheets
+- Using CSS frameworks (Bootstrap, Tailwind, etc.) or template CSS
+- Working around style builder limitations (`:hover`, multi-arg lengths, `@font-face`, etc.)
+
+```javascript
+// Import in your app entry point
+import "./styles/global.css";
+
+// Or use dot.useGlobalStyles() for Shadow DOM components
+import globalCss from "./styles/global.css?inline";
+dot.useGlobalStyles(globalCss);
+```
+
+For new DOThtml-native component styling, prefer `stylize` + CSS variables for better scoping and reactivity.
+
 **❌ Avoid: Deep imports of StyleVNode as the default**
 
 Deep imports like `dothtml/v-meta-nodes/style-v-node` are **not valid published exports**. Use the public API (`stylize`, `dot.css`, etc.).
