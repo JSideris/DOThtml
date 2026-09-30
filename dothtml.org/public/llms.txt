@@ -2,6 +2,7 @@
 > A lightweight, reactive UI engine and framework for building modern web applications with zero dependencies.
 
 - [Full Documentation](https://dothtml.org/llms-full.txt): All documentation in one file for LLMs.
+- [AI Agent Guide](https://dothtml.org/docs/ai-agents.md): Ranked defaults, common traps, and React→DOThtml migration guide for coding agents.
 
 ## Core Documentation
 - [Quick Start & Installation](https://dothtml.org/docs/quick-start.md): Get up and running with DOThtml in minutes.
