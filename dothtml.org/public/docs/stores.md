@@ -65,6 +65,23 @@ DOThtml Stores are built directly on top of the framework's core reactivity prim
 2. **Getters as Computeds**: Every function in the `getters` object is converted into a `dot.computed` signal. They are lazy-evaluated and automatically track their dependencies.
 3. **Bound Actions**: Actions are bound to the store instance, so `this` always points to the reactive state and other actions/getters.
 
+### TypeScript Support
+
+When using TypeScript, actions and getters have full type safety for accessing state signals via `this`. The framework automatically infers that state properties are signals, so you can write:
+
+```typescript
+const useStore = dot.store({
+  state: () => ({ count: 0 }),
+  actions: {
+    increment() {
+      this.count.value++; // ✓ TypeScript knows this.count is ISignal<number>
+    }
+  }
+});
+```
+
+No type casts required—`this` in actions is properly typed to include signal-mapped state and getters.
+
 ## Singleton vs. Local Stores
 
 ### Global Singletons

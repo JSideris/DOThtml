@@ -35,6 +35,31 @@ export type ComponentArgs<TProps extends Array<string> = [], TEvents extends Arr
 /**
  * Interface for the dot object.
  */
+/**
+ * Maps state properties to their signal equivalents.
+ * Each property of type T becomes ISignal<T>.
+ */
+type SignalMappedState<TState> = {
+	[K in keyof TState]: ISignal<TState[K]>;
+};
+
+/**
+ * Maps getters to their computed signal equivalents.
+ * Each getter returns a computed value wrapped in ISignal.
+ */
+type SignalMappedGetters<TGetters> = {
+	[K in keyof TGetters]: TGetters[K] extends (state: any) => infer R ? ISignal<R> : never;
+};
+
+/**
+ * Represents the complete store instance type with signal-mapped state, getters, and actions.
+ */
+type StoreInstance<TState, TGetters, TActions> = 
+	SignalMappedState<TState> & 
+	SignalMappedGetters<TGetters> & 
+	TActions & 
+	{ $id: string | undefined; $dispose: () => void };
+
 export interface IDotCore extends IDotDocument {
 	(targetSelector: string | Element | Node | NodeList | Array<Node | Element>, targetWindow?: Window): IDotDocument;
 
@@ -70,7 +95,16 @@ export interface IDotCore extends IDotDocument {
 	
 	create<T extends IDotComponent>(Ctor: { new(...args: any[]): T }, ...args: any[]): T;
 
-	store: <TState extends Record<string, any>, TActions extends Record<string, Function>, TGetters extends Record<string, (state: any) => any>>(options: { id?: string, state?: () => TState, getters?: TGetters, actions?: TActions }) => () => any;
+	store: <
+		TState extends Record<string, any> = {},
+		TGetters extends Record<string, (state: any) => any> = {},
+		TActions extends Record<string, Function> = {}
+	>(options: { 
+		id?: string;
+		state?: () => TState;
+		getters?: TGetters & ThisType<SignalMappedState<TState> & SignalMappedGetters<TGetters> & { $id: string }>;
+		actions?: TActions & ThisType<SignalMappedState<TState> & SignalMappedGetters<TGetters> & TActions & { $id: string }>;
+	}) => () => StoreInstance<TState, TGetters, TActions>;
 	getStore: (id: string) => any;
 	clearStores: () => void;
 	stores: Record<string, any>;

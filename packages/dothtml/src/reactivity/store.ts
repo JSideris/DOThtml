@@ -4,18 +4,43 @@ import { getCurrentComponent, pushComponent, popComponent } from "../vdom-nodes/
 
 const storeRegistry = new Map<string, any>();
 
-export interface StoreOptions<TState, TActions, TGetters> {
+/**
+ * Maps state properties to their signal equivalents.
+ * Each property of type T becomes Signal<T>.
+ */
+type SignalMappedState<TState> = {
+	[K in keyof TState]: Signal<TState[K]>;
+};
+
+/**
+ * Maps getters to their computed signal equivalents.
+ * Each getter returns a computed value wrapped in Computed.
+ */
+type SignalMappedGetters<TGetters> = {
+	[K in keyof TGetters]: TGetters[K] extends (state: any) => infer R ? Computed<R> : never;
+};
+
+export interface StoreOptions<TState, TGetters, TActions> {
 	id?: string;
 	state?: () => TState;
-	getters?: TGetters & ThisType<TState & TGetters & { $id: string }>;
-	actions?: TActions & ThisType<TState & TGetters & TActions & { $id: string }>;
+	getters?: TGetters & ThisType<SignalMappedState<TState> & SignalMappedGetters<TGetters> & { $id: string }>;
+	actions?: TActions & ThisType<SignalMappedState<TState> & SignalMappedGetters<TGetters> & TActions & { $id: string }>;
 }
 
+/**
+ * Represents the complete store instance type with signal-mapped state, getters, and actions.
+ */
+type StoreInstance<TState, TGetters, TActions> = 
+	SignalMappedState<TState> & 
+	SignalMappedGetters<TGetters> & 
+	TActions & 
+	{ $id: string | undefined; $dispose: () => void };
+
 export function createStore<
-	TState extends Record<string, any>, 
-	TActions extends Record<string, Function>,
-	TGetters extends Record<string, (state: any) => any>
->(options: StoreOptions<TState, TActions, TGetters>) {
+	TState extends Record<string, any> = {},
+	TGetters extends Record<string, (state: any) => any> = {},
+	TActions extends Record<string, Function> = {}
+>(options: StoreOptions<TState, TGetters, TActions>): () => StoreInstance<TState, TGetters, TActions> {
 	const { id, state: stateFn, getters, actions } = options;
 
 	if (id && storeRegistry.has(id)) {
