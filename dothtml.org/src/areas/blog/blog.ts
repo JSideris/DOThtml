@@ -19,7 +19,7 @@ export default class Blog extends DotComponent<BlogProps> {
 			.minHeightPx(800)
 			.paddingPx(100, 40, 40, 40)
 			.maxWidthPx(900)
-			.marginPx(0, "auto")
+			.margin("0 auto")
 			.position("relative")
 			.zIndex(1)
 		).class("blog-header", h => h
