@@ -11,7 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "dothtml": "^6.7.4"
+    "dothtml": "^6.8.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
