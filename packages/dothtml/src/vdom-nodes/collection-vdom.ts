@@ -244,6 +244,16 @@ export default class CollectionVdom extends Vdom{
 
 				const newItems = currentItems;
 				
+				// Validate key existence on items when key is specified
+				if (key && newItems.length > 0) {
+					const firstItem = newItems[0];
+					if (firstItem !== null && firstItem !== undefined && typeof firstItem === 'object') {
+						if (!(key in firstItem)) {
+							throw new Error(`[DOThtml] Keyed each() error: Items do not have the key property "${key}". The array was created with dot.state(items, "${key}"), but the items don't have a "${key}" property. Check your data or use a different key.`);
+						}
+					}
+				}
+
 				const newKeys: Array<any> = Array.isArray(unmappedCollection)
 					? newItems.map((v, i) => key ? v[key] : i)
 					: Object.keys(unmappedCollection).map((k, i) => key ? unmappedCollection[k][key] : k);

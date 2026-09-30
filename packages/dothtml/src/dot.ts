@@ -44,13 +44,13 @@ function reduceReactive(value: any){
 
 function rejectNonGetterFunction(value: any) {
 	if (typeof value === "function") {
-		throwError(12, "each/when does not accept a function with parameters as a collection or condition. Pass an array, a plain object, a signal, a binding, or a zero-arg getter.");
+		throwError(12, "each/when does not accept a function with parameters as a collection or condition. Pass an array, a plain object, a signal, a binding, or a zero-arg getter: () => items");
 	}
 }
 
 function rejectFunctionThenContent(then: any) {
 	if (typeof then === "function" && !then.prototype?.build) {
-		throwError(13, "when/otherwiseWhen then-content cannot be a function. Pass markup or a component, not a factory. Use a zero-arg getter or computed for the condition.");
+		throwError(13, "when/otherwiseWhen then-content cannot be a function. Pass eager markup or a component instance: dot.when(signal, dot.p('text')) not dot.when(signal, () => dot.p('text')). Use a zero-arg getter or computed for the condition, not the content.");
 	}
 }
 

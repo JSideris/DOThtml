@@ -25,8 +25,14 @@ export abstract class DotComponent<P = any, R = any> implements IDotComponent {
 	/**
 	 * The host custom element of the component. Use this to access the DOM node
 	 * in lifecycle hooks like `onEnter()` or `mounted()` for animations or direct manipulation.
+	 * 
+	 * Note: Available in mounted(), onEnter(), onLeave(), unmounting(), and unmounted() hooks.
+	 * Accessing before the component is mounted will throw an error.
 	 */
 	public get el(): HTMLElement {
+		if (!this._?.el) {
+			throw new Error("[DOThtml] this.el is only available after the component is mounted. Access it in mounted(), onEnter(), or later lifecycle hooks, not in the constructor or build().");
+		}
 		return this._?.el;
 	}
 
