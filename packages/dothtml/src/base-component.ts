@@ -22,6 +22,14 @@ export abstract class DotComponent<P = any, R = any> implements IDotComponent {
 	 */
 	public _: FrameworkItems;
 
+	/**
+	 * The host custom element of the component. Use this to access the DOM node
+	 * in lifecycle hooks like `onEnter()` or `mounted()` for animations or direct manipulation.
+	 */
+	public get el(): HTMLElement {
+		return this._?.el;
+	}
+
 	constructor(props?: P) {
 		this.props = props || {} as P;
 	}

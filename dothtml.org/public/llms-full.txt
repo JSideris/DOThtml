@@ -6,7 +6,7 @@
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.6.0)
+# Benchmarks (v6.7.2)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -33,7 +33,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **25.1 kB**
+- **DOThtml**: **25.3 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -62,7 +62,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **25.1 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **25.3 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -323,9 +323,13 @@ class MyModal extends DotComponent {
 }
 ```
 
+> **Note on `onEnter` and `this.el`:** Component lifecycle hooks (`onEnter()`, `mounted()`, etc.) are methods on the component class where `this` refers to the component instance. Inside these hooks, `this.el` gives you access to the component's host custom element for animations or direct DOM manipulation. This is different from element-level hooks like `dot.div().onEnter(el => ...)` or transition helpers like `.fade()`, which operate on individual DOM elements within your component's template and receive the element as a callback parameter.
+
 ## Custom Events
 
-Components can emit events that parents can listen to.
+Components can emit events that parents can listen to. The parent can listen to these events using either the mount options object or the fluent `.on()` method.
+
+### Emitting Custom Events
 
 ```javascript
 class MyButton {
@@ -336,6 +340,30 @@ class MyButton {
     }
 }
 ```
+
+### Listening to Custom Events
+
+**Option 1: Using mount options**
+
+```javascript
+dot(document.body).mount(new MyButton(), {
+    onCustomClick: (e) => {
+        console.log("Button clicked at:", e.detail.time);
+    }
+});
+```
+
+**Option 2: Using fluent API**
+
+```javascript
+dot(document.body)
+    .mount(new MyButton())
+    .on("customClick", (e) => {
+        console.log("Button clicked at:", e.detail.time);
+    });
+```
+
+Custom events bubble and can be caught by parent containers using the same `onEventName` pattern as standard DOM events.
 
 ## Advanced Event Handling
 
@@ -476,6 +504,32 @@ dot.mount(new PageLayout())
     .slot("header", dot.h1("Welcome"))
     .slot("footer", dot.p("Copyright 2026"))
     .slot(dot.div("Main content here"));
+```
+
+### Passing Multiple Children to a Named Slot
+
+When passing multiple elements to a single named slot, use fluent chaining rather than comma-separated arguments.
+
+```javascript
+class ActionCard extends DotComponent {
+    build(dot) {
+        return dot.div({ class: "card" },
+            dot.div({ class: "content" }, dot.slot()),
+            dot.div({ class: "actions" }, dot.slot("actions"))
+        );
+    }
+}
+
+// ✅ Correct: Chain elements fluently
+dot.mount(new ActionCard())
+    .slot(dot.p("Card content"))
+    .slot("actions", 
+        dot.button("Save")
+            .button("Cancel")
+    );
+
+// ❌ Incorrect: Comma-separated doesn't work
+// .slot("actions", dot.button("Save"), dot.button("Cancel"))
 ```
 
 ### 3. Fallback Content
@@ -742,6 +796,9 @@ This page contains a reference for all framework-level errors thrown by DOThtml.
 ## 14
 **Message:** each() collection must be an array or a plain object. Signals, bindings, and zero-arg getters must resolve to an array or plain object. Set, Map, Promise, null, and undefined are not valid collections.
 
+## 15
+**Message:** Attribute or element content cannot be a function. Pass a value, a signal, a binding, or a zero-arg getter.
+
 --- FILE: lists-and-conditionals.md (Lists And Conditionals) ---
 
 # Lists & Conditionals
@@ -807,6 +864,23 @@ dot.each(this.payload.value.worlds, w => dot.li(w.name));
 dot.each(this.payload.worlds, w => dot.li(w.name));
 ```
 
+## Attributes and text content
+
+The same zero-arg getter recipe works on attributes, `.attr()`, and element text. The getter is wrapped in `dot.computed`.
+
+```javascript
+dot.input({ type: "range", min: 0, max: 4, value: () => n.value });
+dot.div(() => name.value);
+dot.div("label").attr("data-n", () => n.value);
+dot.text(() => name.value);
+```
+
+`dot.div(() => name.value)` is **derived text**, not a lazy factory. `when` then-content stays eager — `when(cond, () => dot.p("x"))` still throws error **13**.
+
+Event handlers (`onClick: () => …`), style builders, and ref callbacks are not getters. `bind` must be a writable signal or binding — `bind: () => x` throws error **15**.
+
+Class-map values (`class: { active: () => … }`) are still treated as truthy / not executed.
+
 ## Keyed lists
 
 For efficient reuse and reordering, create the list with `dot.state(items, "id")` where `"id"` is the **item property name** used as the stable key. Each item must have that property.
@@ -826,6 +900,8 @@ See [Detailed Features](./detailed-features.md) for keyed diffing internals.
 | `each(new Set(…))` / `Map` / `null` / `undefined` / `Promise` | Error **14** |
 | `when(true, () => dot.p("x"))` | Error **13** (not lazy factories) |
 | `each((x) => …, row)` or arity-1 condition | Error **12** |
+| `value: (x) => …` / `dot.div((x) => …)` | Error **15** |
+| `bind: () => x` | Error **15** (not writable) |
 
 Reading nested properties through the signal proxy (for example `payload.items`) returns a **raw array**, not a list signal. Use a signal, `bindAs`, `computed`, or a zero-arg getter on `each`.
 
@@ -1152,11 +1228,12 @@ class MyComponent extends DotComponent {
 
 ## Reactive Attributes
 
-Reactivity can also be applied to element attributes. When a `Signal` or `Binding` is passed as an attribute value, DOThtml automatically updates that attribute whenever the signal changes.
+Reactivity can also be applied to element attributes. When a `Signal`, `Binding`, or **zero-arg getter** is passed as an attribute value, DOThtml automatically updates that attribute whenever the signal changes. Getters are wrapped in `dot.computed`. The same rule applies to `.attr()` and to element text (`dot.div(() => name.value)`, `.text(() => name.value)`).
 
 ```javascript
 const isActive = dot.state(true);
 dot.div({ class: { "active": isActive } }); // Updates class when isActive changes.
+dot.input({ value: () => count.value });
 ```
 
 You can also use `.bindAs()` to transform a signal's value specifically for an attribute:
@@ -1168,6 +1245,8 @@ dot.div({
     class: { "high-count": count.bindAs(v => v > 10) }
 });
 ```
+
+Event handlers, style builders, and ref callbacks are not getters. `bind: () => x` throws — a getter is not writable. See [Lists & Conditionals](./lists-and-conditionals.md) for the getter recipe and error **15**.
 
 ## Reactive Styles
 
@@ -1458,7 +1537,7 @@ const fragment = dot.div("A").p("B");
 
 ### Chaining Consistency
 
-All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. Zero-arg getters are OK for the **first** argument of `dot.each` and `dot.when`. See [Lists & Conditionals](./lists-and-conditionals.md) for reactive lists and conditionals. This allows for powerful imperative patterns:
+All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. Zero-arg getters work on `dot.each` / `dot.when` conditions, attributes, `.attr()`, and text content. See [Lists & Conditionals](./lists-and-conditionals.md) for reactive lists, conditionals, and the getter recipe. This allows for powerful imperative patterns:
 
 ```javascript
 dot("#app")

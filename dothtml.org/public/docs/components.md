@@ -176,9 +176,13 @@ class MyModal extends DotComponent {
 }
 ```
 
+> **Note on `onEnter` and `this.el`:** Component lifecycle hooks (`onEnter()`, `mounted()`, etc.) are methods on the component class where `this` refers to the component instance. Inside these hooks, `this.el` gives you access to the component's host custom element for animations or direct DOM manipulation. This is different from element-level hooks like `dot.div().onEnter(el => ...)` or transition helpers like `.fade()`, which operate on individual DOM elements within your component's template and receive the element as a callback parameter.
+
 ## Custom Events
 
-Components can emit events that parents can listen to.
+Components can emit events that parents can listen to. The parent can listen to these events using either the mount options object or the fluent `.on()` method.
+
+### Emitting Custom Events
 
 ```javascript
 class MyButton {
@@ -189,6 +193,30 @@ class MyButton {
     }
 }
 ```
+
+### Listening to Custom Events
+
+**Option 1: Using mount options**
+
+```javascript
+dot(document.body).mount(new MyButton(), {
+    onCustomClick: (e) => {
+        console.log("Button clicked at:", e.detail.time);
+    }
+});
+```
+
+**Option 2: Using fluent API**
+
+```javascript
+dot(document.body)
+    .mount(new MyButton())
+    .on("customClick", (e) => {
+        console.log("Button clicked at:", e.detail.time);
+    });
+```
+
+Custom events bubble and can be caught by parent containers using the same `onEventName` pattern as standard DOM events.
 
 ## Advanced Event Handling
 
@@ -329,6 +357,32 @@ dot.mount(new PageLayout())
     .slot("header", dot.h1("Welcome"))
     .slot("footer", dot.p("Copyright 2026"))
     .slot(dot.div("Main content here"));
+```
+
+### Passing Multiple Children to a Named Slot
+
+When passing multiple elements to a single named slot, use fluent chaining rather than comma-separated arguments.
+
+```javascript
+class ActionCard extends DotComponent {
+    build(dot) {
+        return dot.div({ class: "card" },
+            dot.div({ class: "content" }, dot.slot()),
+            dot.div({ class: "actions" }, dot.slot("actions"))
+        );
+    }
+}
+
+// ✅ Correct: Chain elements fluently
+dot.mount(new ActionCard())
+    .slot(dot.p("Card content"))
+    .slot("actions", 
+        dot.button("Save")
+            .button("Cancel")
+    );
+
+// ❌ Incorrect: Comma-separated doesn't work
+// .slot("actions", dot.button("Save"), dot.button("Cancel"))
 ```
 
 ### 3. Fallback Content

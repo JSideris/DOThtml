@@ -132,5 +132,45 @@ describe("Components", ()=>{
 
 		expect(document.body.children[0].shadowRoot?.innerHTML).toBe("<div>def</div>");
 	});
+
+	test("this.el is available in lifecycle hooks (onEnter, mounted).", ()=>{
+		let elInMounted: HTMLElement | null = null;
+		let elInOnEnter: HTMLElement | null = null;
+		let elHasAnimate = false;
+
+		class TestComponent implements IDotComponent {
+			_: FrameworkItems;
+			el?: HTMLElement;
+			
+			mounted() {
+				elInMounted = this.el || null;
+			}
+
+			onEnter() {
+				elInOnEnter = this.el || null;
+				// Verify el exists and has the animate method (if available in test environment)
+				if (this.el && this.el.animate) {
+					elHasAnimate = true;
+				}
+			}
+
+			build(): IDotDocument {
+				return dot.div("Test component");
+			}
+		}
+
+		dot(document.body).mount(new TestComponent());
+
+		// Verify this.el is set in both hooks
+		expect(elInMounted).toBeTruthy();
+		expect(elInMounted).toBeInstanceOf(HTMLElement);
+		expect(elInOnEnter).toBeTruthy();
+		expect(elInOnEnter).toBeInstanceOf(HTMLElement);
+		expect(elInMounted).toBe(elInOnEnter);
+		// Verify this.el is the custom element (host)
+		expect(elInMounted?.tagName.toLowerCase()).toMatch(/^dothtml-/);
+		// Note: animate may not be available in JSDOM test environment
+		// but we verify the element itself is accessible for real browser usage
+	});
 });
 

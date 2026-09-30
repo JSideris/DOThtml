@@ -38,3 +38,6 @@ This page contains a reference for all framework-level errors thrown by DOThtml.
 ## 14
 **Message:** each() collection must be an array or a plain object. Signals, bindings, and zero-arg getters must resolve to an array or plain object. Set, Map, Promise, null, and undefined are not valid collections.
 
+## 15
+**Message:** Attribute or element content cannot be a function. Pass a value, a signal, a binding, or a zero-arg getter.
+

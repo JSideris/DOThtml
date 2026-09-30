@@ -8,6 +8,11 @@ import { IDotStyleBuilder } from "./styles/i-dot-style-builder";
 // TODO: I think this could be typed so that it forces you to emit events from the list of strings.
 export interface FrameworkItems {
 	/**
+	 * The host custom element of the component. Use this to access the DOM node
+	 * in lifecycle hooks like `onEnter()` or `mounted()` for animations or direct manipulation.
+	 */
+	readonly el: HTMLElement;
+	/**
 	 * The shadow root element of the component.
 	 */
 	readonly refs: { [key: string]: HTMLElement };
@@ -32,6 +37,11 @@ export interface FrameworkItems {
 export default interface IDotComponent/*<TProps extends Array<string> = [], TEvents extends Array<string> = []>*/ {
 
 	readonly _?: FrameworkItems;
+	/**
+	 * The host custom element of the component. Use this to access the DOM node
+	 * in lifecycle hooks like `onEnter()` or `mounted()` for animations or direct manipulation.
+	 */
+	readonly el?: HTMLElement;
 	props?: any;
 	slots?: Record<string, any>;
 
