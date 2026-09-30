@@ -126,8 +126,15 @@ export interface IDotDocument {
 	): IDotDocument;
 	each<T>(
 		a:
-			| IReactive<readonly T[] | DotDictionary<T>>
-			| (() => readonly T[] | DotDictionary<T>),
+			| IReactive<T[]>
+			| IReactive<readonly T[]>
+			| (() => T[] | readonly T[]),
+		callback: (x: T, i: IBinding<number>, k: string | number) => DotContent
+	): IDotDocument;
+	each<T>(
+		a:
+			| IReactive<DotDictionary<T>>
+			| (() => DotDictionary<T>),
 		callback: (x: T, i: IBinding<number>, k: string | number) => DotContent
 	): IDotDocument;
 
