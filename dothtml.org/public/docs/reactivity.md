@@ -195,6 +195,26 @@ dot.input({ value: mySignal });
 dot.input({ bind: mySignal }); 
 ```
 
+### ❌ Wrong: Manual Two-Way Binding
+
+**Do not** attempt to implement two-way binding manually using `.attr()` and `.on()`. This is verbose, error-prone, and not the DOThtml way:
+
+```javascript
+// WRONG: Manual "two-way" binding - do not do this!
+const name = dot.state("");
+dot.input({ type: "text" })
+	.attr("value", name)
+	.on("input", e => name.value = e.target.value); // ❌ Not recommended
+```
+
+**Always use `{ bind: signal }` instead:**
+
+```javascript
+// ✅ Correct: Use bind for two-way binding
+const name = dot.state("");
+dot.input({ type: "text", bind: name });
+```
+
 > **AI Agents**: When building forms, always use `bind` for inputs that should update signals. Using `value` with a signal creates one-way display-only inputs. See the [AI Agents Guide](./ai-agents.md) for more patterns.
 
 > **Note**: `when` evaluates then-content eagerly, not lazily. `when(cond, () => dot.p("x"))` throws error **13**. See [Lists & Conditionals](./lists-and-conditionals.md) for details.

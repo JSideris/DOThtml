@@ -4,7 +4,7 @@
 
 
 
---- FILE: ai-agents.md (AI Agent Guide) ---
+--- FILE: ai-agents.md (Ai Agents) ---
 
 # AI Agent Guide
 
@@ -69,7 +69,17 @@ dot(document.body).mount(new MyComponent({ name: "World" }));
 
 **❌ Avoid: `IDotComponent` interface + `dot.create` as the default**
 
-The `IDotComponent` interface and `dot.create` factory exist for advanced dependency injection scenarios, but are not the recommended starting point. Prefer the patterns above.
+The `IDotComponent` interface and `dot.create` factory exist for advanced dependency injection scenarios, but are **not the recommended starting point**. 
+
+**Do not use `dot.create` for normal applications**. Always prefer the decorator or wrapper patterns above and instantiate with `new`:
+
+```javascript
+// ✅ CORRECT: Use 'new' for normal apps
+dot(document.body).mount(new MyComponent({ name: "World" }));
+
+// ❌ AVOID: dot.create is only for advanced DI scenarios
+dot(document.body).mount(dot.create(MyComponent, { name: "World" }));
+```
 
 **See:** [components.md](./components.md)
 
@@ -175,7 +185,19 @@ dot.p(() => `Hello, ${name.value}!`);
 
 This keeps the input and signal synchronized automatically.
 
-**❌ Avoid: `value:` for two-way binding**
+**❌ Avoid: Manual "two-way" binding with `.attr()` + `.on('input')`**
+
+Do not attempt to implement two-way binding manually:
+
+```javascript
+// WRONG: This is not true two-way binding
+const name = dot.state("");
+dot.input({ type: "text" })
+	.attr("value", name)
+	.on("input", e => name.value = e.target.value); // ❌ Verbose and wrong
+```
+
+**❌ Avoid: `value:` alone for two-way binding**
 
 Setting `value:` alone is **one-way only**. It sets the initial value but does not update the signal when the user types:
 
@@ -324,7 +346,7 @@ While `history.pushState` works, prefer `navigate` to ensure DOThtml's routing s
 
 ### 8. Styling
 
-**✅ Prefer: `stylize` and CSS variables (`dot.css.variable` + `s.v`)**
+**✅ Prefer: `stylize(s)` builder and CSS variables (`dot.css.variable` + `s.v`)**
 
 For component-scoped styles, use the `stylize(s)` method with the stylesheet builder:
 
@@ -362,6 +384,8 @@ s.class("button", b => b
 	.backgroundColor(s.v(accentColor))
 );
 ```
+
+**Note:** `stylize(s)` can also return a raw CSS string or a theme function for advanced scenarios, but **prefer the stylesheet builder `s` for typical use cases** — it provides better type safety, reactivity support, and IDE assistance.
 
 **❌ Avoid: Deep imports of StyleVNode as the default**
 
@@ -723,7 +747,7 @@ This guide should help you avoid the most common traps and follow DOThtml's cano
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v6.7.2)
+# Benchmarks (v%%DOTHTML_VERSION%%)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -733,16 +757,16 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | 6.93 ms | 6.69 ms | 6.14 ms | **5.93 ms** |
-| **Create 10,000 rows** | 721.85 ms | 624.95 ms | 473.35 ms | **465.85 ms** |
-| **Append 1,000 rows** | **7.64 ms** | 70.08 ms | 51.99 ms | 50.07 ms |
-| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | 0.15 ms |
-| **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
-| **Clear** | **1.45 ms** | **1.45 ms** | **1.45 ms** | 1.46 ms |
-| **Bulk Style Update** | **0.15 ms** | 0.31 ms | 0.21 ms | 0.21 ms |
-| **First Contentful Paint** | **28.00 ms** | **28.00 ms** | **28.00 ms** | **28.00 ms** |
-| **DOM Interactive** | 4.75 ms | 4.70 ms | **4.65 ms** | 4.80 ms |
-| **Framework Ready** | 14.35 ms | 6.35 ms | 7.85 ms | **5.60 ms** |
+| **Create 1,000 rows** | %%BENCH_CREATE_1000_DOTHTML%% | %%BENCH_CREATE_1000_REACT%% | %%BENCH_CREATE_1000_VUE%% | %%BENCH_CREATE_1000_SVELTE%% |
+| **Create 10,000 rows** | %%BENCH_CREATE_10000_DOTHTML%% | %%BENCH_CREATE_10000_REACT%% | %%BENCH_CREATE_10000_VUE%% | %%BENCH_CREATE_10000_SVELTE%% |
+| **Append 1,000 rows** | %%BENCH_APPEND_1000_DOTHTML%% | %%BENCH_APPEND_1000_REACT%% | %%BENCH_APPEND_1000_VUE%% | %%BENCH_APPEND_1000_SVELTE%% |
+| **Update every 10th row** | %%BENCH_UPDATE_10TH_DOTHTML%% | %%BENCH_UPDATE_10TH_REACT%% | %%BENCH_UPDATE_10TH_VUE%% | %%BENCH_UPDATE_10TH_SVELTE%% |
+| **Swap Rows** | %%BENCH_SWAP_ROWS_DOTHTML%% | %%BENCH_SWAP_ROWS_REACT%% | %%BENCH_SWAP_ROWS_VUE%% | %%BENCH_SWAP_ROWS_SVELTE%% |
+| **Clear** | %%BENCH_CLEAR_DOTHTML%% | %%BENCH_CLEAR_REACT%% | %%BENCH_CLEAR_VUE%% | %%BENCH_CLEAR_SVELTE%% |
+| **Bulk Style Update** | %%BENCH_BULK_STYLE_DOTHTML%% | %%BENCH_BULK_STYLE_REACT%% | %%BENCH_BULK_STYLE_VUE%% | %%BENCH_BULK_STYLE_SVELTE%% |
+| **First Contentful Paint** | %%BENCH_FCP_DOTHTML%% | %%BENCH_FCP_REACT%% | %%BENCH_FCP_VUE%% | %%BENCH_FCP_SVELTE%% |
+| **DOM Interactive** | %%BENCH_DOM_INTERACTIVE_DOTHTML%% | %%BENCH_DOM_INTERACTIVE_REACT%% | %%BENCH_DOM_INTERACTIVE_VUE%% | %%BENCH_DOM_INTERACTIVE_SVELTE%% |
+| **Framework Ready** | %%BENCH_FRAMEWORK_READY_DOTHTML%% | %%BENCH_FRAMEWORK_READY_REACT%% | %%BENCH_FRAMEWORK_READY_VUE%% | %%BENCH_FRAMEWORK_READY_SVELTE%% |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -750,7 +774,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **25.3 kB**
+- **DOThtml**: **%%DOTHTML_COMPRESSED_SIZE%% kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -779,7 +803,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **25.3 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **%%DOTHTML_COMPRESSED_SIZE%% kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -942,6 +966,8 @@ dot("#app").mount(myFragment);
 
 > **Note**: This pattern is for **advanced use cases** requiring complete separation between implementation and interfaces (e.g., complex Dependency Injection scenarios). For typical component development, prefer the `@dot.component` decorator or `dot.component()` wrapper patterns above.
 
+**⚠️ For normal applications, use the patterns above with `new`. This pattern is only for advanced dependency injection scenarios.**
+
 If you need complete separation between implementation and interfaces, you can implement the `IDotComponent` interface directly.
 
 ```typescript
@@ -960,6 +986,8 @@ dot(document.body).mount(dot.create(MyComponent, { name: "World" }));
 ```
 
 **Note**: When using this pattern, you **must** use `dot.create` to instantiate the component if you use any reactive signals in the constructor. Using `new` directly on an undecorated class will result in "orphaned" signals that cause memory leaks.
+
+**Again: For typical applications, prefer the decorator or wrapper patterns above and instantiate with `new`. Only use `dot.create` for advanced DI scenarios.**
 
 ## Props and Validation
 
@@ -2102,6 +2130,26 @@ dot.input({ value: mySignal });
 dot.input({ bind: mySignal }); 
 ```
 
+### ❌ Wrong: Manual Two-Way Binding
+
+**Do not** attempt to implement two-way binding manually using `.attr()` and `.on()`. This is verbose, error-prone, and not the DOThtml way:
+
+```javascript
+// WRONG: Manual "two-way" binding - do not do this!
+const name = dot.state("");
+dot.input({ type: "text" })
+	.attr("value", name)
+	.on("input", e => name.value = e.target.value); // ❌ Not recommended
+```
+
+**Always use `{ bind: signal }` instead:**
+
+```javascript
+// ✅ Correct: Use bind for two-way binding
+const name = dot.state("");
+dot.input({ type: "text", bind: name });
+```
+
 > **AI Agents**: When building forms, always use `bind` for inputs that should update signals. Using `value` with a signal creates one-way display-only inputs. See the [AI Agents Guide](./ai-agents.md) for more patterns.
 
 > **Note**: `when` evaluates then-content eagerly, not lazily. `when(cond, () => dot.p("x"))` throws error **13**. See [Lists & Conditionals](./lists-and-conditionals.md) for details.
@@ -2895,6 +2943,23 @@ DOThtml Stores are built directly on top of the framework's core reactivity prim
 1. **State as Signals**: Every property returned by the `state()` function is automatically wrapped in a `Signal`. You access and update them using `.value`.
 2. **Getters as Computeds**: Every function in the `getters` object is converted into a `dot.computed` signal. They are lazy-evaluated and automatically track their dependencies.
 3. **Bound Actions**: Actions are bound to the store instance, so `this` always points to the reactive state and other actions/getters.
+
+### TypeScript Support
+
+When using TypeScript, actions and getters have full type safety for accessing state signals via `this`. The framework automatically infers that state properties are signals, so you can write:
+
+```typescript
+const useStore = dot.store({
+  state: () => ({ count: 0 }),
+  actions: {
+    increment() {
+      this.count.value++; // ✓ TypeScript knows this.count is ISignal<number>
+    }
+  }
+});
+```
+
+No type casts required—`this` in actions is properly typed to include signal-mapped state and getters.
 
 ## Singleton vs. Local Stores
 
