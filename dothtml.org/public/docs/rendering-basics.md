@@ -103,7 +103,7 @@ const fragment = dot.div("A").p("B");
 
 ### Chaining Consistency
 
-All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. Zero-arg getters are OK for the **first** argument of `dot.each` and `dot.when`. See [Lists & Conditionals](./lists-and-conditionals.md) for reactive lists and conditionals. This allows for powerful imperative patterns:
+All entry points, including `dot.mount()`, `dot.each()`, and `dot.when()`, return a consistent wrapper that supports chaining. Zero-arg getters work on `dot.each` / `dot.when` conditions, attributes, `.attr()`, and text content. See [Lists & Conditionals](./lists-and-conditionals.md) for reactive lists, conditionals, and the getter recipe. This allows for powerful imperative patterns:
 
 ```javascript
 dot("#app")

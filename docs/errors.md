@@ -41,5 +41,3 @@ This page contains a reference for all framework-level errors thrown by DOThtml.
 ## 15
 **Message:** Attribute or element content cannot be a function. Pass a value, a signal, a binding, or a zero-arg getter.
 
-**Message (bind):** bind does not accept a function. Pass a writable signal or binding, not a getter.
-

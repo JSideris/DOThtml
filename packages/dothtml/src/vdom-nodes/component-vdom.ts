@@ -854,12 +854,20 @@ export class ComponentVdom extends Vdom{
 			// Needs to be run once per component per document.
 			this.setupCustomElement(document);
 
-			this.shadowEl = document.createElement(this.component._._meta.tagName);
-			this.shadowEl["cvdom"] = this;
-			this.shadowEl.setAttribute("cvdom", "");
-			this.shadowEl["component"] = this.component;
+		this.shadowEl = document.createElement(this.component._._meta.tagName);
+		this.shadowEl["cvdom"] = this;
+		this.shadowEl.setAttribute("cvdom", "");
+		this.shadowEl["component"] = this.component;
+		(this.component._ as any).el = this.shadowEl;
+		// Try to set el directly on the component for plain classes that implement IDotComponent
+		// DotComponent instances use a getter that reads from this._.el, so setting it directly will fail
+		try {
+			(this.component as any).el = this.shadowEl;
+		} catch (e) {
+			// Ignore - component has a getter for el (e.g., DotComponent instances)
+		}
 
-			this.init();
+		this.init();
 
 			if (this.lastError) {
 				if (IS_DEV) this.renderErrorBox(this.lastError);

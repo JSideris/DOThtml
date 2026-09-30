@@ -105,11 +105,12 @@ class MyComponent extends DotComponent {
 
 ## Reactive Attributes
 
-Reactivity can also be applied to element attributes. When a `Signal` or `Binding` is passed as an attribute value, DOThtml automatically updates that attribute whenever the signal changes.
+Reactivity can also be applied to element attributes. When a `Signal`, `Binding`, or **zero-arg getter** is passed as an attribute value, DOThtml automatically updates that attribute whenever the signal changes. Getters are wrapped in `dot.computed`. The same rule applies to `.attr()` and to element text (`dot.div(() => name.value)`, `.text(() => name.value)`).
 
 ```javascript
 const isActive = dot.state(true);
 dot.div({ class: { "active": isActive } }); // Updates class when isActive changes.
+dot.input({ value: () => count.value });
 ```
 
 You can also use `.bindAs()` to transform a signal's value specifically for an attribute:
@@ -121,6 +122,8 @@ dot.div({
     class: { "high-count": count.bindAs(v => v > 10) }
 });
 ```
+
+Event handlers, style builders, and ref callbacks are not getters. `bind: () => x` throws — a getter is not writable. See [Lists & Conditionals](./lists-and-conditionals.md) for the getter recipe and error **15**.
 
 ## Reactive Styles
 
