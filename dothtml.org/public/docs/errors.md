@@ -30,10 +30,10 @@ This page contains a reference for all framework-level errors thrown by DOThtml.
 **Message:** "${prop}" is not a valid method on this DOThtml chain.
 
 ## 12
-**Message:** each/when does not accept a function with parameters as a collection or condition. Pass an array, a plain object, a signal, a binding, or a zero-arg getter.
+**Message:** each/when does not accept a function with parameters as a collection or condition. Pass an array, a plain object, a signal, a binding, or a zero-arg getter: () => items
 
 ## 13
-**Message:** when/otherwiseWhen then-content cannot be a function. Pass markup or a component, not a factory. Use a zero-arg getter or computed for the condition.
+**Message:** when/otherwiseWhen then-content cannot be a function. Pass eager markup or a component instance: dot.when(signal, dot.p('text')) not dot.when(signal, () => dot.p('text')). Use a zero-arg getter or computed for the condition, not the content.
 
 ## 14
 **Message:** each() collection must be an array or a plain object. Signals, bindings, and zero-arg getters must resolve to an array or plain object. Set, Map, Promise, null, and undefined are not valid collections.

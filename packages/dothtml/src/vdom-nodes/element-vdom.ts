@@ -196,6 +196,11 @@ export default class ElementVdom extends Vdom{
 		attr = (attr ?? "").toLowerCase();
 		let targetAttr = attr;
 		if(attr == "bind"){
+			// Validate that bind receives a signal or binding, not a plain value
+			if (value && !(value instanceof Signal || isVType(value, "signal") || value?._isSignal || value instanceof Binding || isVType(value, "binding") || value?._isBinding)) {
+				throw new Error(`[DOThtml] { bind: ... } requires a signal or binding. Did you mean { bind: dot.state(...) } instead of { bind: ${JSON.stringify(value)} }? Use dot.state() to create a writable signal for two-way binding.`);
+			}
+
 			let typeAttr = this.attributes["type"];
 			if (typeAttr instanceof Binding || isVType(typeAttr, "binding")) typeAttr = (typeAttr as any)._get();
 			else if (typeAttr instanceof Signal || isVType(typeAttr, "signal")) typeAttr = (typeAttr as any).value;

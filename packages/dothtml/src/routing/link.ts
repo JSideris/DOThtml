@@ -26,6 +26,11 @@ export const Link = dot.component(
 		}
 
 		build() {
+			// Warn if neither 'to' nor 'name' is provided
+			if (!this.props.to && !this.props.name) {
+				console.warn('[DOThtml] Link component: Neither "to" nor "name" prop provided. Link will not work correctly. Use: new Link({ to: "/path" }) or dot.mount(new Link(), { to: "/path", label: "Text" })');
+			}
+
 			const resolvedPath = dot.computed(() => this.getResolvedPath());
 
 			return dot.a({

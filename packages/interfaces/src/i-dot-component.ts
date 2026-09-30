@@ -40,6 +40,9 @@ export default interface IDotComponent/*<TProps extends Array<string> = [], TEve
 	/**
 	 * The host custom element of the component. Use this to access the DOM node
 	 * in lifecycle hooks like `onEnter()` or `mounted()` for animations or direct manipulation.
+	 * 
+	 * Note: Available in mounted(), onEnter(), onLeave(), unmounting(), and unmounted() hooks.
+	 * Not available in constructor or build().
 	 */
 	readonly el?: HTMLElement;
 	props?: any;
