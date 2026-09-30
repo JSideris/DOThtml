@@ -60,15 +60,24 @@ dot.div(count.bindAs(v => `The count is ${v}`));
 
 ## Reactive lists
 
-For `dot.each`, pass the list itself as a signal, derive it with `dot.computed` or a zero-arg getter, or use `bindAs` on a parent signal:
+For `dot.each`, prefer passing the list itself as a signal or use keyed lists with `dot.state(rows, "id")`:
 
 ```javascript
+const worlds = dot.state([]);
 dot.each(worlds, w => dot.li(w.name));
-dot.each(() => payload.value.worlds, w => dot.li(w.name));
-dot.each(payload.bindAs(p => p.worlds), w => dot.li(w.name));
+
+// For efficient reordering with stable keys
+const items = dot.state([{ id: "a", name: "Alice" }], "id");
+dot.each(items, item => dot.li(item.name));
 ```
 
-Reading `payload.items` through the signal proxy is a **raw array**, not a list signal — it will not update when the parent changes. See [Lists & Conditionals](./lists-and-conditionals.md) for full recipes, anti-examples, and `when` / `otherwiseWhen` usage.
+For derived lists, use a **zero-arg getter** (wrapped in `dot.computed` automatically):
+
+```javascript
+dot.each(() => payload.value.worlds, w => dot.li(w.name));
+```
+
+**Avoid `bindAs` for lists** — it creates a new binding on each parent change and doesn't support keyed diffing. Reading `payload.items` through the signal proxy is a **raw array**, not a list signal — it will not update when the parent changes. See [Lists & Conditionals](./lists-and-conditionals.md) for full recipes, anti-examples, and `when` / `otherwiseWhen` usage.
 
 ## Refs
 
@@ -157,12 +166,12 @@ dot.css.variable("theme-mode", theme);
 
 ## Two-Way Binding
 
-DOThtml supports explicit two-way binding for form elements using the `bind` attribute. This synchronizes the DOM state with a `Signal` or `Binding` in both directions.
+**Prefer `{ bind: signal }` for two-way form binding.** DOThtml supports explicit two-way binding for form elements using the `bind` attribute. This synchronizes the DOM state with a `Signal` or `Binding` in both directions.
 
 ```javascript
 const name = dot.state("John");
 
-dot.input({ bind: name }); // Typing in the input updates the signal.
+dot.input({ bind: name }); // ✅ Typing in the input updates the signal.
 dot.div("Hello, ", name);  // The div updates as you type.
 ```
 
@@ -172,12 +181,20 @@ dot.div("Hello, ", name);  // The div updates as you type.
 - `<select>`: Binds to the `value` property.
 
 ### One-Way vs. Two-Way
-Using the standard `value` or `checked` attributes with a signal provides **one-way binding** (Signal -> DOM). To enable **two-way binding** (Signal <-> DOM), you must use the `bind` attribute.
+
+Using the standard `value` or `checked` attributes with a signal provides **one-way binding only** (Signal → DOM). The signal updates the DOM, but user input does **not** update the signal.
+
+To enable **two-way binding** (Signal ↔ DOM), you must use the `bind` attribute.
 
 ```javascript
-// One-way: DOM updates when signal changes, but not vice versa.
+// ❌ WRONG: One-way only. User typing does NOT update mySignal.
+// (Common mistake from React-style patterns.)
 dot.input({ value: mySignal }); 
 
-// Two-way: DOM and signal are kept in sync.
+// ✅ Correct: Two-way. DOM and signal are kept in sync.
 dot.input({ bind: mySignal }); 
 ```
+
+> **AI Agents**: When building forms, always use `bind` for inputs that should update signals. Using `value` with a signal creates one-way display-only inputs. See the [AI Agents Guide](./ai-agents.md) for more patterns.
+
+> **Note**: `when` evaluates then-content eagerly, not lazily. `when(cond, () => dot.p("x"))` throws error **13**. See [Lists & Conditionals](./lists-and-conditionals.md) for details.

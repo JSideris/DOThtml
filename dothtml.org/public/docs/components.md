@@ -4,9 +4,9 @@ Components are the building blocks of DOThtml applications. They are defined as 
 
 ## Defining Components
 
-There are multiple ways to define components in DOThtml, depending on your language and tooling setup.
+DOThtml components are defined as classes that encapsulate structure, style, and logic. The **preferred approach** uses the `@dot.component` decorator (or `dot.component()` wrapper in plain JavaScript) with the `DotComponent` base class.
 
-### 1. TypeScript with Decorator (Recommended for TypeScript)
+### 1. TypeScript with Decorator (Recommended)
 
 For TypeScript applications, the recommended pattern uses the `@dot.component` decorator and extends the `DotComponent` base class. This provides full type safety and automatic reactivity tracking.
 
@@ -33,9 +33,9 @@ dot(document.body).mount(new MyComponent({ name: "World" }));
 *   **Reactivity Tracking**: The decorator ensures that any reactive signals created in the constructor are properly disposed of when the component is unmounted.
 *   **Clean Syntax**: It feels like standard class-based development.
 
-### 2. Plain JavaScript (no decorators)
+### 2. Plain JavaScript (Recommended for JavaScript)
 
-In plain JavaScript environments where decorators are not available (or when you prefer to avoid build tooling), wrap your component class with `dot.component()` for proper reactivity tracking.
+In plain JavaScript environments where decorators are not available, wrap your component class with `dot.component()` for proper reactivity tracking.
 
 ```javascript
 import { dot } from "dothtml";
@@ -74,9 +74,11 @@ const myFragment = dot.div("A").p("B");
 dot("#app").mount(myFragment);
 ```
 
-### 3. Interface-only Pattern (Advanced)
+### 3. IDotComponent Interface Pattern (Advanced / Niche)
 
-If you need complete separation between implementation and interfaces (e.g., for complex Dependency Injection scenarios), you can implement the `IDotComponent` interface directly.
+> **Note**: This pattern is for **advanced use cases** requiring complete separation between implementation and interfaces (e.g., complex Dependency Injection scenarios). For typical component development, prefer the `@dot.component` decorator or `dot.component()` wrapper patterns above.
+
+If you need complete separation between implementation and interfaces, you can implement the `IDotComponent` interface directly.
 
 ```typescript
 import { dot, IDotComponent, IDotCore } from "dothtml";
