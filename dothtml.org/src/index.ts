@@ -7,6 +7,7 @@
 import { dot, Router } from "dothtml";
 import Home from "./areas/home/home";
 import Docs from "./areas/docs/docs";
+import Blog from "./areas/blog/blog";
 import Profiling from "./areas/profiling/profiling";
 import Navbar from "./components/navbar/navbar";
 import AnimatedBackdrop from "./components/animated-backdrop/animated-backdrop";
@@ -78,6 +79,8 @@ const routes = [
 	{ path: "/", component: Home, title: "DOThtml - The Modern Web Framework" },
 	{ path: "/docs", component: Docs, title: "DOThtml Documentation" },
 	{ path: "/docs/:doc", component: Docs, title: "DOThtml Documentation" },
+	{ path: "/blog", component: Blog, title: "DOThtml Blog" },
+	{ path: "/blog/:slug", component: Blog, title: "DOThtml Blog" },
 	{ path: "/profiling", component: Profiling, title: "DOThtml Profiling" }
 ];
 

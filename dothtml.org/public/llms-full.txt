@@ -387,6 +387,24 @@ s.class("button", b => b
 
 **Note:** `stylize(s)` can also return a raw CSS string or a theme function for advanced scenarios, but **prefer the stylesheet builder `s` for typical use cases** — it provides better type safety, reactivity support, and IDE assistance.
 
+**✅ Valid on-ramp: External stylesheets**
+
+Importing or linking external CSS files is a **valid and supported** approach, especially when:
+- Migrating existing applications with established stylesheets
+- Using CSS frameworks (Bootstrap, Tailwind, etc.) or template CSS
+- Working around style builder limitations (`:hover`, multi-arg lengths, `@font-face`, etc.)
+
+```javascript
+// Import in your app entry point
+import "./styles/global.css";
+
+// Or use dot.useGlobalStyles() for Shadow DOM components
+import globalCss from "./styles/global.css?inline";
+dot.useGlobalStyles(globalCss);
+```
+
+For new DOThtml-native component styling, prefer `stylize` + CSS variables for better scoping and reactivity.
+
 **❌ Avoid: Deep imports of StyleVNode as the default**
 
 Deep imports like `dothtml/v-meta-nodes/style-v-node` are **not valid published exports**. Use the public API (`stylize`, `dot.css`, etc.).
@@ -747,7 +765,7 @@ This guide should help you avoid the most common traps and follow DOThtml's cano
 
 --- FILE: benchmarks.md (Benchmarks) ---
 
-# Benchmarks (v%%DOTHTML_VERSION%%)
+# Benchmarks (v6.8.0)
 
 Performance in web frameworks is rarely about a single number; it is a reflection of architectural priorities and trade-offs. The following benchmarks compare DOThtml's runtime-driven reactivity against the industry's leading frameworks.
 
@@ -757,16 +775,16 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 | Test | DOThtml | React | Vue | Svelte |
 | :--- | :--- | :--- | :--- | :--- |
-| **Create 1,000 rows** | %%BENCH_CREATE_1000_DOTHTML%% | %%BENCH_CREATE_1000_REACT%% | %%BENCH_CREATE_1000_VUE%% | %%BENCH_CREATE_1000_SVELTE%% |
-| **Create 10,000 rows** | %%BENCH_CREATE_10000_DOTHTML%% | %%BENCH_CREATE_10000_REACT%% | %%BENCH_CREATE_10000_VUE%% | %%BENCH_CREATE_10000_SVELTE%% |
-| **Append 1,000 rows** | %%BENCH_APPEND_1000_DOTHTML%% | %%BENCH_APPEND_1000_REACT%% | %%BENCH_APPEND_1000_VUE%% | %%BENCH_APPEND_1000_SVELTE%% |
-| **Update every 10th row** | %%BENCH_UPDATE_10TH_DOTHTML%% | %%BENCH_UPDATE_10TH_REACT%% | %%BENCH_UPDATE_10TH_VUE%% | %%BENCH_UPDATE_10TH_SVELTE%% |
-| **Swap Rows** | %%BENCH_SWAP_ROWS_DOTHTML%% | %%BENCH_SWAP_ROWS_REACT%% | %%BENCH_SWAP_ROWS_VUE%% | %%BENCH_SWAP_ROWS_SVELTE%% |
-| **Clear** | %%BENCH_CLEAR_DOTHTML%% | %%BENCH_CLEAR_REACT%% | %%BENCH_CLEAR_VUE%% | %%BENCH_CLEAR_SVELTE%% |
-| **Bulk Style Update** | %%BENCH_BULK_STYLE_DOTHTML%% | %%BENCH_BULK_STYLE_REACT%% | %%BENCH_BULK_STYLE_VUE%% | %%BENCH_BULK_STYLE_SVELTE%% |
-| **First Contentful Paint** | %%BENCH_FCP_DOTHTML%% | %%BENCH_FCP_REACT%% | %%BENCH_FCP_VUE%% | %%BENCH_FCP_SVELTE%% |
-| **DOM Interactive** | %%BENCH_DOM_INTERACTIVE_DOTHTML%% | %%BENCH_DOM_INTERACTIVE_REACT%% | %%BENCH_DOM_INTERACTIVE_VUE%% | %%BENCH_DOM_INTERACTIVE_SVELTE%% |
-| **Framework Ready** | %%BENCH_FRAMEWORK_READY_DOTHTML%% | %%BENCH_FRAMEWORK_READY_REACT%% | %%BENCH_FRAMEWORK_READY_VUE%% | %%BENCH_FRAMEWORK_READY_SVELTE%% |
+| **Create 1,000 rows** | 6.93 ms | 6.69 ms | 6.14 ms | **5.93 ms** |
+| **Create 10,000 rows** | 721.85 ms | 624.95 ms | 473.35 ms | **465.85 ms** |
+| **Append 1,000 rows** | **7.64 ms** | 70.08 ms | 51.99 ms | 50.07 ms |
+| **Update every 10th row** | **0.14 ms** | **0.14 ms** | **0.14 ms** | 0.15 ms |
+| **Swap Rows** | **0.14 ms** | **0.14 ms** | **0.14 ms** | **0.14 ms** |
+| **Clear** | **1.45 ms** | **1.45 ms** | **1.45 ms** | 1.46 ms |
+| **Bulk Style Update** | **0.15 ms** | 0.31 ms | 0.21 ms | 0.21 ms |
+| **First Contentful Paint** | **28.00 ms** | **28.00 ms** | **28.00 ms** | **28.00 ms** |
+| **DOM Interactive** | 4.75 ms | 4.70 ms | **4.65 ms** | 4.80 ms |
+| **Framework Ready** | 14.35 ms | 6.35 ms | 7.85 ms | **5.60 ms** |
 
 *Benchmarks run using Playwright on a standardized data set. DOThtml was tested in synchronous mode for a direct comparison with other frameworks' default rendering behavior. Styling benchmarks measure the time to update 3 properties (color, scale, rotation) across 1,000 elements simultaneously.*
 
@@ -774,7 +792,7 @@ The following benchmarks measure the median time (in milliseconds) required to p
 
 DOThtml is designed to be lightweight, ensuring fast load times and minimal resource consumption.
 
-- **DOThtml**: **%%DOTHTML_COMPRESSED_SIZE%% kB**
+- **DOThtml**: **25.7 kB**
 - **React + ReactDOM**: ~42 kB
 - **Vue**: ~33 kB
 - **Svelte**: ~2 kB (runtime only, grows with component count)
@@ -803,7 +821,7 @@ Every framework is designed with a specific set of values. Understanding these p
 | :--- | :--- | :--- | :--- | :--- |
 | **Philosophy** | **Reactivity Magic**. Values a fluent, code-first API and granular reactivity over raw creation speed. | **Zero-Runtime Compiler**. Shifts work to the build step for minimal overhead. | **Functional UI**. Prioritizes a predictable, functional model (UI as a function of state). | **Balanced & Progressive**. Aims for a middle ground between functional and performance-optimized. |
 | **Reactivity** | Granular Signals. Updates only what changes, bypassing tree diffs. | Compiled-in. The compiler knows exactly what to update at build time. | Top-down VDOM. Re-renders components and diffs the tree. | Proxy-based VDOM. Tracks dependencies for component-level re-renders. |
-| **Bundle & Runtime** | **%%DOTHTML_COMPRESSED_SIZE%% kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
+| **Bundle & Runtime** | **25.7 kB Runtime**. A fixed-size engine that manages all components and reactivity. | **~2 kB (Compiled)**. Minimal initial overhead, though code grows with component count. | **~42 kB Runtime**. A robust engine supporting a vast ecosystem and complex state. | **~33 kB Runtime**. A feature-rich engine balancing power and footprint. |
 | **Focus** | **Updates & Styling**. Optimized for the lifecycle of an app, not just the first render. | **Initial Render & Size**. Optimized for fast startup and minimal bundle overhead. | **Predictability**. Optimized for developer experience and large-scale state management. | **Ease of Use**. Optimized for a balance of speed and a gentle learning curve. |
 
 ### Framework Characteristics
@@ -3087,6 +3105,85 @@ dot(document.body).mount(new ColoredBox({ color: "lightblue" }));
 - Styles shared across all instances of a component
 - Styles that should be themeable via CSS variables
 - Complex responsive rules with media queries
+
+---
+
+## External Stylesheets as an On-Ramp
+
+While `stylize()` + CSS variables is the recommended approach for DOThtml-native component styling, **importing or linking external stylesheets is a valid and supported starting path.**
+
+### When to Use External Stylesheets
+
+External CSS is particularly useful for:
+
+- **Migrating existing applications**: Keep your current stylesheets while gradually adopting DOThtml components
+- **Greenfield apps with existing CSS**: When your project starts with a template or CSS framework (Bootstrap, Tailwind, etc.)
+- **Working around builder limitations**: For CSS features not yet supported by the style builder, such as:
+  - Pseudo-selectors like `:hover`, `:focus`, `:nth-child()`
+  - Multi-argument length properties (e.g., `margin: 10px 20px`)
+  - `@font-face` declarations for custom fonts
+  - Complex selectors and combinators
+
+For a complete list of current builder limitations, see the [CSS limitations section](../readme.md#css) in the root readme.
+
+### How to Use External Stylesheets
+
+#### In an NPM/Vite Project
+
+Import CSS files directly in your app entry point:
+
+```javascript
+// main.js or app.js
+import "./styles/global.css";
+import "./styles/components.css";
+
+import { dot } from "dothtml";
+
+// Your DOThtml app code
+dot(document.body).h1("Hello!");
+```
+
+#### In an HTML File
+
+Link stylesheets in your `index.html`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="/styles/global.css">
+	<link rel="stylesheet" href="/styles/components.css">
+</head>
+<body>
+	<script type="module" src="/src/main.js"></script>
+</body>
+</html>
+```
+
+#### Using Global Styles with Shadow DOM
+
+If you need external styles to apply inside DOThtml components (which use Shadow DOM by default), register them with `dot.useGlobalStyles()`:
+
+```javascript
+import globalCss from "./styles/global.css?inline";
+
+// Register styles to be adopted by all component shadow roots
+dot.useGlobalStyles(globalCss);
+```
+
+### Preferred End State: Component Stylize + CSS Variables
+
+As you become comfortable with DOThtml, we recommend transitioning to the component-native approach:
+
+- Use [`stylize(s)` with the stylesheet builder](#scoped-styles-with-stylize) for shared component styles
+- Use [CSS variables via `dot.css.variable()`](#using-css-variables-for-theming) for theming
+- Use [inline `.style()` method](#inline-styles-with-style) for instance-specific styling
+
+This approach provides:
+- **Better scoping**: Styles are isolated within Shadow DOM
+- **Performance**: CSS variables update instantly without JavaScript re-renders
+- **Type safety**: IDE autocompletion and compile-time checks
+- **Reactivity**: Seamless integration with DOThtml's signal system
 
 ---
 

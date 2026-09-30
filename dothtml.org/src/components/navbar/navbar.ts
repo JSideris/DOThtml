@@ -64,10 +64,10 @@ export default class Navbar extends DotComponent {
 						text: "Examples",
 						active: (dot as any).currentHash.bindAs(h => h === "#examples")
 					})).on("click", () => (dot as any).navigate("/#examples")),
-					dot.mount(new NavBtn({ 
-						text: "Blog",
-						active: this.currentPath.bindAs(p => p === "/blog")
-					})).on("click", () => this.navigate("blog")),
+				dot.mount(new NavBtn({ 
+					text: "Blog",
+					active: this.currentPath.bindAs(p => p.startsWith("/blog"))
+				})).on("click", () => this.navigate("blog")),
 					dot.mount(new NavBtn({ text: "🌐" }))
 				)
 			)
