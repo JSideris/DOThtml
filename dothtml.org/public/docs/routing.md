@@ -82,23 +82,27 @@ dot.navigate("/home", true);
 
 ## Reactive Params
 
-Routes can have parameters defined with `{paramName}` or `:paramName`. These are passed to the component as `routeParams`.
+Routes can have parameters defined with `:paramName` (Express-style). These are passed to the component as `routeParams`.
 
 ```javascript
+import { dot, DotComponent } from "dothtml";
+
 const routes = [
     { 
-        path: "/user/{id}", 
+        path: "/user/:id", 
         component: UserProfile 
     }
 ];
 
-class UserProfile {
+@dot.component
+class UserProfile extends DotComponent {
     build(dot) {
-        // Access params reactively
         return dot.div(`User ID: ${this.props.routeParams.id}`);
     }
 }
 ```
+
+> **Note:** The legacy `{paramName}` syntax (e.g., `/user/{id}`) is also accepted for compatibility.
 
 ## Query and Hash Reactivity
 
@@ -149,7 +153,7 @@ const routes = [
 
 ## Navigation Guards
 
-You can protect routes using `beforeEnter` on individual routes or global `beforeEach` guards. Guards support synchronous return values, asynchronous promises, and the traditional `next()` callback.
+You can protect routes using `beforeEnter` on individual routes or global `beforeEach` guards.
 
 ### Return-based API (Recommended)
 
@@ -181,9 +185,9 @@ dot.Router.beforeEach(async (to) => {
 });
 ```
 
-### Callback-based API
+### Legacy: Callback-based API
 
-The traditional `next()` callback is still supported for compatibility.
+The traditional `next()` callback is still supported for compatibility with older code, but **new code should use the return-based API** above.
 
 ```javascript
 dot.Router.beforeEach((to, from, next) => {
@@ -191,3 +195,5 @@ dot.Router.beforeEach((to, from, next) => {
     else next(false);
 });
 ```
+
+Prefer returning `true`, `false`, or a redirect string directly instead of calling `next()`.
