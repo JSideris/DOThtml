@@ -77,6 +77,17 @@ export default class Blog extends DotComponent<BlogProps> {
 			.paddingPx(40)
 			.borderRadiusPx(12)
 			.border("1px solid rgba(255, 255, 255, 0.03)")
+		).class("blog-post-header", h => h
+			.marginBottomPx(40)
+			.paddingBottomPx(20)
+			.borderBottom("1px solid rgba(255, 255, 255, 0.1)")
+		).class("blog-post-header h1", h => h
+			.fontSizePx(36)
+			.marginBottomPx(10)
+			.color(s.v("primary"))
+		).class("blog-post-header .post-date", d => d
+			.fontSizePx(14)
+			.color(s.v("text-dim"))
 		).class("blog-back-link", l => l
 			.display("inline-block")
 			.marginBottomPx(30)
@@ -149,6 +160,10 @@ export default class Blog extends DotComponent<BlogProps> {
 				}
 			}, "← Back to blog"),
 			dot.div({ class: "blog-post-content" },
+				dot.div({ class: "blog-post-header" },
+					dot.h1(post.title),
+					dot.div({ class: "post-date" }, this.formatDate(post.date))
+				),
 				dot.mount(new MarkdownViewer({ src: `/blog/${post.filename}` }))
 			)
 		);
