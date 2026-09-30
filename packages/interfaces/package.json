@@ -1,7 +1,7 @@
 {
   "name": "dothtml-interfaces",
   "version": "6.7.4",
-  "description": "Dependency injection interfaces for DOTHtml.",
+  "description": "Dependency injection interfaces for DOThtml. Docs: https://dothtml.org/",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {},

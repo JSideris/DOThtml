@@ -2,7 +2,7 @@
   "name": "create-dothtml",
   "version": "6.7.4",
   "private": false,
-  "description": "The official project initializer for DOThtml.",
+  "description": "The official project initializer for DOThtml. Docs: https://dothtml.org/",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
