@@ -1,6 +1,6 @@
 {
   "name": "dothtml",
-  "version": "6.7.4",
+  "version": "6.8.0",
   "description": "Client-side TypeScript UI framework. Docs: https://dothtml.org/ — AI agents: https://dothtml.org/docs/ai-agents.md",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
