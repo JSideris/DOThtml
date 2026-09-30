@@ -10,12 +10,11 @@ export interface BlogPost {
 }
 
 export const posts: BlogPost[] = [
-	// Example (do not uncomment - no real posts yet):
-	// { 
-	//   slug: "hello-world",
-	//   filename: "2026-10-01-hello-world.md",
-	//   title: "Hello World",
-	//   date: "2026-10-01",
-	//   summary: "Welcome to the DOThtml blog"
-	// }
+	{
+		slug: "why-dothtml-exists",
+		filename: "2026-09-30-why-dothtml-exists.md",
+		title: "Why DOThtml exists",
+		date: "2026-09-30",
+		summary: "A UI engine for hosts that already own the app — from a multiplayer shooter HUD to preferred reactive paths today."
+	}
 ];
