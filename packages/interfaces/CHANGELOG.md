@@ -1,5 +1,11 @@
 # dothtml-interfaces
 
+## 6.7.2
+
+### Patch Changes
+
+- 21e4942: Fix TypeScript types for `dot.each` to accept keyed list signals without casting. Split array and dictionary overloads so `ISignal<T[]>` from `dot.state(items, "id")` type-checks correctly without `as any`.
+
 ## 6.7.1
 
 ### Patch Changes
