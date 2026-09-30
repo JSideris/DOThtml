@@ -82,6 +82,85 @@ dot(document.body).mount(new ColoredBox({ color: "lightblue" }));
 
 ---
 
+## External Stylesheets as an On-Ramp
+
+While `stylize()` + CSS variables is the recommended approach for DOThtml-native component styling, **importing or linking external stylesheets is a valid and supported starting path.**
+
+### When to Use External Stylesheets
+
+External CSS is particularly useful for:
+
+- **Migrating existing applications**: Keep your current stylesheets while gradually adopting DOThtml components
+- **Greenfield apps with existing CSS**: When your project starts with a template or CSS framework (Bootstrap, Tailwind, etc.)
+- **Working around builder limitations**: For CSS features not yet supported by the style builder, such as:
+  - Pseudo-selectors like `:hover`, `:focus`, `:nth-child()`
+  - Multi-argument length properties (e.g., `margin: 10px 20px`)
+  - `@font-face` declarations for custom fonts
+  - Complex selectors and combinators
+
+For a complete list of current builder limitations, see the [CSS limitations section](../readme.md#css) in the root readme.
+
+### How to Use External Stylesheets
+
+#### In an NPM/Vite Project
+
+Import CSS files directly in your app entry point:
+
+```javascript
+// main.js or app.js
+import "./styles/global.css";
+import "./styles/components.css";
+
+import { dot } from "dothtml";
+
+// Your DOThtml app code
+dot(document.body).h1("Hello!");
+```
+
+#### In an HTML File
+
+Link stylesheets in your `index.html`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="/styles/global.css">
+	<link rel="stylesheet" href="/styles/components.css">
+</head>
+<body>
+	<script type="module" src="/src/main.js"></script>
+</body>
+</html>
+```
+
+#### Using Global Styles with Shadow DOM
+
+If you need external styles to apply inside DOThtml components (which use Shadow DOM by default), register them with `dot.useGlobalStyles()`:
+
+```javascript
+import globalCss from "./styles/global.css?inline";
+
+// Register styles to be adopted by all component shadow roots
+dot.useGlobalStyles(globalCss);
+```
+
+### Preferred End State: Component Stylize + CSS Variables
+
+As you become comfortable with DOThtml, we recommend transitioning to the component-native approach:
+
+- Use [`stylize(s)` with the stylesheet builder](#scoped-styles-with-stylize) for shared component styles
+- Use [CSS variables via `dot.css.variable()`](#using-css-variables-for-theming) for theming
+- Use [inline `.style()` method](#inline-styles-with-style) for instance-specific styling
+
+This approach provides:
+- **Better scoping**: Styles are isolated within Shadow DOM
+- **Performance**: CSS variables update instantly without JavaScript re-renders
+- **Type safety**: IDE autocompletion and compile-time checks
+- **Reactivity**: Seamless integration with DOThtml's signal system
+
+---
+
 For more styling techniques, see the sections below. For a complete guide on AI-friendly styling patterns, see [AI Agents](./ai-agents.md).
 
 ## The Two Types of Style Builders
