@@ -2,7 +2,6 @@
 title: How "out of the way" got stricter
 date: 2026-10-06
 summary: Three times DOThtml redefined staying out of the way: nested builders, router-as-citizen, signals, and what fail-early means for coding agents.
-draft: true
 ---
 
 In [Why DOThtml exists](https://dothtml.org/blog/why-dothtml-exists), the claim is simple: a UI engine should leave the host in charge. This post is not another origin story. It is what happened after that rule was already the point. "Out of the way" did not stay fixed. Each time the web asked more of a UI layer, something that once felt optional became the obstacle. Three times the library had to redefine the refusal without abandoning the host. Read this alone if you want; the earlier post is the contract, and this one is how the contract tightened.

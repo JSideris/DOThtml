@@ -22,7 +22,6 @@ export const posts: BlogPost[] = [
 		filename: "2026-10-06-how-out-of-the-way-got-stricter.md",
 		title: "How \"out of the way\" got stricter",
 		date: "2026-10-06",
-		summary: "Three times DOThtml redefined staying out of the way: nested builders, router-as-citizen, signals, and what fail-early means for coding agents.",
-		draft: true
+		summary: "Three times DOThtml redefined staying out of the way: nested builders, router-as-citizen, signals, and what fail-early means for coding agents."
 	}
 ];
