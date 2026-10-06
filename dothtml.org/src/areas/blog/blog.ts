@@ -170,7 +170,13 @@ export default class Blog extends DotComponent<BlogProps> {
 	}
 
 	private formatDate(dateStr: string): string {
-		const date = new Date(dateStr);
+		// Date-only strings like "2026-09-30" are parsed by `new Date()` as UTC
+		// midnight, which shows as the previous day in timezones west of UTC.
+		// Build the date from its parts in local time so the calendar day is preserved.
+		const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+		const date = match
+			? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+			: new Date(dateStr);
 		return date.toLocaleDateString("en-US", { 
 			year: "numeric", 
 			month: "long", 
