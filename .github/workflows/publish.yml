@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck consumers
+        run: npm run consumer-typecheck
+
       - name: Publish if versions are new
         run: |
           local=$(node -p "require('./packages/dothtml/package.json').version")
@@ -40,4 +46,4 @@ jobs:
             echo "Nothing to publish."
             exit 0
           fi
-          npm run release
+          npx changeset publish
