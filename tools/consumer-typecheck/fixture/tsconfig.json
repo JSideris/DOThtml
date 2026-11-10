@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"skipLibCheck": false,
+		"noEmit": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM"]
+	},
+	"include": ["index.ts"]
+}
