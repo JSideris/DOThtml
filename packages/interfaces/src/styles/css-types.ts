@@ -1,12 +1,18 @@
 import { IBinding } from "../bindings/i-binding";
-import { IWatcher } from "../bindings/i-watcher";
+
+/**
+ * Covariant readable view of a signal or computed.
+ * Style setters only read `.value`, so a computed narrowed to a union
+ * (for example `"black" | "white"`) is assignable here when T is `string`.
+ */
+export type ReadableReactive<T> = { readonly value: T };
 
 // Global keyword values.
-export type GKV = IWatcher<string>|IBinding<any, string>|"inherit"|"initial"|"unset"|"revert"|"revert-layer";
+export type GKV = ReadableReactive<string>|IBinding<any, string>|"inherit"|"initial"|"unset"|"revert"|"revert-layer";
 
 export type ComplexType = string;
 
-export type ValueOrReactive<T> = T|IBinding<any, T>|IWatcher<T>;
+export type ValueOrReactive<T> = T|IBinding<any, T>|ReadableReactive<T>;
 
 // BASIC TYPES
 export type Str = `"${string|""}"`|`'${string|""}'`; // TODO: wherever str is required, we could just inject quotes...

@@ -8,24 +8,59 @@ interface RegisteredListener {
 	modifiers: string[];
 }
 
+export type EventRoot = Document | ShadowRoot;
+
+// These events do not bubble (and often do not compose). Root-level
+// delegation never sees them, so they are bound on the element itself.
+const DIRECT_EVENTS = new Set([
+	"scroll",
+	"load",
+	"unload",
+	"error",
+	"abort",
+	"toggle",
+	"invalid",
+	"close",
+]);
+
+export function getEventRoot(element: Element): EventRoot {
+	const root = element.getRootNode();
+	if (typeof ShadowRoot !== "undefined" && root instanceof ShadowRoot) {
+		return root;
+	}
+	if (typeof Document !== "undefined" && root instanceof Document) {
+		return root;
+	}
+	return element.ownerDocument;
+}
+
 export class EventManager {
-	private static managers = new Map<Document, EventManager>();
+	private static managers = new Map<EventRoot, EventManager>();
 
 	public static getForDocument(document: Document): EventManager {
-		let manager = this.managers.get(document);
+		return this.getForRoot(document);
+	}
+
+	public static getForRoot(root: EventRoot): EventManager {
+		let manager = this.managers.get(root);
 		if (!manager) {
-			manager = new EventManager(document);
-			this.managers.set(document, manager);
+			manager = new EventManager(root);
+			this.managers.set(root, manager);
 		}
 		return manager;
 	}
 
-	private document: Document;
+	public static getForElement(element: Element): EventManager {
+		return this.getForRoot(getEventRoot(element));
+	}
+
+	private root: EventRoot;
 	private listeners = new WeakMap<Element, Map<string, RegisteredListener[]>>();
 	private activeEventTypes = new Set<string>();
+	private directNativeListeners = new WeakMap<Element, Map<string, EventListener>>();
 
-	constructor(document: Document) {
-		this.document = document;
+	constructor(root: EventRoot) {
+		this.root = root;
 	}
 
 	public addListener(element: Element, eventType: string, handler: EventHandler, modifiers: string[] = []) {
@@ -43,7 +78,11 @@ export class EventManager {
 
 		handlers.push({ handler, modifiers });
 
-		this.ensureGlobalListener(eventType);
+		if (DIRECT_EVENTS.has(eventType)) {
+			this.ensureDirectListener(element, eventType);
+		} else {
+			this.ensureRootListener(eventType);
+		}
 	}
 
 	public removeListener(element: Element, eventType: string, handler: EventHandler) {
@@ -60,18 +99,43 @@ export class EventManager {
 
 		if (handlers.length === 0) {
 			elementListeners.delete(eventType);
+			this.teardownDirectListener(element, eventType);
 		}
 	}
 
-	private ensureGlobalListener(eventType: string) {
+	private ensureRootListener(eventType: string) {
 		if (this.activeEventTypes.has(eventType)) return;
 
 		const useCapture = eventType === "focus" || eventType === "blur";
-		this.document.addEventListener(eventType, (nativeEvent: Event) => {
+		this.root.addEventListener(eventType, (nativeEvent: Event) => {
 			this.dispatchEvent(eventType, nativeEvent);
 		}, useCapture);
 
 		this.activeEventTypes.add(eventType);
+	}
+
+	private ensureDirectListener(element: Element, eventType: string) {
+		let map = this.directNativeListeners.get(element);
+		if (!map) {
+			map = new Map();
+			this.directNativeListeners.set(element, map);
+		}
+		if (map.has(eventType)) return;
+
+		const listener: EventListener = (nativeEvent: Event) => {
+			this.dispatchEvent(eventType, nativeEvent);
+		};
+		element.addEventListener(eventType, listener);
+		map.set(eventType, listener);
+	}
+
+	private teardownDirectListener(element: Element, eventType: string) {
+		const map = this.directNativeListeners.get(element);
+		if (!map) return;
+		const listener = map.get(eventType);
+		if (!listener) return;
+		element.removeEventListener(eventType, listener);
+		map.delete(eventType);
 	}
 
 	private dispatchEvent(eventType: string, nativeEvent: Event) {
@@ -88,7 +152,7 @@ export class EventManager {
 		const syntheticEvent = new SyntheticEvent(nativeEvent);
 
 		for (const element of path) {
-			if (element === this.document as any || element === window as any) continue;
+			if (element === this.root as any || element === window as any) continue;
 			
 			const elementListeners = this.listeners.get(element);
 			if (!elementListeners) continue;

@@ -4,6 +4,24 @@ import { IDotStyleBuilder } from "../styles/i-dot-style-builder";
 import { IReactive } from "../bindings/i-reactive";
 import { AttrVal, DotContent } from "./content";
 
+// HTML autocomplete tokens, plus any space-separated or section-* combination.
+export type AutoCompleteValue =
+	| "on" | "off"
+	| "name" | "honorific-prefix" | "given-name" | "additional-name" | "family-name"
+	| "honorific-suffix" | "nickname" | "email" | "username" | "new-password"
+	| "current-password" | "one-time-code" | "organization-title" | "organization"
+	| "street-address" | "address-line1" | "address-line2" | "address-line3"
+	| "address-level1" | "address-level2" | "address-level3" | "address-level4"
+	| "country" | "country-name" | "postal-code"
+	| "cc-name" | "cc-given-name" | "cc-additional-name" | "cc-family-name"
+	| "cc-number" | "cc-exp" | "cc-exp-month" | "cc-exp-year" | "cc-csc" | "cc-type"
+	| "transaction-currency" | "transaction-amount" | "language"
+	| "bday" | "bday-day" | "bday-month" | "bday-year" | "sex"
+	| "tel" | "tel-country-code" | "tel-national" | "tel-area-code" | "tel-local"
+	| "tel-extension" | "impp" | "url" | "photo" | "webauthn"
+	| "shipping" | "billing" | "home" | "work" | "mobile" | "fax" | "pager"
+	| (string & {});
+
 // Attribute interface (for all elements):
 export interface IDotGlobalAttrs<T extends HTMLElement = HTMLElement> {
 	[key: string]: any;
@@ -304,7 +322,7 @@ export interface IDotFieldSet extends IDotGlobalAttrs<HTMLFieldSetElement> {
 export interface IDotForm extends IDotGlobalAttrs<HTMLFormElement> {
 	acceptCharset?: AttrVal<string>; // accept-charset, apparently the only hyphenated attribute (aside from data-*)...
 	action?: AttrVal<string>;
-	autoComplete?: AttrVal<"on"> | AttrVal<"off">;
+	autoComplete?: AttrVal<AutoCompleteValue>;
 	encType?: AttrVal<"application/x-www-form-urlencoded"> | AttrVal<"multipart/form-data"> | AttrVal<"text/plain">;
 	method?: AttrVal<"get"> | AttrVal<"post">;
 	name?: AttrVal<string>;
@@ -357,7 +375,7 @@ export interface IDotInput extends IDotGlobalAttrs<HTMLInputElement> {
 	accept?: AttrVal<string>;
 	alt?: AttrVal<string>;
 	autoCapitalize?: AttrVal<"none"> | AttrVal<"sentences"> | AttrVal<"words"> | AttrVal<"characters">;
-	autoComplete?: AttrVal<"on"> | AttrVal<"off">;
+	autoComplete?: AttrVal<AutoCompleteValue>;
 	autoFocus?: AttrVal<boolean>;
 	checked?: AttrVal<boolean>;
 	enterKeyHint?: AttrVal<"enter"> | AttrVal<"done"> | AttrVal<"go"> | AttrVal<"next"> | AttrVal<"preveous"> | AttrVal<"search"> | AttrVal<"send">;

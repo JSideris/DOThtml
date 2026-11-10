@@ -75,7 +75,20 @@ export function isVType(obj: any, type: string | string[]): boolean {
 
 export const floatRegex = new RegExp("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?", "g");
 
+function unwrapAttrReactive(value: any): any {
+	if (!value || typeof value !== "object") return value;
+	if ((value as any)._isSignal || isVType(value, ["signal", "computed"])) {
+		return unwrapAttrReactive((value as any).value);
+	}
+	if (isVType(value, "binding") || (value as any)?._isBinding) {
+		return unwrapAttrReactive((value as any)._get());
+	}
+	return value;
+}
+
 export function flattenAttribute(value: any): string[] {
+	if (value === null || value === undefined) return [];
+	value = unwrapAttrReactive(value);
 	if (value === null || value === undefined) return [];
 	if (typeof value === "string") return [value];
 	if (typeof value === "number") return [`${value}`];
@@ -87,15 +100,9 @@ export function flattenAttribute(value: any): string[] {
 		return tokens;
 	}
 	if (typeof value === "object") {
-		if (isVType(value, "signal")) return flattenAttribute((value as any).value);
-		if (isVType(value, "binding") || (value as any)?._isBinding) return flattenAttribute((value as any)._get());
-
 		let tokens: string[] = [];
 		for (let k in value) {
-			let v = value[k];
-			if (isVType(v, "signal")) v = (v as any).value;
-			else if (isVType(v, "binding") || (v as any)?._isBinding) v = (v as any)._get();
-			
+			const v = unwrapAttrReactive(value[k]);
 			if (v) tokens.push(k);
 		}
 		return tokens;

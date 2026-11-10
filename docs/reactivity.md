@@ -119,6 +119,7 @@ Reactivity can also be applied to element attributes. When a `Signal`, `Binding`
 ```javascript
 const isActive = dot.state(true);
 dot.div({ class: { "active": isActive } }); // Updates class when isActive changes.
+dot.div({ class: { "active": () => isActive.value } }); // Zero-arg getter, same idea.
 dot.input({ value: () => count.value });
 ```
 

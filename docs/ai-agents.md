@@ -591,7 +591,8 @@ dot.div({ class: "card active" }, "Content");
 
 **Key differences:**
 - Use `class`, not `className`.
-- For dynamic classes, use an object: `{ class: { active: () => isActive.value } }`.
+- For dynamic classes, use an object: `{ class: { active: () => isActive.value } }`. A zero-arg getter, a computed, a signal, or `bindAs` all stay live. A boolean snapshot does not.
+- Multi-word HTML tags are camelCase (`dot.tHead()`, `dot.tBody()`, `dot.textArea()`). Lowercase aliases (`dot.thead()`, `dot.tbody()`, `dot.textarea()`) also work.
 
 ---
 

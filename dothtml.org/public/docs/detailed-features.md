@@ -7,7 +7,7 @@ DOThtml is designed for high-performance applications. This document covers the 
 DOThtml features an intelligent update scheduler, a sophisticated keyed diffing algorithm, and concurrent rendering capabilities to ensure maximum performance and responsiveness.
 
 ### Update Batching
-Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them all at once in the next microtask. This significantly reduces layout thrashing and improves responsiveness.
+Multiple state changes are grouped into a single DOM update cycle. When you update multiple `Signal` values in a single function or task, DOThtml enqueues the updates and flushes them together asynchronously, after the current task and any pending microtasks (via `MessageChannel`). Awaiting a microtask is not enough to see the DOM change. This significantly reduces layout thrashing and improves responsiveness.
 
 ### Keyed Diffing
 When rendering lists using `dot.each`, DOThtml uses keyed diffing to track items. Pass the property name as the second argument to `dot.state(items, "id")`. Items then need that property. DOThtml can:
@@ -32,7 +32,7 @@ list.setValue(largeDataSet, Priority.Background);
 ```
 
 ### Manual Flushing (`dot.flushSync`)
-If you need to force an immediate update (for example, to measure an element's size after a state change), you can use `dot.flushSync()`:
+If you need the DOM to reflect a change immediately (for example, to measure an element's size after a state change, or in a unit test after a signal write), use `dot.flushSync()`:
 
 ```javascript
 const name = dot.state("Josh");

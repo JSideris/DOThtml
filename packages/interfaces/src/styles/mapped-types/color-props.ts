@@ -1,7 +1,7 @@
 import { IBinding } from "../../bindings/i-binding";
-import { IWatcher } from "../../bindings/i-watcher";
+import { ReadableReactive } from "../css-types";
 
-type V = IBinding<any, number|string>| IWatcher<number|string> | number | string;
+type V = IBinding<any, number|string>| ReadableReactive<number|string> | number | string;
 
 type ColorUnitSuffix = "" 
 	| "Rgb" 
@@ -21,7 +21,7 @@ type SpecialColors = "currentcolor"|"transparent";
 
 type ColorProp<Prefix extends string> = {
 	[Key in ColorUnitSuffix as `${Prefix}${Key}`]?: (
-		(Key extends "" ? IBinding<any, string> | IWatcher<string> | NamedColor | SystemColor | SpecialColors | `#${string}` | `${"rgb"|"rgba"|"hsl"|"hsla"|"hwb"|"lab"|"lch"|"oklab"|"oklch"|"color"}(${string})` : void) |
+		(Key extends "" ? IBinding<any, string> | ReadableReactive<string> | NamedColor | SystemColor | SpecialColors | `#${string}` | `${"rgb"|"rgba"|"hsl"|"hsla"|"hwb"|"lab"|"lch"|"oklab"|"oklch"|"color"}(${string})` : void) |
 		(Key extends "Rgb" | "Hsl" | "HslDeg" | "HslGrad" | "HslRad" | "HslTurn" | "Hwb" | "HwbDeg" | "HwbGrad" | "HwbRad" | "HwbTurn" | "Lab" | "Lch" | "LchDeg" | "LchGrad" | "LchRad" | "LchTurn" | "Oklch" | "OklchDeg" | "OklchGrad" | "OklchRad" | "OklchTurn" ? [V, V, V] | [V, V, V, V] : void) |
 		(Key extends "Srgb" | "SrgbLinear" | "DisplayP3" | "A98Rgb" | "ProphotoRgb" | "Rec2020" | "Xyz" | "XyzD50" | "XyzD65" ? [V, V, V] : void)
 	);

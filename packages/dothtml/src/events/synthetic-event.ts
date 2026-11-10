@@ -19,6 +19,23 @@ export default class SyntheticEvent {
 		this.timeStamp = e.timeStamp;
 		this.defaultPrevented = e.defaultPrevented;
 		this.detail = (e as any).detail;
+
+		// Forward typed native fields (key, code, button, clientX, etc.)
+		// so handlers typed as KeyboardEvent or MouseEvent can read them
+		// directly. Framework fields on this wrapper win.
+		return new Proxy(this, {
+			get(target, prop, receiver) {
+				if (prop in target) {
+					const val = Reflect.get(target, prop, receiver);
+					return typeof val === "function" ? val.bind(target) : val;
+				}
+				const nativeVal = (target.nativeEvent as any)[prop];
+				return typeof nativeVal === "function" ? nativeVal.bind(target.nativeEvent) : nativeVal;
+			},
+			has(target, prop) {
+				return prop in target || prop in target.nativeEvent;
+			}
+		});
 	}
 
 	preventDefault() {

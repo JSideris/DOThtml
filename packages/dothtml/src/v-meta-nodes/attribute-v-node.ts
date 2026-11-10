@@ -34,7 +34,7 @@ export default class AttributeVNode extends VMetaNode{
 	}
 
 	private registerObservables(val: any) {
-		if (val instanceof Signal || isVType(val, "signal")) {
+		if (val instanceof Signal || isVType(val, ["signal", "computed"]) || (val as any)?._isSignal) {
 			let binding = (val as any).bind();
 			let id = binding._subscribe(this);
 			this.observables[id] = binding;

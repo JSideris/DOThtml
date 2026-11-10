@@ -117,9 +117,9 @@ dot.text(() => name.value);
 
 `dot.div(() => name.value)` is **derived text**, not a lazy factory. `when` then-content stays eager — `when(cond, () => dot.p("x"))` still throws error **13**.
 
-Event handlers (`onClick: () => …`), style builders, and ref callbacks are not getters. `bind` must be a writable signal or binding — `bind: () => x` throws error **15**.
+Event handlers (`onClick: () => …`), style builders, and ref callbacks are not getters. `bind` must be a writable signal or binding. `bind: () => x` throws error **15**.
 
-Class-map values (`class: { active: () => … }`) are still treated as truthy / not executed.
+Class-map values work the same way: `class: { active: () => isActive.value }` or `class: { active: dot.computed(() => isActive.value) }` stay live. Prefer a getter, a computed, a signal, or `bindAs` over a one-time boolean snapshot.
 
 ## Keyed lists
 
