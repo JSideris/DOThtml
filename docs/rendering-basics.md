@@ -28,6 +28,8 @@ dot(document.body)
 
 Most standard HTML5 tags are supported as methods (e.g., `.div()`, `.p()`, `.button()`, `.input()`, `.section()`, etc.).
 
+Multi-word HTML tags use camelCase method names: `.tHead()`, `.tBody()`, `.tFoot()`, `.textArea()`, `.colGroup()`, and so on. Lowercase aliases are also available (`.thead()`, `.tbody()`, `.tfoot()`, `.textarea()`, `.colgroup()`), so either spelling works. The camelCase form matches the rest of the API. SVG and MathML tags keep their standard mixed-case names (`.clipPath()`, `.linearGradient()`), because those are the real element names.
+
 ## Attributes and Properties
 
 Attributes can be passed as an object. DOThtml is flexible: the attribute object can be the **first** or **second** argument.
@@ -45,7 +47,7 @@ dot.img({ src: "logo.png", alt: "Logo" });
 
 ### Special Attribute Handling
 
-- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans, `Signals`, or `Bindings`.
+- **Classes**: You can pass a string, an array of strings, or an object where keys are class names and values are booleans, signals, bindings, computed signals, or zero-arg getters.
   ```javascript
   // Static classes
   dot.div({ class: ["btn", "btn-primary"] });
@@ -54,8 +56,10 @@ dot.img({ src: "logo.png", alt: "Logo" });
   // Reactive classes
   const isActive = dot.state(true);
   dot.div({ class: { "active": isActive } });
+  dot.div({ class: { "paused": () => isPaused.value } });
+  dot.div({ class: { "high-count": count.bindAs(v => v > 10) } });
   ```
-  > **Note**: When using an object for classes, DOThtml checks the truthiness of the values. **Functions are not executed**; they are treated as truthy. To use logic for a class, use a `Signal` or a `Binding`.
+  When using an object for classes, DOThtml checks the truthiness of each value. A zero-arg getter is wrapped in `dot.computed` and stays live, just as it does for other attributes.
 - **Styles**: While you can pass a `style` string or object in the attributes, we recommend using the fluent [Styling](./styling.md) API for better performance and reactivity.
 - **Events**: Event listeners can be added by prefixing the event name with `on` (e.g., `onClick`, `onInput`).
 

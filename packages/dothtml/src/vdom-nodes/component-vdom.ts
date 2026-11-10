@@ -1057,7 +1057,7 @@ export class ComponentVdom extends Vdom{
 	}
 
 	private renderEvent(e: string, callback: (e: any)=>void, modifiers: string[] = []){
-		EventManager.getForDocument(this.shadowEl.ownerDocument).addListener(this.shadowEl, e.toLowerCase(), callback, modifiers);
+		EventManager.getForElement(this.shadowEl).addListener(this.shadowEl, e.toLowerCase(), callback, modifiers);
 	}
 
 	generateStyles(document: Document): string {

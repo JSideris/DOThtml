@@ -182,6 +182,7 @@ export interface IDotDocument {
 	bdo(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 
 	blockQuote(...args: (DotContent | IDotBlockQuote)[]): IDotDocument;
+	blockquote(...args: (DotContent | IDotBlockQuote)[]): IDotDocument;
 
 	// This shouldn't really be used - if it is, then it should have the custom behavior of rewriting the existing document body, rather than adding a second one.
 	body(...args: (DotContent | IDotBody)[]): IDotDocument;
@@ -196,10 +197,12 @@ export interface IDotDocument {
 
 	col(...args: (DotContent | IDotCol)[]): IDotDocument;
 	colGroup(...args: (DotContent | IDotColGroup)[]): IDotDocument;
+	colgroup(...args: (DotContent | IDotColGroup)[]): IDotDocument;
 
 	content(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	data(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	dataList(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	datalist(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	dd(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 
 	del(...args: (DotContent | IDotDel)[]): IDotDocument;
@@ -214,8 +217,10 @@ export interface IDotDocument {
 
 	embed(...args: (DotContent | IDotEmbed)[]): IDotDocument;
 	fieldSet(...args: (DotContent | IDotFieldSet)[]): IDotDocument;
+	fieldset(...args: (DotContent | IDotFieldSet)[]): IDotDocument;
 
 	figCaption(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
+	figcaption(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	figure(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 	footer(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 
@@ -234,6 +239,7 @@ export interface IDotDocument {
 	i(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
 
 	iFrame(...args: (DotContent | IDotIFrame)[]): IDotDocument;
+	iframe(...args: (DotContent | IDotIFrame)[]): IDotDocument;
 	img(...args: (DotContent | IDotImg)[]): IDotDocument;
 	input(...args: (DotContent | IDotInput)[]): IDotDocument;
 	ins(...args: (DotContent | IDotIns)[]): IDotDocument;
@@ -242,6 +248,7 @@ export interface IDotDocument {
 
 	/** @deprecated Deprecated in HTML5. */
 	keyGen(...args: (DotContent | IDotKeyGen)[]): IDotDocument;
+	keygen(...args: (DotContent | IDotKeyGen)[]): IDotDocument;
 	label(...args: (DotContent | IDotLabel)[]): IDotDocument;
 
 	legend(...args: (DotContent | IDotGlobalAttrs)[]): IDotDocument;
@@ -262,6 +269,7 @@ export interface IDotDocument {
 	object(...args: (DotContent | IDotObject)[]): IDotDocument;
 	ol(...args: (DotContent | IDotOl)[]): IDotDocument;
 	optGroup(...args: (DotContent | IDotOptGroup)[]): IDotDocument;
+	optgroup(...args: (DotContent | IDotOptGroup)[]): IDotDocument;
 	option(...args: (DotContent | IDotOption)[]): IDotDocument;
 	output(...args: (DotContent | IDotOutput)[]): IDotDocument;
 
@@ -349,11 +357,15 @@ export interface IDotDocument {
 
 	table(...args: (DotContent | IDotTable)[]): IDotDocument;
 	tBody(...args: (DotContent | IDotTBody)[]): IDotDocument;
+	tbody(...args: (DotContent | IDotTBody)[]): IDotDocument;
 	td(...args: (DotContent | IDotTd)[]): IDotDocument;
 	textArea(...args: (DotContent | IDotTextArea)[]): IDotDocument;
+	textarea(...args: (DotContent | IDotTextArea)[]): IDotDocument;
 	tFoot(...args: (DotContent | IDotTFoot)[]): IDotDocument;
+	tfoot(...args: (DotContent | IDotTFoot)[]): IDotDocument;
 	th(...args: (DotContent | IDotTh)[]): IDotDocument;
 	tHead(...args: (DotContent | IDotTHead)[]): IDotDocument;
+	thead(...args: (DotContent | IDotTHead)[]): IDotDocument;
 	time(...args: (DotContent | IDotTime)[]): IDotDocument;
 	tr(...args: (DotContent | IDotTr)[]): IDotDocument;
 	track(...args: (DotContent | IDotTrack)[]): IDotDocument;

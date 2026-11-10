@@ -120,7 +120,7 @@ export default class ElementVdom extends Vdom{
 
 		if(!this.element) return;
 
-		const eventManager = EventManager.getForDocument(this.element.ownerDocument);
+		const eventManager = EventManager.getForElement(this.element);
 		if(this.inputListener){
 			eventManager.removeListener(this.element, "input", this.inputListener);
 			this.inputListener = null;
@@ -383,7 +383,7 @@ export default class ElementVdom extends Vdom{
 						this.inputListener(e);
 					};
 
-					const eventManager = EventManager.getForDocument(this.element.ownerDocument);
+					const eventManager = EventManager.getForElement(this.element);
 					eventManager.addListener(this.element, "input", this.inputListener);
 					eventManager.addListener(this.element, "compositionstart", this.compositionStartListener);
 					eventManager.addListener(this.element, "compositionend", this.compositionEndListener);
@@ -409,6 +409,6 @@ export default class ElementVdom extends Vdom{
 	}
 
 	private renderEvent(e: string, callback: (e: any)=>void, modifiers: string[] = []){
-		EventManager.getForDocument(this.element.ownerDocument).addListener(this.element, e.toLowerCase(), callback, modifiers);
+		EventManager.getForElement(this.element).addListener(this.element, e.toLowerCase(), callback, modifiers);
 	}
 }

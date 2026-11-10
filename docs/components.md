@@ -228,13 +228,13 @@ Custom events bubble and can be caught by parent containers using the same `onEv
 
 DOThtml provides a modern event system inspired by leading frameworks, offering both consistency and convenience.
 
-*   **Synthetic Events**: All event handlers receive a `SyntheticEvent` object, ensuring consistent behavior across different browsers.
+*   **Synthetic Events**: All event handlers receive a `SyntheticEvent` wrapper. It keeps a stable `target` / `currentTarget` and forwards native fields such as `key`, `code`, and `button`, so a handler typed as `KeyboardEvent` or `MouseEvent` can read those properties directly. The original DOM event is also on `event.nativeEvent`.
 *   **Event Modifiers**: Use dot-notation to apply common event patterns fluently:
     *   `.stop`: Calls `event.stopPropagation()`.
     *   `.prevent`: Calls `event.preventDefault()`.
     *   `.once`: Ensures the event handler only runs once.
     *   `.self`: Only triggers if the event was dispatched by the element itself, not a child.
-*   **Event Delegation**: For maximum performance, DOThtml uses a single event listener at the document root for each event type. This reduces memory overhead and improves performance when rendering large lists of interactive elements.
+*   **Event Delegation**: DOThtml delegates most events from the document or, inside a component, from that component's shadow root. That way non-composed events such as `change` and `submit` still reach handlers declared inside components (for example, checkboxes). Events that do not bubble at all (`scroll`, `load`, `toggle`, and similar) are bound on the element itself.
 *   **Custom Component Events**: Components can emit custom events that parents can listen to using declarative attributes or fluent syntax.
 
 ## Component Styling
